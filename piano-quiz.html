@@ -818,54 +818,35 @@
 </header>
 
 <!-- ============ TAP TO START SCREEN ============ -->
-<section class="screen active" id="tap-screen">
-  <div class="start-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:32px;text-align:center;padding:40px 24px;">
-    <div class="brand">
-      <div class="logo-mark">
-        <img class="brand-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZxivOQAAABFJREFUeJxjYBgFgx8AAAgAAAEAAYK3UQAAAABJRU5ErkJggg==" alt="" style="display:none" />
-      </div>
-      <div>
-        <h1 style="font-size:2.2rem;font-weight:900;color:#0d1b2a;letter-spacing:-1px;margin:0;">PianoQuiz</h1>
-        <div style="font-size:0.95rem;color:#5a7a8a;font-weight:600;margin-top:4px;">Read music, one quiz at a time</div>
-      </div>
-    </div>
-    <div style="font-size:5rem;line-height:1;">🎹</div>
+<section class="screen active" id="tap-screen" style="align-items:center;justify-content:center;">
+  <div style="
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:28px;text-align:center;
+    padding:40px 24px;width:100%;max-width:480px;
+    position:relative;z-index:10;
+  ">
+    <h1 style="font-size:2.4rem;font-weight:900;color:#0d1b2a;letter-spacing:-1px;margin:0;">PianoQuiz</h1>
+    <div style="font-size:0.95rem;color:#5a7a8a;font-weight:600;margin-top:-16px;">Read music, one quiz at a time</div>
+    <div style="font-size:5rem;line-height:1;margin:8px 0;">🎹</div>
     <button id="tap-start-btn" style="
-      background:#2ec4b6;
-      color:white;
-      font-family:'Nunito',sans-serif;
-      font-size:1.3rem;
-      font-weight:900;
-      border:none;
-      border-radius:999px;
-      padding:20px 56px;
-      cursor:pointer;
+      background:#2ec4b6;color:white;
+      font-family:inherit;font-size:1.3rem;font-weight:900;
+      border:none;border-radius:999px;
+      padding:20px 56px;cursor:pointer;
       box-shadow:0 6px 24px rgba(46,196,182,0.4);
       transition:transform 0.15s,box-shadow 0.2s;
-      letter-spacing:0.5px;
+      position:relative;z-index:10;
     ">Tap to Play</button>
-
-    <label id="tap-mute-label" style="
+    <label style="
       display:flex;align-items:center;gap:10px;
       cursor:pointer;user-select:none;
       color:#5a7a8a;font-size:0.92rem;font-weight:700;
+      position:relative;z-index:10;
     ">
-      <span style="position:relative;display:inline-block;width:44px;height:26px;">
+      <span style="position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0;">
         <input type="checkbox" id="tap-mute-toggle" style="opacity:0;width:0;height:0;position:absolute;" />
-        <span id="tap-mute-track" style="
-          position:absolute;inset:0;
-          background:#d0dde4;
-          border-radius:999px;
-          transition:background 0.2s;
-        "></span>
-        <span id="tap-mute-thumb" style="
-          position:absolute;top:3px;left:3px;
-          width:20px;height:20px;
-          background:white;
-          border-radius:50%;
-          box-shadow:0 1px 4px rgba(0,0,0,0.2);
-          transition:transform 0.2s;
-        "></span>
+        <span id="tap-mute-track" style="position:absolute;inset:0;background:#d0dde4;border-radius:999px;transition:background 0.2s;"></span>
+        <span id="tap-mute-thumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:transform 0.2s;"></span>
       </span>
       🔇 Start muted
     </label>
