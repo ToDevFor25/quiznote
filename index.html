@@ -714,6 +714,11 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
   }
+  /* Larger tap targets on small phones */
+  @media (max-width: 479px) {
+    .kb-card { min-height: 310px; }
+    #kb-wrap { min-width: 320px; }
+  }
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 28px; gap: 16px; }
     .play-body { gap: 22px; }
@@ -1327,10 +1332,11 @@
       onTap = () => {},
     } = opts;
 
-    // Calculate responsive width
+    // Calculate responsive width + height
     const wrapW = wrap.offsetWidth || 700;
-    const width = Math.max(400, wrapW - 28);
-    const height = 210;
+    const isMobilePhone = wrapW < 480;
+    const width = Math.max(isMobilePhone ? 320 : 400, wrapW - 28);
+    const height = isMobilePhone ? 270 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
@@ -1656,6 +1662,18 @@
       if (state.settings.difficulty === 'tricky') { lowOct = 2; highOct = 5; }
       else { lowOct = 2; highOct = 4; }
     }
+
+    // On small phone screens narrow the octave range so each key is physically wider
+    const kbWrapW = els['kb-wrap'].offsetWidth || 700;
+    if (kbWrapW < 480) {
+      const span = highOct - lowOct;
+      if (span > 2) {
+        const trim = Math.floor((span - 2) / 2);
+        lowOct += trim;
+        highOct -= (span - 2 - trim);
+      }
+    }
+
     state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct);
     state.q = 0;
     state.score = 0;
