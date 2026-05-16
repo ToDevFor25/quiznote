@@ -464,6 +464,58 @@
     flex-wrap: wrap;
   }
 
+  /* Hint button */
+  .hint-btn { gap: 6px; }
+  .hint-btn.spent { opacity: 0.4; cursor: not-allowed; }
+  .hint-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.1); border-radius: 999px;
+    font-size: 13px; font-weight: 700;
+    width: 20px; height: 20px;
+    line-height: 1;
+  }
+
+  /* Personal best row */
+  .pb-row {
+    margin-top: 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pb-row[hidden] { display: none; }
+  .pb-label { color: var(--ink-faint); font-weight: 600; }
+  .pb-sep { color: var(--ink-faint); }
+  .pb-new { color: var(--teal-dk); font-weight: 800; }
+
+  /* ============ Accidentals filter ============ */
+  .acc-block { text-align: center; }
+  .acc-block[hidden] { display: none; }
+  .acc-label {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px; color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .acc-row {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .acc-pill {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 0 3px 0 var(--ink);
+    padding: 6px 16px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 80ms, box-shadow 80ms;
+    white-space: nowrap;
+  }
+  .acc-pill:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .acc-pill.on { background: var(--grape); color: white; box-shadow: 0 3px 0 var(--grape-dk, #3d1fa3); }
+
   /* ============ Timer ============ */
   #timer-block { text-align: center; }
   .timer-toggle {
@@ -670,6 +722,12 @@
     -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
   }
+  /* On desktop/tablet (≥480px), hide scrollbar — keys fill container */
+  @media (min-width: 480px) {
+    .kb-scroll-wrap {
+      overflow-x: hidden;
+    }
+  }
   .kb-scroll-wrap::-webkit-scrollbar { height: 12px; }
   .kb-scroll-wrap::-webkit-scrollbar-track {
     background: var(--cream-2);
@@ -683,14 +741,10 @@
   }
   .kb-scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--teal-dk); }
   .kb-scroll-wrap { scrollbar-width: auto; scrollbar-color: var(--teal) var(--cream-2); }
-  #kb-wrap { min-width: 640px; }
-  /* Key-size toggle only shows on small phones */
+  /* Key-size block permanently hidden — removed from UI */
   #key-size-block { display: none; }
-  @media (max-width: 479px) {
-    #key-size-block { display: block; }
-  }
 
-  /* ============ Scroll hint strip ============ */
+  /* ============ Scroll hint strip — mobile only ============ */
   .scroll-hint {
     text-align: center;
     font-family: 'Nunito', sans-serif; font-weight: 700;
@@ -698,6 +752,9 @@
     letter-spacing: 0.06em;
     padding: 3px 0 0;
     user-select: none;
+  }
+  @media (min-width: 480px) {
+    .scroll-hint { display: none; }
   }
 
   /* Hide header/footer during gameplay */
@@ -809,42 +866,38 @@
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
-          <div class="tile-sub">full range<br/>sharps &amp; flats</div>
+          <div class="tile-sub">full range</div>
         </button>
       </div>
     </div>
 
-    <div class="q-block" id="key-size-block">
-      <div class="q-label"><span class="num">3</span> Key size?</div>
-      <div class="tile-row" id="keysize-tiles">
-        <button class="tile on" data-keysize="standard">
-          <svg class="tile-clef" viewBox="0 0 80 48" style="height:48px;margin-bottom:4px">
-            <!-- 5 slim white keys -->
-            <rect x="2"  y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="17" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="32" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="47" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="62" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <!-- black keys -->
-            <rect x="11"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
-            <rect x="26"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
-            <rect x="56"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
-          </svg>
-          <div class="tile-title">Standard</div>
-          <div class="tile-sub">more notes visible<br/>scrollable</div>
+    <div class="q-block acc-block" id="acc-block" hidden>
+      <div class="q-label acc-label">Which accidentals?</div>
+      <div class="acc-row" id="acc-tiles">
+        <button class="acc-pill on" data-acc="both">♯ &amp; ♭ both</button>
+        <button class="acc-pill" data-acc="sharps">♯ only</button>
+        <button class="acc-pill" data-acc="flats">♭ only</button>
+        <button class="acc-pill" data-acc="white">white keys</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">3</span> How many questions?</div>
+      <div class="tile-row length-tile-row" id="length-tiles">
+        <button class="tile" data-len="5">
+          <div class="tile-emoji">⚡</div>
+          <div class="tile-title">Quick</div>
+          <div class="tile-sub">5 questions</div>
         </button>
-        <button class="tile" data-keysize="wide">
-          <svg class="tile-clef" viewBox="0 0 80 48" style="height:48px;margin-bottom:4px">
-            <!-- 3 wide white keys -->
-            <rect x="2"  y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="29" y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <rect x="56" y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-            <!-- black key -->
-            <rect x="18" y="4" width="13" height="24" rx="3" fill="#2A2A3E"/>
-            <rect x="45" y="4" width="13" height="24" rx="3" fill="#2A2A3E"/>
-          </svg>
-          <div class="tile-title">Wide keys</div>
-          <div class="tile-sub">bigger targets<br/>fewer notes</div>
+        <button class="tile on" data-len="10">
+          <div class="tile-emoji">🎯</div>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">10 questions</div>
+        </button>
+        <button class="tile" data-len="20">
+          <div class="tile-emoji">🏋️</div>
+          <div class="tile-title">Long</div>
+          <div class="tile-sub">20 questions</div>
         </button>
       </div>
     </div>
@@ -887,6 +940,7 @@
       </div>
       <div class="staff-actions">
         <button class="btn" id="play-note-btn">🔊 Play note</button>
+        <button class="btn hint-btn" id="hint-btn" title="Use a hint">💡 Hint <span class="hint-count" id="hint-count">2</span></button>
       </div>
       <div class="toast" id="toast"></div>
     </div>
@@ -923,7 +977,7 @@
 <section class="screen" id="summary-screen">
   <div class="summary-wrap">
     <div class="summary-title">Round done! 🎉</div>
-    <div class="summary-sub" id="summary-sub">You read 10 notes.</div>
+    <div class="summary-sub" id="summary-sub">You read notes.</div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
     <div class="summary-grid">
@@ -948,7 +1002,15 @@
 
     <div class="summary-actions">
       <button class="btn sun big" id="again-btn">↻ Play again</button>
+      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
       <button class="btn ghost" id="change-btn">Change settings</button>
+    </div>
+
+    <div class="pb-row" id="pb-row" hidden>
+      <span class="pb-label">Personal best:</span>
+      <span id="pb-score"></span>
+      <span class="pb-sep">·</span>
+      <span id="pb-streak"></span>
     </div>
   </div>
 </section>
@@ -1368,34 +1430,43 @@
       onTap = () => {},
     } = opts;
 
-    // Both modes always scroll on mobile — we render the SVG wider than the
-    // phone screen so the scroll-wrap always has content to scroll.
+    // Key width strategy:
+    // Mobile (<480px): always show ~11 white keys across the screen width.
+    //   This gives consistently-sized keys regardless of difficulty/clef/octave range.
+    //   The SVG is wider than the screen, so the full range is always reachable by scrolling.
+    // Desktop/tablet (≥480px): keys fill the container naturally — no scroll needed.
     const onPhone = window.innerWidth < 480;
-    const wideKeys = !!(opts && opts.wideKeys);
-    // Remove legacy body class (no longer used to suppress scroll)
-    document.body.classList.remove('wide-keys');
-
-    // Wide: fewer octaves → keys are physically bigger, SVG still wider than screen
-    // Standard: full range → more keys, also wider than screen
-    // Both: minimum 520px so even wide-keys mode scrolls on a 375px iPhone
     const phoneW = window.innerWidth || 375;
-    const minWidth = onPhone ? Math.max(640, phoneW + 160) : (wrap.offsetWidth || 700);
-    // Wide keys gets the SAME width as standard but with fewer keys on it — making each key bigger
-    const width = Math.max(640, minWidth);
-    const height = wideKeys ? 260 : 210;
+    const containerW = wrap.offsetWidth || (onPhone ? phoneW : 700);
+
+    const whiteCount = (highOct - lowOct + 1) * 7;
+
+    let whiteW, width;
+    if (onPhone) {
+      // Fix width so exactly 11 white keys are visible without scrolling.
+      // The SVG extends beyond that — user scrolls to reach all notes.
+      whiteW = Math.floor(phoneW / 11);
+      width = whiteW * whiteCount;       // SVG as wide as needed for all notes
+    } else {
+      // Fill the container — no scroll on desktop
+      width = Math.max(containerW, 640);
+      whiteW = width / whiteCount;
+    }
+
+    // Height derived from key width to maintain piano proportions (~6:1 height:width)
+    const keyH_raw = whiteW * 6;
+    const topMargin = 32;
+    const shadowH = 14;
+    const height = Math.round(topMargin + keyH_raw + shadowH + 4);
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
-    const whiteCount = (highOct - lowOct + 1) * 7;
-    const whiteW = width / whiteCount;
-    const topMargin = 32;
-    const shadowH = 14;
     const keyTopY = topMargin + 4;
     const keyBottomY = height - shadowH;
     const keyH = keyBottomY - keyTopY;
     const padding = 2.5;
 
-    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="kb-svg">`;
+    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg" class="kb-svg" style="width:${width}px;height:${height}px">`;
 
     const whites = [];
     let middleCx = null;
@@ -1461,24 +1532,26 @@
 
     svg += `</svg>`;
     wrap.innerHTML = svg;
+    wrap.style.minWidth = width + 'px';
 
-    // Wire pointer events
+    // Wire pointer events — use pointerdown/pointermove/pointerup with delta threshold
+    // to distinguish scroll gestures from taps (critical on mobile)
     const svgEl = wrap.querySelector('svg');
-    let _dragStartX = 0, _dragStartY = 0, _isDragging = false;
+    let _startX = 0, _startY = 0, _dragging = false;
     svgEl.addEventListener('pointerdown', (e) => {
       const el = e.target.closest('.kb-key');
       if (!el) return;
-      _dragStartX = e.clientX;
-      _dragStartY = e.clientY;
-      _isDragging = false;
+      _startX = e.clientX;
+      _startY = e.clientY;
+      _dragging = false;
     });
     svgEl.addEventListener('pointermove', (e) => {
-      if (Math.abs(e.clientX - _dragStartX) > 8 || Math.abs(e.clientY - _dragStartY) > 8) {
-        _isDragging = true;
+      if (Math.abs(e.clientX - _startX) > 8 || Math.abs(e.clientY - _startY) > 8) {
+        _dragging = true;
       }
     });
     svgEl.addEventListener('pointerup', (e) => {
-      if (_isDragging) return;
+      if (_dragging) return;
       const el = e.target.closest('.kb-key');
       if (!el) return;
       e.preventDefault();
@@ -1560,7 +1633,7 @@
     },
   };
 
-  function buildPool(clef, diff, lowOct, highOct) {
+  function buildPool(clef, diff, lowOct, highOct, accidentals) {
     let base;
     if (clef === 'both') {
       base = [...RANGES.treble[diff], ...RANGES.bass[diff]];
@@ -1568,14 +1641,24 @@
       base = [...RANGES[clef][diff]];
     }
     if (diff === 'tricky') {
-      const sharps = [];
-      base.forEach(p => {
-        const m = /^([A-G])(\d+)$/.exec(p);
-        if (m && m[1] !== 'E' && m[1] !== 'B') {
-          sharps.push(m[1] + '#' + m[2]);
-        }
-      });
-      base = base.concat(sharps);
+      const acc = accidentals || 'both';
+      if (acc !== 'white') {
+        // Build sharps and flats lists
+        const sharps = [], flats = [];
+        base.forEach(p => {
+          const m = /^([A-G])(\d+)$/.exec(p);
+          if (!m) return;
+          const letter = m[1], oct = m[2];
+          // Sharps: skip E and B (no E#/B# in standard notation)
+          if (letter !== 'E' && letter !== 'B') sharps.push(letter + '#' + oct);
+          // Flats: skip C and F (no Cb/Fb in standard notation)
+          if (letter !== 'C' && letter !== 'F') flats.push(letter + 'b' + oct);
+        });
+        if (acc === 'both')   base = base.concat(sharps, flats);
+        if (acc === 'sharps') base = base.concat(sharps);
+        if (acc === 'flats')  base = base.concat(flats);
+        // 'white' falls through with no addition
+      }
     }
     // Filter to only notes playable on the keyboard
     if (lowOct !== undefined && highOct !== undefined) {
@@ -1594,8 +1677,11 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', wideKeys: false, timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', timer: { enabled: false, seconds: 60 } },
     pool: [],
+    deck: [],
+    drillPool: [],
+    hints: 2,
     q: 0,
     total: 10,
     score: 0,
@@ -1621,14 +1707,14 @@
 
   function cacheEls() {
     ['start-screen','play-screen','summary-screen',
-     'clef-tiles','diff-tiles','start-btn',
+     'clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
      'exit-btn','progress-fill','streak-badge','streak-num',
-     'staff-wrap','play-note-btn','toast','confetti',
+     'staff-wrap','play-note-btn','hint-btn','hint-count','toast','confetti',
      'q-num','score-num','last-dots',
      'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
-     'again-btn','change-btn','kb-wrap',
+     'again-btn','drill-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'keysize-tiles',
+     'pb-row','pb-score','pb-streak',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn'].forEach(id => {
       els[id] = document.getElementById(id);
@@ -1662,6 +1748,26 @@
       [...els['diff-tiles'].children].forEach(c => c.classList.remove('on'));
       t.classList.add('on');
       state.settings.difficulty = t.dataset.diff;
+      // Show accidentals row only for Tricky
+      els['acc-block'].hidden = (t.dataset.diff !== 'tricky');
+    });
+
+    els['acc-tiles'].addEventListener('click', (e) => {
+      const t = e.target.closest('.acc-pill');
+      if (!t) return;
+      A.ensureCtx();
+      [...els['acc-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on');
+      state.settings.accidentals = t.dataset.acc;
+    });
+
+    els['length-tiles'].addEventListener('click', (e) => {
+      const t = e.target.closest('.tile');
+      if (!t) return;
+      A.ensureCtx();
+      [...els['length-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on');
+      state.settings.total = parseInt(t.dataset.len, 10);
     });
 
     els['start-btn'].addEventListener('click', () => {
@@ -1685,15 +1791,6 @@
       els['timer-pills'].hidden = !enabled;
     });
 
-    els['keysize-tiles'].addEventListener('click', (e) => {
-      const t = e.target.closest('.tile');
-      if (!t) return;
-      A.ensureCtx();
-      [...els['keysize-tiles'].children].forEach(c => c.classList.remove('on'));
-      t.classList.add('on');
-      state.settings.wideKeys = (t.dataset.keysize === 'wide');
-    });
-
     els['timer-pills'].addEventListener('click', (e) => {
       const t = e.target.closest('.tpill');
       if (!t) return;
@@ -1709,7 +1806,7 @@
 
   function startRound() {
     const showLetters = state.settings.difficulty !== 'tricky';
-    // Full octave range — always used for the note pool (no notes removed in wide mode)
+    // Full octave range for note pool and keyboard
     let lowOct, highOct;
     if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
     else if (state.settings.clef === 'treble') {
@@ -1720,20 +1817,10 @@
       else { lowOct = 2; highOct = 4; }
     }
 
-    // Pool always uses the full range regardless of key size
-    state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct);
+    state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct, state.settings.accidentals);
+    state.deck = [];
 
-    // Keyboard display range — trimmed in wide mode so keys are physically bigger,
-    // but the full note pool is still reachable by scrolling
-    let kbLowOct = lowOct, kbHighOct = highOct;
-    if (state.settings.wideKeys) {
-      const span = kbHighOct - kbLowOct;
-      if (span > 2) {
-        const excess = span - 2;
-        kbLowOct += Math.ceil(excess / 2);
-        kbHighOct -= Math.floor(excess / 2);
-      }
-    }
+    state.total = state.settings.total;
     state.q = 0;
     state.score = 0;
     state.streak = 0;
@@ -1744,10 +1831,17 @@
     state.endedRound = false;
     state.toastCycle = 0;
     state.startedAt = Date.now();
+    state.hints = 2;
+
+    // Update hint UI
+    els['hint-count'].textContent = state.hints;
+    els['hint-btn'].classList.remove('spent');
+
+    // Update all " / N" display spans
+    document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
 
     R.renderKeyboard(els['kb-wrap'], {
-      lowOct: kbLowOct, highOct: kbHighOct, showBlack: true, showLetters,
-      wideKeys: state.settings.wideKeys,
+      lowOct, highOct, showBlack: true, showLetters,
       onTap: handleKeyTap,
     });
 
@@ -1766,13 +1860,19 @@
     R.clearHighlights(els['kb-wrap']);
     hideToast();
 
-    // Pick a pitch, avoid immediate repeat
-    let pick;
-    let tries = 0;
-    do {
-      pick = state.pool[Math.floor(Math.random() * state.pool.length)];
-      tries++;
-    } while (pick === state.lastPitch && tries < 6);
+    // Pick from shuffled deck — every note seen before any repeats
+    if (!state.deck || state.deck.length === 0) {
+      // Reshuffle when exhausted
+      state.deck = [...state.pool].sort(() => Math.random() - 0.5);
+    }
+    // Avoid immediate repeat — if top card matches last pitch, swap with next available
+    if (state.deck[0] === state.lastPitch && state.deck.length > 1) {
+      const swapIdx = state.deck.findIndex((p, i) => i > 0 && p !== state.lastPitch);
+      if (swapIdx > 0) {
+        [state.deck[0], state.deck[swapIdx]] = [state.deck[swapIdx], state.deck[0]];
+      }
+    }
+    const pick = state.deck.shift();
     state.lastPitch = pick;
 
     const pitch = parsePitch(pick);
@@ -2059,13 +2159,18 @@
       speed.textContent = '';
     }
 
-    // Miss list
+    // Miss list + drill pool
     const counts = {};
+    const missedPitches = new Set();
     state.history.forEach(h => {
       if (h.kind !== 'correct') {
         counts[h.display] = (counts[h.display] || 0) + 1;
+        missedPitches.add(h.pitch);
       }
     });
+    state.drillPool = [...missedPitches];
+    els['drill-btn'].hidden = (state.drillPool.length === 0);
+
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
     if (sorted.length === 0) {
       els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no notes to practice. ⭐</li>';
@@ -2073,6 +2178,26 @@
       els['miss-items'].innerHTML = sorted.map(([name, n]) =>
         `<li>${name} — ${n === 1 ? 'needed a retry' : 'tripped you up ' + n + ' times'}</li>`
       ).join('');
+    }
+
+    // Personal best (localStorage)
+    let pb = { score: 0, pct: 0, streak: 0 };
+    try { pb = JSON.parse(localStorage.getItem('qn_pb') || '{}'); pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0; } catch(e) {}
+    const thisPct = state.total > 0 ? state.score / state.total : 0;
+    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
+    const newStreakPB = state.bestStreak > pb.streak;
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newStreakPB) pb.streak = state.bestStreak;
+    try { localStorage.setItem('qn_pb', JSON.stringify(pb)); } catch(e) {}
+    const pbRow = els['pb-row'];
+    if (pb.score > 0 || pb.streak > 0) {
+      pbRow.hidden = false;
+      const scoreLabel = newScorePB ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+      const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+      els['pb-score'].innerHTML = scoreLabel;
+      els['pb-streak'].innerHTML = streakLabel;
+    } else {
+      pbRow.hidden = true;
     }
 
     // Tiered fanfare
@@ -2198,6 +2323,45 @@
       });
     });
 
+    els['hint-btn'].addEventListener('click', () => {
+      if (state.hints <= 0 || state.locked || state.revealing || !state.current) return;
+      A.ensureCtx();
+      state.hints -= 1;
+      els['hint-count'].textContent = state.hints;
+      if (state.hints <= 0) els['hint-btn'].classList.add('spent');
+      state.score = Math.max(0, state.score - 1);
+      els['score-num'].textContent = state.score;
+      R.glowKey(els['kb-wrap'], state.current.pitch.midi);
+      setTimeout(() => R.clearHighlights(els['kb-wrap']), 1500);
+      showToast('−1 · hint used 💡', 'retry');
+      setTimeout(hideToast, 1200);
+    });
+
+    els['drill-btn'].addEventListener('click', () => {
+      if (state.drillPool.length === 0) return;
+      const pool = [...state.drillPool];
+      state.pool = pool;
+      state.deck = [];
+      state.total = Math.min(pool.length * 2, 10);
+      state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
+      state.history = []; state.lastPitch = null;
+      state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
+      state.startedAt = Date.now();
+      state.hints = 2;
+      els['hint-count'].textContent = state.hints;
+      els['hint-btn'].classList.remove('spent');
+      document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
+      const showLetters = state.settings.difficulty !== 'tricky';
+      let lowOct, highOct;
+      if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
+      else if (state.settings.clef === 'treble') { lowOct = state.settings.difficulty === 'tricky' ? 2 : 3; highOct = 6; }
+      else { lowOct = 2; highOct = state.settings.difficulty === 'tricky' ? 5 : 4; }
+      R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+      showScreen('play');
+      nextQuestion();
+      startTimer();
+    });
+
     els['again-btn'].addEventListener('click', () => {
       startRound();
     });
@@ -2294,10 +2458,11 @@
 
   function showStartTimerModal() {
     const secs = state.settings.timer.seconds;
+    const n = state.settings.total;
     let body;
-    if (secs <= 15)      body = "Quick! You'll have " + secs + ' seconds to read 10 notes.';
-    else if (secs <= 30) body = "You'll have " + secs + ' seconds to read 10 notes.';
-    else                 body = 'Take your time — ' + secs + ' seconds for 10 notes.';
+    if (secs <= 15)      body = "Quick! You'll have " + secs + ' seconds to read ' + n + ' notes.';
+    else if (secs <= 30) body = "You'll have " + secs + ' seconds to read ' + n + ' notes.';
+    else                 body = 'Take your time — ' + secs + ' seconds for ' + n + ' notes.';
     showConfirm({
       title: 'Ready, set…',
       body: body,
