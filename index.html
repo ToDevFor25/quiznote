@@ -1806,7 +1806,7 @@
       state.locked = true;
       const dn = displayName(state.current.pitch);
       R.glowKey(els['kb-wrap'], state.current.pitch.midi);
-      showToast("It's " + dn, 'reveal');
+      showToast('It’s ' + dn, 'reveal');
       pushHistory('wrong');
       // Unlock for correct-only tap
       setTimeout(() => { state.locked = false; state.revealing = true; }, 300);
@@ -2086,9 +2086,9 @@
     const pct = score / total;
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
     if (pct >= 1)   return pick(['PITCH PERFECT! Every single note! 🎵','Perfect score — you crushed it! 🌟','Flawless! Not one note missed! 🎶']);
-    if (pct >= 0.8) return pick(["Amazing playing — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
-    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good playing — those tricky ones are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
-    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The notes are learning to recognise you 🎵","Music takes time — you're on your way! Keep playing!"]);
+    if (pct >= 0.8) return pick(['Amazing playing — so close to perfect!','Nearly flawless! You're really getting it! ⭐','Brilliant round — just a couple slipped by!']);
+    if (pct >= 0.5) return pick(['Nice work! A few more rounds and you'll nail it 🎶','Good playing — those tricky ones are getting easier!','Solid round! Keep going — you're improving! 🎵']);
+    return pick(['Every round makes you stronger — keep going! 🌱','Great practice! The notes are learning to recognise you 🎵','Music takes time — you're on your way! Keep playing!']);
   }
 
   // Play screen actions
