@@ -684,8 +684,11 @@
   .kb-scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--teal-dk); }
   .kb-scroll-wrap { scrollbar-width: auto; scrollbar-color: var(--teal) var(--cream-2); }
   #kb-wrap { min-width: 600px; }
+  /* Wide-keys toggle only shows on small phones */
+  #key-size-block { display: none; }
   @media (max-width: 479px) {
-    /* Remove forced scroll on phone; SVG width set by JS to fit screen */
+    #key-size-block { display: block; }
+    /* Remove forced scroll; SVG sized by JS to fit screen */
     #kb-wrap { min-width: unset !important; }
     .kb-scroll-wrap { overflow-x: hidden; }
     .scroll-hint { display: none; }
@@ -811,6 +814,22 @@
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
           <div class="tile-sub">full range<br/>sharps &amp; flats</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block" id="key-size-block">
+      <div class="q-label"><span class="num">3</span> Key size?</div>
+      <div class="tile-row" id="keysize-tiles">
+        <button class="tile on" data-keysize="standard">
+          <div class="tile-emoji">👦</div>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">more notes<br/>visible</div>
+        </button>
+        <button class="tile" data-keysize="wide">
+          <div class="tile-emoji">🖐️</div>
+          <div class="tile-title">Wide keys</div>
+          <div class="tile-sub">bigger targets<br/>fewer keys</div>
         </button>
       </div>
     </div>
@@ -1334,12 +1353,12 @@
       onTap = () => {},
     } = opts;
 
-    // Calculate responsive width — on phones use innerWidth so SVG fills screen
-    const wrapW = (window.innerWidth < 480)
-      ? window.innerWidth
-      : (wrap.offsetWidth || 700);
-    const width = Math.max(300, wrapW - 28);
-    const height = (window.innerWidth < 480) ? 260 : 210;
+    // Calculate responsive width — on phones with wide keys, fill screen width
+    const onPhone = window.innerWidth < 480;
+    const wideKeys = onPhone && opts && opts.wideKeys;
+    const wrapW = wideKeys ? window.innerWidth : (wrap.offsetWidth || 700);
+    const width = Math.max(wideKeys ? 280 : 400, wrapW - 28);
+    const height = wideKeys ? 260 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
@@ -1551,7 +1570,7 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', wideKeys: false, timer: { enabled: false, seconds: 60 } },
     pool: [],
     q: 0,
     total: 10,
@@ -1585,6 +1604,7 @@
      'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+     'keysize-tiles',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn'].forEach(id => {
       els[id] = document.getElementById(id);
@@ -1641,6 +1661,15 @@
       els['timer-pills'].hidden = !enabled;
     });
 
+    els['keysize-tiles'].addEventListener('click', (e) => {
+      const t = e.target.closest('.tile');
+      if (!t) return;
+      A.ensureCtx();
+      [...els['keysize-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on');
+      state.settings.wideKeys = (t.dataset.keysize === 'wide');
+    });
+
     els['timer-pills'].addEventListener('click', (e) => {
       const t = e.target.closest('.tpill');
       if (!t) return;
@@ -1666,11 +1695,10 @@
       else { lowOct = 2; highOct = 4; }
     }
 
-    // On small phones cap at 3 octaves so each key is physically wider
-    if (window.innerWidth < 480) {
+    // On small phones with wide-keys mode: fewer octaves so keys are bigger
+    if (window.innerWidth < 480 && state.settings.wideKeys) {
       const span = highOct - lowOct;
       if (span > 2) {
-        // Keep the middle of the range
         const excess = span - 2;
         const trimLow = Math.ceil(excess / 2);
         const trimHigh = Math.floor(excess / 2);
@@ -1693,6 +1721,7 @@
 
     R.renderKeyboard(els['kb-wrap'], {
       lowOct, highOct, showBlack: true, showLetters,
+      wideKeys: state.settings.wideKeys,
       onTap: handleKeyTap,
     });
 
