@@ -1,4 +1,4 @@
-<!doctype html>
+, still doen<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -104,38 +104,6 @@
   /* ---- Screen system ---- */
   .screen { display: none; flex: 1; }
   .screen.active { display: flex; flex-direction: column; }
-
-  /* ---- Tap-to-start overlay fix ----
-     Keeps the Tap to Play screen above all other screens, and makes every
-     inactive screen truly non-clickable even if inline styles are present. */
-  .screen:not(.active) {
-    display: none !important;
-    pointer-events: none !important;
-  }
-  #tap-screen {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 9999 !important;
-    min-height: 100dvh !important;
-    background: var(--cream) !important;
-    pointer-events: auto !important;
-  }
-  #tap-screen.active {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-  #tap-screen:not(.active) {
-    display: none !important;
-    pointer-events: none !important;
-  }
-  #tap-start-btn,
-  #tap-mute-toggle,
-  #tap-mute-toggle ~ span,
-  #tap-screen label {
-    pointer-events: auto !important;
-  }
-
 
   /* ============ START SCREEN ============ */
   #start-screen {
