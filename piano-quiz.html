@@ -102,8 +102,8 @@
   .card.teal-card { background: var(--teal); color: white; }
 
   /* ---- Screen system ---- */
-  .screen { display: none; flex: 1; }
-  .screen.active { display: flex; flex-direction: column; }
+  .screen { display: none !important; flex: 1; pointer-events: none; }
+  .screen.active { display: flex !important; flex-direction: column; pointer-events: auto; }
 
   /* ============ START SCREEN ============ */
   #start-screen {
@@ -817,44 +817,8 @@
   <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
 </header>
 
-<!-- ============ TAP TO START SCREEN ============ -->
-<section class="screen active" id="tap-screen" style="flex:1;display:flex;align-items:center;justify-content:center;">
-  <div style="
-    display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:28px;text-align:center;
-    padding:40px 24px;width:100%;max-width:480px;
-    position:relative;z-index:20;
-  ">
-    <h1 style="font-size:2.4rem;font-weight:900;color:#0d1b2a;letter-spacing:-1px;margin:0;">PianoQuiz</h1>
-    <div style="font-size:0.95rem;color:#5a7a8a;font-weight:600;margin-top:-16px;">Read music, one quiz at a time</div>
-    <div style="font-size:5rem;line-height:1;margin:8px 0;">🎹</div>
-    <button id="tap-start-btn" style="
-      background:#2ec4b6;color:white;
-      font-family:inherit;font-size:1.3rem;font-weight:900;
-      border:none;border-radius:999px;
-      padding:20px 56px;cursor:pointer;
-      box-shadow:0 6px 24px rgba(46,196,182,0.4);
-      transition:transform 0.15s,box-shadow 0.2s;
-      position:relative;z-index:20;
-    ">Tap to Play</button>
-    <label style="
-      display:flex;align-items:center;gap:10px;
-      cursor:pointer;user-select:none;
-      color:#5a7a8a;font-size:0.92rem;font-weight:700;
-      position:relative;z-index:20;
-    ">
-      <span style="position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0;">
-        <input type="checkbox" id="tap-mute-toggle" style="opacity:0;width:0;height:0;position:absolute;" />
-        <span id="tap-mute-track" style="position:absolute;inset:0;background:#d0dde4;border-radius:999px;transition:background 0.2s;"></span>
-        <span id="tap-mute-thumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:transform 0.2s;"></span>
-      </span>
-      🔇 Start muted
-    </label>
-  </div>
-</section>
-
 <!-- ============ START SCREEN ============ -->
-<section class="screen" id="start-screen">
+<section class="screen active" id="start-screen">
   <div class="start-wrap">
     <div class="brand">
       <div class="logo-mark">
@@ -978,7 +942,12 @@
     </div>
 
     <div class="start-cta">
-      <button class="btn sun huge" id="start-btn">Let's go! →</button>
+
+      <label class="start-muted-row" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
+        🔇 Start muted
+      </label>
+      <button class="btn sun huge" id="start-btn">Start Game →</button>
     </div>
   </div>
 </section>
@@ -1786,68 +1755,29 @@
 
   function showScreen(name) {
     if (name !== 'play') stopTimer();
-    ['tap','start','play','summary'].forEach(s => {
+    ['start','play','summary'].forEach(s => {
       document.getElementById(s + '-screen').classList.toggle('active', s === name);
     });
     document.body.classList.toggle('playing', name === 'play');
     window.scrollTo(0, 0);
   }
-
-  // Tap-to-start: unlock AudioContext on first user gesture
-  (function() {
-    const toggle = document.getElementById('tap-mute-toggle');
-    const track  = document.getElementById('tap-mute-track');
-    const thumb  = document.getElementById('tap-mute-thumb');
-
-    // Restore saved preference
-    const saved = localStorage.getItem('pq_muted');
-    if (saved === 'true') {
-      toggle.checked = true;
-      track.style.background = '#2ec4b6';
-      thumb.style.transform = 'translateX(18px)';
-    }
-
-    // Live toggle visuals
-    toggle.addEventListener('change', () => {
-      if (toggle.checked) {
-        track.style.background = '#2ec4b6';
-        thumb.style.transform = 'translateX(18px)';
-      } else {
-        track.style.background = '#d0dde4';
-        thumb.style.transform = 'translateX(0)';
-      }
-    });
-
-    document.getElementById('tap-start-btn').addEventListener('click', () => {
-      // Apply and save mute preference
-      muted = toggle.checked;
-      localStorage.setItem('pq_muted', muted);
-
-      // Create and unlock AudioContext on this user gesture
-      const AC = window.AudioContext || window.webkitAudioContext;
-      ctx = new AC();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = muted ? 0 : 0.6;
-      masterGain.connect(ctx.destination);
-      ctx.resume().then(() => {
-        const buf = ctx.createBuffer(1, 1, 22050);
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start(0);
-      });
-
-      // Sync the in-game mute button state
-      setMuted(muted);
-      const muteBtn = document.getElementById('mute-btn');
-      if (muteBtn) muteBtn.setAttribute('aria-pressed', String(muted));
-
-      showScreen('start');
-    });
-  })();
-
   // Start screen setup
   function setupStart() {
+    // Restore and apply saved sound preference on the settings screen.
+    const savedMuted = localStorage.getItem('pq_muted') === 'true';
+    if (els['start-muted-toggle']) {
+      els['start-muted-toggle'].checked = savedMuted;
+      A.setMuted(savedMuted);
+      els['start-muted-toggle'].addEventListener('change', () => {
+        const muted = els['start-muted-toggle'].checked;
+        localStorage.setItem('pq_muted', muted);
+        A.setMuted(muted);
+        const muteBtn = document.getElementById('mute-btn');
+        if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+        if (muteBtn) muteBtn.setAttribute('aria-pressed', String(muted));
+      });
+    }
+
     els['clef-tiles'].addEventListener('click', (e) => {
       const t = e.target.closest('.tile');
       if (!t) return;
@@ -1887,7 +1817,17 @@
     });
 
     els['start-btn'].addEventListener('click', () => {
-      A.ensureCtx();
+      const muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
+      localStorage.setItem('pq_muted', muted);
+      A.setMuted(muted);
+
+      // This click is the user gesture that unlocks audio, after settings are chosen.
+      try { A.ensureCtx(); } catch (err) { console.warn('Audio unlock skipped:', err); }
+
+      const muteBtn = document.getElementById('mute-btn');
+      if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
+      if (muteBtn) muteBtn.setAttribute('aria-pressed', String(muted));
+
       if (state.settings.timer.enabled) {
         showStartTimerModal();
       } else {
