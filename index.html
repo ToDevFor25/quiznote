@@ -683,7 +683,12 @@
   }
   .kb-scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--teal-dk); }
   .kb-scroll-wrap { scrollbar-width: auto; scrollbar-color: var(--teal) var(--cream-2); }
-  #kb-wrap { min-width: 600px; }
+  #kb-wrap { min-width: 640px; }
+  /* Key-size toggle only shows on small phones */
+  #key-size-block { display: none; }
+  @media (max-width: 479px) {
+    #key-size-block { display: block; }
+  }
 
   /* ============ Scroll hint strip ============ */
   .scroll-hint {
@@ -714,6 +719,7 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
   }
+
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 28px; gap: 16px; }
     .play-body { gap: 22px; }
@@ -804,6 +810,41 @@
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
           <div class="tile-sub">full range<br/>sharps &amp; flats</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block" id="key-size-block">
+      <div class="q-label"><span class="num">3</span> Key size?</div>
+      <div class="tile-row" id="keysize-tiles">
+        <button class="tile on" data-keysize="standard">
+          <svg class="tile-clef" viewBox="0 0 80 48" style="height:48px;margin-bottom:4px">
+            <!-- 5 slim white keys -->
+            <rect x="2"  y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="17" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="32" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="47" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="62" y="4" width="13" height="38" rx="3" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <!-- black keys -->
+            <rect x="11"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
+            <rect x="26"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
+            <rect x="56"  y="4" width="9" height="24" rx="2" fill="#2A2A3E"/>
+          </svg>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">more notes visible<br/>scrollable</div>
+        </button>
+        <button class="tile" data-keysize="wide">
+          <svg class="tile-clef" viewBox="0 0 80 48" style="height:48px;margin-bottom:4px">
+            <!-- 3 wide white keys -->
+            <rect x="2"  y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="29" y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <rect x="56" y="4" width="22" height="38" rx="4" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+            <!-- black key -->
+            <rect x="18" y="4" width="13" height="24" rx="3" fill="#2A2A3E"/>
+            <rect x="45" y="4" width="13" height="24" rx="3" fill="#2A2A3E"/>
+          </svg>
+          <div class="tile-title">Wide keys</div>
+          <div class="tile-sub">bigger targets<br/>fewer notes</div>
         </button>
       </div>
     </div>
@@ -1327,14 +1368,25 @@
       onTap = () => {},
     } = opts;
 
-    // Calculate responsive width
-    const wrapW = wrap.offsetWidth || 700;
-    const width = Math.max(400, wrapW - 28);
-    const height = 210;
+    // Both modes always scroll on mobile — we render the SVG wider than the
+    // phone screen so the scroll-wrap always has content to scroll.
+    const onPhone = window.innerWidth < 480;
+    const wideKeys = !!(opts && opts.wideKeys);
+    // Remove legacy body class (no longer used to suppress scroll)
+    document.body.classList.remove('wide-keys');
+
+    // Wide: fewer octaves → keys are physically bigger, SVG still wider than screen
+    // Standard: full range → more keys, also wider than screen
+    // Both: minimum 520px so even wide-keys mode scrolls on a 375px iPhone
+    const phoneW = window.innerWidth || 375;
+    const minWidth = onPhone ? Math.max(640, phoneW + 160) : (wrap.offsetWidth || 700);
+    // Wide keys gets the SAME width as standard but with fewer keys on it — making each key bigger
+    const width = Math.max(640, minWidth);
+    const height = wideKeys ? 260 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
-    const whiteCount = (highOct - lowOct) * 7 + 1;
+    const whiteCount = (highOct - lowOct + 1) * 7;
     const whiteW = width / whiteCount;
     const topMargin = 32;
     const shadowH = 14;
@@ -1528,7 +1580,7 @@
     // Filter to only notes playable on the keyboard
     if (lowOct !== undefined && highOct !== undefined) {
       const minMidi = NH.music.toMidi('C', '', lowOct);
-      const maxMidi = NH.music.toMidi('B', '', highOct) + 1;
+      const maxMidi = NH.music.toMidi('B', '', highOct);
       const filtered = base.filter(p => {
         try {
           const parsed = NH.music.parsePitch(p);
@@ -1542,7 +1594,7 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', wideKeys: false, timer: { enabled: false, seconds: 60 } },
     pool: [],
     q: 0,
     total: 10,
@@ -1576,6 +1628,7 @@
      'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+     'keysize-tiles',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn'].forEach(id => {
       els[id] = document.getElementById(id);
@@ -1632,6 +1685,15 @@
       els['timer-pills'].hidden = !enabled;
     });
 
+    els['keysize-tiles'].addEventListener('click', (e) => {
+      const t = e.target.closest('.tile');
+      if (!t) return;
+      A.ensureCtx();
+      [...els['keysize-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on');
+      state.settings.wideKeys = (t.dataset.keysize === 'wide');
+    });
+
     els['timer-pills'].addEventListener('click', (e) => {
       const t = e.target.closest('.tpill');
       if (!t) return;
@@ -1647,6 +1709,7 @@
 
   function startRound() {
     const showLetters = state.settings.difficulty !== 'tricky';
+    // Full octave range — always used for the note pool (no notes removed in wide mode)
     let lowOct, highOct;
     if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
     else if (state.settings.clef === 'treble') {
@@ -1656,7 +1719,21 @@
       if (state.settings.difficulty === 'tricky') { lowOct = 2; highOct = 5; }
       else { lowOct = 2; highOct = 4; }
     }
+
+    // Pool always uses the full range regardless of key size
     state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct);
+
+    // Keyboard display range — trimmed in wide mode so keys are physically bigger,
+    // but the full note pool is still reachable by scrolling
+    let kbLowOct = lowOct, kbHighOct = highOct;
+    if (state.settings.wideKeys) {
+      const span = kbHighOct - kbLowOct;
+      if (span > 2) {
+        const excess = span - 2;
+        kbLowOct += Math.ceil(excess / 2);
+        kbHighOct -= Math.floor(excess / 2);
+      }
+    }
     state.q = 0;
     state.score = 0;
     state.streak = 0;
@@ -1669,7 +1746,8 @@
     state.startedAt = Date.now();
 
     R.renderKeyboard(els['kb-wrap'], {
-      lowOct, highOct, showBlack: true, showLetters,
+      lowOct: kbLowOct, highOct: kbHighOct, showBlack: true, showLetters,
+      wideKeys: state.settings.wideKeys,
       onTap: handleKeyTap,
     });
 
