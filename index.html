@@ -552,6 +552,113 @@
     100% { transform: scale(1) translateY(0); opacity: 1; }
   }
 
+  /* ============ Site Header ============ */
+  .site-header {
+    background: white;
+    border-bottom: 2.5px solid var(--ink);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .site-header .brand-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .site-header .brand-name span { color: var(--teal); }
+  .site-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal-dk);
+    background: var(--teal-lt);
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+
+  /* ============ Site Footer ============ */
+  .site-footer {
+    background: white;
+    border-top: 2px solid var(--shadow-cool);
+    padding: 14px 20px;
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+  .site-footer a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .site-footer a:hover { text-decoration: underline; }
+  .site-footer .sep { margin: 0 8px; }
+
+  /* ============ Mute button ============ */
+  .mute-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px;
+    width: 42px; height: 42px;
+    border: 2.5px solid var(--ink); background: white;
+    color: var(--ink);
+    border-radius: 12px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .mute-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .mute-btn.muted { background: var(--cream-2); color: var(--ink-faint); }
+
+  /* Silent audio nudge */
+  .audio-nudge {
+    position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+    padding: 10px 20px; border-radius: 999px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms;
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .audio-nudge.show { opacity: 1; pointer-events: auto; }
+
+  /* ============ Scrollable keyboard ============ */
+  .kb-scroll-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .kb-scroll-wrap::-webkit-scrollbar {
+    height: 10px;
+  }
+  .kb-scroll-wrap::-webkit-scrollbar-track {
+    background: var(--cream-2);
+    border-radius: 10px;
+  }
+  .kb-scroll-wrap::-webkit-scrollbar-thumb {
+    background: var(--teal);
+    border-radius: 10px;
+    border: 2px solid var(--cream-2);
+  }
+  .kb-scroll-wrap::-webkit-scrollbar-thumb:hover {
+    background: var(--teal-dk);
+  }
+  /* Firefox */
+  .kb-scroll-wrap {
+    scrollbar-width: thin;
+    scrollbar-color: var(--teal) var(--cream-2);
+  }
+  #kb-wrap { min-width: 600px; }
+
   /* ============ Responsive ============ */
   @media (max-width: 760px) {
     .play-body { grid-template-columns: 1fr; }
@@ -576,6 +683,11 @@
 </style>
 </head>
 <body>
+
+<header class="site-header">
+  <div class="brand-name">Quiz<span>Note</span></div>
+  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
+</header>
 
 <!-- ============ START SCREEN ============ -->
 <section class="screen active" id="start-screen">
@@ -663,7 +775,6 @@
         <span class="t-state" id="timer-toggle-state">off</span>
       </button>
       <div class="timer-pills" id="timer-pills" hidden>
-        <button class="tpill" data-secs="15">15s</button>
         <button class="tpill" data-secs="30">30s</button>
         <button class="tpill" data-secs="45">45s</button>
         <button class="tpill on" data-secs="60">60s</button>
@@ -683,6 +794,7 @@
     <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="timer-badge" id="timer-badge" hidden><span class="t-icon">⏱</span><span id="timer-num">60</span>s</div>
     <div class="streak-badge" id="streak-badge">🔥 <span class="num" id="streak-num">0</span></div>
+    <button class="mute-btn" id="mute-btn" title="Toggle sound">🔊</button>
   </div>
 
   <div class="play-body">
@@ -714,8 +826,10 @@
   </div>
 
   <div class="card kb-card">
-    <div id="kb-wrap">
-      <!-- keyboard SVG injected here -->
+    <div class="kb-scroll-wrap">
+      <div id="kb-wrap">
+        <!-- keyboard SVG injected here -->
+      </div>
     </div>
   </div>
 
@@ -768,6 +882,17 @@
   </div>
 </div>
 
+<div class="audio-nudge" id="audio-nudge">🔇 Tap here to enable sound</div>
+
+<footer class="site-footer">
+  © 2025 QuizNote &nbsp;<span class="sep">·</span>&nbsp;
+  <a href="/privacy" target="_blank">Privacy Policy</a>
+  <span class="sep">·</span>
+  <a href="/terms" target="_blank">Terms of Service</a>
+  <span class="sep">·</span>
+  Made with ♪ for young musicians
+</footer>
+
 <script>
 // ============ QuizNote — Audio + Music Theory ============
 (function () {
@@ -819,8 +944,30 @@
       masterGain.gain.value = 0.6;
       masterGain.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        // hide nudge if showing
+        const nudge = document.getElementById('audio-nudge');
+        if (nudge) nudge.classList.remove('show');
+      });
+    }
     return ctx;
+  }
+
+  function tryPlayMidi(midi, dur) {
+    const ac = ensureCtx();
+    if (ac.state === 'suspended') {
+      // show nudge
+      const nudge = document.getElementById('audio-nudge');
+      if (nudge) {
+        nudge.classList.add('show');
+        nudge.onclick = () => {
+          ac.resume().then(() => { nudge.classList.remove('show'); playMidi(midi, dur); });
+        };
+      }
+      return;
+    }
+    playMidi(midi, dur);
   }
 
   function playMidi(midi, dur = 0.9) {
@@ -928,7 +1075,16 @@
     osc.start(now); osc.stop(now + 0.1);
   }
 
-  NH.audio = { ensureCtx, playMidi, playChime, playBoop, playTick };
+  let muted = false;
+
+  function setMuted(val) {
+    muted = val;
+    if (masterGain) masterGain.gain.value = muted ? 0 : 0.6;
+  }
+
+  function isMuted() { return muted; }
+
+  NH.audio = { ensureCtx, playMidi, tryPlayMidi, playChime, playBoop, playTick, setMuted, isMuted };
 })();
 </script>
 
@@ -1251,7 +1407,7 @@
     },
   };
 
-  function buildPool(clef, diff) {
+  function buildPool(clef, diff, lowOct, highOct) {
     let base;
     if (clef === 'both') {
       base = [...RANGES.treble[diff], ...RANGES.bass[diff]];
@@ -1268,7 +1424,19 @@
       });
       base = base.concat(sharps);
     }
-    return base;
+    // Filter to only notes whose midi falls within the keyboard range
+    const minMidi = NH.music.toMidi('C', '', lowOct);
+    const maxMidi = NH.music.toMidi('B', '', highOct) + 1;
+    base = base.filter(p => {
+      try {
+        const parsed = NH.music.parsePitch(p);
+        return parsed.midi >= minMidi && parsed.midi <= maxMidi;
+      } catch(e) { return false; }
+    });
+    // Fallback: if filter removed everything, return unfiltered
+    return base.length > 0 ? base : (clef === 'both'
+      ? [...RANGES.treble[diff], ...RANGES.bass[diff]]
+      : [...RANGES[clef][diff]]);
   }
 
   // Game state
@@ -1308,7 +1476,7 @@
      'again-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed'].forEach(id => {
+     'summary-speed','mute-btn'].forEach(id => {
       els[id] = document.getElementById(id);
     });
   }
@@ -1376,18 +1544,6 @@
   }
 
   function startRound() {
-    state.pool = buildPool(state.settings.clef, state.settings.difficulty);
-    state.q = 0;
-    state.score = 0;
-    state.streak = 0;
-    state.bestStreak = 0;
-    state.history = [];
-    state.lastPitch = null;
-    state.timedOut = false;
-    state.endedRound = false;
-    state.toastCycle = 0;
-    state.startedAt = Date.now();
-
     const showLetters = state.settings.difficulty !== 'tricky';
     let lowOct, highOct;
     if (state.settings.clef === 'both') {
@@ -1399,6 +1555,18 @@
       if (state.settings.difficulty === 'tricky') { lowOct = 2; highOct = 5; }
       else { lowOct = 2; highOct = 4; }
     }
+
+    state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct);
+    state.q = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.history = [];
+    state.lastPitch = null;
+    state.timedOut = false;
+    state.endedRound = false;
+    state.toastCycle = 0;
+    state.startedAt = Date.now();
 
     R.renderKeyboard(els['kb-wrap'], {
       lowOct, highOct, showBlack: true, showLetters,
@@ -1776,9 +1944,18 @@
   function setupActions() {
     els['play-note-btn'].addEventListener('click', () => {
       if (!state.current) return;
+      A.ensureCtx();
       A.playMidi(state.current.pitch.midi);
       R.animateNote(els['staff-wrap'], 'pulse');
       setTimeout(() => R.animateNote(els['staff-wrap'], null), 1000);
+    });
+
+    els['mute-btn'].addEventListener('click', () => {
+      A.ensureCtx();
+      const nowMuted = !A.isMuted();
+      A.setMuted(nowMuted);
+      els['mute-btn'].textContent = nowMuted ? '🔇' : '🔊';
+      els['mute-btn'].classList.toggle('muted', nowMuted);
     });
 
     els['exit-btn'].addEventListener('click', () => {
