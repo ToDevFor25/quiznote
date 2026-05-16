@@ -1,181 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms of Service · QuizNote</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #f9f7f4;
-      --ink: #1a1a1a;
-      --muted: #666;
-      --accent: #2d5be3;
-      --rule: #e0dbd3;
-      --note: #fff8e6;
-      --note-border: #f0d060;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of Service · QuizNote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF0;
+    --ink: #2A2A3E;
+    --ink-soft: #5a5a6e;
+    --ink-faint: #8a8472;
+    --teal: #1FB8A8;
+    --teal-dk: #0e8475;
+    --teal-lt: #d3f1ec;
+    --sun: #FFB627;
+    --sun-dk: #c98800;
+    --sun-lt: #fff3d0;
+    --rule: #e8e2d8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.65;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 5% 15%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+      radial-gradient(circle at 92% 85%, rgba(31,184,168,0.05) 0 180px, transparent 200px);
+  }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  .site-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 28px;
+    border-bottom: 2.5px solid var(--ink);
+    background: var(--cream);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header-logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none;
+  }
+  .logo-badge {
+    width: 40px; height: 40px;
+    background: var(--teal);
+    border: 2.5px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 0 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 22px; color: white;
+    flex-shrink: 0;
+  }
+  .logo-name {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 26px; color: var(--ink); line-height: 1;
+  }
+  .header-tag {
+    margin-left: auto;
+    background: var(--sun);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 4px 12px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 14px; color: var(--ink);
+    box-shadow: 0 3px 0 var(--ink);
+  }
 
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--ink);
-      font-size: 16px;
-      line-height: 1.7;
-    }
+  .page-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 44px 24px 80px;
+  }
+  .doc-eyebrow {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 13px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--teal-dk);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: clamp(2.2rem, 6vw, 3rem);
+    line-height: 1.1; color: var(--ink);
+    letter-spacing: -0.01em; margin-bottom: 12px;
+  }
+  .doc-meta {
+    font-size: 0.9rem; color: var(--ink-faint);
+    margin-bottom: 36px;
+    padding-bottom: 28px;
+    border-bottom: 2.5px solid var(--ink);
+  }
+  .doc-meta a { color: var(--teal-dk); }
 
-    .site-header {
-      border-bottom: 1px solid var(--rule);
-      padding: 18px 32px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg);
-    }
-    .logo-mark {
-      width: 32px; height: 32px;
-      background: var(--accent);
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 18px; font-weight: 700;
-      font-family: 'DM Serif Display', serif;
-      flex-shrink: 0;
-    }
-    .logo-text {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.2rem;
-      color: var(--ink);
-      text-decoration: none;
-      letter-spacing: -0.01em;
-    }
-    .header-tag {
-      margin-left: auto;
-      font-size: 0.78rem;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+  .plain-note {
+    background: var(--teal-lt);
+    border: 2.5px solid var(--teal);
+    border-radius: 18px;
+    padding: 16px 20px;
+    margin-bottom: 36px;
+    font-size: 0.93rem; color: var(--ink);
+    box-shadow: 0 4px 0 var(--teal-dk);
+  }
+  .plain-note strong { color: var(--teal-dk); }
 
-    .page-wrap {
-      max-width: 740px;
-      margin: 0 auto;
-      padding: 56px 24px 80px;
-    }
+  .toc {
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 20px;
+    padding: 22px 26px;
+    margin-bottom: 48px;
+    box-shadow: 0 5px 0 var(--ink);
+  }
+  .toc-title {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 15px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .toc ol { padding-left: 18px; }
+  .toc li { margin-bottom: 7px; }
+  .toc a { color: var(--teal-dk); font-weight: 700; text-decoration: none; font-size: 0.94rem; }
+  .toc a:hover { text-decoration: underline; }
 
-    .doc-eyebrow {
-      font-size: 0.78rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
-    h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(2rem, 5vw, 2.8rem);
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-      margin-bottom: 16px;
-    }
-    .doc-meta {
-      font-size: 0.88rem;
-      color: var(--muted);
-      margin-bottom: 40px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid var(--rule);
-    }
+  .doc-section { margin-bottom: 44px; scroll-margin-top: 80px; }
+  h2 {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 1.5rem; color: var(--ink);
+    margin-bottom: 14px;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  h2 .sec-num {
+    background: var(--sun);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.75rem; font-weight: 800;
+    color: var(--ink); letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 0 var(--sun-dk);
+    flex-shrink: 0;
+  }
+  p { margin-bottom: 14px; }
+  p:last-child { margin-bottom: 0; }
+  ul, ol { padding-left: 22px; margin-bottom: 14px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--teal-dk); }
 
-    .plain-note {
-      background: var(--note);
-      border-left: 3px solid var(--note-border);
-      border-radius: 4px;
-      padding: 16px 20px;
-      margin-bottom: 40px;
-      font-size: 0.92rem;
-      color: #4a3a00;
-    }
+  /* Caps block for disclaimers */
+  .caps-block {
+    background: var(--sun-lt);
+    border: 2.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 16px 20px;
+    font-size: 0.87rem; line-height: 1.6;
+    color: var(--ink); margin-bottom: 14px;
+    box-shadow: 0 4px 0 var(--sun-dk);
+  }
 
-    .toc {
-      background: #fff;
-      border: 1px solid var(--rule);
-      border-radius: 10px;
-      padding: 24px 28px;
-      margin-bottom: 52px;
-    }
-    .toc-title {
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-    .toc ol { padding-left: 18px; }
-    .toc li { margin-bottom: 6px; }
-    .toc a {
-      color: var(--accent);
-      text-decoration: none;
-      font-size: 0.93rem;
-    }
-    .toc a:hover { text-decoration: underline; }
-
-    .doc-section {
-      margin-bottom: 48px;
-      scroll-margin-top: 24px;
-    }
-    h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.35rem;
-      letter-spacing: -0.01em;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
-    h2 .sec-num {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--accent);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    p { margin-bottom: 14px; }
-    p:last-child { margin-bottom: 0; }
-    ul, ol { padding-left: 22px; margin-bottom: 14px; }
-    li { margin-bottom: 6px; }
-
-    .caps-block {
-      background: #fff;
-      border: 1px solid var(--rule);
-      border-radius: 6px;
-      padding: 16px 20px;
-      font-size: 0.88rem;
-      line-height: 1.6;
-      color: var(--ink);
-      margin-bottom: 14px;
-    }
-
-    a { color: var(--accent); }
-
-    .site-footer {
-      border-top: 1px solid var(--rule);
-      padding: 28px 32px;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .site-footer a { color: var(--muted); margin: 0 8px; }
-    .site-footer a:hover { color: var(--accent); }
-  </style>
+  .site-footer {
+    border-top: 2.5px solid var(--ink);
+    padding: 24px 28px;
+    text-align: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+    font-size: 0.95rem; color: var(--ink-soft);
+    background: var(--cream);
+  }
+  .site-footer a { color: var(--teal-dk); font-weight: 700; text-decoration: none; margin: 0 8px; }
+  .site-footer a:hover { text-decoration: underline; }
+  .footer-sep { color: var(--ink-faint); margin: 0 4px; }
+</style>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="logo-mark">Q</div>
-  <a class="logo-text" href="/">QuizNote</a>
+  <a class="header-logo" href="/">
+    <div class="logo-badge">Q</div>
+    <span class="logo-name">QuizNote</span>
+  </a>
   <span class="header-tag">Legal</span>
 </header>
 
@@ -183,7 +188,10 @@
 
   <p class="doc-eyebrow">Legal</p>
   <h1>Terms of Service</h1>
-  <p class="doc-meta">Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026 &nbsp;·&nbsp; Contact: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a></p>
+  <p class="doc-meta">
+    Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026
+    &nbsp;·&nbsp; Questions? <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>
+  </p>
 
   <div class="plain-note">
     <strong>The short version:</strong> QuizNote is a free music theory game. Use it to learn. Don't misuse it. We provide it as-is. That's about it.
@@ -210,28 +218,24 @@
     </ol>
   </nav>
 
-  <!-- 1 -->
   <div class="doc-section" id="s1">
     <h2><span class="sec-num">01</span> Acceptance of Terms</h2>
     <p>By accessing or using QuizNote at <a href="https://quiznote.online">quiznote.online</a> (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please do not use the App.</p>
     <p>If you are under 18, a parent or guardian should review these Terms. Because the App collects no personal information during normal use, no parental consent is required for children to play.</p>
   </div>
 
-  <!-- 2 -->
   <div class="doc-section" id="s2">
     <h2><span class="sec-num">02</span> Description of Service</h2>
-    <p>QuizNote is a free, browser-based music theory education application. It presents interactive quizzes on topics such as note reading, key signatures, intervals, and chord identification. The App is designed to help students and musicians of all ages build music theory fluency through practice.</p>
-    <p>The App is currently provided free of charge with no registration required. Features, content, and availability may change at any time.</p>
+    <p>QuizNote is a free, browser-based music theory education app. It presents interactive quizzes on topics such as note reading, key signatures, intervals, and chord identification — designed to help students and musicians of all ages build music fluency through practice.</p>
+    <p>The App is provided free of charge with no registration required. Features, content, and availability may change at any time.</p>
   </div>
 
-  <!-- 3 -->
   <div class="doc-section" id="s3">
     <h2><span class="sec-num">03</span> Use of the App</h2>
     <p>You may use QuizNote for personal, educational, and non-commercial purposes. Teachers and schools are welcome to use the App in educational settings at no cost.</p>
     <p>You may not use the App in any way that violates applicable law or these Terms.</p>
   </div>
 
-  <!-- 4 -->
   <div class="doc-section" id="s4">
     <h2><span class="sec-num">04</span> Acceptable Use</h2>
     <p>You agree not to:</p>
@@ -245,35 +249,30 @@
     </ul>
   </div>
 
-  <!-- 5 -->
   <div class="doc-section" id="s5">
     <h2><span class="sec-num">05</span> Intellectual Property</h2>
-    <p>All content in the App — including but not limited to the quiz questions, educational content, UI design, audio, graphics, and code — is the property of QuizNote or its licensors and is protected by applicable intellectual property laws.</p>
+    <p>All content in the App — including quiz questions, educational content, UI design, audio, graphics, and code — is the property of QuizNote or its licensors and is protected by applicable intellectual property laws.</p>
     <p>Nothing in these Terms grants you ownership of any QuizNote content. You receive a limited, revocable, non-exclusive license to use the App for personal, non-commercial educational purposes only.</p>
     <p>Music theory itself — intervals, scales, chords, notation — is part of the public domain. Our expression and presentation of that knowledge is what is protected.</p>
   </div>
 
-  <!-- 6 -->
   <div class="doc-section" id="s6">
     <h2><span class="sec-num">06</span> No Account Required (Currently)</h2>
-    <p>QuizNote currently operates without user accounts or registration. Your game progress is saved locally in your browser using local storage. We have no access to this data, and it is not linked to any personal identity.</p>
-    <p>Because there is no account system, there is currently no login, no password, and no personal profile associated with your use of the App.</p>
+    <p>QuizNote currently operates without user accounts or registration. Your game progress and display name are saved locally in your browser using local storage. We have no access to this data, and it is not linked to any personal identity.</p>
   </div>
 
-  <!-- 7 -->
   <div class="doc-section" id="s7">
     <h2><span class="sec-num">07</span> Future Paid Features</h2>
     <p>QuizNote may introduce optional paid features, subscriptions, or premium content in the future. The core free experience will remain available. If paid features are launched:</p>
     <ul>
       <li>Pricing, billing terms, and cancellation policies will be clearly communicated before any charge is made</li>
-      <li>Payment processing will be handled by a trusted third-party payment provider; QuizNote will never store credit card or payment details directly</li>
-      <li>These Terms will be updated to include relevant payment, refund, and account terms before paid features go live</li>
+      <li>Payment processing will be handled by a trusted third-party processor; QuizNote will never store credit card or payment details directly</li>
+      <li>These Terms will be updated to include payment, refund, and account terms before paid features go live</li>
       <li>You will have the opportunity to review and accept updated terms before subscribing</li>
     </ul>
     <p>Nothing in the current version of these Terms creates any obligation to pay for anything.</p>
   </div>
 
-  <!-- 8 -->
   <div class="doc-section" id="s8">
     <h2><span class="sec-num">08</span> Disclaimer of Warranties</h2>
     <div class="caps-block">
@@ -282,7 +281,6 @@
     <p>We make reasonable efforts to ensure the accuracy of music theory content, but we do not guarantee that all content is free from errors. If you find an error, please let us know at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>.</p>
   </div>
 
-  <!-- 9 -->
   <div class="doc-section" id="s9">
     <h2><span class="sec-num">09</span> Limitation of Liability</h2>
     <div class="caps-block">
@@ -291,42 +289,36 @@
     <p>Because the App is provided free of charge and collects no personal data during normal use, our total liability to you for any claim arising from use of the App shall not exceed zero dollars ($0.00).</p>
   </div>
 
-  <!-- 10 -->
   <div class="doc-section" id="s10">
     <h2><span class="sec-num">10</span> Indemnification</h2>
-    <p>You agree to indemnify, defend, and hold harmless QuizNote and its operators from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in connection with your violation of these Terms or your use of the App in an unauthorized or unlawful manner.</p>
+    <p>You agree to indemnify, defend, and hold harmless QuizNote and its operators from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in connection with your violation of these Terms or your unauthorized or unlawful use of the App.</p>
   </div>
 
-  <!-- 11 -->
   <div class="doc-section" id="s11">
     <h2><span class="sec-num">11</span> Third-Party Services</h2>
     <p>The App is hosted on Vercel and may load fonts from Google Fonts. These third-party services operate under their own terms and privacy policies, and we are not responsible for their practices. Links to external sites from within the App are provided for convenience and do not constitute endorsement.</p>
   </div>
 
-  <!-- 12 -->
   <div class="doc-section" id="s12">
     <h2><span class="sec-num">12</span> Termination</h2>
-    <p>We reserve the right to discontinue the App or restrict access to it at any time, for any reason, without notice. Because no accounts or paid subscriptions currently exist, there is no refund or data-export obligation upon termination.</p>
+    <p>We reserve the right to discontinue the App or restrict access at any time, for any reason, without notice. Because no accounts or paid subscriptions currently exist, there is no refund or data-export obligation upon termination.</p>
     <p>If paid accounts are introduced in the future, a reasonable notice period and data-export opportunity will be provided before any shutdown affecting paid users.</p>
   </div>
 
-  <!-- 13 -->
   <div class="doc-section" id="s13">
     <h2><span class="sec-num">13</span> Governing Law</h2>
     <p>These Terms shall be governed by and construed in accordance with the laws of the State of Oklahoma, United States, without regard to its conflict of law provisions. Any dispute arising from these Terms or your use of the App shall be resolved in the state or federal courts located in Oklahoma.</p>
   </div>
 
-  <!-- 14 -->
   <div class="doc-section" id="s14">
     <h2><span class="sec-num">14</span> Changes to These Terms</h2>
-    <p>We may update these Terms from time to time. When we do, we will revise the "Last updated" date at the top of this page. For material changes — especially those related to the introduction of paid features or data collection practices — we will make the notice prominent within the App prior to the change taking effect.</p>
+    <p>We may update these Terms from time to time. When we do, we will revise the "Last updated" date at the top of this page. For material changes — especially those related to paid features or data collection — we will make the notice prominent within the App prior to the change taking effect.</p>
     <p>Your continued use of the App after any update constitutes your acceptance of the revised Terms.</p>
   </div>
 
-  <!-- 15 -->
   <div class="doc-section" id="s15">
     <h2><span class="sec-num">15</span> Contact</h2>
-    <p>Questions about these Terms can be directed to:</p>
+    <p>Questions about these Terms:</p>
     <p>
       QuizNote<br>
       Email: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a><br>
@@ -334,12 +326,13 @@
     </p>
   </div>
 
-</div><!-- /page-wrap -->
+</div>
 
 <footer class="site-footer">
-  © 2026 QuizNote &nbsp;·&nbsp;
-  <a href="/privacy">Privacy Policy</a>
-  <a href="/terms">Terms of Service</a>
+  © 2026 QuizNote
+  <span class="footer-sep">·</span>
+  <a href="/privacy.html">Privacy Policy</a>
+  <a href="/terms.html">Terms of Service</a>
   <a href="/">Play</a>
 </footer>
 
