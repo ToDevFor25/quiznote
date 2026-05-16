@@ -684,17 +684,6 @@
   .kb-scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--teal-dk); }
   .kb-scroll-wrap { scrollbar-width: auto; scrollbar-color: var(--teal) var(--cream-2); }
   #kb-wrap { min-width: 600px; }
-  /* Wide-keys toggle only shows on small phones */
-  #key-size-block { display: none; }
-  @media (max-width: 479px) {
-    #key-size-block { display: block; }
-  }
-  /* Wide-keys mode: override scroll only when explicitly chosen */
-  @media (max-width: 479px) {
-    body.wide-keys #kb-wrap { min-width: unset !important; }
-    body.wide-keys .kb-scroll-wrap { overflow-x: hidden; }
-    body.wide-keys .scroll-hint { display: none; }
-  }
 
   /* ============ Scroll hint strip ============ */
   .scroll-hint {
@@ -725,7 +714,6 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
   }
-
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 28px; gap: 16px; }
     .play-body { gap: 22px; }
@@ -816,22 +804,6 @@
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
           <div class="tile-sub">full range<br/>sharps &amp; flats</div>
-        </button>
-      </div>
-    </div>
-
-    <div class="q-block" id="key-size-block">
-      <div class="q-label"><span class="num">3</span> Key size?</div>
-      <div class="tile-row" id="keysize-tiles">
-        <button class="tile on" data-keysize="standard">
-          <div class="tile-emoji">👦</div>
-          <div class="tile-title">Standard</div>
-          <div class="tile-sub">more notes<br/>visible</div>
-        </button>
-        <button class="tile" data-keysize="wide">
-          <div class="tile-emoji">🖐️</div>
-          <div class="tile-title">Wide keys</div>
-          <div class="tile-sub">bigger targets<br/>fewer keys</div>
         </button>
       </div>
     </div>
@@ -1355,15 +1327,10 @@
       onTap = () => {},
     } = opts;
 
-    // Calculate responsive width — on phones with wide keys, fill screen width
-    const onPhone = window.innerWidth < 480;
-    const wideKeys = onPhone && opts && opts.wideKeys;
-    // Toggle body class so CSS scroll overrides only apply in wide-keys mode
-    document.body.classList.toggle('wide-keys', !!wideKeys);
-    // In wide-keys mode size SVG to screen; standard mode reads wrap width (may scroll)
-    const wrapW = wideKeys ? (window.innerWidth - 28) : (wrap.offsetWidth || 700);
-    const width = Math.max(wideKeys ? 280 : 400, wrapW);
-    const height = wideKeys ? 260 : 210;
+    // Calculate responsive width
+    const wrapW = wrap.offsetWidth || 700;
+    const width = Math.max(400, wrapW - 28);
+    const height = 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
@@ -1575,7 +1542,7 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', wideKeys: false, timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', timer: { enabled: false, seconds: 60 } },
     pool: [],
     q: 0,
     total: 10,
@@ -1609,7 +1576,6 @@
      'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'keysize-tiles',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn'].forEach(id => {
       els[id] = document.getElementById(id);
@@ -1666,15 +1632,6 @@
       els['timer-pills'].hidden = !enabled;
     });
 
-    els['keysize-tiles'].addEventListener('click', (e) => {
-      const t = e.target.closest('.tile');
-      if (!t) return;
-      A.ensureCtx();
-      [...els['keysize-tiles'].children].forEach(c => c.classList.remove('on'));
-      t.classList.add('on');
-      state.settings.wideKeys = (t.dataset.keysize === 'wide');
-    });
-
     els['timer-pills'].addEventListener('click', (e) => {
       const t = e.target.closest('.tpill');
       if (!t) return;
@@ -1699,19 +1656,6 @@
       if (state.settings.difficulty === 'tricky') { lowOct = 2; highOct = 5; }
       else { lowOct = 2; highOct = 4; }
     }
-
-    // On small phones with wide-keys mode: fewer octaves so keys are bigger
-    if (window.innerWidth < 480 && state.settings.wideKeys) {
-      const span = highOct - lowOct;
-      if (span > 2) {
-        const excess = span - 2;
-        const trimLow = Math.ceil(excess / 2);
-        const trimHigh = Math.floor(excess / 2);
-        lowOct += trimLow;
-        highOct -= trimHigh;
-      }
-    }
-
     state.pool = buildPool(state.settings.clef, state.settings.difficulty, lowOct, highOct);
     state.q = 0;
     state.score = 0;
@@ -1726,7 +1670,6 @@
 
     R.renderKeyboard(els['kb-wrap'], {
       lowOct, highOct, showBlack: true, showLetters,
-      wideKeys: state.settings.wideKeys,
       onTap: handleKeyTap,
     });
 
@@ -1863,7 +1806,7 @@
       state.locked = true;
       const dn = displayName(state.current.pitch);
       R.glowKey(els['kb-wrap'], state.current.pitch.midi);
-      showToast("It's " + dn, 'reveal');
+      showToast('It’s ' + dn, 'reveal');
       pushHistory('wrong');
       // Unlock for correct-only tap
       setTimeout(() => { state.locked = false; state.revealing = true; }, 300);
@@ -2143,9 +2086,9 @@
     const pct = score / total;
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
     if (pct >= 1)   return pick(['PITCH PERFECT! Every single note! 🎵','Perfect score — you crushed it! 🌟','Flawless! Not one note missed! 🎶']);
-    if (pct >= 0.8) return pick(["Amazing playing — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
-    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good playing — those tricky ones are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
-    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The notes are learning to recognise you 🎵","Music takes time — you're on your way! Keep playing!"]);
+    if (pct >= 0.8) return pick(['Amazing playing — so close to perfect!','Nearly flawless! You're really getting it! ⭐','Brilliant round — just a couple slipped by!']);
+    if (pct >= 0.5) return pick(['Nice work! A few more rounds and you'll nail it 🎶','Good playing — those tricky ones are getting easier!','Solid round! Keep going — you're improving! 🎵']);
+    return pick(['Every round makes you stronger — keep going! 🌱','Great practice! The notes are learning to recognise you 🎵','Music takes time — you're on your way! Keep playing!']);
   }
 
   // Play screen actions
