@@ -684,6 +684,12 @@
   .kb-scroll-wrap::-webkit-scrollbar-thumb:hover { background: var(--teal-dk); }
   .kb-scroll-wrap { scrollbar-width: auto; scrollbar-color: var(--teal) var(--cream-2); }
   #kb-wrap { min-width: 600px; }
+  @media (max-width: 479px) {
+    /* Remove forced scroll on phone; SVG width set by JS to fit screen */
+    #kb-wrap { min-width: unset !important; }
+    .kb-scroll-wrap { overflow-x: hidden; }
+    .scroll-hint { display: none; }
+  }
 
   /* ============ Scroll hint strip ============ */
   .scroll-hint {
@@ -714,12 +720,7 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
   }
-  /* Small phone keyboard: fill width, no forced scroll, taller keys */
-  @media (max-width: 479px) {
-    .kb-scroll-wrap { overflow-x: visible; }
-    #kb-wrap { min-width: 0 !important; width: 100%; }
-    .scroll-hint { display: none; }
-  }
+
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 28px; gap: 16px; }
     .play-body { gap: 22px; }
@@ -1333,11 +1334,12 @@
       onTap = () => {},
     } = opts;
 
-    // Calculate responsive width + height
-    const wrapW = wrap.offsetWidth || window.innerWidth || 700;
-    const isPhone = wrapW < 480;
-    const width = Math.max(isPhone ? 280 : 400, wrapW - 28);
-    const height = isPhone ? 280 : 210;
+    // Calculate responsive width — on phones use innerWidth so SVG fills screen
+    const wrapW = (window.innerWidth < 480)
+      ? window.innerWidth
+      : (wrap.offsetWidth || 700);
+    const width = Math.max(300, wrapW - 28);
+    const height = (window.innerWidth < 480) ? 260 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
