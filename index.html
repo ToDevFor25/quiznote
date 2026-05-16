@@ -714,10 +714,11 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
   }
-  /* Larger tap targets on small phones */
+  /* Small phone keyboard: fill width, no forced scroll, taller keys */
   @media (max-width: 479px) {
-    .kb-card { min-height: 310px; }
-    #kb-wrap { min-width: 320px; }
+    .kb-scroll-wrap { overflow-x: visible; }
+    #kb-wrap { min-width: 0 !important; width: 100%; }
+    .scroll-hint { display: none; }
   }
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 28px; gap: 16px; }
@@ -1333,10 +1334,10 @@
     } = opts;
 
     // Calculate responsive width + height
-    const wrapW = wrap.offsetWidth || 700;
-    const isMobilePhone = wrapW < 480;
-    const width = Math.max(isMobilePhone ? 320 : 400, wrapW - 28);
-    const height = isMobilePhone ? 270 : 210;
+    const wrapW = wrap.offsetWidth || window.innerWidth || 700;
+    const isPhone = wrapW < 480;
+    const width = Math.max(isPhone ? 280 : 400, wrapW - 28);
+    const height = isPhone ? 280 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     const blackAfter = { C: true, D: true, F: true, G: true, A: true };
@@ -1663,14 +1664,16 @@
       else { lowOct = 2; highOct = 4; }
     }
 
-    // On small phone screens narrow the octave range so each key is physically wider
-    const kbWrapW = els['kb-wrap'].offsetWidth || 700;
-    if (kbWrapW < 480) {
+    // On small phones cap at 3 octaves so each key is physically wider
+    if (window.innerWidth < 480) {
       const span = highOct - lowOct;
       if (span > 2) {
-        const trim = Math.floor((span - 2) / 2);
-        lowOct += trim;
-        highOct -= (span - 2 - trim);
+        // Keep the middle of the range
+        const excess = span - 2;
+        const trimLow = Math.ceil(excess / 2);
+        const trimHigh = Math.floor(excess / 2);
+        lowOct += trimLow;
+        highOct -= trimHigh;
       }
     }
 
