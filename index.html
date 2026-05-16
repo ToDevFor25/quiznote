@@ -688,10 +688,12 @@
   #key-size-block { display: none; }
   @media (max-width: 479px) {
     #key-size-block { display: block; }
-    /* Remove forced scroll; SVG sized by JS to fit screen */
-    #kb-wrap { min-width: unset !important; }
-    .kb-scroll-wrap { overflow-x: hidden; }
-    .scroll-hint { display: none; }
+  }
+  /* Wide-keys mode: override scroll only when explicitly chosen */
+  @media (max-width: 479px) {
+    body.wide-keys #kb-wrap { min-width: unset !important; }
+    body.wide-keys .kb-scroll-wrap { overflow-x: hidden; }
+    body.wide-keys .scroll-hint { display: none; }
   }
 
   /* ============ Scroll hint strip ============ */
@@ -1356,8 +1358,11 @@
     // Calculate responsive width — on phones with wide keys, fill screen width
     const onPhone = window.innerWidth < 480;
     const wideKeys = onPhone && opts && opts.wideKeys;
-    const wrapW = wideKeys ? window.innerWidth : (wrap.offsetWidth || 700);
-    const width = Math.max(wideKeys ? 280 : 400, wrapW - 28);
+    // Toggle body class so CSS scroll overrides only apply in wide-keys mode
+    document.body.classList.toggle('wide-keys', !!wideKeys);
+    // In wide-keys mode size SVG to screen; standard mode reads wrap width (may scroll)
+    const wrapW = wideKeys ? (window.innerWidth - 28) : (wrap.offsetWidth || 700);
+    const width = Math.max(wideKeys ? 280 : 400, wrapW);
     const height = wideKeys ? 260 : 210;
 
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
