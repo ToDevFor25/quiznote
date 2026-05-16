@@ -874,10 +874,10 @@
     <div class="q-block acc-block" id="acc-block" hidden>
       <div class="q-label acc-label">Which accidentals?</div>
       <div class="acc-row" id="acc-tiles">
-        <button class="acc-pill on" data-acc="both">♯ &amp; ♭ both</button>
-        <button class="acc-pill" data-acc="sharps">♯ only</button>
-        <button class="acc-pill" data-acc="flats">♭ only</button>
-        <button class="acc-pill" data-acc="white">white keys</button>
+        <button class="acc-pill on" data-acc="both">All keys</button>
+        <button class="acc-pill" data-acc="sharps">Sharps ♯</button>
+        <button class="acc-pill" data-acc="flats">Flats ♭</button>
+        <button class="acc-pill" data-acc="white">White only</button>
       </div>
     </div>
 
@@ -1437,19 +1437,18 @@
     // Desktop/tablet (≥480px): keys fill the container naturally — no scroll needed.
     const onPhone = window.innerWidth < 480;
     const phoneW = window.innerWidth || 375;
-    const containerW = wrap.offsetWidth || (onPhone ? phoneW : 700);
+    const containerW = wrap.offsetWidth || (onPhone ? phoneW : 800);
 
     const whiteCount = (highOct - lowOct + 1) * 7;
 
     let whiteW, width;
     if (onPhone) {
-      // Fix width so exactly 11 white keys are visible without scrolling.
-      // The SVG extends beyond that — user scrolls to reach all notes.
+      // Fixed key size on mobile — scroll to reach all keys
       whiteW = Math.floor(phoneW / 11);
-      width = whiteW * whiteCount;       // SVG as wide as needed for all notes
+      width = whiteW * whiteCount;
     } else {
-      // Fill the container — no scroll on desktop
-      width = Math.max(containerW, 640);
+      // Fill the real container width — all keys always visible, no scroll
+      width = containerW;
       whiteW = width / whiteCount;
     }
 
@@ -1466,7 +1465,8 @@
     const keyH = keyBottomY - keyTopY;
     const padding = 2.5;
 
-    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMinYMid meet" xmlns="http://www.w3.org/2000/svg" class="kb-svg" style="width:${width}px;height:${height}px">`;
+    const svgStyle = onPhone ? `width:${width}px;height:${height}px` : `width:100%;height:auto`;
+    let svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" class="kb-svg" style="${svgStyle}">`;
 
     const whites = [];
     let middleCx = null;
@@ -1532,7 +1532,7 @@
 
     svg += `</svg>`;
     wrap.innerHTML = svg;
-    wrap.style.minWidth = width + 'px';
+    wrap.style.minWidth = onPhone ? width + 'px' : '';
 
     // Wire pointer events — use pointerdown/pointermove/pointerup with delta threshold
     // to distinguish scroll gestures from taps (critical on mobile)
@@ -1840,12 +1840,17 @@
     // Update all " / N" display spans
     document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
 
-    R.renderKeyboard(els['kb-wrap'], {
-      lowOct, highOct, showBlack: true, showLetters,
-      onTap: handleKeyTap,
+    showScreen('play');
+
+    // Defer keyboard render until after the play screen is visible so
+    // wrap.offsetWidth returns the real container width (not 0)
+    requestAnimationFrame(() => {
+      R.renderKeyboard(els['kb-wrap'], {
+        lowOct, highOct, showBlack: true, showLetters,
+        onTap: handleKeyTap,
+      });
     });
 
-    showScreen('play');
     nextQuestion();
     startTimer();
   }
@@ -2356,8 +2361,10 @@
       if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
       else if (state.settings.clef === 'treble') { lowOct = state.settings.difficulty === 'tricky' ? 2 : 3; highOct = 6; }
       else { lowOct = 2; highOct = state.settings.difficulty === 'tricky' ? 5 : 4; }
-      R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
       showScreen('play');
+      requestAnimationFrame(() => {
+        R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+      });
       nextQuestion();
       startTimer();
     });
@@ -2478,8 +2485,23 @@
     cacheEls();
     setupStart();
     setupActions();
-    // Inject logo
     injectLogo();
+
+    // Re-render keyboard on resize (desktop window resize changes container width)
+    let _resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(() => {
+        if (state.current && document.getElementById('play-screen').classList.contains('active')) {
+          const showLetters = state.settings.difficulty !== 'tricky';
+          let lowOct, highOct;
+          if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
+          else if (state.settings.clef === 'treble') { lowOct = state.settings.difficulty === 'tricky' ? 2 : 3; highOct = 6; }
+          else { lowOct = 2; highOct = state.settings.difficulty === 'tricky' ? 5 : 4; }
+          R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+        }
+      }, 150);
+    });
   });
 
   function injectLogo() {
