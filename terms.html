@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service · QuizNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f9f7f4;
+      --ink: #1a1a1a;
+      --muted: #666;
+      --accent: #2d5be3;
+      --rule: #e0dbd3;
+      --note: #fff8e6;
+      --note-border: #f0d060;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .site-header {
+      border-bottom: 1px solid var(--rule);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; font-weight: 700;
+      font-family: 'DM Serif Display', serif;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .header-tag {
+      margin-left: auto;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .page-wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    .doc-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .doc-meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .plain-note {
+      background: var(--note);
+      border-left: 3px solid var(--note-border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      color: #4a3a00;
+    }
+
+    .toc {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 52px;
+    }
+    .toc-title {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .toc ol { padding-left: 18px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.93rem;
+    }
+    .toc a:hover { text-decoration: underline; }
+
+    .doc-section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    h2 .sec-num {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    p { margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+    ul, ol { padding-left: 22px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; }
+
+    .caps-block {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      padding: 16px 20px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--ink);
+      margin-bottom: 14px;
+    }
+
+    a { color: var(--accent); }
+
+    .site-footer {
+      border-top: 1px solid var(--rule);
+      padding: 28px 32px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .site-footer a { color: var(--muted); margin: 0 8px; }
+    .site-footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-mark">Q</div>
+  <a class="logo-text" href="/">QuizNote</a>
+  <span class="header-tag">Legal</span>
+</header>
+
+<div class="page-wrap">
+
+  <p class="doc-eyebrow">Legal</p>
+  <h1>Terms of Service</h1>
+  <p class="doc-meta">Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026 &nbsp;·&nbsp; Contact: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a></p>
+
+  <div class="plain-note">
+    <strong>The short version:</strong> QuizNote is a free music theory game. Use it to learn. Don't misuse it. We provide it as-is. That's about it.
+  </div>
+
+  <nav class="toc">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#s1">Acceptance of Terms</a></li>
+      <li><a href="#s2">Description of Service</a></li>
+      <li><a href="#s3">Use of the App</a></li>
+      <li><a href="#s4">Acceptable Use</a></li>
+      <li><a href="#s5">Intellectual Property</a></li>
+      <li><a href="#s6">No Account Required (Currently)</a></li>
+      <li><a href="#s7">Future Paid Features</a></li>
+      <li><a href="#s8">Disclaimer of Warranties</a></li>
+      <li><a href="#s9">Limitation of Liability</a></li>
+      <li><a href="#s10">Indemnification</a></li>
+      <li><a href="#s11">Third-Party Services</a></li>
+      <li><a href="#s12">Termination</a></li>
+      <li><a href="#s13">Governing Law</a></li>
+      <li><a href="#s14">Changes to These Terms</a></li>
+      <li><a href="#s15">Contact</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <div class="doc-section" id="s1">
+    <h2><span class="sec-num">01</span> Acceptance of Terms</h2>
+    <p>By accessing or using QuizNote at <a href="https://quiznote.online">quiznote.online</a> (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please do not use the App.</p>
+    <p>If you are under 18, a parent or guardian should review these Terms. Because the App collects no personal information during normal use, no parental consent is required for children to play.</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="doc-section" id="s2">
+    <h2><span class="sec-num">02</span> Description of Service</h2>
+    <p>QuizNote is a free, browser-based music theory education application. It presents interactive quizzes on topics such as note reading, key signatures, intervals, and chord identification. The App is designed to help students and musicians of all ages build music theory fluency through practice.</p>
+    <p>The App is currently provided free of charge with no registration required. Features, content, and availability may change at any time.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="doc-section" id="s3">
+    <h2><span class="sec-num">03</span> Use of the App</h2>
+    <p>You may use QuizNote for personal, educational, and non-commercial purposes. Teachers and schools are welcome to use the App in educational settings at no cost.</p>
+    <p>You may not use the App in any way that violates applicable law or these Terms.</p>
+  </div>
+
+  <!-- 4 -->
+  <div class="doc-section" id="s4">
+    <h2><span class="sec-num">04</span> Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Attempt to reverse-engineer, decompile, or extract source code from the App</li>
+      <li>Use automated bots, scrapers, or scripts to interact with the App</li>
+      <li>Attempt to gain unauthorized access to any systems or networks associated with the App</li>
+      <li>Use the App for any commercial purpose without our prior written consent</li>
+      <li>Reproduce, distribute, or create derivative works from the App's content without permission</li>
+      <li>Transmit any malicious code or interfere with the App's operation</li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <div class="doc-section" id="s5">
+    <h2><span class="sec-num">05</span> Intellectual Property</h2>
+    <p>All content in the App — including but not limited to the quiz questions, educational content, UI design, audio, graphics, and code — is the property of QuizNote or its licensors and is protected by applicable intellectual property laws.</p>
+    <p>Nothing in these Terms grants you ownership of any QuizNote content. You receive a limited, revocable, non-exclusive license to use the App for personal, non-commercial educational purposes only.</p>
+    <p>Music theory itself — intervals, scales, chords, notation — is part of the public domain. Our expression and presentation of that knowledge is what is protected.</p>
+  </div>
+
+  <!-- 6 -->
+  <div class="doc-section" id="s6">
+    <h2><span class="sec-num">06</span> No Account Required (Currently)</h2>
+    <p>QuizNote currently operates without user accounts or registration. Your game progress is saved locally in your browser using local storage. We have no access to this data, and it is not linked to any personal identity.</p>
+    <p>Because there is no account system, there is currently no login, no password, and no personal profile associated with your use of the App.</p>
+  </div>
+
+  <!-- 7 -->
+  <div class="doc-section" id="s7">
+    <h2><span class="sec-num">07</span> Future Paid Features</h2>
+    <p>QuizNote may introduce optional paid features, subscriptions, or premium content in the future. The core free experience will remain available. If paid features are launched:</p>
+    <ul>
+      <li>Pricing, billing terms, and cancellation policies will be clearly communicated before any charge is made</li>
+      <li>Payment processing will be handled by a trusted third-party payment provider; QuizNote will never store credit card or payment details directly</li>
+      <li>These Terms will be updated to include relevant payment, refund, and account terms before paid features go live</li>
+      <li>You will have the opportunity to review and accept updated terms before subscribing</li>
+    </ul>
+    <p>Nothing in the current version of these Terms creates any obligation to pay for anything.</p>
+  </div>
+
+  <!-- 8 -->
+  <div class="doc-section" id="s8">
+    <h2><span class="sec-num">08</span> Disclaimer of Warranties</h2>
+    <div class="caps-block">
+      THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE APP WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. YOUR USE OF THE APP IS AT YOUR SOLE RISK.
+    </div>
+    <p>We make reasonable efforts to ensure the accuracy of music theory content, but we do not guarantee that all content is free from errors. If you find an error, please let us know at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>.</p>
+  </div>
+
+  <!-- 9 -->
+  <div class="doc-section" id="s9">
+    <h2><span class="sec-num">09</span> Limitation of Liability</h2>
+    <div class="caps-block">
+      TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, QUIZNOTE AND ITS OPERATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, LOSS OF PROFITS, OR INTERRUPTION OF SERVICE, ARISING OUT OF YOUR USE OF OR INABILITY TO USE THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+    </div>
+    <p>Because the App is provided free of charge and collects no personal data during normal use, our total liability to you for any claim arising from use of the App shall not exceed zero dollars ($0.00).</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="doc-section" id="s10">
+    <h2><span class="sec-num">10</span> Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless QuizNote and its operators from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal fees) arising out of or in connection with your violation of these Terms or your use of the App in an unauthorized or unlawful manner.</p>
+  </div>
+
+  <!-- 11 -->
+  <div class="doc-section" id="s11">
+    <h2><span class="sec-num">11</span> Third-Party Services</h2>
+    <p>The App is hosted on Vercel and may load fonts from Google Fonts. These third-party services operate under their own terms and privacy policies, and we are not responsible for their practices. Links to external sites from within the App are provided for convenience and do not constitute endorsement.</p>
+  </div>
+
+  <!-- 12 -->
+  <div class="doc-section" id="s12">
+    <h2><span class="sec-num">12</span> Termination</h2>
+    <p>We reserve the right to discontinue the App or restrict access to it at any time, for any reason, without notice. Because no accounts or paid subscriptions currently exist, there is no refund or data-export obligation upon termination.</p>
+    <p>If paid accounts are introduced in the future, a reasonable notice period and data-export opportunity will be provided before any shutdown affecting paid users.</p>
+  </div>
+
+  <!-- 13 -->
+  <div class="doc-section" id="s13">
+    <h2><span class="sec-num">13</span> Governing Law</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the State of Oklahoma, United States, without regard to its conflict of law provisions. Any dispute arising from these Terms or your use of the App shall be resolved in the state or federal courts located in Oklahoma.</p>
+  </div>
+
+  <!-- 14 -->
+  <div class="doc-section" id="s14">
+    <h2><span class="sec-num">14</span> Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. When we do, we will revise the "Last updated" date at the top of this page. For material changes — especially those related to the introduction of paid features or data collection practices — we will make the notice prominent within the App prior to the change taking effect.</p>
+    <p>Your continued use of the App after any update constitutes your acceptance of the revised Terms.</p>
+  </div>
+
+  <!-- 15 -->
+  <div class="doc-section" id="s15">
+    <h2><span class="sec-num">15</span> Contact</h2>
+    <p>Questions about these Terms can be directed to:</p>
+    <p>
+      QuizNote<br>
+      Email: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a><br>
+      Website: <a href="https://quiznote.online">quiznote.online</a>
+    </p>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<footer class="site-footer">
+  © 2026 QuizNote &nbsp;·&nbsp;
+  <a href="/privacy">Privacy Policy</a>
+  <a href="/terms">Terms of Service</a>
+  <a href="/">Play</a>
+</footer>
+
+</body>
+</html>
