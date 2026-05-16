@@ -1748,7 +1748,7 @@
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed','mute-btn'].forEach(id => {
+     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => {
       els[id] = document.getElementById(id);
     });
   }
@@ -1761,20 +1761,30 @@
     document.body.classList.toggle('playing', name === 'play');
     window.scrollTo(0, 0);
   }
+
+  function syncMuteUI(muted) {
+    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
+    if (els['mute-btn']) {
+      els['mute-btn'].textContent = muted ? '🔇' : '🔊';
+      els['mute-btn'].classList.toggle('muted', muted);
+      els['mute-btn'].setAttribute('aria-pressed', String(muted));
+    }
+  }
+
+  function saveMutedPreference(muted) {
+    localStorage.setItem('pq_muted', String(muted));
+    A.setMuted(muted);
+    syncMuteUI(muted);
+  }
+
   // Start screen setup
   function setupStart() {
     // Restore and apply saved sound preference on the settings screen.
     const savedMuted = localStorage.getItem('pq_muted') === 'true';
+    saveMutedPreference(savedMuted);
     if (els['start-muted-toggle']) {
-      els['start-muted-toggle'].checked = savedMuted;
-      A.setMuted(savedMuted);
       els['start-muted-toggle'].addEventListener('change', () => {
-        const muted = els['start-muted-toggle'].checked;
-        localStorage.setItem('pq_muted', muted);
-        A.setMuted(muted);
-        const muteBtn = document.getElementById('mute-btn');
-        if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
-        if (muteBtn) muteBtn.setAttribute('aria-pressed', String(muted));
+        saveMutedPreference(els['start-muted-toggle'].checked);
       });
     }
 
@@ -1818,15 +1828,13 @@
 
     els['start-btn'].addEventListener('click', () => {
       const muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
-      localStorage.setItem('pq_muted', muted);
-      A.setMuted(muted);
+      saveMutedPreference(muted);
 
       // This click is the user gesture that unlocks audio, after settings are chosen.
-      try { A.ensureCtx(); } catch (err) { console.warn('Audio unlock skipped:', err); }
-
-      const muteBtn = document.getElementById('mute-btn');
-      if (muteBtn) muteBtn.textContent = muted ? '🔇' : '🔊';
-      if (muteBtn) muteBtn.setAttribute('aria-pressed', String(muted));
+      // If the user chose Start muted, keep the round silent and do not force audio on.
+      if (!muted) {
+        try { A.ensureCtx(); } catch (err) { console.warn('Audio unlock skipped:', err); }
+      }
 
       if (state.settings.timer.enabled) {
         showStartTimerModal();
@@ -2368,10 +2376,7 @@
     els['mute-btn'].addEventListener('click', () => {
       A.ensureCtx();
       const nowMuted = !A.isMuted();
-      A.setMuted(nowMuted);
-      localStorage.setItem('pq_muted', nowMuted);
-      els['mute-btn'].textContent = nowMuted ? '🔇' : '🔊';
-      els['mute-btn'].classList.toggle('muted', nowMuted);
+      saveMutedPreference(nowMuted);
       // If unmuting, play a soft confirmation note so user knows audio is active
       if (!nowMuted && state.current) {
         setTimeout(() => A.playMidi(state.current.pitch.midi, 0.5), 80);
