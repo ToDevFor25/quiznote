@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy · QuizNote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f9f7f4;
+      --ink: #1a1a1a;
+      --muted: #666;
+      --accent: #2d5be3;
+      --rule: #e0dbd3;
+      --note: #fff8e6;
+      --note-border: #f0d060;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      border-bottom: 1px solid var(--rule);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; font-weight: 700;
+      font-family: 'DM Serif Display', serif;
+      flex-shrink: 0;
+    }
+    .logo-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .header-tag {
+      margin-left: auto;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* ── Title block ── */
+    .doc-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .doc-meta {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* ── Note callout ── */
+    .plain-note {
+      background: var(--note);
+      border-left: 3px solid var(--note-border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      margin-bottom: 40px;
+      font-size: 0.92rem;
+      color: #4a3a00;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: #fff;
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin-bottom: 52px;
+    }
+    .toc-title {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .toc ol {
+      padding-left: 18px;
+    }
+    .toc li {
+      margin-bottom: 6px;
+    }
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.93rem;
+    }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Sections ── */
+    .doc-section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+    h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.35rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    h2 .sec-num {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    p { margin-bottom: 14px; }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    li { margin-bottom: 6px; }
+
+    /* ── Data table ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+    .data-table th {
+      text-align: left;
+      font-size: 0.75rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--rule);
+    }
+    .data-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    a { color: var(--accent); }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--rule);
+      margin: 40px 0;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      border-top: 1px solid var(--rule);
+      padding: 28px 32px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .site-footer a { color: var(--muted); margin: 0 8px; }
+    .site-footer a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-mark">Q</div>
+  <a class="logo-text" href="/">QuizNote</a>
+  <span class="header-tag">Legal</span>
+</header>
+
+<div class="page-wrap">
+
+  <p class="doc-eyebrow">Legal</p>
+  <h1>Privacy Policy</h1>
+  <p class="doc-meta">Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026 &nbsp;·&nbsp; Contact: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a></p>
+
+  <div class="plain-note">
+    <strong>The short version:</strong> QuizNote is a free, no-account music theory game. We collect almost nothing — just basic, anonymous usage data to keep the app running well. We don't sell your data. We never will.
+  </div>
+
+  <nav class="toc">
+    <p class="toc-title">Contents</p>
+    <ol>
+      <li><a href="#s1">Who We Are</a></li>
+      <li><a href="#s2">What We Collect</a></li>
+      <li><a href="#s3">What We Don't Do</a></li>
+      <li><a href="#s4">Cookies and Local Storage</a></li>
+      <li><a href="#s5">Third-Party Services</a></li>
+      <li><a href="#s6">Children's Privacy</a></li>
+      <li><a href="#s7">Data Retention</a></li>
+      <li><a href="#s8">Your Rights</a></li>
+      <li><a href="#s9">Future Paid Features</a></li>
+      <li><a href="#s10">Changes to This Policy</a></li>
+      <li><a href="#s11">Contact Us</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <div class="doc-section" id="s1">
+    <h2><span class="sec-num">01</span> Who We Are</h2>
+    <p>QuizNote ("we," "us," or "our") is an independent music education project operating at <a href="https://quiznote.online">quiznote.online</a>. QuizNote is currently operated as an unincorporated project. A formal legal entity may be established in the future, at which point this policy will be updated accordingly.</p>
+    <p>This Privacy Policy explains how we handle information when you use our web application (the "App").</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="doc-section" id="s2">
+    <h2><span class="sec-num">02</span> What We Collect</h2>
+    <p>QuizNote is designed to collect as little information as possible. Here's what may be collected when you use the App:</p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>What it includes</th>
+          <th>Why</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Technical / usage data</strong></td>
+          <td>Browser type, operating system, approximate geographic region (country/state), referring URL, pages visited, and time of visit</td>
+          <td>Collected automatically by our hosting provider (Vercel) to monitor uptime and performance. We do not use this to identify you.</td>
+        </tr>
+        <tr>
+          <td><strong>Local game data</strong></td>
+          <td>Your quiz scores, streak counts, and selected settings (e.g., difficulty, instrument)</td>
+          <td>Stored only in your browser's local storage. This data never leaves your device and is not transmitted to us.</td>
+        </tr>
+        <tr>
+          <td><strong>Voluntary contact</strong></td>
+          <td>Your email address and message, if you contact us directly</td>
+          <td>Used only to respond to your inquiry. Not added to any mailing list or shared with third parties.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>We do <strong>not</strong> currently collect names, email addresses, or any account information during normal use of the App. There is no login, registration, or user account system at this time.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="doc-section" id="s3">
+    <h2><span class="sec-num">03</span> What We Don't Do</h2>
+    <ul>
+      <li>We do not sell your data — ever.</li>
+      <li>We do not display advertising or share data with advertisers.</li>
+      <li>We do not build a profile on you.</li>
+      <li>We do not use tracking pixels, fingerprinting, or cross-site tracking.</li>
+      <li>We do not share your information with third parties except as described in Section 5.</li>
+    </ul>
+  </div>
+
+  <!-- 4 -->
+  <div class="doc-section" id="s4">
+    <h2><span class="sec-num">04</span> Cookies and Local Storage</h2>
+    <p>QuizNote does not use advertising cookies or third-party tracking cookies.</p>
+    <p>We use <strong>browser local storage</strong> (not cookies) to save your game progress, preferences, and settings locally on your device. This data is stored entirely on your device and is not transmitted to our servers. You can clear it at any time through your browser's settings.</p>
+    <p>Our hosting provider (Vercel) may set minimal technical cookies necessary for the delivery and security of the App. These are not used to track you across other websites.</p>
+  </div>
+
+  <!-- 5 -->
+  <div class="doc-section" id="s5">
+    <h2><span class="sec-num">05</span> Third-Party Services</h2>
+    <p>QuizNote relies on the following third-party infrastructure. Each has its own privacy practices:</p>
+    <ul>
+      <li><strong>Vercel</strong> (hosting) — automatically receives standard server logs including IP addresses. See <a href="https://vercel.com/legal/privacy-policy" target="_blank">Vercel's Privacy Policy</a>.</li>
+      <li><strong>Google Fonts</strong> — fonts may be loaded from Google's servers, which may log your IP address. See <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
+    </ul>
+    <p>We do not currently use analytics platforms, ad networks, or any other data-collecting third-party services beyond those listed above.</p>
+  </div>
+
+  <!-- 6 -->
+  <div class="doc-section" id="s6">
+    <h2><span class="sec-num">06</span> Children's Privacy</h2>
+    <p>QuizNote is designed to be safe and appropriate for users of all ages, including children. Because we do not collect names, email addresses, or any personally identifiable information during normal use, no parental consent is required under the Children's Online Privacy Protection Act (COPPA) for children under 13 to use the App.</p>
+    <p>If a child contacts us by email and we realize we have inadvertently received personal information from a child under 13, we will delete that information promptly. If you are a parent or guardian and have concerns, please contact us at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>.</p>
+  </div>
+
+  <!-- 7 -->
+  <div class="doc-section" id="s7">
+    <h2><span class="sec-num">07</span> Data Retention</h2>
+    <p>Server logs collected by Vercel are typically retained for a short period (days to weeks) for operational purposes. We do not maintain our own long-term database of user data.</p>
+    <p>Local storage data lives on your device until you clear it via your browser settings. We have no access to it and cannot delete it on your behalf.</p>
+  </div>
+
+  <!-- 8 -->
+  <div class="doc-section" id="s8">
+    <h2><span class="sec-num">08</span> Your Rights</h2>
+    <p>Because we collect so little data, most privacy rights are straightforward to exercise:</p>
+    <ul>
+      <li><strong>Access or deletion of game data:</strong> Clear your browser's local storage at any time — that's it.</li>
+      <li><strong>Opting out of server logs:</strong> Use a VPN or privacy browser to minimize the technical data your device sends to servers.</li>
+      <li><strong>Email inquiries:</strong> If you've contacted us by email and want that message deleted, email us and we'll remove it.</li>
+    </ul>
+    <p>If you are located in the European Economic Area (EEA), United Kingdom, or California, you may have additional rights under GDPR, UK GDPR, or the CCPA respectively. Given that we collect minimal data, these rights are easy to fulfill. Contact us at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a> with any request.</p>
+  </div>
+
+  <!-- 9 -->
+  <div class="doc-section" id="s9">
+    <h2><span class="sec-num">09</span> Future Paid Features</h2>
+    <p>QuizNote is currently free to use with no accounts or payments required. If paid features, user accounts, or subscription plans are introduced in the future, this Privacy Policy will be updated before launch to describe any new data practices — including what is collected at sign-up, how payment information is handled (by a third-party processor; we will never store card details ourselves), and how to delete your account.</p>
+    <p>You will be notified of material changes before they take effect.</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="doc-section" id="s10">
+    <h2><span class="sec-num">10</span> Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes — particularly any that affect how we collect or use personal information — we will make the notice prominent on the App.</p>
+    <p>Your continued use of QuizNote after a policy update constitutes acceptance of the revised terms.</p>
+  </div>
+
+  <!-- 11 -->
+  <div class="doc-section" id="s11">
+    <h2><span class="sec-num">11</span> Contact Us</h2>
+    <p>Questions, concerns, or requests about this Privacy Policy can be sent to:</p>
+    <p>
+      QuizNote<br>
+      Email: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a><br>
+      Website: <a href="https://quiznote.online">quiznote.online</a>
+    </p>
+    <p>We aim to respond to all privacy-related inquiries within 10 business days.</p>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<footer class="site-footer">
+  © 2026 QuizNote &nbsp;·&nbsp;
+  <a href="/privacy">Privacy Policy</a>
+  <a href="/terms">Terms of Service</a>
+  <a href="/">Play</a>
+</footer>
+
+</body>
+</html>
