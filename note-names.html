@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAACBIUz2AABAAElEQVR4nO19CZgkV3Xm...">
-<title>QuizNote — FlashQuiz</title>
+<title>QuizNote — Note Names</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -800,8 +800,8 @@
     <div class="brand">
       <div class="logo-mark">
         <div>
-          <h1>FlashQuiz</h1>
-          <div class="tagline">Name the note — fast as a flashcard</div>
+          <h1>Note Names</h1>
+          <div class="tagline">See the note. Name it. Fast.</div>
         </div>
       </div>
     </div>
@@ -929,6 +929,7 @@
 <!-- ============ PLAY SCREEN ============ -->
 <section class="screen" id="play-screen">
   <div class="topbar">
+    <a href="play.html" class="icon-btn" title="Back to modules" style="text-decoration:none;">🏠</a>
     <button class="icon-btn" id="exit-btn" title="Quit round">✕</button>
     <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
     <div class="timer-badge" id="timer-badge" hidden><span class="t-icon">⏱</span><span id="timer-num">60</span>s</div>
@@ -1038,7 +1039,7 @@
 </footer>
 
 <script>
-// ============ QuizNote FlashQuiz — Audio Engine (shared) ============
+// ============ QuizNote Note Names — Audio Engine (shared) ============
 (function () {
   const NH = window.NH = window.NH || {};
   const LETTER_STEP = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
@@ -1218,7 +1219,7 @@
 </script>
 
 <script>
-// ============ QuizNote FlashQuiz — Staff Renderer ============
+// ============ QuizNote Note Names — Staff Renderer ============
 (function () {
   const NH = window.NH = window.NH || {};
   const { diatonicStep, parsePitch, displayName } = NH.music;
@@ -1318,7 +1319,7 @@
 </script>
 
 <script>
-// ============ QuizNote FlashQuiz — Game Loop ============
+// ============ QuizNote Note Names — Game Loop ============
 (function () {
   const NH = window.NH;
   const { parsePitch, displayName, midiEquals } = NH.music;
