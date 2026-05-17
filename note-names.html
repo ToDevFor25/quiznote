@@ -688,6 +688,32 @@
     letter-spacing: -0.01em;
   }
   .site-header .brand-name span { color: var(--teal); }
+  .start-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    text-decoration: none;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 7px 14px 7px 12px;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+    margin-bottom: 18px;
+    align-self: flex-start;
+  }
+  .start-back-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--ink);
+  }
+  .start-back-link:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--ink);
+  }
   .site-tagline {
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
@@ -797,6 +823,7 @@
 <!-- ============ START SCREEN ============ -->
 <section class="screen active" id="start-screen">
   <div class="start-wrap">
+    <a href="play.html" class="start-back-link">← All modules</a>
     <div class="brand">
       <div class="logo-mark">
         <div>
