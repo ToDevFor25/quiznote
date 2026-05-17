@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizNote — Pick Your Module</title>
+  <meta name="description" content="Choose a music theory module and start practicing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream:      #FFFAF0;
+      --ink:        #2A2A3E;
+      --ink-soft:   #5a5a6e;
+      --ink-faint:  #8a8472;
+      --teal:       #1FB8A8;
+      --teal-dk:    #0e8475;
+      --teal-lt:    #d3f1ec;
+      --sun:        #FFB627;
+      --sun-dk:     #c98800;
+      --coral:      #FF6B6B;
+      --coral-dk:   #c2453f;
+      --grape:      #5B3FE4;
+      --grape-dk:   #3d28a8;
+      --slate:      #6b7a99;
+      --white:      #ffffff;
+      --shadow:     #d8d6cc;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+        radial-gradient(circle at 90% 85%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+    }
+
+    /* ---- Nav ---- */
+    nav {
+      background: white;
+      border-bottom: 2.5px solid var(--ink);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-brand span { color: var(--teal); }
+    .nav-tag {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--teal-dk);
+      background: var(--teal-lt);
+      border-radius: 999px;
+      padding: 4px 12px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- Main ---- */
+    main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-header h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .page-header p {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-top: 8px;
+    }
+
+    /* ---- Module grid ---- */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .module-card {
+      background: white;
+      border: 2.5px solid var(--ink);
+      border-radius: 22px;
+      box-shadow: 0 6px 0 var(--ink);
+      padding: 22px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+      position: relative;
+    }
+    .module-card.live:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 0 var(--ink);
+    }
+    .module-card.live:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 var(--ink);
+    }
+    .module-card.soon {
+      opacity: 0.55;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .module-icon {
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      border: 2px solid var(--ink);
+      flex-shrink: 0;
+    }
+    .icon-teal  { background: var(--teal-lt); }
+    .icon-coral { background: #ffe0e0; }
+    .icon-sun   { background: #fff3cc; }
+    .icon-grape { background: #ede8ff; }
+    .icon-slate { background: #e8ecf4; }
+    .icon-green { background: #e0f5e0; }
+    .icon-pink  { background: #ffe8f5; }
+
+    .module-name {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .module-desc {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+      line-height: 1.55;
+      flex: 1;
+    }
+    .module-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+    .module-tag {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 2px solid var(--ink);
+    }
+    .tag-live {
+      background: var(--teal);
+      color: white;
+      border-color: var(--teal-dk);
+    }
+    .tag-soon {
+      background: white;
+      color: var(--ink-faint);
+      border-color: var(--shadow);
+    }
+    .module-arrow {
+      width: 34px; height: 34px;
+      background: var(--teal);
+      border: 2px solid var(--teal-dk);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      font-size: 1rem;
+      box-shadow: 0 3px 0 var(--teal-dk);
+      transition: transform 120ms;
+      flex-shrink: 0;
+    }
+    .module-card.live:hover .module-arrow {
+      transform: translateX(3px);
+    }
+
+    /* Section divider */
+    .section-divider {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .section-divider span {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: var(--shadow);
+      border-radius: 1px;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      background: white;
+      border-top: 2px solid var(--shadow);
+      padding: 16px 24px;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      color: var(--ink-faint);
+      flex-shrink: 0;
+    }
+    footer a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover { text-decoration: underline; }
+    footer .sep { margin: 0 8px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 560px) {
+      main { padding: 28px 16px 48px; }
+      .modules-grid { grid-template-columns: 1fr; }
+      .page-header h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-brand">Quiz<span>Note</span></a>
+    <span class="nav-tag">Pick a module and play</span>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>What do you want to practice?</h1>
+      <p>Each module drills one skill. Short sessions, real progress.</p>
+    </div>
+
+    <div class="modules-grid">
+
+      <!-- ===== LIVE ===== -->
+      <a href="piano-quiz.html" class="module-card live">
+        <div class="module-icon icon-teal">🎹</div>
+        <div class="module-name">PianoQuiz</div>
+        <div class="module-desc">Notes appear on the staff — find them on the keyboard. Treble, bass, or both.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-live">Available Now</span>
+          <div class="module-arrow">→</div>
+        </div>
+      </a>
+
+      <a href="note-names.html" class="module-card live">
+        <div class="module-icon icon-coral">🃏</div>
+        <div class="module-name">Note Names</div>
+        <div class="module-desc">A note appears on the staff — tap the correct name from four choices. Works for every instrument.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-live">Available Now</span>
+          <div class="module-arrow">→</div>
+        </div>
+      </a>
+
+      <!-- ===== COMING SOON ===== -->
+      <div class="section-divider"><span>Coming Soon</span></div>
+
+      <div class="module-card soon">
+        <div class="module-icon icon-sun">𝅗𝅥</div>
+        <div class="module-name">Note Values</div>
+        <div class="module-desc">Whole, half, quarter, eighth — identify note durations and understand how rhythm is written.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <div class="module-card soon">
+        <div class="module-icon icon-grape">♭</div>
+        <div class="module-name">Key Signatures</div>
+        <div class="module-desc">Identify sharps and flats, name the key, and build the foundation for reading any piece of music.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <div class="module-card soon">
+        <div class="module-icon icon-green">🎼</div>
+        <div class="module-name">Scales</div>
+        <div class="module-desc">Major and minor scales — recognize patterns, build fingering knowledge, and strengthen your ear.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <div class="module-card soon">
+        <div class="module-icon icon-slate">↕</div>
+        <div class="module-name">Intervals</div>
+        <div class="module-desc">See two notes on the staff and identify the distance between them — seconds, thirds, fifths, and more.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <div class="module-card soon">
+        <div class="module-icon icon-pink">👂</div>
+        <div class="module-name">Ear Training</div>
+        <div class="module-desc">Hear two notes and identify the interval by ear. Builds the connection between what you read and what you hear.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-soon">Coming Soon</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    © 2026 QuizNote
+    <span class="sep">·</span>
+    <a href="privacy.html">Privacy Policy</a>
+    <span class="sep">·</span>
+    <a href="terms.html">Terms of Service</a>
+    <span class="sep">·</span>
+    Made by musicians, for musicians
+  </footer>
+
+</body>
+</html>
