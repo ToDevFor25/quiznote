@@ -1493,6 +1493,60 @@
     return localStorage.getItem('nv_muted') === 'true';
   }
 
+  // Big end-of-round celebration. Only fires on 'perfect' (100%) and 'great' (80%+).
+  // Mirrors the celebration pattern from PianoQuiz so the suite feels consistent.
+  function fireSummaryCelebration(tier) {
+    if (tier !== 'perfect' && tier !== 'great') return;
+    const wrap = els['confetti'];
+    if (!wrap) return;
+
+    wrap.style.left = '50%';
+    wrap.style.top = '35%';
+    wrap.innerHTML = '';
+
+    const isPerfect = tier === 'perfect';
+    const pieceCount = isPerfect ? 100 : 55;
+    const distMin = isPerfect ? 180 : 130;
+    const distRange = isPerfect ? 220 : 160;
+    const verticalLift = isPerfect ? 80 : 40;
+    const spreadJitter = isPerfect ? 0.5 : 0.7;
+    const rotRange = isPerfect ? 720 : 540;
+    const delayMax = isPerfect ? 150 : 120;
+    const colors = isPerfect
+      ? ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2']
+      : ['#5B3FE4','#FFB627','#1FB8A8','#FF6B6B'];
+
+    for (let i = 0; i < pieceCount; i++) {
+      const el = document.createElement('i');
+      const angle = (Math.PI * 2 * i) / pieceCount + (Math.random() - 0.5) * spreadJitter;
+      const dist = distMin + Math.random() * distRange;
+      el.style.background = colors[i % colors.length];
+      el.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      el.style.setProperty('--dy', Math.sin(angle) * dist - verticalLift + 'px');
+      el.style.setProperty('--dr', ((Math.random() - 0.5) * rotRange) + 'deg');
+      el.style.animationDelay = (Math.random() * delayMax) + 'ms';
+      wrap.appendChild(el);
+    }
+    wrap.classList.remove('go');
+    void wrap.offsetWidth;
+    wrap.classList.add('go');
+    setTimeout(() => { wrap.classList.remove('go'); wrap.innerHTML = ''; }, isPerfect ? 1600 : 1400);
+
+    if (isPerfect) {
+      ['🎵','🎶','🎵','🎶','✨','⭐','🎵','🎶'].forEach((g, i) => {
+        const n = document.createElement('div');
+        n.className = 'fanfare-note';
+        n.textContent = g;
+        n.style.left = (15 + Math.random() * 70) + 'vw';
+        n.style.top  = (30 + Math.random() * 40) + 'vh';
+        n.style.animationDelay = (i * 120) + 'ms';
+        n.style.fontSize = (24 + Math.random() * 20) + 'px';
+        document.body.appendChild(n);
+        setTimeout(() => n.remove(), 1800);
+      });
+    }
+  }
+
   // ===== Round Setup =====
   function buildPool() {
     return POOLS[state.settings.difficulty].slice();
@@ -1741,7 +1795,12 @@
 
     showScreen('summary');
 
-    setTimeout(() => A.playFanfare(tier), 300);
+    // Fanfare + visual celebration. 700ms delay lets the summary content animate in first,
+    // then the celebration lands as a payoff.
+    setTimeout(() => {
+      A.playFanfare(tier);
+      fireSummaryCelebration(tier);
+    }, 700);
   }
 
   // ===== Wire up settings =====
