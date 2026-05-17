@@ -1425,7 +1425,9 @@
       svg += `<text x="${cx}" y="${cy}" font-family="serif" font-size="${lineGap * 7.2}" fill="#2A2A3E">𝄞</text>`;
     } else {
       const cx = xOffset + 14;
-      const cy = topY + lineGap * 2.6;
+      // Position the bass clef so its two dots straddle the F line (4th line
+      // from bottom = step 6 = bottomY - 3*lineGap). Larger y = further down.
+      const cy = bottomY - 3 * lineGap + lineGap * 2.05;
       svg += `<text x="${cx}" y="${cy}" font-family="serif" font-size="${lineGap * 4.6}" fill="#2A2A3E">𝄢</text>`;
     }
 
