@@ -1243,6 +1243,24 @@
     osc.start(now); osc.stop(now + 0.1);
   }
 
+  // Two-note ascending sine pluck (C5 -> E5). Lighter than playTick, fires on every flashcard reveal.
+  function playReveal() {
+    const ac = ensureCtx(), now = ac.currentTime;
+    if (muted) return;
+    const notes = [72, 76]; // C5, E5 (major third up)
+    notes.forEach((midi, i) => {
+      const f = midiToFreq(midi), t = now + i * 0.06;
+      const osc = ac.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.14, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      osc.connect(g); g.connect(masterGain);
+      osc.start(t); osc.stop(t + 0.3);
+    });
+  }
+
   function playFanfare(tier) {
     const ac = ensureCtx();
     if (!ac || muted) return;
@@ -1287,7 +1305,7 @@
     }
   }
 
-  NH.audio = { ensureCtx, playMidi, playChime, playBoop, playTick, setMuted, isMuted, playFanfare };
+  NH.audio = { ensureCtx, playMidi, playChime, playBoop, playTick, playReveal, setMuted, isMuted, playFanfare };
 })();
 </script>
 
@@ -1820,7 +1838,7 @@
     R.renderKeySignature(els['staff-wrap'], { keyId, clef });
     R.animateStage(els['staff-wrap'], 'pop');
     renderChoices();
-    A.playTick();
+    A.playReveal();
   }
 
   function renderChoices() {
