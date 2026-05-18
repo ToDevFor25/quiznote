@@ -412,6 +412,61 @@
     80% { transform: translate(4px, 2px); }
   }
 
+  /* ============ Streak-tiered explosion (ported from Key Signatures) ============ */
+  .nv-fx-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  .nv-fx-particle {
+    position: absolute;
+    will-change: transform, opacity;
+    transform-origin: center;
+    font-family: 'Bravura Text', serif;
+    line-height: 1;
+    color: var(--ink);
+    user-select: none;
+  }
+  .nv-streak-banner {
+    position: fixed;
+    top: 28%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    color: var(--sun-dk);
+    background: white;
+    border: 4px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--ink);
+    padding: 14px 30px;
+    z-index: 1100;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .nv-streak-banner.show {
+    animation: nvStreakPop 1.3s cubic-bezier(.5, 1.5, .5, 1) forwards;
+  }
+  @keyframes nvStreakPop {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    20%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    35%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    78%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  }
+  body.nv-shake { animation: nvShake 0.4s ease-in-out; }
+  @keyframes nvShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 2px); }
+    40% { transform: translate(6px, -2px); }
+    60% { transform: translate(-4px, -2px); }
+    80% { transform: translate(4px, 2px); }
+  }
+
   /* ============ Summary ============ */
   @keyframes summaryPop {
     0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
@@ -1173,7 +1228,24 @@
     }
   }
 
-  NH.audio = { ensureCtx, playMidi, playSequence, cancelSequence, playBoop, playFanfare, setMuted, isMuted };
+  // Streak-growing chime (ported from Key Signatures). Each consecutive correct
+  // adds another note to the ascending scale, so longer streaks get a longer
+  // rising sparkle. Uses scheduleNote's piano voice for warmth.
+  function playChime(midi, streak) {
+    ensureCtx();
+    if (muted) return;
+    const now = ctx.currentTime;
+    const SCALE = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16];
+    const len = Math.max(3, Math.min(streak || 1, SCALE.length));
+    let baseMidi = midi + 12;
+    while (baseMidi + SCALE[len - 1] > 100) baseMidi -= 12;
+    const step = len <= 4 ? 0.06 : len <= 7 ? 0.07 : 0.08;
+    SCALE.slice(0, len).forEach((semi, i) => {
+      scheduleNote(now + i * step, baseMidi + semi, 0.45);
+    });
+  }
+
+  NH.audio = { ensureCtx, playMidi, playSequence, cancelSequence, playBoop, playFanfare, playChime, setMuted, isMuted };
 })();
 </script>
 
@@ -1902,8 +1974,8 @@
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       state.lastResults.push('correct');
       showToast('correct', randomPraise());
-      A.playFanfare('good');
-      fireConfetti(btn);
+      A.playChime(60, state.streak);
+      fireConfetti();
     } else {
       btn.classList.add('wrong');
       // Reveal correct
@@ -1947,30 +2019,92 @@
     setTimeout(() => t.classList.remove('show'), 900);
   }
 
-  function fireConfetti(btn) {
-    const layer = els['confetti'];
-    const r = btn.getBoundingClientRect();
-    const lr = layer.getBoundingClientRect();
-    const cx = r.left + r.width/2 - lr.left;
-    const cy = r.top + r.height/2 - lr.top;
-    const colors = ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2'];
-    layer.innerHTML = '';
-    for (let i = 0; i < 22; i++) {
-      const i_ = document.createElement('i');
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 80 + Math.random() * 100;
-      i_.style.background = colors[i % colors.length];
-      i_.style.left = cx + 'px';
-      i_.style.top = cy + 'px';
-      i_.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
-      i_.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
-      i_.style.setProperty('--dr', (Math.random() * 720 - 360) + 'deg');
-      layer.appendChild(i_);
+  // Streak-tiered explosion (ported from Key Signatures). Particles are ♯ and ♭
+  // Bravura glyphs based on what's in the scale's key signature. Tiered by streak:
+  // 8/14/20/30 particles, growing distance, growing size. At 3+/5+/10+ a streak
+  // banner appears; at 10+ the body shakes too.
+  // SMuFL codepoints used (matches the rest of the module for Samsung reliability).
+  const SMUFL_SHARP = '\uE262';
+  const SMUFL_FLAT  = '\uE260';
+
+  function fireConfetti() {
+    const fx = document.getElementById('nv-fx-layer');
+    if (!fx) return;
+    const stage = els['staff-wrap'];
+    if (!stage) return;
+    const r = stage.getBoundingClientRect();
+    const originX = r.left + r.width / 2;
+    const originY = r.top + r.height / 2;
+    const ks = (state.current && typeof state.current.ks === 'number') ? state.current.ks : 0;
+    const streak = state.streak;
+
+    // Choose particle chars based on the scale's key signature.
+    // SMuFL glyphs render via Bravura Text; emoji fall through to system font.
+    let chars;
+    if (ks > 0)      chars = [SMUFL_SHARP, SMUFL_SHARP, SMUFL_SHARP, '🎵'];
+    else if (ks < 0) chars = [SMUFL_FLAT,  SMUFL_FLAT,  SMUFL_FLAT,  '🎵'];
+    else             chars = ['♪', '♫', '🎵', '✨']; // C major — celebrate cleanly
+
+    let count, sizeRange, distance, includeStreakChars;
+    if (streak >= 10) {
+      count = 30; sizeRange = [50, 100]; distance = 500; includeStreakChars = true;
+    } else if (streak >= 5) {
+      count = 20; sizeRange = [45, 80]; distance = 380; includeStreakChars = true;
+    } else if (streak >= 3) {
+      count = 14; sizeRange = [40, 70]; distance = 280; includeStreakChars = false;
+    } else {
+      count = 8; sizeRange = [35, 60]; distance = 220; includeStreakChars = false;
     }
-    layer.classList.remove('go');
-    void layer.getBoundingClientRect();
-    layer.classList.add('go');
-    setTimeout(() => layer.classList.remove('go'), 1200);
+
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'nv-fx-particle';
+      const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      particle.style.fontSize = size + 'px';
+      if (includeStreakChars && Math.random() < 0.15) {
+        particle.textContent = '🔥';
+      } else {
+        particle.textContent = chars[Math.floor(Math.random() * chars.length)];
+      }
+      particle.style.left = originX + 'px';
+      particle.style.top = originY + 'px';
+      particle.style.transform = 'translate(-50%, -50%)';
+      fx.appendChild(particle);
+
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const speed = distance * (0.5 + Math.random() * 0.5);
+      const dx = Math.cos(angle) * speed;
+      const dy = Math.sin(angle) * speed - 60;
+      const rotation = (Math.random() - 0.5) * 720;
+      const duration = 800 + Math.random() * 500;
+
+      particle.animate([
+        { transform: 'translate(-50%, -50%) rotate(0deg) scale(0.7)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + (dx * 0.4) + 'px), calc(-50% + ' + (dy * 0.4 - 40) + 'px)) rotate(' + (rotation * 0.4) + 'deg) scale(1.05)', opacity: 1, offset: 0.2 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 200) + 'px)) rotate(' + rotation + 'deg) scale(0.85)', opacity: 0 }
+      ], { duration: duration, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' });
+
+      setTimeout(() => particle.remove(), duration + 100);
+    }
+
+    if (streak >= 3) {
+      const banner = document.getElementById('nv-streak-banner');
+      if (banner) {
+        if (streak >= 10)      banner.textContent = '🔥 ' + streak + ' ON FIRE!';
+        else if (streak >= 5)  banner.textContent = '🔥 ' + streak + ' IN A ROW!';
+        else                   banner.textContent = streak + ' IN A ROW!';
+        banner.classList.remove('show');
+        void banner.offsetWidth;
+        banner.classList.add('show');
+      }
+    }
+
+    if (streak >= 10) {
+      document.body.classList.remove('nv-shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('nv-shake');
+      setTimeout(() => document.body.classList.remove('nv-shake'), 400);
+    }
   }
 
   // Big end-of-round celebration. Only fires on 'perfect' (100%) and 'great' (85%+).
@@ -2181,6 +2315,9 @@
 })();
 </script>
 
+<!-- Streak-tiered celebration overlay (ported from Key Signatures) -->
+<div class="nv-fx-layer" id="nv-fx-layer"></div>
+<div class="nv-streak-banner" id="nv-streak-banner"></div>
 
 </body>
 </html>
