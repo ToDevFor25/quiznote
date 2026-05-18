@@ -8,8 +8,19 @@
 <title>QuizNote — read music, one quiz at a time</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
   :root {
     --cream: #FFFAF0;
     --cream-2: #FFF3DC;
@@ -866,7 +877,8 @@
               <line x1="6" y1="34" x2="74" y2="34"/><line x1="6" y1="44" x2="74" y2="44"/>
               <line x1="6" y1="54" x2="74" y2="54"/>
             </g>
-            <text class="clef" x="12" y="50" font-family="serif" font-size="44" fill="#2A2A3E">𝄞</text>
+            <!-- Bravura gClef: lineGap=10, G4=44, y = 44 + 0.75*10 = 51.5 -->
+            <text class="clef" x="14" y="51.5" font-family="Bravura Text" font-size="40" fill="#2A2A3E">&#xE050;</text>
           </svg>
           <div class="tile-title">Treble</div>
           <div class="tile-sub">right hand</div>
@@ -878,7 +890,8 @@
               <line x1="6" y1="34" x2="74" y2="34"/><line x1="6" y1="44" x2="74" y2="44"/>
               <line x1="6" y1="54" x2="74" y2="54"/>
             </g>
-            <text class="clef" x="14" y="34" font-family="serif" font-size="32" fill="#2A2A3E">𝄢</text>
+            <!-- Bravura fClef: lineGap=10, F3=24, y = 24 + 2.375*10 = 47.75 -->
+            <text class="clef" x="14" y="47.75" font-family="Bravura Text" font-size="40" fill="#2A2A3E">&#xE062;</text>
           </svg>
           <div class="tile-title">Bass</div>
           <div class="tile-sub">left hand</div>
@@ -886,14 +899,19 @@
         <button class="tile" data-clef="both">
           <svg class="tile-clef" viewBox="0 0 80 60">
             <g class="staff-line" stroke="#2A2A3E" stroke-width="1.2" fill="none">
-              <line x1="6" y1="8" x2="74" y2="8"/><line x1="6" y1="14" x2="74" y2="14"/>
-              <line x1="6" y1="20" x2="74" y2="20"/><line x1="6" y1="26" x2="74" y2="26"/>
-              <line x1="6" y1="32" x2="74" y2="32"/>
-              <line x1="6" y1="40" x2="74" y2="40"/><line x1="6" y1="46" x2="74" y2="46"/>
-              <line x1="6" y1="52" x2="74" y2="52"/><line x1="6" y1="58" x2="74" y2="58"/>
+              <!-- Treble staff: 5 lines, lineGap=5, bottomY=27 -->
+              <line x1="6" y1="7" x2="74" y2="7"/><line x1="6" y1="12" x2="74" y2="12"/>
+              <line x1="6" y1="17" x2="74" y2="17"/><line x1="6" y1="22" x2="74" y2="22"/>
+              <line x1="6" y1="27" x2="74" y2="27"/>
+              <!-- Bass staff: 5 lines, lineGap=5, bottomY=55 -->
+              <line x1="6" y1="35" x2="74" y2="35"/><line x1="6" y1="40" x2="74" y2="40"/>
+              <line x1="6" y1="45" x2="74" y2="45"/><line x1="6" y1="50" x2="74" y2="50"/>
+              <line x1="6" y1="55" x2="74" y2="55"/>
             </g>
-            <text class="clef" x="10" y="30" font-family="serif" font-size="26" fill="#2A2A3E">𝄞</text>
-            <text class="clef" x="10" y="54" font-family="serif" font-size="22" fill="#2A2A3E">𝄢</text>
+            <!-- Treble Bravura gClef: G4=22, y = 22 + 0.75*5 = 25.75, font = 5*4 = 20 -->
+            <text class="clef" x="10" y="25.75" font-family="Bravura Text" font-size="20" fill="#2A2A3E">&#xE050;</text>
+            <!-- Bass Bravura fClef: F3=40, y = 40 + 2.375*5 = 51.875, font = 20 -->
+            <text class="clef" x="10" y="51.875" font-family="Bravura Text" font-size="20" fill="#2A2A3E">&#xE062;</text>
           </svg>
           <div class="tile-title">Both</div>
           <div class="tile-sub">mix it up</div>
@@ -1387,15 +1405,18 @@
       svg += `<line x1="${xOffset + 8}" y1="${y}" x2="${xOffset + width - 8}" y2="${y}" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>`;
     }
 
-    // Clef glyph
+    // Clef glyph — Bravura SMuFL (cross-platform reliable, replaces Unicode 𝄞/𝄢)
+    // Locked y-offsets from Samsung calibration: trebleClef +0.75, bassClef +2.375, accidental +1.625
     if (clef === 'treble') {
       const cx = xOffset + 14;
-      const cy = bottomY + lineGap * 0.35;
-      svg += `<text x="${cx}" y="${cy}" font-family="serif" font-size="${lineGap * 7.2}" fill="#2A2A3E">𝄞</text>`;
+      // G4 line = bottomY - lineGap; shift down by 0.75 staff-spaces
+      const cy = (bottomY - 1 * lineGap) + 0.75 * lineGap;
+      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * 4}" fill="#2A2A3E">\uE050</text>`;
     } else {
       const cx = xOffset + 14;
-      const cy = topY + lineGap * 2.6;
-      svg += `<text x="${cx}" y="${cy}" font-family="serif" font-size="${lineGap * 4.6}" fill="#2A2A3E">𝄢</text>`;
+      // F3 line = bottomY - 3*lineGap; shift down by 2.375 staff-spaces
+      const cy = (bottomY - 3 * lineGap) + 2.375 * lineGap;
+      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * 4}" fill="#2A2A3E">\uE062</text>`;
     }
 
     // Note
@@ -1412,12 +1433,14 @@
         svg += `<line x1="${nx - lineGap * 1.05}" y1="${ly}" x2="${nx + lineGap * 1.05}" y2="${ly}" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round"/>`;
       });
 
-      // Accidental glyph
+      // Accidental glyph — Bravura SMuFL with calibrated y-offset
       if (pitch.accidental) {
         const ax = nx - lineGap * 1.2;
-        const sym = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
-        const aySize = lineGap * 2.0;
-        svg += `<text x="${ax}" y="${ny + lineGap * 0.4}" font-family="serif" font-weight="700" font-size="${aySize}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
+        const sym = pitch.accidental === '#' ? '\uE262' : pitch.accidental === 'b' ? '\uE260' : '';
+        const aySize = lineGap * 4;
+        // Anchor at note y, shift down by accidental offset (1.625 staff-spaces)
+        const ay = ny + 1.625 * lineGap;
+        svg += `<text x="${ax}" y="${ay}" font-family="Bravura Text" font-size="${aySize}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
       }
 
       // Stem direction
