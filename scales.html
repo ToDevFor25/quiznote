@@ -2107,60 +2107,290 @@
     }
   }
 
-  // Big end-of-round celebration. Only fires on 'perfect' (100%) and 'great' (85%+).
-  // Mirrors the celebration pattern from PianoQuiz so the suite feels consistent.
-  function fireSummaryCelebration(tier) {
-    if (tier !== 'perfect' && tier !== 'great') return;
-    const wrap = els['confetti'];
-    if (!wrap) return;
+  // ============ Final-screen celebration (fireworks + crowd + finale note explosion) ============
+  // Shared design across all modules. Module-specific fanfare music plays underneath via A.playFanfare(tier).
+  // Tiers: 'perfect' (full show), 'great' (3 fireworks), 'good' (1 firework), anything else (no fx).
+  (function setupCelebrationFX() {
+    if (window.__qnCelebration) return; // module-level idempotent guard
+    window.__qnCelebration = true;
+  })();
 
-    // Re-anchor to viewport center (per-answer confetti positions it near a button)
-    wrap.style.left = '50%';
-    wrap.style.top = '35%';
-    wrap.innerHTML = '';
+  const QN_FX = (() => {
+    const FW_COLORS = ['#FFB627','#FF6B6B','#1FB8A8','#5B3FE4','#34d4c2','#FF8FB1','#FFD700','#00E5FF'];
+    // SMuFL music glyphs + Unicode fallbacks + emoji for the finale explosion
+    const NOTE_GLYPHS = ['\uE1D5','\uE1D7','\uE1D9','\uE1F2','\u266A','\u266B','\u266C','\u2669'];
+    const NOTE_EMOJI = ['🎵','🎶','⭐','✨'];
+    const NOTE_COLORS = ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2','#FFD700','#FF8FB1'];
 
-    const isPerfect = tier === 'perfect';
-    const pieceCount = isPerfect ? 100 : 55;
-    const distMin = isPerfect ? 180 : 130;
-    const distRange = isPerfect ? 220 : 160;
-    const verticalLift = isPerfect ? 80 : 40;
-    const spreadJitter = isPerfect ? 0.5 : 0.7;
-    const rotRange = isPerfect ? 720 : 540;
-    const delayMax = isPerfect ? 150 : 120;
-    const colors = isPerfect
-      ? ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2']
-      : ['#5B3FE4','#FFB627','#1FB8A8','#FF6B6B'];
-
-    for (let i = 0; i < pieceCount; i++) {
-      const el = document.createElement('i');
-      const angle = (Math.PI * 2 * i) / pieceCount + (Math.random() - 0.5) * spreadJitter;
-      const dist = distMin + Math.random() * distRange;
-      el.style.background = colors[i % colors.length];
-      el.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
-      el.style.setProperty('--dy', Math.sin(angle) * dist - verticalLift + 'px');
-      el.style.setProperty('--dr', ((Math.random() - 0.5) * rotRange) + 'deg');
-      el.style.animationDelay = (Math.random() * delayMax) + 'ms';
-      wrap.appendChild(el);
+    function getLayer() {
+      let layer = document.getElementById('qn-fx-layer');
+      if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'qn-fx-layer';
+        layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1000;overflow:hidden;';
+        document.body.appendChild(layer);
+      }
+      return layer;
     }
-    wrap.classList.remove('go');
-    void wrap.offsetWidth;
-    wrap.classList.add('go');
-    setTimeout(() => { wrap.classList.remove('go'); wrap.innerHTML = ''; }, isPerfect ? 1600 : 1400);
 
-    // Perfect tier: flying music notes from the body
-    if (isPerfect) {
-      ['🎵','🎶','🎵','🎶','✨','⭐','🎵','🎶'].forEach((g, i) => {
-        const n = document.createElement('div');
-        n.className = 'fanfare-note';
-        n.textContent = g;
-        n.style.left = (15 + Math.random() * 70) + 'vw';
-        n.style.top  = (30 + Math.random() * 40) + 'vh';
-        n.style.animationDelay = (i * 120) + 'ms';
-        n.style.fontSize = (24 + Math.random() * 20) + 'px';
-        document.body.appendChild(n);
-        setTimeout(() => n.remove(), 1800);
+    function getBadge() {
+      let badge = document.getElementById('qn-celeb-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'qn-celeb-badge';
+        badge.style.cssText = [
+          'position:fixed','left:50%','top:28%',
+          'transform:translate(-50%,-50%) scale(0.3)',
+          "font-family:'Fredoka',sans-serif",'font-weight:700',
+          'font-size:clamp(1.6rem,5vw,2.8rem)',
+          'color:#c98800','background:white',
+          'border:4px solid #2A2A3E','border-radius:22px',
+          'box-shadow:0 8px 0 #2A2A3E','padding:14px 30px',
+          'z-index:1100','opacity:0','pointer-events:none','white-space:nowrap'
+        ].join(';');
+        document.body.appendChild(badge);
+      }
+      return badge;
+    }
+
+    function ensureKeyframes() {
+      if (document.getElementById('qn-celeb-keyframes')) return;
+      const s = document.createElement('style');
+      s.id = 'qn-celeb-keyframes';
+      s.textContent = `
+        @keyframes qnBadgePop {
+          0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+          12%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+          22%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          80%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0; }
+        }
+        #qn-celeb-badge.show { animation: qnBadgePop 2.5s cubic-bezier(.5,1.5,.5,1) forwards; }
+      `;
+      document.head.appendChild(s);
+    }
+
+    function showBadge(text) {
+      ensureKeyframes();
+      const b = getBadge();
+      b.textContent = text;
+      b.classList.remove('show');
+      void b.offsetWidth;
+      b.classList.add('show');
+    }
+
+    function launchFirework(targetX, targetY, color, delay, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const startX = targetX + (Math.random() - 0.5) * 40;
+      const startY = window.innerHeight + 20;
+
+      setTimeout(() => {
+        const trail = document.createElement('div');
+        trail.style.cssText = 'position:absolute;width:5px;height:5px;border-radius:50%;background:' + color + ';box-shadow:0 0 12px ' + color + ';';
+        trail.style.left = startX + 'px';
+        trail.style.top = startY + 'px';
+        layer.appendChild(trail);
+        trail.animate(
+          [{ transform: 'translate(0,0)', opacity: 1 },
+           { transform: 'translate(' + (targetX - startX) + 'px,' + (targetY - startY) + 'px)', opacity: 0.5 }],
+          { duration: 450, easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)', fill: 'forwards' }
+        );
+        setTimeout(() => { trail.remove(); burst(targetX, targetY, color, scale); }, 450);
+      }, delay);
+    }
+
+    function burst(x, y, color, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const sparkCount = Math.floor(40 * scale);
+      const baseDist = 160 * scale;
+      for (let i = 0; i < sparkCount; i++) {
+        const spark = document.createElement('div');
+        const size = (5 + Math.random() * 5) * Math.min(scale, 1.4);
+        spark.style.cssText = 'position:absolute;border-radius:50%;width:' + size + 'px;height:' + size + 'px;background:' + color + ';box-shadow:0 0 8px ' + color + ';';
+        spark.style.left = x + 'px';
+        spark.style.top = y + 'px';
+        layer.appendChild(spark);
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.3;
+        const speed = baseDist * (0.6 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        const dur = 900 + Math.random() * 500;
+        spark.animate(
+          [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.5) + 'px), calc(-50% + ' + (dy*0.5) + 'px)) scale(1)', opacity: 1, offset: 0.4 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 100) + 'px)) scale(0.3)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.15, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => spark.remove(), dur + 50);
+      }
+    }
+
+    function noteExplosion(x, y, count) {
+      const layer = getLayer();
+      const baseDist = 380;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const size = 38 + Math.random() * 40;
+        const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)];
+        p.style.cssText = "position:absolute;font-family:'Bravura Text',serif;line-height:1;user-select:none;text-shadow:0 0 8px " + color + ';color:' + color + ';font-size:' + size + 'px;';
+        p.textContent = (Math.random() < 0.7)
+          ? NOTE_GLYPHS[Math.floor(Math.random() * NOTE_GLYPHS.length)]
+          : NOTE_EMOJI[Math.floor(Math.random() * NOTE_EMOJI.length)];
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.transform = 'translate(-50%,-50%)';
+        layer.appendChild(p);
+        const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const speed = baseDist * (0.5 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 40;
+        const rot = (Math.random() - 0.5) * 720;
+        const dur = 1400 + Math.random() * 600;
+        p.animate(
+          [{ transform: 'translate(-50%,-50%) rotate(0deg) scale(0.7)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.4) + 'px), calc(-50% + ' + (dy*0.4 - 40) + 'px)) rotate(' + (rot*0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.25 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 240) + 'px)) rotate(' + rot + 'deg) scale(0.7)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => p.remove(), dur + 50);
+      }
+    }
+
+    // ===== Audio helpers (built into the FX system; reach into module's AudioContext via NH.audio.ensureCtx) =====
+    function getAudioCtx() {
+      try { return NH.audio.ensureCtx(); } catch (e) { return null; }
+    }
+
+    function boomSound(t, freq, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      freq = freq || 80; vol = vol || 0.55;
+      const dest = ac.destination;
+      const osc = ac.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * 2.5, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.3);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+      osc.connect(g); g.connect(dest);
+      osc.start(t); osc.stop(t + 0.5);
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * 0.35, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = Math.random() * 2 - 1;
+      const noise = ac.createBufferSource(); noise.buffer = nbuf;
+      const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 1800;
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(vol * 0.5, t + 0.008);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      noise.connect(nf); nf.connect(ng); ng.connect(dest);
+      noise.start(t); noise.stop(t + 0.35);
+    }
+
+    function crowdCheer(t, dur, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      dur = dur || 2.5; vol = vol || 0.4;
+      const dest = ac.destination;
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = (Math.random() * 2 - 1) * 0.5;
+      const voices = [{f:700,q:8,g:1.0},{f:1200,q:6,g:0.7},{f:2400,q:4,g:0.4}];
+      voices.forEach(v => {
+        const noise = ac.createBufferSource(); noise.buffer = nbuf;
+        const filter = ac.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = v.f; filter.Q.value = v.q;
+        const gain = ac.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(vol * v.g, t + 0.25);
+        gain.gain.setValueAtTime(vol * v.g, t + dur * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        noise.connect(filter); filter.connect(gain); gain.connect(dest);
+        noise.start(t); noise.stop(t + dur + 0.05);
       });
+      const whoopCount = Math.floor(dur * 2);
+      for (let i = 0; i < whoopCount; i++) {
+        const wt = t + Math.random() * (dur - 0.2);
+        const wbuf = ac.createBuffer(1, ac.sampleRate * 0.18, ac.sampleRate);
+        const wd = wbuf.getChannelData(0);
+        for (let j = 0; j < wd.length; j++) wd[j] = (Math.random() * 2 - 1) * 0.6;
+        const w = ac.createBufferSource(); w.buffer = wbuf;
+        const wf = ac.createBiquadFilter();
+        wf.type = 'bandpass'; wf.Q.value = 4;
+        wf.frequency.setValueAtTime(800 + Math.random() * 400, wt);
+        wf.frequency.exponentialRampToValueAtTime(1800 + Math.random() * 600, wt + 0.15);
+        const wg = ac.createGain();
+        wg.gain.setValueAtTime(0.0001, wt);
+        wg.gain.exponentialRampToValueAtTime(vol * 0.6, wt + 0.04);
+        wg.gain.exponentialRampToValueAtTime(0.0001, wt + 0.16);
+        w.connect(wf); wf.connect(wg); wg.connect(dest);
+        w.start(wt); w.stop(wt + 0.2);
+      }
     }
+
+    // ===== Tiered celebration entry point =====
+    function fire(tier) {
+      const ac = getAudioCtx();
+      const now = ac ? ac.currentTime : 0;
+      const w = window.innerWidth, h = window.innerHeight;
+
+      if (tier === 'perfect') {
+        showBadge('PERFECT! 🎆');
+        const launches = [
+          { x: w*0.25, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.4 },
+          { x: w*0.70, y: h*0.25, color: FW_COLORS[1], delay: 250,  scale: 1.4 },
+          { x: w*0.45, y: h*0.20, color: FW_COLORS[2], delay: 550,  scale: 1.5 },
+          { x: w*0.18, y: h*0.32, color: FW_COLORS[3], delay: 900,  scale: 1.3 },
+          { x: w*0.78, y: h*0.28, color: FW_COLORS[4], delay: 1300, scale: 1.3 },
+          { x: w*0.50, y: h*0.18, color: FW_COLORS[6], delay: 1800, scale: 1.7 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0,0.25,0.55,0.90,1.30,1.80].forEach((t,i) => {
+            const isFinale = i === 5;
+            boomSound(now + t + 0.45, isFinale ? 60 : (70 + i*8), isFinale ? 0.55 : 0.38);
+          });
+          crowdCheer(now + 0.1, 3.2, 0.4);
+        }
+        // Finale 100-note explosion synced to finale burst (1800ms launch + 450ms = 2250ms)
+        setTimeout(() => noteExplosion(w / 2, h * 0.35, 100), 2250);
+      } else if (tier === 'great') {
+        showBadge('GREAT! ✨');
+        const launches = [
+          { x: w*0.30, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.2 },
+          { x: w*0.70, y: h*0.28, color: FW_COLORS[2], delay: 500,  scale: 1.2 },
+          { x: w*0.50, y: h*0.22, color: FW_COLORS[1], delay: 1100, scale: 1.3 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0, 0.5, 1.1].forEach((t,i) => boomSound(now + t + 0.45, 75 + i*5, 0.36));
+          crowdCheer(now + 0.1, 2.0, 0.3);
+        }
+      } else if (tier === 'good') {
+        showBadge('NICE! 🎵');
+        launchFirework(w*0.5, h*0.30, FW_COLORS[0], 200, 1.0);
+        if (ac) {
+          boomSound(now + 0.65, 80, 0.32);
+          crowdCheer(now + 0.2, 1.2, 0.22);
+        }
+      } else {
+        // 'okay' / 'practice' — polite badge only, no fx
+        showBadge('Good try!');
+      }
+    }
+
+    return { fire };
+  })();
+
+  // Big end-of-round celebration. Delegates to the shared QN_FX system.
+  function fireSummaryCelebration(tier) {
+    QN_FX.fire(tier);
   }
 
   function updatePlayUI() {
