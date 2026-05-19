@@ -769,6 +769,15 @@
   .audio-nudge.show { opacity: 1; pointer-events: auto; }
 
   /* ============ Scrollable keyboard ============ */
+  /* kb-frame is the non-scrolling outer container for the keyboard + indicators.
+     kb-scroll-wrap (inside) is the actual horizontal scroller.
+     mc-ind overlays are positioned absolutely in kb-frame so they stay pinned
+     to the viewport edge while the scroll-wrap scrolls underneath. */
+  .kb-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+  }
   .kb-scroll-wrap {
     overflow-x: auto;
     overflow-y: hidden;
@@ -809,6 +818,98 @@
   @media (min-width: 480px) {
     .scroll-hint { display: none; }
   }
+
+  /* ============ Middle C indicator (off-screen pointer) ============
+     Shows when Middle C is scrolled off-viewport on mobile. Lives in kb-frame
+     so it stays pinned to the viewport edge. Pure CSS animation + JS for
+     position, dot count, and handoff to pill. */
+  .mc-ind {
+    position: absolute;
+    top: 9px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 5;
+    cursor: pointer;
+    user-select: none;
+    padding: 6px 4px;
+    color: var(--teal-soft, #7dd4c8);
+    pointer-events: auto;
+    transition: opacity 500ms ease-out;
+  }
+  /* Mobile-only — desktop fills the keyboard so there's nothing off-screen */
+  @media (min-width: 480px) {
+    .mc-ind { display: none !important; }
+  }
+  .mc-ind .arrow {
+    width: 9px; height: 11px;
+    flex-shrink: 0; display: inline-block;
+  }
+  .mc-ind .arrow svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .mc-ind .arrow svg polygon {
+    fill: #7dd4c8;
+    stroke: #0e8475;
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+  }
+  .mc-ind .label {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #7dd4c8;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .mc-ind .dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 2px;
+  }
+  .mc-ind .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #7dd4c8;
+    opacity: 0.35;
+    display: inline-block;
+  }
+  /* Static gradient — closest-to-arrow dot is darkest */
+  .mc-ind.left .dots .dot:nth-child(1)       { opacity: 0.85; }
+  .mc-ind.left .dots .dot:nth-child(2)       { opacity: 0.65; }
+  .mc-ind.left .dots .dot:nth-child(3)       { opacity: 0.50; }
+  .mc-ind.left .dots .dot:nth-child(4)       { opacity: 0.40; }
+  .mc-ind.left .dots .dot:nth-child(5)       { opacity: 0.30; }
+  .mc-ind.right .dots .dot:nth-last-child(1) { opacity: 0.85; }
+  .mc-ind.right .dots .dot:nth-last-child(2) { opacity: 0.65; }
+  .mc-ind.right .dots .dot:nth-last-child(3) { opacity: 0.50; }
+  .mc-ind.right .dots .dot:nth-last-child(4) { opacity: 0.40; }
+  .mc-ind.right .dots .dot:nth-last-child(5) { opacity: 0.30; }
+  /* Chase wave running outward toward the arrow */
+  @keyframes mc-chase-bright {
+    0%, 70%, 100% { transform: scale(1); background-color: #7dd4c8; }
+    35%           { transform: scale(1.45); background-color: #1FB8A8; }
+  }
+  .mc-ind .dot { animation: mc-chase-bright 1.8s ease-in-out infinite; }
+  .mc-ind.left .dots  .dot:nth-child(5)       { animation-delay: 0s; }
+  .mc-ind.left .dots  .dot:nth-child(4)       { animation-delay: 0.2s; }
+  .mc-ind.left .dots  .dot:nth-child(3)       { animation-delay: 0.4s; }
+  .mc-ind.left .dots  .dot:nth-child(2)       { animation-delay: 0.6s; }
+  .mc-ind.left .dots  .dot:nth-child(1)       { animation-delay: 0.8s; }
+  .mc-ind.right .dots .dot:nth-last-child(5)  { animation-delay: 0s; }
+  .mc-ind.right .dots .dot:nth-last-child(4)  { animation-delay: 0.2s; }
+  .mc-ind.right .dots .dot:nth-last-child(3)  { animation-delay: 0.4s; }
+  .mc-ind.right .dots .dot:nth-last-child(2)  { animation-delay: 0.6s; }
+  .mc-ind.right .dots .dot:nth-last-child(1)  { animation-delay: 0.8s; }
+  /* Arrow pulse in sync with last dot */
+  @keyframes mc-arrow-pulse {
+    0%, 70%, 100% { transform: translateX(0); opacity: 0.8; }
+    35%           { transform: translateX(var(--mc-arrow-nudge, -2px)); opacity: 1; }
+  }
+  .mc-ind.left  .arrow { --mc-arrow-nudge: -2px; animation: mc-arrow-pulse 1.8s ease-in-out infinite; animation-delay: 0.8s; }
+  .mc-ind.right .arrow { --mc-arrow-nudge:  2px; animation: mc-arrow-pulse 1.8s ease-in-out infinite; animation-delay: 0.8s; }
+  .mc-ind.hidden { opacity: 0; pointer-events: none; }
+  .mc-ind:active { transform: translateY(1px); }
 
   /* Hide header/footer during gameplay */
   #play-screen.active ~ .site-footer,
@@ -1037,10 +1138,15 @@
   </div>
 
   <div class="card kb-card">
-    <div class="kb-scroll-wrap">
-      <div id="kb-wrap">
-        <!-- keyboard SVG injected here -->
+    <div class="kb-frame" id="kb-frame">
+      <div class="kb-scroll-wrap" id="kb-scroll-wrap">
+        <div id="kb-wrap">
+          <!-- keyboard SVG injected here -->
+        </div>
       </div>
+      <!-- Middle C indicator (left and right variants) — viewport-pinned overlay -->
+      <div class="mc-ind left hidden" id="mc-ind-left" aria-label="Scroll to Middle C"></div>
+      <div class="mc-ind right hidden" id="mc-ind-right" aria-label="Scroll to Middle C"></div>
     </div>
     <div class="scroll-hint">← slide to scroll →</div>
   </div>
@@ -1649,6 +1755,14 @@
       svgEl,
       findKey: (midi) => svgEl.querySelector(`.kb-key[data-midi="${midi}"]`),
     };
+
+    // Return geometry for centering + indicator logic
+    return {
+      width, whiteW, height, middleCx,
+      pillW: 96, pillY: 4,
+      lowOct, highOct,
+      onPhone,
+    };
   }
 
   function pressKeyAnim(el) {
@@ -1689,9 +1803,242 @@
     return k;
   }
 
+  // ============ Keyboard centering + Middle C indicator ============
+  // Clef-aware launch centering, plus an off-screen indicator system that
+  // points to Middle C when it's scrolled out of view on mobile.
+  //
+  // Spec:
+  // - Centering on launch: Treble→B4, Bass→D3, Grand→C4
+  // - Indicator: arrow + "Middle C" label + 3/4/5 dots, lighter teal
+  // - Half-flow: edge-pinned when C >1 oct from edge, flows toward midpoint
+  //   between edge and pill when within 1 oct.
+  // - On handoff (C enters viewport): snap indicator to align with pill,
+  //   fade both over 500ms. Arrow tip aligns with pill's near edge.
+  const KeyboardCentering = (function () {
+    const HYSTERESIS = 20;
+    const EDGE_PADDING = 8;
+    const RELEASE_OCT = 1.0;
+    const FADE_MS = 500;
+    const WHITE_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+
+    let geom = null;
+    let frame = null;
+    let scrollWrap = null;
+    let elL = null;
+    let elR = null;
+    let fading = false;
+    let lastActiveSide = null;
+    let fadeTimer = null;
+    let scrollHandler = null;
+    let initialized = false;
+
+    function getCenterTargetX(clef, g) {
+      if (!g || g.middleCx == null) return null;
+      let letter, oct;
+      if (clef === 'treble') { letter = 'B'; oct = 4; }
+      else if (clef === 'bass') { letter = 'D'; oct = 3; }
+      else { letter = 'C'; oct = 4; }
+      const i = (oct - g.lowOct) * 7 + WHITE_NOTES.indexOf(letter);
+      return i * g.whiteW + g.whiteW / 2;
+    }
+
+    function dotCountForOctaves(oct) {
+      if (oct < 1.0) return 3;
+      if (oct < 2.0) return 4;
+      return 5;
+    }
+
+    function buildIndicatorHTML(side, count) {
+      const arrowSvg = side === 'left'
+        ? '<svg viewBox="0 0 9 11"><polygon points="9,0.5 0.5,5.5 9,10.5"/></svg>'
+        : '<svg viewBox="0 0 9 11"><polygon points="0.5,0.5 8.5,5.5 0.5,10.5"/></svg>';
+      let dots = '';
+      for (let i = 0; i < count; i++) dots += '<span class="dot"></span>';
+      return side === 'left'
+        ? '<span class="arrow">' + arrowSvg + '</span><span class="label">Middle C</span><span class="dots">' + dots + '</span>'
+        : '<span class="dots">' + dots + '</span><span class="label">Middle C</span><span class="arrow">' + arrowSvg + '</span>';
+    }
+
+    function clampToFrame(leftPx, indWidth, frameWidth) {
+      const minLeft = EDGE_PADDING;
+      const maxLeft = frameWidth - indWidth - EDGE_PADDING;
+      if (leftPx < minLeft) return minLeft;
+      if (leftPx > maxLeft) return maxLeft;
+      return leftPx;
+    }
+
+    function computeMergePosition(side, pillCenterInViewport, pillW, indWidth, frameWidth) {
+      let leftPx;
+      if (side === 'left') {
+        leftPx = pillCenterInViewport - pillW / 2;
+      } else {
+        leftPx = pillCenterInViewport + pillW / 2 - indWidth;
+      }
+      return clampToFrame(leftPx, indWidth, frameWidth);
+    }
+
+    function computeIndicator(indWidth, frameWidth) {
+      if (!geom || geom.middleCx == null) return { side: null };
+      const sl = scrollWrap.scrollLeft;
+      const wrapW = scrollWrap.clientWidth;
+      const leftEdge = sl;
+      const rightEdge = sl + wrapW;
+      const offLeft = geom.middleCx < leftEdge - HYSTERESIS;
+      const offRight = geom.middleCx > rightEdge + HYSTERESIS;
+      const cInViewport = geom.middleCx - sl;
+
+      if (!offLeft && !offRight) {
+        return { side: null, pillCenterInViewport: cInViewport };
+      }
+      const octavePx = geom.whiteW * 7;
+
+      if (offLeft) {
+        const distOct = (leftEdge - geom.middleCx) / octavePx;
+        const dotCount = dotCountForOctaves(distOct);
+        let leftPx;
+        if (distOct > RELEASE_OCT) {
+          leftPx = EDGE_PADDING;
+        } else {
+          // Half-flow: target is midpoint between edge and where pill will be
+          const midPointTarget = (EDGE_PADDING + (wrapW / 2 - geom.pillW / 2)) / 2;
+          const t = distOct / RELEASE_OCT;
+          leftPx = EDGE_PADDING * t + midPointTarget * (1 - t);
+        }
+        leftPx = clampToFrame(leftPx, indWidth, frameWidth);
+        return { side: 'left', leftPx, dotCount, pillCenterInViewport: cInViewport };
+      } else {
+        const distOct = (geom.middleCx - rightEdge) / octavePx;
+        const dotCount = dotCountForOctaves(distOct);
+        const edgeRightPx = frameWidth - indWidth - EDGE_PADDING;
+        let leftPx;
+        if (distOct > RELEASE_OCT) {
+          leftPx = edgeRightPx;
+        } else {
+          const midPointTarget = (edgeRightPx + (wrapW / 2 - indWidth / 2 + geom.pillW / 2)) / 2;
+          const t = distOct / RELEASE_OCT;
+          leftPx = edgeRightPx * t + midPointTarget * (1 - t);
+        }
+        leftPx = clampToFrame(leftPx, indWidth, frameWidth);
+        return { side: 'right', leftPx, dotCount, pillCenterInViewport: cInViewport };
+      }
+    }
+
+    function update() {
+      if (!geom || !frame || !scrollWrap) return;
+      const frameW = frame.clientWidth;
+      const indWL = elL.offsetWidth || 110;
+      const indWR = elR.offsetWidth || 110;
+      const r = computeIndicator(Math.max(indWL, indWR), frameW);
+
+      if (r.side === null) {
+        // C is visible — trigger handoff if there was an active indicator
+        if (fading) {
+          // Already fading; no need to re-trigger
+          return;
+        }
+        if (!lastActiveSide) {
+          elL.classList.add('hidden');
+          elR.classList.add('hidden');
+          return;
+        }
+        // Snap-to-pill handoff: position then fade
+        const el = lastActiveSide === 'left' ? elL : elR;
+        const indW = lastActiveSide === 'left' ? indWL : indWR;
+        if (r.pillCenterInViewport != null) {
+          const mergeX = computeMergePosition(lastActiveSide, r.pillCenterInViewport, geom.pillW, indW, frameW);
+          el.style.left = mergeX + 'px';
+          el.style.right = 'auto';
+        }
+        requestAnimationFrame(() => { el.classList.add('hidden'); });
+        fading = true;
+        clearTimeout(fadeTimer);
+        fadeTimer = setTimeout(() => {
+          fading = false;
+          lastActiveSide = null;
+        }, FADE_MS + 50);
+        return;
+      }
+
+      // C is off-screen — cancel any in-progress fade
+      if (fading) {
+        clearTimeout(fadeTimer);
+        fading = false;
+      }
+      lastActiveSide = r.side;
+
+      const el = r.side === 'left' ? elL : elR;
+      const elOther = r.side === 'left' ? elR : elL;
+      el.innerHTML = buildIndicatorHTML(r.side, r.dotCount);
+      el.className = 'mc-ind ' + r.side;
+      // Re-measure after rendering and recompute with actual width
+      const indWActual = el.offsetWidth || (r.side === 'left' ? indWL : indWR);
+      const r2 = computeIndicator(indWActual, frameW);
+      el.style.left = r2.leftPx + 'px';
+      el.style.right = 'auto';
+      elOther.classList.add('hidden');
+    }
+
+    function scrollToMC() {
+      if (!geom || !scrollWrap || geom.middleCx == null) return;
+      scrollWrap.scrollTo({
+        left: Math.max(0, geom.middleCx - scrollWrap.clientWidth / 2),
+        behavior: 'smooth',
+      });
+    }
+
+    /**
+     * Initialize centering + indicator system after renderKeyboard.
+     * @param {string} clef - 'treble' | 'bass' | 'both'
+     * @param {object} g - geometry returned from renderKeyboard
+     */
+    function init(clef, g) {
+      geom = g;
+      frame = document.getElementById('kb-frame');
+      scrollWrap = document.getElementById('kb-scroll-wrap');
+      elL = document.getElementById('mc-ind-left');
+      elR = document.getElementById('mc-ind-right');
+
+      if (!frame || !scrollWrap || !elL || !elR || !geom) return;
+
+      // Reset indicator state
+      fading = false;
+      lastActiveSide = null;
+      clearTimeout(fadeTimer);
+      elL.className = 'mc-ind left hidden';
+      elR.className = 'mc-ind right hidden';
+      // Pre-render with placeholder content so offsetWidth works on first frame
+      elL.innerHTML = buildIndicatorHTML('left', 3);
+      elR.innerHTML = buildIndicatorHTML('right', 3);
+
+      // Center on launch — clef-aware
+      const targetX = getCenterTargetX(clef, geom);
+      requestAnimationFrame(() => {
+        if (targetX != null && geom.onPhone) {
+          const wrapW = scrollWrap.clientWidth;
+          scrollWrap.scrollLeft = Math.max(0, targetX - wrapW / 2);
+        } else {
+          scrollWrap.scrollLeft = 0;
+        }
+        update();
+      });
+
+      // Wire scroll handler (once)
+      if (!initialized) {
+        scrollHandler = function () { update(); };
+        scrollWrap.addEventListener('scroll', scrollHandler, { passive: true });
+        elL.addEventListener('click', scrollToMC);
+        elR.addEventListener('click', scrollToMC);
+        initialized = true;
+      }
+    }
+
+    return { init, update, scrollToMC };
+  })();
+
   NH.render = {
     renderStaff, animateNote, recolorNote,
     renderKeyboard, highlightKey, clearHighlights, glowKey, pressKeyAnim,
+    KeyboardCentering,
   };
 })();
 </script>
@@ -1960,10 +2307,11 @@
     // Defer keyboard render until after the play screen is visible so
     // wrap.offsetWidth returns the real container width (not 0)
     requestAnimationFrame(() => {
-      R.renderKeyboard(els['kb-wrap'], {
+      const geom = R.renderKeyboard(els['kb-wrap'], {
         lowOct, highOct, showBlack: true, showLetters,
         onTap: handleKeyTap,
       });
+      R.KeyboardCentering.init(state.settings.clef, geom);
     });
 
     nextQuestion();
@@ -2716,7 +3064,8 @@
       else { lowOct = 2; highOct = state.settings.difficulty === 'tricky' ? 5 : 4; }
       showScreen('play');
       requestAnimationFrame(() => {
-        R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+        const geom = R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+        R.KeyboardCentering.init(state.settings.clef, geom);
       });
       nextQuestion();
       startTimer();
@@ -2860,7 +3209,8 @@
           if (state.settings.clef === 'both') { lowOct = 2; highOct = 6; }
           else if (state.settings.clef === 'treble') { lowOct = state.settings.difficulty === 'tricky' ? 2 : 3; highOct = 6; }
           else { lowOct = 2; highOct = state.settings.difficulty === 'tricky' ? 5 : 4; }
-          R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+          const geom = R.renderKeyboard(els['kb-wrap'], { lowOct, highOct, showBlack: true, showLetters, onTap: handleKeyTap });
+          R.KeyboardCentering.init(state.settings.clef, geom);
         }
       }, 150);
     });
