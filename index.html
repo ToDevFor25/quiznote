@@ -1551,44 +1551,43 @@
         <!-- PianoQuiz : staff note → arrow → mini piano with one key lit -->
         <a class="ltile" href="piano-quiz.html">
           <div class="ltile-art bg-teal">
-            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-              <!-- Staff lines y=14, 22, 30, 38, 46 -->
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 (canonical, matches Reading tiles) -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="30" y1="14" x2="170" y2="14"/>
-                <line x1="30" y1="22" x2="170" y2="22"/>
-                <line x1="30" y1="30" x2="170" y2="30"/>
-                <line x1="30" y1="38" x2="170" y2="38"/>
-                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
               </g>
-              <!-- Treble clef -->
-              <text x="30" y="46" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
-              <!-- E note on bottom line (y=46) - stem up - aligned above lit E key (3rd white, center x=79) -->
+              <!-- Treble clef: canonical y=52 at font-size 32 -->
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- E note on bottom line (y=54) - stem up - centered above lit E key (3rd white, center x=56) -->
               <g class="anim-pulse">
-                <line x1="83" y1="45" x2="83" y2="24" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
-                <ellipse cx="79" cy="46" rx="5" ry="3.6" transform="rotate(-20 79 46)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
+                <line x1="60" y1="53" x2="60" y2="34" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="56" cy="54" rx="5" ry="3.6" transform="rotate(-20 56 54)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
               </g>
-              <!-- Arrow down pointing at center of lit E key -->
-              <path d="M79 58 L79 72 M74 67 L79 72 L84 67" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <!-- Piano: 8 white keys, C D E F G A B C, w=14 starting at x=44 -->
+              <!-- Arrow down pointing at center of lit E key (x=56) -->
+              <path d="M56 62 L56 72 M52 68 L56 72 L60 68" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Piano: 8 white keys C-C, w=16 starting at x=16. E (3rd) is lit teal. -->
               <g stroke="#2A2A3E" stroke-width="1.5">
-                <rect x="44"  y="82" width="14" height="38" fill="white"/>
-                <rect x="58"  y="82" width="14" height="38" fill="white"/>
-                <rect x="72"  y="82" width="14" height="38" fill="#1FB8A8" class="anim-blink"/>
-                <rect x="86"  y="82" width="14" height="38" fill="white"/>
-                <rect x="100" y="82" width="14" height="38" fill="white"/>
-                <rect x="114" y="82" width="14" height="38" fill="white"/>
-                <rect x="128" y="82" width="14" height="38" fill="white"/>
-                <rect x="142" y="82" width="14" height="38" fill="white"/>
+                <rect x="16"  y="74" width="16" height="34" fill="white"/>
+                <rect x="32"  y="74" width="16" height="34" fill="white"/>
+                <rect x="48"  y="74" width="16" height="34" fill="#1FB8A8" class="anim-blink"/>
+                <rect x="64"  y="74" width="16" height="34" fill="white"/>
+                <rect x="80"  y="74" width="16" height="34" fill="white"/>
+                <rect x="96"  y="74" width="16" height="34" fill="white"/>
+                <rect x="112" y="74" width="16" height="34" fill="white"/>
+                <rect x="128" y="74" width="16" height="34" fill="white"/>
               </g>
-              <!-- Black keys: between C-D, D-E, F-G, G-A, A-B -->
+              <!-- Black keys between C-D, D-E, F-G, G-A, A-B -->
               <g fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1.2">
-                <rect x="53"  y="82" width="10" height="22"/>
-                <rect x="67"  y="82" width="10" height="22"/>
-                <rect x="95"  y="82" width="10" height="22"/>
-                <rect x="109" y="82" width="10" height="22"/>
-                <rect x="123" y="82" width="10" height="22"/>
+                <rect x="27"  y="74" width="10" height="20"/>
+                <rect x="43"  y="74" width="10" height="20"/>
+                <rect x="75"  y="74" width="10" height="20"/>
+                <rect x="91"  y="74" width="10" height="20"/>
+                <rect x="107" y="74" width="10" height="20"/>
               </g>
-              <!-- Fix arrow Y to point AT the lit E key (x=79 center of teal rect) -->
             </svg>
           </div>
           <div class="ltile-body">
@@ -1610,7 +1609,7 @@
                 <line x1="30" y1="54" x2="170" y2="54"/>
               </g>
               <!-- Treble clef -->
-              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <text x="30" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
               <!-- B note on middle line (y=38) - stem down -->
               <g>
                 <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
@@ -1784,7 +1783,7 @@
       <div class="tile-grid">
 
         <!-- Intervals : two stacked notes + bracket + answer chips -->
-        <a class="ltile" href="play.html">
+        <a class="ltile" href="intervals.html">
           <div class="ltile-art bg-slate">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
