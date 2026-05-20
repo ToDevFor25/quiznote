@@ -205,48 +205,79 @@
    * @param {string} [opts.className]
    * @returns {string} SVG fragment
    */
+  // ─────────────────────────────────────────────────────────────
+  // Vector digit glyphs for time signatures.
+  //
+  // WHY PATHS, NOT TEXT: font-rendered digits drifted vertically and
+  // changed size between questions on real devices — the same glyph would
+  // render at different pixel widths, and dominant-baseline centered by the
+  // font's metric box (not each glyph's ink), so symmetric digits (6, 8)
+  // looked centered while asymmetric ones (3, 4) sat off. Vector paths have
+  // no font dependency, no baseline, no load-timing, no metric box: a path
+  // at given coordinates renders pixel-identically every time, everywhere.
+  //
+  // Each digit is defined in a normalized box: width DIGIT_W × height DIGIT_H,
+  // with its top-left at (0,0). The geometric center is therefore
+  // (DIGIT_W/2, DIGIT_H/2). Glyphs are placed by translate+scale only.
+  // Bold, monoline-ish forms to read as engraved time-signature numerals.
+  // ─────────────────────────────────────────────────────────────
+
+  const DIGIT_W = 100;
+  const DIGIT_H = 140;
+
+  // Filled-outline paths (even-odd) for 0-9 in the 100x140 box.
+  const DIGIT_PATHS = {
+    '0': 'M50 4 C76 4 92 30 92 70 C92 110 76 136 50 136 C24 136 8 110 8 70 C8 30 24 4 50 4 Z M50 30 C38 30 32 48 32 70 C32 92 38 110 50 110 C62 110 68 92 68 70 C68 48 62 30 50 30 Z',
+    '1': 'M58 4 L58 136 L34 136 L34 36 L14 46 L14 22 L40 4 Z',
+    '2': 'M14 40 C14 14 34 4 52 4 C74 4 90 18 90 42 C90 60 78 74 60 90 L44 104 L92 104 L92 136 L12 136 L12 112 L52 74 C62 64 66 56 66 46 C66 36 60 30 50 30 C40 30 36 38 36 48 L36 52 L14 52 Z',
+    '3': 'M14 38 C16 14 36 4 54 4 C76 4 90 16 90 38 C90 52 82 62 70 66 C84 70 92 82 92 98 C92 122 74 136 52 136 C30 136 12 124 12 98 L12 96 L36 96 L36 100 C36 108 42 114 52 114 C62 114 68 108 68 98 C68 88 60 82 48 82 L40 82 L40 60 L48 60 C58 60 66 54 66 44 C66 36 60 30 52 30 C42 30 38 36 38 46 L14 46 Z',
+    '4': 'M62 4 L92 4 L92 88 L106 88 L106 110 L92 110 L92 136 L68 136 L68 110 L8 110 L8 86 Z M68 88 L68 38 L36 88 Z',
+    '5': 'M20 4 L88 4 L88 28 L42 28 L40 54 C46 50 54 48 62 48 C82 48 94 64 94 92 C94 120 76 136 52 136 C30 136 12 122 12 98 L12 96 L36 96 L36 98 C36 108 42 114 52 114 C62 114 70 106 70 92 C70 78 62 70 50 70 C42 70 36 74 32 80 L12 76 Z',
+    '6': 'M52 4 C72 4 86 14 88 32 L64 36 C62 32 58 28 52 28 C40 28 34 42 33 64 C40 56 50 52 60 52 C80 52 94 68 94 92 C94 118 76 136 52 136 C26 136 10 116 10 78 C10 32 28 4 52 4 Z M52 74 C42 74 34 82 34 94 C34 106 42 114 52 114 C62 114 70 106 70 94 C70 82 62 74 52 74 Z',
+    '7': 'M12 4 L92 4 L92 26 L52 136 L26 136 L66 28 L12 28 Z',
+    '8': 'M50 4 C72 4 88 16 88 36 C88 50 80 60 68 64 C82 68 92 80 92 96 C92 120 74 136 50 136 C26 136 8 120 8 96 C8 80 18 68 32 64 C20 60 12 50 12 36 C12 16 28 4 50 4 Z M50 26 C42 26 36 32 36 40 C36 48 42 54 50 54 C58 54 64 48 64 40 C64 32 58 26 50 26 Z M50 76 C40 76 32 84 32 94 C32 106 40 112 50 112 C60 112 68 106 68 94 C68 84 60 76 50 76 Z',
+    '9': 'M48 4 C74 4 90 24 90 62 C90 108 72 136 48 136 C28 136 14 126 12 108 L36 104 C38 108 42 112 48 112 C60 112 66 98 67 76 C60 84 50 88 40 88 C20 88 6 72 6 48 C6 22 24 4 48 4 Z M48 26 C38 26 30 34 30 46 C30 58 38 66 48 66 C58 66 66 58 66 46 C66 34 58 26 48 26 Z',
+  };
+
   function buildTimeSignature(opts) {
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
-    // Bravura SMuFL time-sig digits (U+E080-E089) silently fail to render in
-    // Bravura Text on some devices, so we use a bold serif fallback (Georgia,
-    // then Times, then generic serif) which approximates the engraved look.
-    //
-    // Positioning is anchored to the MIDDLE staff line:
-    //   - top digit center sits topOffset above the middle line
-    //   - bottom digit center sits botOffset below the middle line
-    //   - yShift slides the whole pair if needed
-    // These values were calibrated visually across all ten time signatures
-    // using ts-calibrator.html. Re-run that harness before changing them.
-    const fontSize   = lineGap * 2.30;
-    const digitWidth = lineGap * 1.15;
-    const topOffset  = lineGap * 1.02;
-    const botOffset  = lineGap * 1.02;
-    const yShift     = lineGap * 0.00;
 
-    const midY = bottomY - 2 * lineGap;   // middle staff line
-    const topY = midY - topOffset + yShift;
-    const botY = midY + botOffset + yShift;
+    // Glyph height ~2.3 staff spaces (matches prior calibrated visual size).
+    // Width scales proportionally from the normalized box aspect ratio.
+    const glyphH = lineGap * 2.30;
+    const scale  = glyphH / DIGIT_H;
+    const glyphW = DIGIT_W * scale;
+    const digitGap = glyphW * 0.04;   // small gap between multi-digit numerals
+
+    // Anchored to the MIDDLE staff line: top numeral center one staff-space
+    // above it, bottom numeral center one staff-space below.
+    const midY = bottomY - 2 * lineGap;
+    const topCenterY = midY - lineGap * 1.02;
+    const botCenterY = midY + lineGap * 1.02;
+
+    const classAttr = className ? ` class="${className}"` : '';
 
     function renderStack(numStr, centerY) {
-      const totalWidth = numStr.length * digitWidth;
-      const startX = x - totalWidth / 2 + digitWidth / 2;
+      const n = numStr.length;
+      const totalW = n * glyphW + (n - 1) * digitGap;
+      const startLeft = x - totalW / 2;
       let out = '';
-      for (let i = 0; i < numStr.length; i++) {
-        const dx = startX + i * digitWidth;
-        const classAttr = className ? ` class="${className}"` : '';
-        // Place baseline at centerY as a first approximation; the consumer
-        // measures each glyph's actual ink box (getBBox) and shifts it so the
-        // ink-center lands exactly on data-cy. We do NOT use dominant-baseline:
-        // it centers by the font's metric box, not each glyph's ink, so
-        // symmetric digits (6, 8) look centered while asymmetric ones (3, 4)
-        // sit visibly off. Per-glyph bbox centering is shape-exact.
-        out += `<text${classAttr} data-cy="${centerY}" x="${dx}" y="${centerY}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
+      for (let i = 0; i < n; i++) {
+        const d = numStr[i];
+        const path = DIGIT_PATHS[d];
+        if (!path) continue;
+        // Place the glyph box so its center lands on (digitCenterX, centerY).
+        const leftX = startLeft + i * (glyphW + digitGap);
+        const tx = leftX;
+        const ty = centerY - glyphH / 2;
+        out += `<g${classAttr} fill="${color}" transform="translate(${tx} ${ty}) scale(${scale})">` +
+               `<path d="${path}" fill-rule="evenodd"/></g>`;
       }
       return out;
     }
 
-    return renderStack(String(top), topY) + renderStack(String(bottom), botY);
+    return renderStack(String(top), topCenterY) + renderStack(String(bottom), botCenterY);
   }
 
   // ─────────────────────────────────────────────────────────────
