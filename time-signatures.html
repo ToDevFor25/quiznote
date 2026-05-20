@@ -1315,6 +1315,15 @@
     const q = decodeKey(correctKey);
     let distractors;
 
+    // Helper: shuffle an array in place
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
     if (q.type === 'label') {
       let sigPool = TIER_SIGS[tier].filter(s => s !== q.sigKey);
       if (tier === 'tricky') {
@@ -1323,32 +1332,34 @@
         const sameDen = Object.keys(SIGS).filter(k => k !== q.sigKey && SIGS[k].bottom === sig.bottom);
         sigPool = [...new Set([...sameNum, ...sameDen, ...sigPool])];
       }
-      distractors = sigPool.map(s => s.replace('-', '/'));
+      distractors = shuffle(sigPool.map(s => s.replace('-', '/'))).slice(0, 3);
     } else if (q.type === 'top') {
-      const c = SIGS[q.sigKey].top;
-      const candidates = [c - 2, c - 1, c + 1, c + 2, c * 2, Math.floor(c / 2)]
-        .filter(n => n > 0 && n !== c);
-      distractors = [...new Set(candidates.map(String))];
+      // PEDAGOGY: always include the BOTTOM number of the time signature
+      // as one of the four choices, so the learner must choose between
+      // the two VISIBLE numbers (and not just generic nearby numbers).
+      const sig = SIGS[q.sigKey];
+      const c = sig.top;
+      const forced = String(sig.bottom);
+      const nearby = shuffle(
+        [...new Set(
+          [c - 2, c - 1, c + 1, c + 2, c * 2, Math.floor(c / 2)]
+            .filter(n => n > 0 && n !== c)
+            .map(String)
+            .filter(n => n !== forced)
+        )]
+      );
+      // Forced first, then 2 nearby — guaranteed 3 distractors
+      distractors = [forced, ...nearby.slice(0, 2)];
     } else {
+      // 'bottom' — note-value question. Distractors are other note values.
       const allUnits = ['Whole note', 'Half note', 'Quarter note', 'Eighth note', 'Sixteenth note'];
-      distractors = allUnits.filter(u => u !== q.answer);
+      distractors = shuffle(allUnits.filter(u => u !== q.answer)).slice(0, 3);
     }
 
-    // Shuffle
-    for (let i = distractors.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [distractors[i], distractors[j]] = [distractors[j], distractors[i]];
-    }
     while (distractors.length < 3) distractors.push('—');
-    distractors = distractors.slice(0, 3);
 
     // Wrap each distractor in the same body as the question (so labelFor works on all 4)
-    const choices = [correctKey, ...distractors.map(d => `${q.body}::${d}`)];
-
-    for (let i = choices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [choices[i], choices[j]] = [choices[j], choices[i]];
-    }
+    const choices = shuffle([correctKey, ...distractors.map(d => `${q.body}::${d}`)]);
     return choices;
   }
 
