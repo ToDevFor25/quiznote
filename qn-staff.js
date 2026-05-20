@@ -243,9 +243,10 @@
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
 
-    // Glyph height ~2.3 staff spaces (matches prior calibrated visual size).
-    // Width scales proportionally from the normalized box aspect ratio.
-    const glyphH = lineGap * 2.30;
+    // Glyph height ~2.0 staff spaces — standard engraving size for time-sig
+    // numerals (each digit roughly spans two staff spaces). Width scales
+    // proportionally from the normalized box aspect ratio.
+    const glyphH = lineGap * 2.00;
     const scale  = glyphH / DIGIT_H;
     const glyphW = DIGIT_W * scale;
     const digitGap = glyphW * 0.04;   // small gap between multi-digit numerals
