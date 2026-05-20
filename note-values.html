@@ -1,4 +1,95 @@
 <!doctype html>
+<!--
+  ============================================================
+  QuizNote — Module Template (v1)
+  ============================================================
+
+  This file is the canonical scaffold every new QuizNote module
+  is built from. The shared 80% (CSS, HTML structure, audio,
+  profile chip, game loop) is here. The module-specific 20%
+  is filled in via placeholders (handlebars-style {{NAME}})
+  and one global object: window.QNM.
+
+  HOW TO USE THIS TEMPLATE:
+
+  1. Copy this file to <module-name>.html.
+
+  2. Replace every {{PLACEHOLDER}} in the file:
+
+     Note Values         e.g. "Note Values"
+     See the symbol. Name it. Fast.       e.g. "See the symbol. Name it. Fast."
+     Easy      e.g. "Easy"
+     whole, half<br/>quarter        e.g. "whole, half<br/>quarter"
+     Medium    e.g. "Medium"
+     + eighth<br/>notes & rests      e.g. "+ eighth<br/>notes & rests"
+     Tricky    e.g. "Tricky"
+     + sixteenth<br/>notes & rests      e.g. "+ sixteenth<br/>notes & rests"
+     What is this?  e.g. "What is this?"
+     You named those symbols.  e.g. "You named those symbols."
+     Notes to practice next time e.g. "Notes to practice next time"
+     Drill missed notes   e.g. "Drill missed notes"
+     {{MODULE_CSS}}           the module's render-area CSS
+     {{MODULE_FX_LAYERS}}     any module-specific FX DOM nodes (or empty)
+     {{MODULE_NAMESPACE}}     e.g. "NV" (replace in renderer comments)
+
+  3. Replace the MODULE-SPECIFIC RENDERER + FX ENGINE script
+     block (marked clearly below) with your module's renderer.
+     The renderer must set window.QNM = { ... } following the
+     contract below before the game-loop script runs.
+
+  4. window.QNM API contract:
+
+     {
+       // ─── Identity ────────────────────────────────────
+       slug:      'note-values',  // localStorage prefix + events log
+       namespace: 'NV',           // JS namespace global
+
+       // ─── Question generation ──────────────────────────
+       buildPool(tier),
+         // returns array of question keys for this tier
+
+       buildChoices(correctKey, pool, tier),
+         // returns array of 4 choice keys (one correct)
+
+       labelFor(key),
+         // display label for a question key
+
+       // ─── Rendering ────────────────────────────────────
+       render: {
+         renderQuestion(container, key),
+           // draw the question in the play-screen wrap
+         animateQuestionIn(container, key),
+           // optional: pop-in animation
+         recolorAfterAnswer(container, correct),
+           // optional: e.g. turn the symbol red on wrong;
+           // correct === null means reset to default
+       },
+
+       // ─── Effects (optional, default to no-op) ────────
+       explode(correct, x, y, streak),
+         // optional: celebration FX on correct answer
+
+       // ─── Summary copy ─────────────────────────────────
+       encouragingLine(score, total),
+         // dynamic encouragement for the summary screen
+     }
+
+  5. Verify before pushing:
+       - View in browser; start screen looks right
+       - Tier and length tiles toggle "on" correctly
+       - Start round, answer a question, hear the sound
+       - Streak chime fires on correct answers
+       - Round end → summary screen with stars and copy
+       - All four post-round actions work (again, drill, settings, all modules)
+
+  Architecture notes:
+    - qn-profile.js   provides window.QN (profile + events + chip)
+    - qn-audio.js     provides window.NH.audio (engine)
+    - This template   provides window.QN_FX (fanfare) + game loop
+    - The module      provides window.QNM (everything else)
+
+  ============================================================
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -257,6 +348,18 @@
     display: flex; align-items: center; justify-content: center;
     min-height: 180px;
   }
+  /* ============================================================
+     MODULE-SPECIFIC CSS
+     ============================================================
+     Each module fills this with its own render-area styles
+     (e.g. .nv-symbol for Note Values, .ks-stage for Key Signatures,
+     piano keyboard styles for Piano Quiz). Also: FX particle styles,
+     streak banner, shake animation — whatever's bespoke to this
+     module's visual feedback.
+
+     Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
+     Animations: @keyframes {{moduleSlug}}Pop, etc.
+     ============================================================ */
   /* Bravura Text symbol display */
   .nv-symbol {
     font-family: 'Bravura Text', serif;
@@ -328,11 +431,7 @@
   body.nv-shake { animation: nvShake 0.4s ease-in-out; }
   @keyframes nvShake {
     0%, 100% { transform: translate(0, 0); }
-    20% { transform: translate(-6px, 2px); }
-    40% { transform: translate(6px, -2px); }
-    60% { transform: translate(-4px, -2px); }
-    80% { transform: translate(4px, 2px); }
-  }
+
 
   .staff-svg-wrap svg {
     width: 100%; height: 100%;
@@ -1250,30 +1349,19 @@
   NV.render = { renderSymbol, animateSymbol, recolorSymbol };
   NV.fx = { explode };
 })();
-</script>
 
-<script>
-// ============ QuizNote Note Values — Game Loop ============
-(function () {
-  // NH.audio comes from qn-audio.js (deferred). It may not exist
-  // at script-parse time, but it will exist by the time any handler
-  // runs. Resolve lazily on every access via this proxy.
-  const A = new Proxy({}, {
-    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
-  });
-  const NV = window.NV;
-  const SYMBOLS = NV.SYMBOLS;
-  const R = NV.render;
+  // ============ QNM contract adapter ============
+  // Expose Note Values' API to the generic game loop via window.QNM.
+  // The game loop calls QNM.* and never references NV.* directly.
 
-  // Pools by difficulty
   const POOLS = {
     easy:   ['whole-note', 'half-note', 'quarter-note', 'whole-rest', 'half-rest', 'quarter-rest'],
     medium: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'whole-rest', 'half-rest', 'quarter-rest', 'eighth-rest'],
     tricky: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'sixteenth-note', 'whole-rest', 'half-rest', 'quarter-rest', 'eighth-rest', 'sixteenth-rest'],
   };
 
-  // Build 4 answer choices - adaptive by difficulty
   function buildChoices(correctKey, pool, difficulty) {
+    const SYMBOLS = window.NV.SYMBOLS;
     const correctSym = SYMBOLS[correctKey];
     let candidates;
     if (difficulty === 'easy') {
@@ -1298,6 +1386,77 @@
     }
     return all;
   }
+
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['RHYTHM MASTER! Every symbol nailed! 🎯','Perfect score — you crushed it! 🌟','Flawless! Not one symbol missed! 🎶']);
+    if (pct >= 0.8) return pick(["Amazing round — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
+    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good work — those tricky ones are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The symbols are learning to recognize you 🎵","Music takes time — you're on your way! Keep practising!"]);
+  }
+
+  window.QNM = {
+    slug:      'note-values',
+    namespace: 'NV',
+
+    buildPool: function (tier) { return POOLS[tier].slice(); },
+    buildChoices: buildChoices,
+    labelFor: function (key) {
+      const sym = window.NV.SYMBOLS[key];
+      return sym ? sym.label : key;
+    },
+
+    render: {
+      renderQuestion: function (container, key) {
+        window.NV.render.renderSymbol(container, key);
+      },
+      animateQuestionIn: function (container, key) {
+        window.NV.render.animateSymbol(container, 'pop');
+      },
+      recolorAfterAnswer: function (container, correct) {
+        // correct === true → teal; false → coral; null → reset
+        const color = correct === true  ? 'var(--teal)'
+                    : correct === false ? 'var(--coral)'
+                    : '';
+        window.NV.render.recolorSymbol(container, color);
+        // Animate after color change to match original behavior
+        if (correct === true) {
+          window.NV.render.animateSymbol(container, 'pop');
+        }
+      },
+    },
+
+    explode: function (correct, x, y, streak) {
+      window.NV.fx.explode(correct, x, y, streak);
+    },
+
+    encouragingLine: encouragingLine,
+  };
+</script>
+
+<script>
+// ============ QuizNote Note Values — Game Loop ============
+(function () {
+  // NH.audio comes from qn-audio.js (deferred). It may not exist
+  // at script-parse time, but it will exist by the time any handler
+  // runs. Resolve lazily on every access via this proxy.
+  const A = new Proxy({}, {
+    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
+  });
+  // ─── Module contract ──────────────────────────────────────
+  // window.QNM is defined by the module-specific renderer script
+  // above. It provides identity, question generation, rendering,
+  // optional FX, and summary copy. See template header for the
+  // full contract. The game loop below is fully generic — it
+  // never references a specific module's data shape.
+  const M = window.QNM;
+  if (!M) {
+    console.error('[QN] window.QNM is not defined — module renderer script must set window.QNM before this script runs.');
+    return;
+  }
+  // Convenience local for readability at call sites.
+  const R = M.render;
 
   const state = {
     settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
@@ -1346,18 +1505,18 @@
   }
 
   function saveMutedPreference(muted) {
-    localStorage.setItem('nv_muted', String(muted));
+    localStorage.setItem(M.slug + '_muted', String(muted));
     A.setMuted(muted);
     syncMuteUI(muted);
   }
 
   function loadMutedPreference() {
-    return localStorage.getItem('nv_muted') === 'true';
+    return localStorage.getItem(M.slug + '_muted') === 'true';
   }
 
   // ===== Round Setup =====
   function buildPool() {
-    return POOLS[state.settings.difficulty].slice();
+    return M.buildPool(state.settings.difficulty);
   }
 
   function shuffleDeck(pool, total, drillPool) {
@@ -1404,10 +1563,10 @@
     const key = state.deck[state.q];
     state.current = { key: key };
     state.locked = false;
-    state.currentChoices = buildChoices(key, state.pool, state.settings.difficulty);
+    state.currentChoices = M.buildChoices(key, state.pool, state.settings.difficulty);
 
-    R.renderSymbol(els['staff-wrap'], key);
-    R.animateSymbol(els['staff-wrap'], 'pop');
+    R.renderQuestion(els['staff-wrap'], key);
+    if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], key);
     renderChoices();
     A.playTick();
   }
@@ -1418,7 +1577,7 @@
     state.currentChoices.forEach(key => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
-      btn.textContent = SYMBOLS[key].label;
+      btn.textContent = M.labelFor(key);
       btn.dataset.key = key;
       btn.addEventListener('click', () => handleAnswer(key, btn));
       grid.appendChild(btn);
@@ -1437,14 +1596,14 @@
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       state.history.push({ key: correct, correct: true });
       buttonEl.classList.add('correct');
-      R.recolorSymbol(els['staff-wrap'], 'var(--teal)');
-      R.animateSymbol(els['staff-wrap'], 'pop');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], true);
+      if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], key);
       A.playChime(60, state.streak);
 
       // Explosion at the staff symbol location
       const stage = els['staff-wrap'];
       const r = stage.getBoundingClientRect();
-      NV.fx.explode(correct, r.left + r.width / 2, r.top + r.height / 2, state.streak);
+      if (M.explode) M.explode(correct, r.left + r.width / 2, r.top + r.height / 2, state.streak);
     } else {
       state.streak = 0;
       state.history.push({ key: correct, correct: false, picked: pickedKey });
@@ -1452,7 +1611,7 @@
       // Highlight correct answer
       const correctBtn = [...els['choices-grid'].children].find(b => b.dataset.key === correct);
       if (correctBtn) correctBtn.classList.add('correct');
-      R.recolorSymbol(els['staff-wrap'], 'var(--coral)');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], false);
       A.playBoop();
     }
 
@@ -1462,7 +1621,7 @@
 
     setTimeout(() => {
       state.q++;
-      R.recolorSymbol(els['staff-wrap'], '');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
       nextQuestion();
     }, isCorrect ? 700 : 1200);
   }
@@ -1527,12 +1686,13 @@
 
   // ===== Encouraging line per tier =====
   function encouragingLine(score, total) {
+    if (typeof M.encouragingLine === 'function') return M.encouragingLine(score, total);
+    // Fallback if module didn't supply one
     const pct = score / total;
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-    if (pct >= 1)   return pick(['RHYTHM MASTER! Every symbol nailed! 🎯','Perfect score — you crushed it! 🌟','Flawless! Not one symbol missed! 🎶']);
-    if (pct >= 0.8) return pick(["Amazing round — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
-    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good work — those tricky ones are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
-    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The symbols are learning to recognize you 🎵","Music takes time — you're on your way! Keep practising!"]);
+    if (pct >= 1)   return 'Perfect round!';
+    if (pct >= 0.8) return 'Great round!';
+    if (pct >= 0.5) return 'Solid round!';
+    return 'Keep practicing!';
   }
 
   // ===== Shared Fanfare FX (ported from piano-quiz) =====
@@ -1867,7 +2027,7 @@
     const missedKeys = new Set();
     state.history.forEach(h => {
       if (!h.correct) {
-        const label = (SYMBOLS[h.key] && SYMBOLS[h.key].label) || h.key;
+        const label = M.labelFor(h.key) || h.key;
         counts[label] = (counts[label] || 0) + 1;
         missedKeys.add(h.key);
       }
@@ -1888,7 +2048,7 @@
 
     // Personal best (per-difficulty key, preserves note-values convention)
     let pb = { score: 0, pct: 0, streak: 0 };
-    const pbKey = 'nv_pb_' + state.settings.difficulty;
+    const pbKey = M.slug + '_pb_' + state.settings.difficulty;
     try {
       pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
@@ -1944,7 +2104,7 @@
     // Log this round to the shared event store (no-op if no active profile)
     if (window.QN && QN.events) {
       QN.events.log({
-        module:     'note-values',
+        module:     M.slug,
         tier:       state.settings.difficulty,
         length:     state.total,
         correct:    state.score,
@@ -2095,7 +2255,7 @@
     setupSettings();
     // Load PBs
     try {
-      const pbKey = 'nv_pb_' + state.settings.difficulty;
+      const pbKey = M.slug + '_pb_' + state.settings.difficulty;
       const pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
       if (els['pb-score']) els['pb-score'].textContent = pb.score || 0;
       if (els['pb-streak']) els['pb-streak'].textContent = pb.streak || 0;
