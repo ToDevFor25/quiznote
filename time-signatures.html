@@ -1272,6 +1272,8 @@
     label:  'What time signature is this?',
     top:    'How many beats per measure?',
     bottom: 'Which note gets the beat?',
+    whichBeats: 'Which number tells you how many beats are in a measure?',
+    whichUnit:  'Which number tells you what kind of note gets the beat?',
   };
 
   // ─── Difficulty pools ────────────────────────────────────
@@ -1282,17 +1284,20 @@
   };
 
   const TIER_TYPE_WEIGHTS = {
-    easy:   { label: 0.7, top: 0.3, bottom: 0.0 },
-    medium: { label: 0.4, top: 0.3, bottom: 0.3 },
-    tricky: { label: 0.34, top: 0.33, bottom: 0.33 },
+    easy:   { label: 0.7,  top: 0.3,  bottom: 0.0,  whichBeats: 0.0,  whichUnit: 0.0 },
+    medium: { label: 0.34, top: 0.22, bottom: 0.22, whichBeats: 0.11, whichUnit: 0.11 },
+    tricky: { label: 0.28, top: 0.22, bottom: 0.22, whichBeats: 0.14, whichUnit: 0.14 },
   };
 
   function pickType(tier) {
     const w = TIER_TYPE_WEIGHTS[tier];
     const r = Math.random();
-    if (r < w.label) return 'label';
-    if (r < w.label + w.top) return 'top';
-    return 'bottom';
+    let acc = 0;
+    acc += w.label;      if (r < acc) return 'label';
+    acc += w.top;        if (r < acc) return 'top';
+    acc += w.bottom;     if (r < acc) return 'bottom';
+    acc += w.whichBeats; if (r < acc) return 'whichBeats';
+    return 'whichUnit';
   }
 
   // ─── Question key encoding ───────────────────────────────
@@ -1317,6 +1322,8 @@
   function answerFor(sigKey, type) {
     if (type === 'label') return sigKey.replace('-', '/');
     if (type === 'top')   return String(SIGS[sigKey].top);
+    if (type === 'whichBeats') return 'Top number';
+    if (type === 'whichUnit')  return 'Bottom number';
     return SIGS[sigKey].beatUnit;
   }
 
@@ -1381,6 +1388,13 @@
       } else {
         distractors = nearby.slice(0, 3);
       }
+    } else if (q.type === 'whichBeats' || q.type === 'whichUnit') {
+      // Concept questions: choices are positional/conceptual, not numbers read
+      // off the staff. Correct is "Top number" (whichBeats) or "Bottom number"
+      // (whichUnit); the others test genuine confusion about what each numeral
+      // means. Always 4 distinct tiles.
+      const conceptSet = ['Top number', 'Bottom number', 'Both numbers', 'Neither'];
+      distractors = shuffle(conceptSet.filter(c => c !== q.answer)).slice(0, 3);
     } else {
       // 'bottom' — note-value question. Distractors are other note values.
       const allUnits = ['Whole note', 'Half note', 'Quarter note', 'Eighth note', 'Sixteenth note'];
