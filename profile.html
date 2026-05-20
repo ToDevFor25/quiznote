@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#FFF8E7" />
+<title>Profile · QuizNote</title>
+<meta name="description" content="Make a QuizNote profile to track your practice streaks and progress. No emails, no passwords, no tracking." />
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAAA=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────────────────────
+   QuizNote — Profile / Onboarding
+   Matches the chunky-button design system used across modules.
+   Single file: all views as hidden sections, JS swaps visibility.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --cream:  #FFF8E7;
+  --ink:    #2A2A3E;
+  --teal:   #1FB8A8;
+  --sun:    #FFB627;
+  --grape:  #5B3FE4;
+  --coral:  #FF6B6B;
+  --mint:   #7FD1AE;
+  --rose:   #F4A5BE;
+
+  --ink-dim:   rgba(42, 42, 62, 0.65);
+  --ink-faint: rgba(42, 42, 62, 0.12);
+  --ink-shadow: rgba(42, 42, 62, 0.18);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--cream);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(31, 184, 168, 0.06) 0%, transparent 35%),
+    radial-gradient(circle at 85% 80%, rgba(91, 63, 228, 0.05) 0%, transparent 40%);
+}
+
+/* ── header / footer ─────────────────────────────────────── */
+
+.page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+}
+.brand .acc { color: var(--teal); }
+
+.back-link {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  transition: color 140ms, background 140ms;
+}
+.back-link:hover { color: var(--ink); background: rgba(0,0,0,0.04); }
+
+.foot {
+  margin-top: auto;
+  padding-top: 32px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  text-align: center;
+}
+.foot a { color: var(--ink-dim); text-decoration: underline; }
+.foot a:hover { color: var(--ink); }
+
+/* ── view container ──────────────────────────────────────── */
+
+.view { display: none; flex: 1; flex-direction: column; }
+.view.active { display: flex; }
+
+.view-head { text-align: center; margin-bottom: 28px; }
+.view-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.view-sub {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  margin: 0;
+  max-width: 380px;
+  margin-inline: auto;
+  line-height: 1.4;
+}
+
+/* ── chunky buttons ──────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 16px;
+  padding: 16px 24px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--ink-faint);
+  box-shadow: 0 2px 0 var(--ink-faint);
+  transition: transform 100ms ease-out, box-shadow 100ms ease-out, background 140ms;
+  user-select: none;
+  width: 100%;
+}
+.btn:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ink-faint); }
+.btn-primary {
+  background: var(--teal);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+}
+.btn-primary:active { box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
+.btn-ghost {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  color: var(--ink-dim);
+  font-weight: 500;
+}
+.btn-ghost:hover { color: var(--ink); }
+
+.btn-row { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.btn-row-h { display: flex; gap: 12px; }
+.btn-row-h .btn { flex: 1; }
+
+.btn-danger {
+  background: var(--coral);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
+}
+.btn-danger:active { box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
+
+/* ── nickname input ──────────────────────────────────────── */
+
+.nickname-wrap { margin-bottom: 20px; }
+.nickname-input {
+  width: 100%;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 22px;
+  text-align: center;
+  padding: 18px 16px;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 140ms, box-shadow 140ms;
+}
+.nickname-input:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(31, 184, 168, 0.15);
+}
+
+.hint {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  text-align: center;
+  margin: 8px 0 16px;
+  min-height: 18px;
+}
+.hint.err { color: var(--coral); }
+
+/* ── suggestion pills ────────────────────────────────────── */
+
+.suggest-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  margin: 24px 0 12px;
+}
+.reroll {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--teal);
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.reroll:hover { background: rgba(31,184,168,0.1); }
+
+.suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.suggest-pill {
+  background: #fff;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 100ms, background 140ms, border-color 140ms;
+  text-align: center;
+}
+.suggest-pill:hover { background: var(--cream); border-color: var(--teal); }
+.suggest-pill:active { transform: scale(0.97); }
+
+/* ── level options ───────────────────────────────────────── */
+
+.level-options { display: flex; flex-direction: column; gap: 12px; }
+.level-option {
+  background: #fff;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 16px;
+  padding: 18px 20px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 100ms, border-color 140ms, background 140ms;
+}
+.level-option:hover { border-color: var(--teal); background: rgba(31, 184, 168, 0.04); }
+.level-option:active { transform: scale(0.98); }
+.level-option.selected {
+  border-color: var(--teal);
+  background: rgba(31, 184, 168, 0.08);
+  box-shadow: 0 2px 0 var(--ink-faint);
+}
+
+/* ── color picker ────────────────────────────────────────── */
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.color-tile {
+  aspect-ratio: 1;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: transform 120ms, border-color 140ms;
+  outline: none;
+}
+.color-tile:hover { transform: scale(1.05); }
+.color-tile:active { transform: scale(0.97); }
+.color-tile.selected {
+  border-color: var(--ink);
+  transform: scale(1.05);
+}
+.color-tile.selected::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+}
+.color-teal  { background: var(--teal); }
+.color-sun   { background: var(--sun); }
+.color-grape { background: var(--grape); }
+.color-coral { background: var(--coral); }
+.color-mint  { background: var(--mint); }
+.color-rose  { background: var(--rose); }
+
+/* ── profile list (switcher) ─────────────────────────────── */
+
+.profile-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 16px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 100ms, border-color 140ms, background 140ms;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+.profile-row:hover { border-color: var(--teal); }
+.profile-row:active { transform: scale(0.99); }
+.profile-row.active {
+  border-color: var(--teal);
+  background: rgba(31, 184, 168, 0.06);
+  box-shadow: 0 2px 0 var(--ink-faint);
+}
+
+.profile-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.profile-info { flex: 1; min-width: 0; }
+.profile-name {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.profile-meta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+.profile-active-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  background: rgba(31, 184, 168, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.profile-edit {
+  background: transparent;
+  border: none;
+  color: var(--ink-dim);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.profile-edit:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
+
+/* ── delete confirmation ─────────────────────────────────── */
+
+.confirm-card {
+  background: #fff;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.confirm-dot {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+}
+.confirm-name {
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+.confirm-stats {
+  font-size: 14px;
+  color: var(--ink-dim);
+  margin-bottom: 8px;
+}
+.confirm-warn {
+  font-size: 13px;
+  color: var(--coral);
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* ── progress dots (onboarding screens) ──────────────────── */
+
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  transition: background 140ms, width 140ms;
+}
+.progress-dot.active {
+  background: var(--teal);
+  width: 24px;
+  border-radius: 999px;
+}
+
+/* ── responsive nudges ───────────────────────────────────── */
+
+@media (max-width: 380px) {
+  .view-title { font-size: 24px; }
+  .nickname-input { font-size: 19px; }
+  .color-grid { gap: 12px; }
+  .suggest-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="brand-bar">
+    <a class="brand" href="index.html">Quiz<span class="acc">Note</span></a>
+    <a class="back-link" href="play.html">← Back to modules</a>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 0 — Who's playing? (first visit or returning anon)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-welcome">
+    <div class="view-head">
+      <h1 class="view-title">What can I call you?</h1>
+      <p class="view-sub">Make a profile to save your streaks and progress.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="welcome-start">Make a profile</button>
+      <button class="btn btn-ghost" id="welcome-guest">Just playing, no name</button>
+    </div>
+    <p class="hint" style="margin-top:24px;">
+      Profiles live only on this device. <a href="privacy.html" style="color:var(--teal);">How we handle data</a>.
+    </p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 1 — Switcher (returning user with profiles)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-switcher">
+    <div class="view-head">
+      <h1 class="view-title">Who's playing today?</h1>
+      <p class="view-sub">Tap a profile to play as them. Or add a new one for someone else.</p>
+    </div>
+    <div class="profile-list" id="profile-list"><!-- rendered by JS --></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="switcher-add">+ Add new profile</button>
+      <a class="btn" href="play.html">Go to modules</a>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 2 — Nickname (onboarding step 1 of 3)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-nickname">
+    <div class="progress-dots">
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+    </div>
+    <div class="view-head">
+      <h1 class="view-title">What should we call you?</h1>
+      <p class="view-sub">Pick a fun name. Use your real name only if you want to — most people don't.</p>
+    </div>
+    <div class="nickname-wrap">
+      <input type="text" class="nickname-input" id="nickname-input"
+             maxlength="20" autocomplete="off" autocapitalize="off"
+             spellcheck="false" placeholder="Type a name..." />
+      <p class="hint" id="nickname-hint">1 to 20 characters</p>
+    </div>
+    <div class="suggest-label">
+      <span>Or pick one of these:</span>
+      <button class="reroll" id="reroll-btn" type="button">🎲 Reroll</button>
+    </div>
+    <div class="suggest-grid" id="suggest-grid"><!-- rendered by JS --></div>
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-primary" id="nickname-continue" disabled style="opacity:0.5;">Continue →</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 3 — Skill level (onboarding step 2 of 3)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-level">
+    <div class="progress-dots">
+      <span class="progress-dot"></span>
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+    </div>
+    <div class="view-head">
+      <h1 class="view-title">How much music have you done?</h1>
+      <p class="view-sub">This helps us pick a good starting difficulty. You can change it anytime.</p>
+    </div>
+    <div class="level-options">
+      <button class="level-option" data-level="starting" type="button">Just starting out</button>
+      <button class="level-option" data-level="some" type="button">I know some notes</button>
+      <button class="level-option" data-level="while" type="button">I've been playing a while</button>
+    </div>
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-primary" id="level-continue">Continue →</button>
+      <button class="btn btn-ghost" id="level-skip">Skip this</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 4 — Color picker (onboarding step 3 of 3)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-color">
+    <div class="progress-dots">
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot active"></span>
+    </div>
+    <div class="view-head">
+      <h1 class="view-title">Pick your color</h1>
+      <p class="view-sub">This is how your profile shows up across the app.</p>
+    </div>
+    <div class="color-grid" id="color-grid"><!-- rendered by JS --></div>
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-primary" id="color-finish">Start practicing →</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 5 — Edit / manage profile
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-edit">
+    <div class="view-head">
+      <h1 class="view-title">Manage profile</h1>
+      <p class="view-sub">Rename, change color, or delete this profile.</p>
+    </div>
+    <div class="nickname-wrap">
+      <label class="suggest-label" style="margin-top:0;"><span>Name</span></label>
+      <input type="text" class="nickname-input" id="edit-nickname-input"
+             maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" />
+      <p class="hint" id="edit-nickname-hint">1 to 20 characters</p>
+    </div>
+    <label class="suggest-label" style="margin-top:8px;"><span>Color</span></label>
+    <div class="color-grid" id="edit-color-grid"><!-- rendered by JS --></div>
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-primary" id="edit-save">Save changes</button>
+      <button class="btn btn-danger" id="edit-delete">Delete this profile</button>
+      <button class="btn btn-ghost" id="edit-cancel">Cancel</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW 6 — Delete confirmation
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-delete">
+    <div class="view-head">
+      <h1 class="view-title">Delete this profile?</h1>
+      <p class="view-sub">This can't be undone. All practice history will be erased.</p>
+    </div>
+    <div class="confirm-card">
+      <div class="confirm-dot" id="confirm-dot"></div>
+      <div class="confirm-name" id="confirm-name"></div>
+      <div class="confirm-stats" id="confirm-stats"></div>
+      <div class="confirm-warn">This action cannot be undone.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="delete-cancel">Cancel</button>
+      <button class="btn btn-danger" id="delete-confirm">Yes, delete forever</button>
+    </div>
+  </section>
+
+  <div class="foot">
+    <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a><br>
+    <span style="opacity:0.7;">© 2026 QuizNote</span>
+  </div>
+
+</div>
+
+<script src="qn-profile.js" defer></script>
+<script defer>
+(function () {
+  'use strict';
+
+  // ─────────────────────────────────────────────────────────
+  // POOL OF NICKNAME SUGGESTIONS
+  // ─────────────────────────────────────────────────────────
+
+  var NICKNAME_POOL = [
+    'PianoPanda', 'TrebleTroll', 'RestNinja', 'SharpFox',
+    'BassyBear', 'ClefCub', 'NotaNoodle', 'RhythmRaccoon',
+    'ScaleSquid', 'ChordChicken', 'FlatFinch', 'TempoTiger',
+    'MezzoMoth', 'LedgerLemur', 'StaccatoSnake', 'AllegroAlpaca'
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // STATE — ephemeral, lives only during a single onboarding
+  // ─────────────────────────────────────────────────────────
+
+  var state = {
+    draftNickname: '',
+    draftLevel:    null,
+    draftColor:    'teal',
+    editingId:     null   // when editing/deleting an existing profile
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW SWITCHING
+  // ─────────────────────────────────────────────────────────
+
+  function showView(id) {
+    var views = document.querySelectorAll('.view');
+    for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+    var el = document.getElementById('view-' + id);
+    if (el) el.classList.add('active');
+    // scroll to top whenever view changes
+    window.scrollTo(0, 0);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // ENTRY POINT — decide which view to start on
+  // ─────────────────────────────────────────────────────────
+
+  function init() {
+    // qn-profile.js may not be loaded yet if defer ordering is odd;
+    // guard and retry.
+    if (!window.QN || !QN.profile) {
+      setTimeout(init, 50);
+      return;
+    }
+
+    // Check URL hash for explicit view requests
+    // (e.g., #add forces add-flow even if profiles exist)
+    var hash = window.location.hash.replace('#', '');
+    if (hash === 'add') {
+      startAddFlow();
+      return;
+    }
+
+    var profiles = QN.profile.list();
+    if (profiles.length === 0) {
+      showView('welcome');
+    } else {
+      renderSwitcher();
+      showView('switcher');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 0 — Welcome
+  // ─────────────────────────────────────────────────────────
+
+  document.getElementById('welcome-start').addEventListener('click', function () {
+    startAddFlow();
+  });
+
+  document.getElementById('welcome-guest').addEventListener('click', function () {
+    // Guest path: no profile created, jump to modules
+    window.location.href = 'play.html';
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 1 — Switcher
+  // ─────────────────────────────────────────────────────────
+
+  function renderSwitcher() {
+    var listEl = document.getElementById('profile-list');
+    while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+
+    var profiles = QN.profile.list();
+    var active = QN.profile.getActive();
+    var activeId = active ? active.id : null;
+
+    profiles.forEach(function (p) {
+      // Container row holds the main tap target + edit button side-by-side.
+      var row = document.createElement('div');
+      row.className = 'profile-row' + (p.id === activeId ? ' active' : '');
+      row.style.cursor = 'default';
+
+      // Main button: dot + name/meta + (optional) Active badge.
+      // Clicking it switches active profile and navigates to play.html.
+      var main = document.createElement('button');
+      main.type = 'button';
+      main.style.cssText = 'all:unset;display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer;';
+      main.setAttribute('aria-label', 'Play as ' + p.nickname);
+
+      var dot = document.createElement('div');
+      dot.className = 'profile-dot';
+      dot.style.background = colorToHex(p.color);
+
+      var info = document.createElement('div');
+      info.className = 'profile-info';
+      var name = document.createElement('div');
+      name.className = 'profile-name';
+      name.textContent = p.nickname;
+      var meta = document.createElement('div');
+      meta.className = 'profile-meta';
+      meta.textContent = levelLabel(p.level) + ' · ' + lastActiveLabel(p.lastActiveAt);
+      info.appendChild(name);
+      info.appendChild(meta);
+
+      main.appendChild(dot);
+      main.appendChild(info);
+
+      if (p.id === activeId) {
+        var badge = document.createElement('span');
+        badge.className = 'profile-active-badge';
+        badge.textContent = 'Active';
+        main.appendChild(badge);
+      }
+
+      main.addEventListener('click', function () {
+        QN.profile.setActive(p.id);
+        window.location.href = 'play.html';
+      });
+
+      var editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'profile-edit';
+      editBtn.textContent = 'Edit';
+      editBtn.setAttribute('aria-label', 'Edit ' + p.nickname);
+      editBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        startEditFlow(p.id);
+      });
+
+      row.appendChild(main);
+      row.appendChild(editBtn);
+      listEl.appendChild(row);
+    });
+  }
+
+  document.getElementById('switcher-add').addEventListener('click', function () {
+    startAddFlow();
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 2 — Nickname
+  // ─────────────────────────────────────────────────────────
+
+  var nicknameInput  = document.getElementById('nickname-input');
+  var nicknameHint   = document.getElementById('nickname-hint');
+  var nicknameBtn    = document.getElementById('nickname-continue');
+  var suggestGrid    = document.getElementById('suggest-grid');
+  var rerollBtn      = document.getElementById('reroll-btn');
+
+  function startAddFlow() {
+    state.draftNickname = '';
+    state.draftLevel = null;
+    state.draftColor = 'teal';
+    state.editingId = null;
+    nicknameInput.value = '';
+    updateNicknameValidity();
+    rerollSuggestions();
+    showView('nickname');
+    // tiny delay so iOS keyboard pops smoothly
+    setTimeout(function () { nicknameInput.focus(); }, 60);
+  }
+
+  function updateNicknameValidity() {
+    var val = nicknameInput.value.trim();
+    var ok = val.length >= 1 && val.length <= 20;
+    nicknameBtn.disabled = !ok;
+    nicknameBtn.style.opacity = ok ? '1' : '0.5';
+    if (val.length === 0) {
+      nicknameHint.textContent = '1 to 20 characters';
+      nicknameHint.classList.remove('err');
+    } else if (val.length > 20) {
+      nicknameHint.textContent = 'Too long — keep it under 20 characters';
+      nicknameHint.classList.add('err');
+    } else {
+      nicknameHint.textContent = val.length + '/20';
+      nicknameHint.classList.remove('err');
+    }
+  }
+
+  nicknameInput.addEventListener('input', updateNicknameValidity);
+  nicknameInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !nicknameBtn.disabled) {
+      e.preventDefault();
+      nicknameBtn.click();
+    }
+  });
+
+  function rerollSuggestions() {
+    // pick 6 random unique items from pool
+    var pool = NICKNAME_POOL.slice();
+    var picks = [];
+    while (picks.length < 6 && pool.length > 0) {
+      var idx = Math.floor(Math.random() * pool.length);
+      picks.push(pool.splice(idx, 1)[0]);
+    }
+    while (suggestGrid.firstChild) suggestGrid.removeChild(suggestGrid.firstChild);
+    picks.forEach(function (name) {
+      var pill = document.createElement('button');
+      pill.className = 'suggest-pill';
+      pill.type = 'button';
+      pill.textContent = name;
+      pill.addEventListener('click', function () {
+        nicknameInput.value = name;
+        updateNicknameValidity();
+        nicknameInput.focus();
+      });
+      suggestGrid.appendChild(pill);
+    });
+  }
+
+  rerollBtn.addEventListener('click', rerollSuggestions);
+
+  nicknameBtn.addEventListener('click', function () {
+    var val = nicknameInput.value.trim();
+    if (val.length < 1 || val.length > 20) return;
+    state.draftNickname = val;
+    showView('level');
+    clearLevelSelection();
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 3 — Level
+  // ─────────────────────────────────────────────────────────
+
+  var levelOptions = document.querySelectorAll('.level-option');
+
+  function clearLevelSelection() {
+    state.draftLevel = null;
+    for (var i = 0; i < levelOptions.length; i++) {
+      levelOptions[i].classList.remove('selected');
+    }
+  }
+
+  for (var i = 0; i < levelOptions.length; i++) {
+    levelOptions[i].addEventListener('click', function () {
+      for (var j = 0; j < levelOptions.length; j++) levelOptions[j].classList.remove('selected');
+      this.classList.add('selected');
+      state.draftLevel = this.getAttribute('data-level');
+    });
+  }
+
+  document.getElementById('level-continue').addEventListener('click', function () {
+    showView('color');
+    renderColorGrid('color-grid', state.draftColor, function (c) { state.draftColor = c; });
+  });
+
+  document.getElementById('level-skip').addEventListener('click', function () {
+    state.draftLevel = null;
+    showView('color');
+    renderColorGrid('color-grid', state.draftColor, function (c) { state.draftColor = c; });
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 4 — Color
+  // ─────────────────────────────────────────────────────────
+
+  function renderColorGrid(targetId, selectedColor, onPick) {
+    var grid = document.getElementById(targetId);
+    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    QN.profile.colors.forEach(function (c) {
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'color-tile color-' + c + (c === selectedColor ? ' selected' : '');
+      tile.setAttribute('aria-label', c);
+      tile.addEventListener('click', function () {
+        var tiles = grid.querySelectorAll('.color-tile');
+        for (var k = 0; k < tiles.length; k++) tiles[k].classList.remove('selected');
+        tile.classList.add('selected');
+        onPick(c);
+      });
+      grid.appendChild(tile);
+    });
+  }
+
+  document.getElementById('color-finish').addEventListener('click', function () {
+    var created = QN.profile.create({
+      nickname: state.draftNickname,
+      level:    state.draftLevel,
+      color:    state.draftColor
+    });
+    if (!created) {
+      alert('Could not create profile. Please try again.');
+      return;
+    }
+    // Send them straight into modules
+    window.location.href = 'play.html';
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 5 — Edit profile
+  // ─────────────────────────────────────────────────────────
+
+  var editNicknameInput = document.getElementById('edit-nickname-input');
+  var editNicknameHint  = document.getElementById('edit-nickname-hint');
+
+  function startEditFlow(id) {
+    var profiles = QN.profile.list();
+    var p = null;
+    for (var i = 0; i < profiles.length; i++) {
+      if (profiles[i].id === id) { p = profiles[i]; break; }
+    }
+    if (!p) return;
+    state.editingId = id;
+    state.draftColor = p.color;
+    editNicknameInput.value = p.nickname;
+    updateEditNicknameValidity();
+    renderColorGrid('edit-color-grid', p.color, function (c) { state.draftColor = c; });
+    showView('edit');
+  }
+
+  function updateEditNicknameValidity() {
+    var val = editNicknameInput.value.trim();
+    if (val.length === 0) {
+      editNicknameHint.textContent = 'Name cannot be empty';
+      editNicknameHint.classList.add('err');
+    } else if (val.length > 20) {
+      editNicknameHint.textContent = 'Keep it under 20 characters';
+      editNicknameHint.classList.add('err');
+    } else {
+      editNicknameHint.textContent = val.length + '/20';
+      editNicknameHint.classList.remove('err');
+    }
+  }
+
+  editNicknameInput.addEventListener('input', updateEditNicknameValidity);
+
+  document.getElementById('edit-save').addEventListener('click', function () {
+    var val = editNicknameInput.value.trim();
+    if (val.length < 1 || val.length > 20) return;
+    QN.profile.update(state.editingId, {
+      nickname: val,
+      color:    state.draftColor
+    });
+    renderSwitcher();
+    showView('switcher');
+  });
+
+  document.getElementById('edit-cancel').addEventListener('click', function () {
+    showView('switcher');
+  });
+
+  document.getElementById('edit-delete').addEventListener('click', function () {
+    showDeleteConfirm(state.editingId);
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // VIEW 6 — Delete confirmation
+  // ─────────────────────────────────────────────────────────
+
+  function showDeleteConfirm(id) {
+    var profiles = QN.profile.list();
+    var p = null;
+    for (var i = 0; i < profiles.length; i++) {
+      if (profiles[i].id === id) { p = profiles[i]; break; }
+    }
+    if (!p) return;
+
+    document.getElementById('confirm-dot').style.background = colorToHex(p.color);
+    document.getElementById('confirm-name').textContent = p.nickname;
+
+    var events = QN.events.query(p.id);
+    var rounds = events.length;
+    var stats = rounds === 0
+      ? 'No practice yet'
+      : rounds + (rounds === 1 ? ' round' : ' rounds') + ' of practice will be erased';
+    document.getElementById('confirm-stats').textContent = stats;
+
+    showView('delete');
+  }
+
+  document.getElementById('delete-cancel').addEventListener('click', function () {
+    showView('edit');
+  });
+
+  document.getElementById('delete-confirm').addEventListener('click', function () {
+    QN.profile['delete'](state.editingId);
+    state.editingId = null;
+    var remaining = QN.profile.list();
+    if (remaining.length === 0) {
+      showView('welcome');
+    } else {
+      renderSwitcher();
+      showView('switcher');
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // HELPERS — color hex + level + relative time
+  // ─────────────────────────────────────────────────────────
+
+  function colorToHex(c) {
+    switch (c) {
+      case 'teal':  return '#1FB8A8';
+      case 'sun':   return '#FFB627';
+      case 'grape': return '#5B3FE4';
+      case 'coral': return '#FF6B6B';
+      case 'mint':  return '#7FD1AE';
+      case 'rose':  return '#F4A5BE';
+      default:      return '#1FB8A8';
+    }
+  }
+
+  function levelLabel(level) {
+    switch (level) {
+      case 'starting': return 'Just starting';
+      case 'some':     return 'Knows some notes';
+      case 'while':    return 'Playing a while';
+      default:         return 'No level set';
+    }
+  }
+
+  function lastActiveLabel(ts) {
+    if (!ts) return 'New';
+    var now = Date.now();
+    var diff = now - ts;
+    var min = 60 * 1000;
+    var hr  = 60 * min;
+    var day = 24 * hr;
+    if (diff < 5 * min)   return 'Active now';
+    if (diff < hr)        return Math.floor(diff / min) + ' min ago';
+    if (diff < day)       return Math.floor(diff / hr) + ' hr ago';
+    if (diff < 7 * day)   return Math.floor(diff / day) + ' days ago';
+    if (diff < 30 * day)  return Math.floor(diff / (7 * day)) + ' wk ago';
+    return Math.floor(diff / (30 * day)) + ' mo ago';
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // BOOT
+  // ─────────────────────────────────────────────────────────
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>
