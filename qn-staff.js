@@ -212,9 +212,6 @@
     // Bravura Text on some devices, so we use a bold serif fallback (Georgia,
     // then Times, then generic serif) which approximates the engraved look.
     //
-    // dominant-baseline="central" centers each digit vertically on its target
-    // Y regardless of glyph shape (a 2, 6, and 8 all center identically).
-    //
     // Positioning is anchored to the MIDDLE staff line:
     //   - top digit center sits topOffset above the middle line
     //   - bottom digit center sits botOffset below the middle line
@@ -226,19 +223,28 @@
     const topOffset  = lineGap * 1.02;
     const botOffset  = lineGap * 1.02;
     const yShift     = lineGap * 0.00;
+    // Vertical centering WITHOUT dominant-baseline. dominant-baseline="central"
+    // renders inconsistently when the SVG is scaled by preserveAspectRatio
+    // (WebKit computes the baseline offset at a scale that doesn't track the
+    // geometry, so digits drift relative to the staff lines even though the
+    // lines stay put). Instead we use the default alphabetic baseline and push
+    // it down so the glyph's VISUAL center lands on the target Y. For bold
+    // serif digits the visual center sits ~0.35*fontSize above the baseline.
+    const BASELINE_CENTER = 0.35;   // fraction of fontSize from baseline to glyph visual center
 
     const midY = bottomY - 2 * lineGap;   // middle staff line
     const topY = midY - topOffset + yShift;
     const botY = midY + botOffset + yShift;
 
-    function renderStack(numStr, y) {
+    function renderStack(numStr, centerY) {
       const totalWidth = numStr.length * digitWidth;
       const startX = x - totalWidth / 2 + digitWidth / 2;
+      const baselineY = centerY + BASELINE_CENTER * fontSize;
       let out = '';
       for (let i = 0; i < numStr.length; i++) {
         const dx = startX + i * digitWidth;
         const classAttr = className ? ` class="${className}"` : '';
-        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="${color}">${numStr[i]}</text>`;
+        out += `<text${classAttr} x="${dx}" y="${baselineY}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
       }
       return out;
     }
