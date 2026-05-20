@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Progress — QuizNote</title>
+<meta name="description" content="See how your music theory practice is going across all QuizNote modules.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF0;
+    --cream-2: #FFF3DC;
+    --ink: #2A2A3E;
+    --ink-soft: #5a5a6e;
+    --ink-faint: #8a8472;
+    --teal: #1FB8A8;
+    --teal-dk: #0e8475;
+    --teal-lt: #d3f1ec;
+    --sun: #FFB627;
+    --sun-dk: #c98800;
+    --grape: #5B3FE4;
+    --grape-dk: #3d28a8;
+    --coral: #FF6B6B;
+    --coral-dk: #c2453f;
+    --white: #ffffff;
+    --shadow-cool: #d8d6cc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---------- header (matches module pages) ---------- */
+  .site-header {
+    background: white;
+    border-bottom: 2.5px solid var(--ink);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .site-header .brand-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .site-header .brand-name span { color: var(--teal); }
+  .site-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal-dk);
+    background: var(--teal-lt);
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+  .profile-chip-slot { margin-left: auto; display: inline-flex; align-items: center; }
+
+  /* ---------- layout ---------- */
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
+    color: var(--ink); text-decoration: none;
+    background: white; border: 2px solid var(--ink); border-radius: 12px;
+    padding: 7px 14px 7px 12px; box-shadow: 0 3px 0 var(--ink);
+    transition: transform 120ms, box-shadow 120ms; margin-bottom: 22px;
+  }
+  .back-link:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+  .back-link:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+
+  .page-title {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.1; letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .page-sub { font-weight: 600; color: var(--ink-soft); margin-bottom: 28px; }
+  .page-sub b { color: var(--teal-dk); }
+
+  .card {
+    background: white; border: 2px solid var(--ink); border-radius: 18px;
+    box-shadow: 0 4px 0 var(--shadow-cool); padding: 20px;
+  }
+
+  /* summary stat cards */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px;
+  }
+  .stat-card { text-align: center; }
+  .stat-card .stat-value {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 2rem; line-height: 1;
+  }
+  .stat-card .stat-label {
+    font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-faint); margin-top: 6px;
+  }
+  .stat-card.accent-teal  .stat-value { color: var(--teal-dk); }
+  .stat-card.accent-sun   .stat-value { color: var(--sun-dk); }
+  .stat-card.accent-grape .stat-value { color: var(--grape-dk); }
+
+  /* section heading */
+  .section-head {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.3rem;
+    margin: 8px 0 14px; display: flex; align-items: baseline; gap: 10px;
+  }
+  .section-head .hint { font-family: 'Nunito'; font-weight: 600; font-size: 13px; color: var(--ink-faint); }
+
+  /* trend chart */
+  .trend-card { margin-bottom: 28px; }
+  .trend-svg { width: 100%; height: 180px; display: block; overflow: visible; }
+  .trend-empty { color: var(--ink-faint); font-weight: 600; font-size: 14px; padding: 8px 0; }
+
+  /* per-module cards */
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .mod-card { position: relative; overflow: hidden; }
+  .mod-card .mod-name {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mod-card .mod-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .mod-stats { display: flex; gap: 18px; flex-wrap: wrap; }
+  .mod-stat .v { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.35rem; }
+  .mod-stat .l { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-top: 2px; }
+  .acc-bar { margin-top: 14px; height: 10px; border-radius: 999px; background: var(--cream-2); overflow: hidden; }
+  .acc-fill { height: 100%; border-radius: 999px; background: var(--teal); transition: width 600ms ease-out; }
+
+  /* empty / anonymous states */
+  .empty-state { text-align: center; padding: 48px 24px; }
+  .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: 8px; }
+  .empty-state p { color: var(--ink-soft); font-weight: 600; max-width: 420px; margin: 0 auto 20px; line-height: 1.5; }
+  .btn-primary {
+    display: inline-block; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px;
+    color: white; background: var(--teal); text-decoration: none;
+    border: 2px solid var(--ink); border-radius: 14px; padding: 12px 24px;
+    box-shadow: 0 4px 0 var(--ink); transition: transform 120ms, box-shadow 120ms;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-primary.sun { background: var(--sun); color: var(--ink); }
+
+  .device-note {
+    margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-faint); font-weight: 600;
+  }
+
+  @media (max-width: 560px) {
+    .summary-grid { gap: 10px; }
+    .stat-card { padding: 14px 8px; }
+    .stat-card .stat-value { font-size: 1.5rem; }
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand-name">Quiz<span>Note</span></div>
+  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
+  <div class="profile-chip-slot" id="profile-chip-slot"></div>
+</header>
+
+<div class="wrap">
+  <a href="play.html" class="back-link">← All modules</a>
+
+  <!-- ANONYMOUS: no active profile -->
+  <section class="card empty-state" id="state-anon" hidden>
+    <div class="emoji">🎵</div>
+    <h2>Make a profile to see your progress</h2>
+    <p>Your scores are tracked once you add a name. Pick a fun nickname — no email, no password, nothing leaves your device.</p>
+    <a href="profile.html" class="btn-primary">Add a name →</a>
+  </section>
+
+  <!-- PROFILE BUT NO ROUNDS -->
+  <section class="card empty-state" id="state-empty" hidden>
+    <div class="emoji">🎯</div>
+    <h2>No rounds yet</h2>
+    <p>Play a round in any module and your progress will start showing up here.</p>
+    <a href="play.html" class="btn-primary sun">Pick a module →</a>
+  </section>
+
+  <!-- HAS DATA -->
+  <section id="state-data" hidden>
+    <h1 class="page-title">Your progress</h1>
+    <p class="page-sub">How <b id="who">you</b> are doing across every module.</p>
+
+    <div class="summary-grid">
+      <div class="card stat-card accent-teal">
+        <div class="stat-value" id="sum-accuracy">—</div>
+        <div class="stat-label">Overall accuracy</div>
+      </div>
+      <div class="card stat-card accent-sun">
+        <div class="stat-value" id="sum-rounds">—</div>
+        <div class="stat-label">Rounds played</div>
+      </div>
+      <div class="card stat-card accent-grape">
+        <div class="stat-value" id="sum-time">—</div>
+        <div class="stat-label">Time practiced</div>
+      </div>
+    </div>
+
+    <div class="card trend-card">
+      <div class="section-head">Accuracy over time <span class="hint" id="trend-hint"></span></div>
+      <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none" aria-label="Accuracy over time"></svg>
+      <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
+    </div>
+
+    <div class="section-head">By module <span class="hint">Accuracy and rounds for each skill you've practiced</span></div>
+    <div class="module-grid" id="module-grid"></div>
+
+    <div class="device-note">📱 Scores are saved on this device only. Clearing your browser or switching devices starts a fresh slate.</div>
+  </section>
+</div>
+
+<script src="qn-profile.js" defer></script>
+<script defer>
+(function () {
+  'use strict';
+
+  // Display names + accent colors for known module slugs. Falls back to the
+  // raw slug (title-cased) for anything not listed, so new modules appear
+  // automatically without editing this file.
+  var MODULE_META = {
+    'note-names':      { name: 'Note Names',      color: 'coral' },
+    'note-values':     { name: 'Note Values',     color: 'sun'   },
+    'key-signatures':  { name: 'Key Signatures',  color: 'grape' },
+    'time-signatures': { name: 'Time Signatures', color: 'teal'  },
+    'piano-quiz':      { name: 'Piano Quiz',       color: 'teal'  },
+    'scales':          { name: 'Scales',           color: 'grape' },
+    'intervals':       { name: 'Intervals',        color: 'coral' }
+  };
+  var COLOR_HEX = {
+    teal: '#1FB8A8', sun: '#FFB627', grape: '#5B3FE4', coral: '#FF6B6B', ink: '#2A2A3E'
+  };
+  var TIERS = ['easy', 'medium', 'tricky'];
+
+  function metaFor(slug) {
+    if (MODULE_META[slug]) return MODULE_META[slug];
+    var pretty = String(slug).split('-').map(function (w) {
+      return w ? w.charAt(0).toUpperCase() + w.slice(1) : w;
+    }).join(' ');
+    return { name: pretty || slug, color: 'teal' };
+  }
+
+  function show(id) { var e = document.getElementById(id); if (e) e.hidden = false; }
+
+  function fmtPct(n) { return Math.round(n) + '%'; }
+  function fmtDuration(ms) {
+    var s = Math.round(ms / 1000);
+    if (s < 60) return s + 's';
+    var m = Math.round(s / 60);
+    if (m < 60) return m + ' min';
+    var h = Math.floor(m / 60);
+    var rem = m % 60;
+    return h + 'h' + (rem ? ' ' + rem + 'm' : '');
+  }
+
+  // Read a module's best score across all difficulty tiers from the
+  // per-difficulty PB keys the modules write: "<slug>_pb_<tier>".
+  function bestScoreFor(slug) {
+    var best = 0;
+    for (var i = 0; i < TIERS.length; i++) {
+      try {
+        var pb = JSON.parse(localStorage.getItem(slug + '_pb_' + TIERS[i]) || '{}');
+        if (pb && typeof pb.score === 'number' && pb.score > best) best = pb.score;
+      } catch (e) {}
+    }
+    return best;
+  }
+
+  function draw() {
+    if (!window.QN || !QN.profile) return;
+
+    // Mount the header chip
+    if (QN.ui && document.getElementById('profile-chip-slot')) {
+      QN.ui.chip(document.getElementById('profile-chip-slot'));
+    }
+
+    var active = QN.profile.getActive();
+    if (!active) { show('state-anon'); return; }
+
+    var events = QN.events.query(active.id); // newest first
+    if (!events.length) { show('state-empty'); return; }
+
+    show('state-data');
+    var whoEl = document.getElementById('who');
+    if (whoEl) whoEl.textContent = active.nickname;
+
+    // ----- summary totals -----
+    var totCorrect = 0, totAnswered = 0, totMs = 0;
+    var byModule = {};
+    for (var i = 0; i < events.length; i++) {
+      var ev = events[i];
+      totCorrect += ev.correct;
+      totAnswered += ev.total;
+      totMs += ev.durationMs;
+      if (!byModule[ev.module]) byModule[ev.module] = { correct: 0, total: 0, rounds: 0 };
+      byModule[ev.module].correct += ev.correct;
+      byModule[ev.module].total += ev.total;
+      byModule[ev.module].rounds += 1;
+    }
+    document.getElementById('sum-accuracy').textContent =
+      totAnswered > 0 ? fmtPct(100 * totCorrect / totAnswered) : '—';
+    document.getElementById('sum-rounds').textContent = events.length;
+    document.getElementById('sum-time').textContent = fmtDuration(totMs);
+
+    // ----- accuracy trend (oldest -> newest) -----
+    drawTrend(events.slice().reverse());
+
+    // ----- per-module cards -----
+    var grid = document.getElementById('module-grid');
+    var slugs = Object.keys(byModule).sort(function (a, b) {
+      return byModule[b].rounds - byModule[a].rounds; // most-played first
+    });
+    slugs.forEach(function (slug) {
+      var m = byModule[slug];
+      var meta = metaFor(slug);
+      var acc = m.total > 0 ? 100 * m.correct / m.total : 0;
+      var best = bestScoreFor(slug);
+
+      var card = document.createElement('div');
+      card.className = 'card mod-card';
+
+      var name = document.createElement('div');
+      name.className = 'mod-name';
+      var dot = document.createElement('span');
+      dot.className = 'mod-dot';
+      dot.style.background = COLOR_HEX[meta.color] || COLOR_HEX.teal;
+      name.appendChild(dot);
+      name.appendChild(document.createTextNode(meta.name));
+      card.appendChild(name);
+
+      var stats = document.createElement('div');
+      stats.className = 'mod-stats';
+      stats.innerHTML =
+        '<div class="mod-stat"><div class="v">' + fmtPct(acc) + '</div><div class="l">Accuracy</div></div>' +
+        '<div class="mod-stat"><div class="v">' + m.rounds + '</div><div class="l">Rounds</div></div>' +
+        (best > 0 ? '<div class="mod-stat"><div class="v">' + best + '</div><div class="l">Best score</div></div>' : '');
+      card.appendChild(stats);
+
+      var bar = document.createElement('div');
+      bar.className = 'acc-bar';
+      var fill = document.createElement('div');
+      fill.className = 'acc-fill';
+      fill.style.width = '0%';
+      fill.style.background = COLOR_HEX[meta.color] || COLOR_HEX.teal;
+      bar.appendChild(fill);
+      card.appendChild(bar);
+      grid.appendChild(card);
+      // animate the fill in
+      requestAnimationFrame(function () { setTimeout(function () { fill.style.width = acc + '%'; }, 60); });
+    });
+  }
+
+  // Hand-drawn SVG line of per-round accuracy. No chart library, matches the
+  // app's own SVG-drawing approach and the no-build constraint.
+  function drawTrend(chrono) {
+    var svg = document.getElementById('trend-svg');
+    var emptyMsg = document.getElementById('trend-empty');
+    var hint = document.getElementById('trend-hint');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    var pts = chrono.map(function (ev) {
+      return ev.total > 0 ? (ev.correct / ev.total) : 0;
+    });
+
+    if (pts.length < 2) {
+      svg.setAttribute('hidden', '');
+      if (emptyMsg) emptyMsg.hidden = false;
+      return;
+    }
+    svg.removeAttribute('hidden');
+    if (emptyMsg) emptyMsg.hidden = true;
+    if (hint) hint.textContent = '· last ' + pts.length + ' rounds';
+
+    var W = 700, H = 180, padX = 12, padY = 18;
+    var n = pts.length;
+    var x = function (i) { return padX + (W - 2 * padX) * (n === 1 ? 0.5 : i / (n - 1)); };
+    var y = function (v) { return padY + (H - 2 * padY) * (1 - v); };
+
+    var NS = 'http://www.w3.org/2000/svg';
+
+    // gridlines at 0/50/100%
+    [0, 0.5, 1].forEach(function (g) {
+      var ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('x1', padX); ln.setAttribute('x2', W - padX);
+      ln.setAttribute('y1', y(g)); ln.setAttribute('y2', y(g));
+      ln.setAttribute('stroke', g === 0.5 ? '#e9e4d6' : '#e0dccd');
+      ln.setAttribute('stroke-width', '1');
+      ln.setAttribute('stroke-dasharray', g === 0.5 ? '4 5' : '0');
+      svg.appendChild(ln);
+    });
+
+    // area fill under the line
+    var areaD = 'M ' + x(0) + ' ' + y(pts[0]);
+    for (var i = 1; i < n; i++) areaD += ' L ' + x(i) + ' ' + y(pts[i]);
+    areaD += ' L ' + x(n - 1) + ' ' + (H - padY) + ' L ' + x(0) + ' ' + (H - padY) + ' Z';
+    var area = document.createElementNS(NS, 'path');
+    area.setAttribute('d', areaD);
+    area.setAttribute('fill', 'rgba(31,184,168,0.12)');
+    svg.appendChild(area);
+
+    // the line
+    var lineD = 'M ' + x(0) + ' ' + y(pts[0]);
+    for (var j = 1; j < n; j++) lineD += ' L ' + x(j) + ' ' + y(pts[j]);
+    var line = document.createElementNS(NS, 'path');
+    line.setAttribute('d', lineD);
+    line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', '#1FB8A8');
+    line.setAttribute('stroke-width', '3');
+    line.setAttribute('stroke-linejoin', 'round');
+    line.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(line);
+
+    // dots (cap at ~30 so a long history doesn't get noisy)
+    var step = n > 30 ? Math.ceil(n / 30) : 1;
+    for (var k = 0; k < n; k += step) {
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x(k)); c.setAttribute('cy', y(pts[k]));
+      c.setAttribute('r', '3.5');
+      c.setAttribute('fill', '#fff');
+      c.setAttribute('stroke', '#0e8475');
+      c.setAttribute('stroke-width', '2');
+      svg.appendChild(c);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', draw);
+  } else {
+    draw();
+  }
+})();
+</script>
+
+</body>
+</html>

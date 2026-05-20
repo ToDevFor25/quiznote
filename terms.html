@@ -156,6 +156,24 @@
     box-shadow: 0 4px 0 var(--sun-dk);
   }
 
+  .todo-block {
+    background: #ffe9c2;
+    border: 2.5px dashed #c98800;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.88rem; line-height: 1.55;
+    color: var(--ink); margin: 12px 0;
+    font-family: 'Nunito', sans-serif;
+  }
+  .todo-block::before {
+    content: "TODO — decide before publish";
+    display: block;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #8a5a00; margin-bottom: 6px;
+  }
+  .todo-block strong { color: #8a5a00; }
+
   .site-footer {
     border-top: 2.5px solid var(--ink);
     padding: 24px 28px;
@@ -184,9 +202,13 @@
   <p class="doc-eyebrow">Legal</p>
   <h1>Terms of Service</h1>
   <p class="doc-meta">
-    Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026
+    Effective date: [TODO] &nbsp;·&nbsp; Last updated: May 20, 2026 (draft v2)
     &nbsp;·&nbsp; Questions? <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>
   </p>
+
+  <div class="todo-block">
+    <strong>This is a draft.</strong> Final terms language requires review by a qualified attorney before non-beta launch. Tier 3 decisions are flagged inline throughout.
+  </div>
 
   <div class="plain-note">
     <strong>The short version:</strong> QuizNote is a free music theory game. Use it to learn. Don't misuse it. We provide it as-is. That's about it.
@@ -200,7 +222,7 @@
       <li><a href="#s3">Use of the App</a></li>
       <li><a href="#s4">Acceptable Use</a></li>
       <li><a href="#s5">Intellectual Property</a></li>
-      <li><a href="#s6">No Account Required (Currently)</a></li>
+      <li><a href="#s6">Profiles and Local Storage</a></li>
       <li><a href="#s7">Future Paid Features</a></li>
       <li><a href="#s8">Disclaimer of Warranties</a></li>
       <li><a href="#s9">Limitation of Liability</a></li>
@@ -216,13 +238,17 @@
   <div class="doc-section" id="s1">
     <h2><span class="sec-num">01</span> Acceptance of Terms</h2>
     <p>By accessing or using QuizNote at <a href="https://quiznote.online">quiznote.online</a> (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please do not use the App.</p>
-    <p>If you are under 18, a parent or guardian should review these Terms. Because the App collects no personal information during normal use, no parental consent is required for children to play.</p>
+    <p>QuizNote is designed for learners of any age. If a learner is under 18, the App should be set up and managed by a parent or guardian. Profiles intended for use by a minor are owned and managed by the parent or guardian account, not by the minor independently.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — parent/guardian ownership model.</strong> The v2 project doc commits to "child profiles are owned and managed by a parent/guardian account, never independently held by a minor." This is straightforward to state, but the mechanism doesn't yet exist in the App (there is no parent account system — only device-local profiles). Options: (a) state the policy now and treat the device user as standing in for the parent during beta; (b) hold this language until the parent-account mechanism exists; (c) different wording entirely. Needs your call + lawyer review.
+    </div>
   </div>
 
   <div class="doc-section" id="s2">
     <h2><span class="sec-num">02</span> Description of Service</h2>
-    <p>QuizNote is a free, browser-based music theory education app. It presents interactive quizzes on topics such as note reading, key signatures, intervals, and chord identification — designed to help students and musicians of all ages build music fluency through practice.</p>
-    <p>The App is provided free of charge with no registration required. Features, content, and availability may change at any time.</p>
+    <p>QuizNote is a free, browser-based music theory practice app. It presents short rounds of interactive questions on topics including staff reading, note values, key signatures, intervals, and chord identification, designed to help learners build fluency in Western tonal music theory.</p>
+    <p>The App is fluency-targeted rather than age-targeted. It is suitable for learners of any age, from absolute beginners through intermediate-level study.</p>
+    <p>The App is provided free of charge during beta. Features, content, and availability may change at any time.</p>
   </div>
 
   <div class="doc-section" id="s3">
@@ -252,9 +278,10 @@
   </div>
 
   <div class="doc-section" id="s6">
-    <h2><span class="sec-num">06</span> No Account Required (Currently)</h2>
-    <p>QuizNote currently operates without user accounts or registration. Your game progress and display name (if you choose to set one) are saved locally in your browser using local storage. We have no access to this data, and it is not linked to any personal identity.</p>
-    <p>Because there is no account system, there is currently no login, no password, and no personal profile associated with your use of the App.</p>
+    <h2><span class="sec-num">06</span> Profiles and Local Storage</h2>
+    <p>QuizNote uses on-device profiles to track learning progress. A profile may include a nickname you choose, a color, an optional self-reported experience level, and a log of practice rounds you have completed (which module, difficulty tier, score, and time taken).</p>
+    <p>All profile data is stored locally in your browser. We do not transmit profile data to our servers and cannot see it. Multiple profiles can exist on a single device, and any profile can be deleted from within the App.</p>
+    <p>There is currently no online account system, no login, and no password. If cross-device sync is introduced in the future, you will be notified before any profile data leaves your device, and these Terms will be updated accordingly.</p>
   </div>
 
   <div class="doc-section" id="s7">
@@ -292,7 +319,10 @@
 
   <div class="doc-section" id="s11">
     <h2><span class="sec-num">11</span> Third-Party Services</h2>
-    <p>QuizNote is hosted by Vercel and uses Google Fonts to display typography. These services may collect technical access information (such as IP address and browser type) as part of normal hosting and content delivery. Their use of such data is governed by their respective privacy policies.</p>
+    <p>QuizNote is hosted by Vercel and loads typography from Google Fonts and the Bravura music notation font from a content delivery network. These services may collect technical access information (such as IP address and browser type) as part of normal hosting and content delivery. Their use of such data is governed by their respective privacy policies.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — name the Bravura CDN.</strong> The v2 doc says Bravura Text is loaded from a CDN but doesn't specify which (jsDelivr? unpkg? Google Fonts mirror?). Confirm the actual CDN in use and list it by name here.
+    </div>
     <p>QuizNote is not responsible for the privacy or security practices of third-party services.</p>
   </div>
 
@@ -305,6 +335,9 @@
   <div class="doc-section" id="s13">
     <h2><span class="sec-num">13</span> Governing Law</h2>
     <p>These Terms are governed by the laws of the State of Oklahoma, United States, without regard to its conflict-of-law provisions. Any dispute arising from these Terms or your use of the App shall be resolved in the state or federal courts located in Oklahoma.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — confirm governing law.</strong> Oklahoma is currently specified (matches your location). Confirm this is intentional, especially if a legal entity is being formed in a different state.
+    </div>
   </div>
 
   <div class="doc-section" id="s14">
@@ -321,6 +354,9 @@
       Email: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a><br>
       Website: <a href="https://quiznote.online">quiznote.online</a>
     </p>
+    <div class="todo-block">
+      <strong>Tier 3 — resolve contact email.</strong> The address <code>legal@quiznote.online</code> appears in brackets throughout both legal docs. Either set up the mailbox and remove the brackets, or substitute a different working address.
+    </div>
   </div>
 
 </div>

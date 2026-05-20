@@ -80,6 +80,22 @@
       letter-spacing: -0.01em;
     }
     .nav-brand span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-progress {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+      text-decoration: none;
+      background: white;
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 3px 0 var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .nav-progress:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+    .nav-progress:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
     .nav-tag {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
@@ -294,7 +310,10 @@
 
   <nav>
     <a href="index.html" class="nav-brand">Quiz<span>Note</span></a>
-    <span class="nav-tag">PRACTICE</span>
+    <div class="nav-right">
+      <a href="dashboard.html" class="nav-progress">📊 Progress</a>
+      <span class="nav-tag">PRACTICE</span>
+    </div>
   </nav>
 
   <main>
@@ -307,7 +326,7 @@
     <div class="tier-section foundations">
       <div class="tier-header">
         <div class="tier-name">Foundations</div>
-        <div class="tier-meta">Ages 5–8 · Levels 1–2</div>
+        <div class="tier-meta">First notes · Levels 1–2</div>
         <div class="tier-desc">Reading notes and rhythm. Where every musician starts.</div>
       </div>
       <div class="tile-grid">
@@ -428,6 +447,35 @@
           </div>
         </a>
 
+        <!-- Time Signatures : staff with treble clef + 4/4 + "meter?" chip -->
+        <a class="ltile" href="time-signatures.html">
+          <div class="ltile-art bg-green">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 4 over 4, bold serif digits centered on the spaces -->
+              <g font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="22" fill="#2A2A3E" text-anchor="middle">
+                <text x="58" y="38" class="anim-pulse" style="animation-delay: 0ms">4</text>
+                <text x="58" y="54" class="anim-pulse" style="animation-delay: 200ms">4</text>
+              </g>
+              <!-- question chip -->
+              <rect x="78" y="76" width="74" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="115" y="93" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">meter?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Time Signatures</div>
+            <div class="ltile-blurb">See the meter. Name it.</div>
+          </div>
+        </a>
+
         <!-- More to come -->
         <div class="ltile more-soon">
           <div class="ltile-art" style="background:#f0ebff;">
@@ -452,8 +500,8 @@
     <div class="tier-section reading">
       <div class="tier-header">
         <div class="tier-name">Reading</div>
-        <div class="tier-meta">Ages 7–11 · Levels 2–4</div>
-        <div class="tier-desc">Keys and scales. For students fluent on the staff.</div>
+        <div class="tier-meta">Building fluency · Levels 2–4</div>
+        <div class="tier-desc">Keys and scales. For anyone fluent on the staff.</div>
       </div>
       <div class="tile-grid">
         <!-- Key Signatures : staff with 3 sharps + "A major?" chip -->
@@ -538,8 +586,8 @@
     <div class="tier-section theory">
       <div class="tier-header">
         <div class="tier-name">Theory</div>
-        <div class="tier-meta">Ages 10–14 · Levels 4–6</div>
-        <div class="tier-desc">Intervals and ear training. Junior-high level — the app's ceiling.</div>
+        <div class="tier-meta">Fluent reader · Levels 4–6</div>
+        <div class="tier-desc">Intervals and ear training. Intermediate theory — the app's ceiling.</div>
       </div>
       <div class="tile-grid">
         <!-- Intervals : two stacked notes + bracket + answer chips -->

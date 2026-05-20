@@ -40,10 +40,14 @@
   var STORAGE_KEYS = {
     PROFILES:       'qn_profiles',
     ACTIVE_PROFILE: 'qn_activeProfile',
-    EVENTS:         'qn_events'
+    EVENTS:         'qn_events',
+    PENDING_EVENTS: 'qn_pendingEvents'  // anonymous rounds awaiting a profile
   };
 
   var MAX_EVENTS_PER_PROFILE = 5000;
+  // Anonymous rounds held before a profile exists. Capped so a long
+  // anonymous session can't grow storage without bound; oldest dropped.
+  var MAX_PENDING_EVENTS = 50;
 
   // Color palette IDs match the design system tokens in each
   // module's CSS. Keep this list in sync with the onboarding
@@ -182,6 +186,10 @@
       profiles.push(profile);
       writeStorage(STORAGE_KEYS.PROFILES, profiles);
       writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, profile.id);
+
+      // Claim any anonymous rounds played before this profile existed.
+      // Safe no-op if there are none.
+      eventsAPI.backfill(profile.id);
 
       return profile;
     },
@@ -344,6 +352,89 @@
       profileAPI.setActive(active.id);
 
       return true;
+    },
+
+    /**
+     * Log a round if a profile is active; otherwise HOLD it as a
+     * pending anonymous round so it can be back-filled when the
+     * player makes a profile right after.
+     *
+     * Modules should call this (not log) from round-completion code.
+     *
+     * @param {Object} eventData  same shape as log()
+     * @returns {string} 'logged' | 'held'
+     */
+    logOrHold: function (eventData) {
+      if (!eventData || !eventData.module) return 'held';
+      var active = profileAPI.getActive();
+      if (active) {
+        eventsAPI.log(eventData);
+        return 'logged';
+      }
+      // No profile: stash a normalized event (without profileId) in
+      // the pending slot. profileId is assigned at backfill time.
+      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      pending.push({
+        module:      eventData.module,
+        tier:        eventData.tier || null,
+        length:      Number(eventData.length) || 0,
+        correct:     Number(eventData.correct) || 0,
+        total:       Number(eventData.total) || 0,
+        durationMs:  Number(eventData.durationMs) || 0,
+        timedMode:   !!eventData.timedMode,
+        completedAt: Date.now()
+      });
+      // Cap: keep only the most recent MAX_PENDING_EVENTS.
+      if (pending.length > MAX_PENDING_EVENTS) {
+        pending = pending.slice(pending.length - MAX_PENDING_EVENTS);
+      }
+      writeStorage(STORAGE_KEYS.PENDING_EVENTS, pending);
+      return 'held';
+    },
+
+    /**
+     * How many anonymous rounds are currently held, awaiting a profile.
+     * Modules use this to decide whether to show the "save your scores"
+     * prompt on the summary screen.
+     * @returns {number}
+     */
+    pendingCount: function () {
+      return readStorage(STORAGE_KEYS.PENDING_EVENTS, []).length;
+    },
+
+    /**
+     * Move all held anonymous rounds into the real event log under the
+     * given profileId, then clear the pending slot. Called automatically
+     * by profile.create(). Safe no-op if nothing is pending.
+     * @param {string} profileId
+     * @returns {number} how many events were back-filled
+     */
+    backfill: function (profileId) {
+      if (!profileId) return 0;
+      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      if (!pending.length) return 0;
+
+      var events = readStorage(STORAGE_KEYS.EVENTS, []);
+      var n = 0;
+      for (var i = 0; i < pending.length; i++) {
+        var p = pending[i];
+        if (!p || !p.module) continue;
+        events.push({
+          profileId:   profileId,
+          module:      p.module,
+          tier:        p.tier || null,
+          length:      Number(p.length) || 0,
+          correct:     Number(p.correct) || 0,
+          total:       Number(p.total) || 0,
+          durationMs:  Number(p.durationMs) || 0,
+          timedMode:   !!p.timedMode,
+          completedAt: Number(p.completedAt) || Date.now()
+        });
+        n++;
+      }
+      writeStorage(STORAGE_KEYS.EVENTS, events);
+      writeStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      return n;
     },
 
     /**

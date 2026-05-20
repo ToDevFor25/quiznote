@@ -16,18 +16,18 @@
 
   2. Replace every {{PLACEHOLDER}} in the file:
 
-     Note Values         e.g. "Note Values"
-     See the symbol. Name it. Fast.       e.g. "See the symbol. Name it. Fast."
+     Time Signatures         e.g. "Note Values"
+     See the meter. Name it.       e.g. "See the symbol. Name it. Fast."
      Easy      e.g. "Easy"
-     whole, half<br/>quarter        e.g. "whole, half<br/>quarter"
+     2/4, 3/4, 4/4        e.g. "whole, half<br/>quarter"
      Medium    e.g. "Medium"
-     + eighth<br/>notes & rests      e.g. "+ eighth<br/>notes & rests"
+     + 6/8, 3/8, 2/2      e.g. "+ eighth<br/>notes & rests"
      Tricky    e.g. "Tricky"
-     + sixteenth<br/>notes & rests      e.g. "+ sixteenth<br/>notes & rests"
+     + 9/8, 12/8<br/>5/4, 7/8      e.g. "+ sixteenth<br/>notes & rests"
      What is this?  e.g. "What is this?"
-     You named those symbols.  e.g. "You named those symbols."
-     Notes to practice next time e.g. "Notes to practice next time"
-     Drill missed notes   e.g. "Drill missed notes"
+     You read those meters.  e.g. "You named those symbols."
+     Meters to practice next time e.g. "Notes to practice next time"
+     Drill missed meters   e.g. "Drill missed notes"
      {{MODULE_CSS}}           the module's render-area CSS
      {{MODULE_FX_LAYERS}}     any module-specific FX DOM nodes (or empty)
      {{MODULE_NAMESPACE}}     e.g. "NV" (replace in renderer comments)
@@ -95,7 +95,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAACBIUz2AABAAElEQVR4nO19CZgkV3Xm...">
-<title>QuizNote — Note Values</title>
+<title>QuizNote — Time Signatures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -328,25 +328,35 @@
     display: grid;
     grid-template-columns: 1.6fr 1fr;
     gap: 12px;
-    align-items: stretch;
+    align-items: start;
     flex-shrink: 0;
   }
 
   .staff-card {
     padding: 14px 14px 10px;
-    display: flex; flex-direction: column; gap: 8px;
     position: relative;
     overflow: hidden;
+    height: 320px;        /* fixed: label band + 250px staff, never grows with neighbor */
   }
+  /* Label pinned to the top of the card with a fixed height, so its text
+     length never shifts what's below it. */
   .staff-label {
+    position: absolute;
+    top: 14px; left: 14px; right: 14px;
+    height: 34px;
+    display: flex; align-items: center;
     font-family: 'Fredoka', sans-serif; font-weight: 500;
     font-size: 13px; color: var(--ink-soft);
     text-transform: uppercase; letter-spacing: 0.1em;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
   }
+  /* Staff wrap pinned to fill the card BELOW the fixed label. Fixed
+     rectangle → the centered SVG lands in exactly the same place every
+     question, independent of prompt text or time-signature glyphs. */
   .staff-svg-wrap {
-    flex: 1;
+    position: absolute;
+    top: 56px; left: 14px; right: 14px; bottom: 10px;
     display: flex; align-items: center; justify-content: center;
-    min-height: 180px;
   }
   /* ============================================================
      MODULE-SPECIFIC CSS
@@ -360,87 +370,86 @@
      Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
      Animations: @keyframes {{moduleSlug}}Pop, etc.
      ============================================================ */
-  /* Bravura Text symbol display */
-  .nv-symbol {
-    font-family: 'Bravura Text', serif;
-    font-size: 140px;
-    line-height: 1.4;
+  /* Time Signatures puts the actual question prompt in the .staff-label slot,
+     so make it read as a real question. Single line; fits the label band. */
+  #play-screen .staff-label {
+    font-size: 22px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
     color: var(--ink);
-    user-select: none;
+  }
+
+  /* Time Signatures — staff display */
+  .ts-stage {
+    width: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding: 0;
     transition: transform 200ms cubic-bezier(.5,1.6,.6,1);
   }
-  .nv-symbol.pop {
-    animation: nvPop 240ms cubic-bezier(.5,1.6,.6,1);
-  }
-  @keyframes nvPop {
-    0% { transform: scale(0.6); opacity: 0; }
-    60% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+  /* Render the staff SVG at its NATIVE size (no scaling). Scaling the SVG
+     (width:100% → 340px for a 360-unit viewBox) made WebKit compute text
+     baselines at a scale that didn't track the geometry, so the time-sig
+     digits drifted vertically while the staff lines stayed put. At 1:1 the
+     baseline math is exact. The wrap centers the fixed-size SVG. */
+  .staff-svg-wrap .ts-stage svg {
+    width: 450px;
+    height: 250px;
+    max-width: 100%;
+    display: block;
   }
 
-  /* Explosion FX layer — full-screen overlay (Note Values exploding symbols) */
-  .nv-fx-layer {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1000;
-    overflow: hidden;
+  /* Pop-in animation on new question */
+  .ts-stage.pop { animation: tsPop 240ms cubic-bezier(.5,1.6,.6,1); }
+  @keyframes tsPop {
+    0%   { transform: scale(0.85); opacity: 0; }
+    60%  { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1);    opacity: 1; }
   }
-  .nv-fx-particle {
-    position: absolute;
-    will-change: transform, opacity;
-    transform-origin: center;
-    font-family: 'Bravura Text', serif;
-    line-height: 1;
-    color: var(--ink);
-    user-select: none;
-  }
-  /* Streak banner */
-  .nv-streak-banner {
-    position: fixed;
-    top: 28%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
+
+  /* Question prompt — varies per question type */
+  .ts-prompt {
     font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.6rem, 5vw, 2.8rem);
-    color: var(--sun-dk);
-    background: white;
-    border: 4px solid var(--ink);
-    border-radius: 22px;
-    box-shadow: 0 8px 0 var(--ink);
-    padding: 14px 30px;
-    z-index: 1100;
-    opacity: 0;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  .nv-streak-banner.show {
-    animation: nvStreakPop 1.3s cubic-bezier(.5, 1.5, .5, 1) forwards;
-  }
-  @keyframes nvStreakPop {
-    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
-    20%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-    35%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    78%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
-  }
-  body.nv-shake { animation: nvShake 0.4s ease-in-out; }
-  @keyframes nvShake {
-    0%, 100% { transform: translate(0, 0); }
-    20% { transform: translate(-6px, 2px); }
-    40% { transform: translate(6px, -2px); }
-    60% { transform: translate(-4px, -2px); }
-    80% { transform: translate(4px, 2px); }
+    font-weight: 600;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0 0 14px 0;
+    min-height: 1.4em;
   }
 
+  /* Recolor on answer — applied via CSS class on .ts-stage.
+     Default scope colors the whole time signature (used for the
+     "name this signature" question). scope-top / scope-bottom narrow the
+     highlight to just the relevant numeral, so concept and single-number
+     questions light up exactly the number the answer refers to. */
+  .ts-stage.correct.scope-both .ts-timesig,
+  .ts-stage.correct:not(.scope-top):not(.scope-bottom) .ts-timesig { fill: var(--teal); }
+  .ts-stage.wrong.scope-both .ts-timesig,
+  .ts-stage.wrong:not(.scope-top):not(.scope-bottom) .ts-timesig { fill: var(--coral); }
+
+  .ts-stage.correct.scope-top .ts-top    { fill: var(--teal); }
+  .ts-stage.wrong.scope-top   .ts-top    { fill: var(--coral); }
+  .ts-stage.correct.scope-bottom .ts-bottom { fill: var(--teal); }
+  .ts-stage.wrong.scope-bottom   .ts-bottom { fill: var(--coral); }
+
+  /* Body shake on wrong */
+  body.ts-shake { animation: tsShake 0.4s ease-in-out; }
+  @keyframes tsShake {
+    0%, 100% { transform: translate(0, 0); }
+    20%      { transform: translate(-6px, 2px); }
+    40%      { transform: translate(6px, -2px); }
+    60%      { transform: translate(-4px, -2px); }
+    80%      { transform: translate(4px, 2px); }
+  }
 
   .staff-svg-wrap svg {
-    width: 100%; height: 100%;
-    max-height: 200px;
+    width: 100%;
+    height: auto;
+    max-width: 340px;
   }
   .staff-actions {
     display: flex; gap: 10px; justify-content: center;
@@ -906,6 +915,16 @@
     transform: translateY(2px);
     box-shadow: 0 1px 0 var(--ink);
   }
+  .site-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal-dk);
+    background: var(--teal-lt);
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
   .profile-chip-slot {
     margin-left: auto;
     display: inline-flex;
@@ -928,16 +947,6 @@
     font-size: 15px;
     color: var(--ink);
     line-height: 1.4;
-  }
-  .site-tagline {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal-dk);
-    background: var(--teal-lt);
-    border-radius: 999px;
-    padding: 4px 12px;
-    white-space: nowrap;
   }
 
   /* ============ Site Footer ============ */
@@ -1009,9 +1018,8 @@
     .summary-title { font-size: 40px; }
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
-    .staff-svg-wrap { min-height: 100px; }
-    .staff-svg-wrap svg { max-height: 160px; }
-    .staff-card { padding: 10px 10px 8px; gap: 6px; }
+    .staff-svg-wrap svg { max-width: 280px; }
+    .staff-card { padding: 10px 10px 8px; height: 220px; }
     .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
     .staff-actions { gap: 6px; }
     .choice-btn { font-size: 18px; padding: 12px 8px; }
@@ -1021,8 +1029,7 @@
   @media (min-width: 1100px) {
     #play-screen { padding: 22px 32px 24px; gap: 14px; }
     .play-body { gap: 20px; }
-    .staff-svg-wrap { min-height: 200px; }
-    .staff-svg-wrap svg { max-height: 260px; }
+    .staff-svg-wrap svg { max-width: 360px; }
     .stat-value { font-size: 38px; }
     .choice-btn { font-size: 26px; padding: 18px 14px; }
   }
@@ -1031,6 +1038,7 @@
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
 <script src="qn-audio.js" defer></script>
+<script src="qn-staff.js" defer></script>
 </head>
 <body>
 
@@ -1047,8 +1055,8 @@
     <div class="brand">
       <div class="logo-mark">
         <div>
-          <h1>Note Values</h1>
-          <div class="tagline">See the symbol. Name it. Fast.</div>
+          <h1>Time Signatures</h1>
+          <div class="tagline">See the meter. Name it.</div>
         </div>
       </div>
     </div>
@@ -1059,17 +1067,17 @@
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
           <div class="tile-title">Easy</div>
-          <div class="tile-sub">whole, half<br/>quarter</div>
+          <div class="tile-sub">2/4, 3/4, 4/4</div>
         </button>
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">+ eighth<br/>notes & rests</div>
+          <div class="tile-sub">+ 6/8, 3/8, 2/2</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
-          <div class="tile-sub">+ sixteenth<br/>notes & rests</div>
+          <div class="tile-sub">+ 9/8, 12/8<br/>5/4, 7/8</div>
         </button>
       </div>
     </div>
@@ -1160,15 +1168,14 @@
   </div>
 
   <div class="fx-layer" id="confetti"></div>
-  <div class="nv-fx-layer" id="nv-fx-layer"></div>
-  <div class="nv-streak-banner" id="nv-streak-banner"></div>
+  <!-- Time Signatures uses no module-specific FX layer -->
 </section>
 
 <!-- ============ SUMMARY SCREEN ============ -->
 <section class="screen" id="summary-screen">
   <div class="summary-wrap">
     <div class="summary-title">Round done! 🎉</div>
-    <div class="summary-sub" id="summary-sub">You named those symbols.</div>
+    <div class="summary-sub" id="summary-sub">You read those meters.</div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
     <div class="summary-grid">
@@ -1187,7 +1194,7 @@
     </div>
 
     <div class="miss-list" id="miss-list">
-      <h3>Notes to practice next time</h3>
+      <h3>Meters to practice next time</h3>
       <ul id="miss-items"></ul>
     </div>
 
@@ -1198,7 +1205,7 @@
 
     <div class="summary-actions">
       <button class="btn sun big" id="again-btn">↻ Play again</button>
-      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
+      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed meters</button>
       <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
       <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
     </div>
@@ -1273,198 +1280,273 @@
 
 
 <script>
-// ============ QuizNote Note Values — Symbol Renderer + Explosion Engine ============
+// ============ QuizNote Time Signatures — Renderer + Module Adapter ============
 (function () {
-  const NV = window.NV = window.NV || {};
+  const TS = window.TS = window.TS || {};
 
-  // SMuFL codepoints for note values (Bravura Text font)
-  const SYMBOLS = {
-    'whole-note':     { label: 'Whole note',     char: '\uE1D2', category: 'note' },
-    'half-note':      { label: 'Half note',      char: '\uE1D3', category: 'note' },
-    'quarter-note':   { label: 'Quarter note',   char: '\uE1D5', category: 'note' },
-    'eighth-note':    { label: 'Eighth note',    char: '\uE1D7', category: 'note' },
-    'sixteenth-note': { label: 'Sixteenth note', char: '\uE1D9', category: 'note' },
-    'whole-rest':     { label: 'Whole rest',     char: '\uE4F4', category: 'rest' },
-    'half-rest':      { label: 'Half rest',      char: '\uE4F5', category: 'rest' },
-    'quarter-rest':   { label: 'Quarter rest',   char: '\uE4E5', category: 'rest' },
-    'eighth-rest':    { label: 'Eighth rest',    char: '\uE4E6', category: 'rest' },
-    'sixteenth-rest': { label: 'Sixteenth rest', char: '\uE4E7', category: 'rest' },
+  // ─── Time signature catalog ──────────────────────────────
+  const SIGS = {
+    '2-4':  { top: 2,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '3-4':  { top: 3,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '4-4':  { top: 4,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '6-8':  { top: 6,  bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '3-8':  { top: 3,  bottom: 8,  category: 'simple',   beatUnit: 'Eighth note'  },
+    '2-2':  { top: 2,  bottom: 2,  category: 'simple',   beatUnit: 'Half note'    },
+    '9-8':  { top: 9,  bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '12-8': { top: 12, bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '5-4':  { top: 5,  bottom: 4,  category: 'odd',      beatUnit: 'Quarter note' },
+    '7-8':  { top: 7,  bottom: 8,  category: 'odd',      beatUnit: 'Eighth note'  },
   };
 
-  function renderSymbol(container, key) {
-    const sym = SYMBOLS[key];
-    if (!sym) return;
-    container.innerHTML = '<div class="nv-symbol">' + sym.char + '</div>';
+  // ─── Random key signature generator (visual noise on Medium/Tricky) ─
+  function randomKeySig() {
+    const r = Math.random();
+    if (r < 0.3) return null;  // 30% no accidentals
+    const isSharp = Math.random() < 0.5;
+    const count = 1 + Math.floor(Math.random() * 4);  // 1..4 accidentals
+    return { type: isSharp ? 'sharp' : 'flat', count };
   }
 
-  function animateSymbol(container, kind) {
-    const el = container.querySelector('.nv-symbol');
-    if (!el) return;
-    el.classList.remove('pop');
-    void el.offsetWidth;
-    if (kind === 'pop') el.classList.add('pop');
+  // ─── Question-type prompts ───────────────────────────────
+  const PROMPT = {
+    label:  'What time signature is this?',
+    top:    'How many beats per measure?',
+    bottom: 'Which note gets the beat?',
+    whichBeats: 'Which number tells you how many beats are in a measure?',
+    whichUnit:  'Which number tells you what kind of note gets the beat?',
+  };
+
+  // ─── Difficulty pools ────────────────────────────────────
+  const TIER_SIGS = {
+    easy:   ['2-4', '3-4', '4-4'],
+    medium: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2'],
+    tricky: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2', '9-8', '12-8', '5-4', '7-8'],
+  };
+
+  const TIER_TYPE_WEIGHTS = {
+    easy:   { label: 0.7,  top: 0.3,  bottom: 0.0,  whichBeats: 0.0,  whichUnit: 0.0 },
+    medium: { label: 0.34, top: 0.22, bottom: 0.22, whichBeats: 0.11, whichUnit: 0.11 },
+    tricky: { label: 0.28, top: 0.22, bottom: 0.22, whichBeats: 0.14, whichUnit: 0.14 },
+  };
+
+  function pickType(tier) {
+    const w = TIER_TYPE_WEIGHTS[tier];
+    const r = Math.random();
+    let acc = 0;
+    acc += w.label;      if (r < acc) return 'label';
+    acc += w.top;        if (r < acc) return 'top';
+    acc += w.bottom;     if (r < acc) return 'bottom';
+    acc += w.whichBeats; if (r < acc) return 'whichBeats';
+    return 'whichUnit';
   }
 
-  function recolorSymbol(container, color) {
-    const el = container.querySelector('.nv-symbol');
-    if (el) el.style.color = color;
+  // ─── Question key encoding ───────────────────────────────
+  // Format: "sigKey|type|clef|ksStr::answer"
+  // The "::answer" suffix lets the generic game loop's equality
+  // check work (chosen key must equal correctKey verbatim).
+  function encodeKey(sigKey, type, clef, keySig, answer) {
+    const ksStr = (keySig && keySig.count > 0) ? `${keySig.count}${keySig.type[0]}` : '0';
+    return `${sigKey}|${type}|${clef}|${ksStr}::${answer}`;
   }
 
-  // ============ EXPLOSION ENGINE ============
-  function explode(symbolKey, originX, originY, streak) {
-    const fx = document.getElementById('nv-fx-layer');
-    if (!fx) return;
-    const sym = SYMBOLS[symbolKey];
-    if (!sym) return;
-
-    let count, sizeRange, distance, includeStreakChars;
-    if (streak >= 10) {
-      count = 30; sizeRange = [50, 100]; distance = 500; includeStreakChars = true;
-    } else if (streak >= 5) {
-      count = 20; sizeRange = [45, 80]; distance = 380; includeStreakChars = true;
-    } else if (streak >= 3) {
-      count = 14; sizeRange = [40, 70]; distance = 280; includeStreakChars = false;
-    } else {
-      count = 8; sizeRange = [35, 60]; distance = 220; includeStreakChars = false;
+  function decodeKey(key) {
+    const [body, answer] = key.split('::');
+    const [sigKey, type, clef, ksStr] = body.split('|');
+    let keySig = null;
+    if (ksStr !== '0') {
+      keySig = { count: parseInt(ksStr, 10), type: ksStr.endsWith('s') ? 'sharp' : 'flat' };
     }
+    return { sigKey, type, clef, keySig, answer, body };
+  }
 
+  function answerFor(sigKey, type) {
+    if (type === 'label') return sigKey.replace('-', '/');
+    if (type === 'top')   return String(SIGS[sigKey].top);
+    if (type === 'whichBeats') return 'Top number';
+    if (type === 'whichUnit')  return 'Bottom number';
+    return SIGS[sigKey].beatUnit;
+  }
+
+  // ─── QNM contract: buildPool ─────────────────────────────
+  function buildPool(tier) {
+    const sigs = TIER_SIGS[tier];
+    const pool = [];
+    const count = 30;
     for (let i = 0; i < count; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'nv-fx-particle';
-      const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
-      particle.style.fontSize = size + 'px';
-      if (includeStreakChars && Math.random() < 0.15) {
-        particle.textContent = '🔥';
+      const sigKey = sigs[Math.floor(Math.random() * sigs.length)];
+      const type = pickType(tier);
+      const clef = (tier === 'tricky' && Math.random() < 0.4) ? 'bass' : 'treble';
+      const keySig = (tier === 'easy') ? null : randomKeySig();
+      pool.push(encodeKey(sigKey, type, clef, keySig, answerFor(sigKey, type)));
+    }
+    return pool;
+  }
+
+  // ─── QNM contract: buildChoices ──────────────────────────
+  function buildChoices(correctKey, pool, tier) {
+    const q = decodeKey(correctKey);
+    let distractors;
+
+    // Helper: shuffle an array in place
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    if (q.type === 'label') {
+      let sigPool = TIER_SIGS[tier].filter(s => s !== q.sigKey);
+      if (tier === 'tricky') {
+        const sig = SIGS[q.sigKey];
+        const sameNum = Object.keys(SIGS).filter(k => k !== q.sigKey && SIGS[k].top    === sig.top);
+        const sameDen = Object.keys(SIGS).filter(k => k !== q.sigKey && SIGS[k].bottom === sig.bottom);
+        sigPool = [...new Set([...sameNum, ...sameDen, ...sigPool])];
+      }
+      distractors = shuffle(sigPool.map(s => s.replace('-', '/'))).slice(0, 3);
+    } else if (q.type === 'top') {
+      // PEDAGOGY: include the BOTTOM number of the time signature as a
+      // choice when it differs from the top — forces the learner to pick
+      // between the two visible numbers. When top === bottom (e.g. 4/4,
+      // 2/2), there's only one distinct visible number, so we skip the
+      // forced bottom and fill entirely from nearby numbers (avoids a
+      // duplicate answer tile).
+      const sig = SIGS[q.sigKey];
+      const c = sig.top;
+      const forced = (sig.bottom !== c) ? String(sig.bottom) : null;
+      const nearby = shuffle(
+        [...new Set(
+          [c - 2, c - 1, c + 1, c + 2, c * 2, Math.floor(c / 2)]
+            .filter(n => n > 0 && n !== c)
+            .map(String)
+            .filter(n => n !== forced)
+        )]
+      );
+      if (forced) {
+        distractors = [forced, ...nearby.slice(0, 2)];
       } else {
-        particle.textContent = sym.char;
+        distractors = nearby.slice(0, 3);
       }
-      particle.style.left = originX + 'px';
-      particle.style.top = originY + 'px';
-      particle.style.transform = 'translate(-50%, -50%)';
-      fx.appendChild(particle);
-
-      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-      const speed = distance * (0.5 + Math.random() * 0.5);
-      const dx = Math.cos(angle) * speed;
-      const dy = Math.sin(angle) * speed - 60;
-      const rotation = (Math.random() - 0.5) * 720;
-      const duration = 800 + Math.random() * 500;
-
-      particle.animate([
-        { transform: 'translate(-50%, -50%) rotate(0deg) scale(0.3)', opacity: 1 },
-        { transform: 'translate(calc(-50% + ' + (dx * 0.4) + 'px), calc(-50% + ' + (dy * 0.4 - 40) + 'px)) rotate(' + (rotation * 0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.2 },
-        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 200) + 'px)) rotate(' + rotation + 'deg) scale(0.8)', opacity: 0 }
-      ], { duration: duration, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' });
-
-      setTimeout(() => particle.remove(), duration + 100);
-    }
-
-    if (streak >= 3) {
-      const banner = document.getElementById('nv-streak-banner');
-      if (banner) {
-        if (streak >= 10)      banner.textContent = '🔥 ' + streak + ' ON FIRE!';
-        else if (streak >= 5)  banner.textContent = '🔥 ' + streak + ' IN A ROW!';
-        else                   banner.textContent = streak + ' IN A ROW!';
-        banner.classList.remove('show');
-        void banner.offsetWidth;
-        banner.classList.add('show');
-      }
-    }
-
-    if (streak >= 10) {
-      document.body.classList.remove('nv-shake');
-      void document.body.offsetWidth;
-      document.body.classList.add('nv-shake');
-      setTimeout(() => document.body.classList.remove('nv-shake'), 400);
-    }
-  }
-
-  NV.SYMBOLS = SYMBOLS;
-  NV.render = { renderSymbol, animateSymbol, recolorSymbol };
-  NV.fx = { explode };
-})();
-
-  // ============ QNM contract adapter ============
-  // Expose Note Values' API to the generic game loop via window.QNM.
-  // The game loop calls QNM.* and never references NV.* directly.
-
-  const POOLS = {
-    easy:   ['whole-note', 'half-note', 'quarter-note', 'whole-rest', 'half-rest', 'quarter-rest'],
-    medium: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'whole-rest', 'half-rest', 'quarter-rest', 'eighth-rest'],
-    tricky: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'sixteenth-note', 'whole-rest', 'half-rest', 'quarter-rest', 'eighth-rest', 'sixteenth-rest'],
-  };
-
-  function buildChoices(correctKey, pool, difficulty) {
-    const SYMBOLS = window.NV.SYMBOLS;
-    const correctSym = SYMBOLS[correctKey];
-    let candidates;
-    if (difficulty === 'easy') {
-      candidates = pool.filter(k => k !== correctKey && SYMBOLS[k].category === correctSym.category);
+    } else if (q.type === 'whichBeats' || q.type === 'whichUnit') {
+      // Concept questions: choices are positional/conceptual, not numbers read
+      // off the staff. Correct is "Top number" (whichBeats) or "Bottom number"
+      // (whichUnit); the others test genuine confusion about what each numeral
+      // means. Always 4 distinct tiles.
+      const conceptSet = ['Top number', 'Bottom number', 'Both numbers', 'Neither'];
+      distractors = shuffle(conceptSet.filter(c => c !== q.answer)).slice(0, 3);
     } else {
-      candidates = pool.filter(k => k !== correctKey);
+      // 'bottom' — note-value question. Distractors are other note values.
+      const allUnits = ['Whole note', 'Half note', 'Quarter note', 'Eighth note', 'Sixteenth note'];
+      distractors = shuffle(allUnits.filter(u => u !== q.answer)).slice(0, 3);
     }
-    for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-    }
-    const distractors = candidates.slice(0, 3);
-    while (distractors.length < 3) {
-      const allKeys = Object.keys(SYMBOLS);
-      const pick = allKeys[Math.floor(Math.random() * allKeys.length)];
-      if (pick !== correctKey && !distractors.includes(pick)) distractors.push(pick);
-    }
-    const all = [correctKey, ...distractors];
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    return all;
+
+    while (distractors.length < 3) distractors.push('—');
+
+    // Wrap each distractor in the same body as the question (so labelFor works on all 4)
+    const choices = shuffle([correctKey, ...distractors.map(d => `${q.body}::${d}`)]);
+    return choices;
   }
 
+  // ─── QNM contract: labelFor ──────────────────────────────
+  function labelFor(key) {
+    if (!key || !key.includes('::')) return key || '';
+    return key.split('::')[1];
+  }
+
+  // ─── QNM contract: render ────────────────────────────────
+  // Uses NH.staff.buildStaff (shared engraver) — same calibrated
+  // positioning as Key Signatures. Lazy-resolves at call time.
+  //
+  // IMPORTANT: only the staff SVG goes into .staff-svg-wrap, exactly like
+  // Note Values / Key Signatures. The per-question prompt goes into the
+  // .staff-label slot ABOVE the staff. Putting the prompt inside the wrap
+  // made it share a centered flex ROW with the SVG, so different prompt
+  // lengths changed the SVG's width/scale and the staff drifted vertically
+  // between questions. Keeping the wrap to a single child fixes that.
+  function setPrompt(text) {
+    const label = document.querySelector('#play-screen .staff-label');
+    if (label) label.textContent = text;
+  }
+
+  function renderQuestion(container, key) {
+    const q = decodeKey(key);
+    const staffApi = window.NH && window.NH.staff;
+    if (!staffApi) {
+      setPrompt('Loading…');
+      container.innerHTML = '';
+      return;
+    }
+    setPrompt(PROMPT[q.type]);
+    const sig = SIGS[q.sigKey];
+    const result = staffApi.buildStaff({
+      clef: q.clef,
+      width: 450,
+      height: 250,
+      lineGap: 20,
+      bottomY: 162,
+      keySig: q.keySig,
+      timeSig: { top: sig.top, bottom: sig.bottom },
+      tsClassName: 'ts-timesig',
+    });
+    // Scope which numeral(s) the answer-feedback highlight should color,
+    // based on what the question is actually about:
+    //   top / whichBeats   → the TOP number (beats per measure)
+    //   bottom / whichUnit → the BOTTOM number (beat unit)
+    //   label              → BOTH (the whole signature is the answer)
+    let scope = 'scope-both';
+    if (q.type === 'top' || q.type === 'whichBeats') scope = 'scope-top';
+    else if (q.type === 'bottom' || q.type === 'whichUnit') scope = 'scope-bottom';
+
+    container.innerHTML =
+      `<div class="ts-stage pop ${scope}"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
+  }
+
+  function animateQuestionIn(container, key) {
+    const stage = container.querySelector('.ts-stage');
+    if (!stage) return;
+    stage.classList.remove('pop');
+    void stage.offsetWidth;
+    stage.classList.add('pop');
+  }
+
+  function recolorAfterAnswer(container, correct) {
+    const stage = container.querySelector('.ts-stage');
+    if (!stage) return;
+    stage.classList.remove('correct', 'wrong');
+    if (correct === true) {
+      stage.classList.add('correct');
+    } else if (correct === false) {
+      stage.classList.add('wrong');
+      document.body.classList.remove('ts-shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('ts-shake');
+      setTimeout(() => document.body.classList.remove('ts-shake'), 400);
+    }
+  }
+
+  // ─── QNM contract: encouragingLine ───────────────────────
   function encouragingLine(score, total) {
     const pct = score / total;
     const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-    if (pct >= 1)   return pick(['RHYTHM MASTER! Every symbol nailed! 🎯','Perfect score — you crushed it! 🌟','Flawless! Not one symbol missed! 🎶']);
-    if (pct >= 0.8) return pick(["Amazing round — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
-    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good work — those tricky ones are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
-    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The symbols are learning to recognize you 🎵","Music takes time — you're on your way! Keep practising!"]);
+    if (pct >= 1)   return pick(['METER MASTER! Every signature nailed! 🎯','Perfect score — you read every meter! 🌟',"Flawless! You can spot a time signature anywhere! 🎶"]);
+    if (pct >= 0.8) return pick(["Brilliant round — just a couple slipped by!","Nearly perfect! Your eye is sharp 👁️","Amazing round — meters are clicking!"]);
+    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Solid round! The compound meters take time.","Good progress — keep reading those staves!"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Music takes time — you're on your way!","Great practice! The meters are starting to make sense."]);
   }
 
+  // ─── Export QNM contract ─────────────────────────────────
   window.QNM = {
-    slug:      'note-values',
-    namespace: 'NV',
-
-    buildPool: function (tier) { return POOLS[tier].slice(); },
-    buildChoices: buildChoices,
-    labelFor: function (key) {
-      const sym = window.NV.SYMBOLS[key];
-      return sym ? sym.label : key;
-    },
-
-    render: {
-      renderQuestion: function (container, key) {
-        window.NV.render.renderSymbol(container, key);
-      },
-      animateQuestionIn: function (container, key) {
-        window.NV.render.animateSymbol(container, 'pop');
-      },
-      recolorAfterAnswer: function (container, correct) {
-        const color = correct === true  ? 'var(--teal)'
-                    : correct === false ? 'var(--coral)'
-                    : '';
-        window.NV.render.recolorSymbol(container, color);
-        if (correct === true) {
-          window.NV.render.animateSymbol(container, 'pop');
-        }
-      },
-    },
-
-    explode: function (correct, x, y, streak) {
-      window.NV.fx.explode(correct, x, y, streak);
-    },
-
-    encouragingLine: encouragingLine,
+    slug:      'time-signatures',
+    namespace: 'TS',
+    buildPool, buildChoices, labelFor,
+    render: { renderQuestion, animateQuestionIn, recolorAfterAnswer },
+    encouragingLine,
   };
+
+  TS.SIGS = SIGS;
+  TS.decodeKey = decodeKey;
+})();
 </script>
 
 <script>
@@ -2287,7 +2369,10 @@
   // ===== Init =====
   document.addEventListener('DOMContentLoaded', () => {
     cacheEls();
-    if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
+    // Mount the profile chip (shows active name, or "Sign in" when anonymous)
+    if (window.QN && QN.ui && els['profile-chip-slot']) {
+      QN.ui.chip(els['profile-chip-slot']);
+    }
     const muted = loadMutedPreference();
     A.setMuted(muted);
     syncMuteUI(muted);
