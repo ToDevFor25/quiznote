@@ -89,6 +89,18 @@
     return muted;
   }
 
+  /**
+   * Return the shared master gain node. Module-specific audio
+   * functions (e.g. Key Signatures' playReveal, Scales' playSequence,
+   * Intervals' playInterval) should route their output through this
+   * node rather than ac.destination, so the master volume and mute
+   * apply uniformly across the module.
+   */
+  function getMasterGain() {
+    ensureCtx();
+    return masterGain;
+  }
+
   // ─────────────────────────────────────────────────────────────
   // PRIMITIVES — single notes and tones
   // ─────────────────────────────────────────────────────────────
@@ -336,15 +348,16 @@
 
   window.NH = window.NH || {};
   window.NH.audio = {
-    ensureCtx:  ensureCtx,
-    setMuted:   setMuted,
-    isMuted:    isMuted,
-    playMidi:   playMidi,
-    playBoop:   playBoop,
-    playTick:   playTick,
-    playChime:  playChime,
-    playFanfare: playFanfare,
-    midiToFreq: midiToFreq
+    ensureCtx:    ensureCtx,
+    setMuted:     setMuted,
+    isMuted:      isMuted,
+    getMasterGain: getMasterGain,
+    playMidi:     playMidi,
+    playBoop:     playBoop,
+    playTick:     playTick,
+    playChime:    playChime,
+    playFanfare:  playFanfare,
+    midiToFreq:   midiToFreq
   };
   window.NH.audio.version = '1.0.0';
 
