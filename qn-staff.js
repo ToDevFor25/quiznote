@@ -208,23 +208,17 @@
   function buildTimeSignature(opts) {
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
-    // Engraving-correct time signatures:
-    // - Each digit visually spans ~2 staff spaces tall (top one occupies
-    //   upper half of staff, bottom one occupies lower half).
-    // - Top digit's vertical center sits on line 4 from bottom (step 6).
-    // - Bottom digit's vertical center sits on line 2 from bottom (step 2).
-    // - Digits stacked with no fraction line; nearly touch at the middle line.
-    //
-    // Font sizing: using a bold sans-serif at ~2.6 * lineGap gives the
-    // characteristic chunky engraved look while keeping legibility.
-    // SVG text y is the BASELINE — for a digit roughly square in proportions,
-    // the visual center sits ~0.35 * fontSize above the baseline, so shift
-    // baseline DOWN by that amount from the target center.
-    const fontSize = lineGap * 2.6;
+    // Engraving-correct time signatures using Bravura SMuFL time-sig digits
+    // (U+E080–U+E089). Bravura's digits are designed to span ~2 staff spaces
+    // tall. We place each digit's vertical center on a staff line:
+    //   - Top digit center on line 4 (step 6) — sits in upper half of staff
+    //   - Bottom digit center on line 2 (step 2) — sits in lower half
+    // SVG text y is the BASELINE; SMuFL digits' visual content sits above
+    // the baseline. The empirical baselineShift centers the glyph visually.
+    const fontSize = lineGap * 2.4;
     const digitWidth = lineGap * 1.25;
-    const baselineShift = fontSize * 0.35;
+    const baselineShift = fontSize * 0.32;
 
-    // Centers
     const topCenterY = bottomY - 3 * lineGap;   // line 4 from bottom
     const botCenterY = bottomY - 1 * lineGap;   // line 2 from bottom
     const topY = topCenterY + baselineShift;
@@ -237,7 +231,7 @@
       for (let i = 0; i < numStr.length; i++) {
         const dx = startX + i * digitWidth;
         const classAttr = className ? ` class="${className}"` : '';
-        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Fredoka, sans-serif" font-weight="700" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
+        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Bravura Text" font-size="${fontSize}" text-anchor="middle" fill="${color}">${SMUFL.tsDigit(parseInt(numStr[i], 10))}</text>`;
       }
       return out;
     }
