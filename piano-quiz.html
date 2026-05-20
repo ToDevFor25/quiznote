@@ -950,6 +950,7 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-audio.js" defer></script>
 </head>
 <body>
 
@@ -1262,208 +1263,9 @@
 
   NH.music = { LETTER_STEP, STEP_LETTER, LETTER_SEMI, diatonicStep, toMidi, parsePitch, midiToFreq, displayName, midiEquals };
 
-  // Audio engine
-  let ctx = null;
-  let masterGain = null;
-
-  let muted = false;
-
-  function ensureCtx() {
-    if (!ctx) {
-      // ctx should already exist from tap-to-start; create as fallback
-      const AC = window.AudioContext || window.webkitAudioContext;
-      ctx = new AC();
-      masterGain = ctx.createGain();
-      masterGain.gain.value = muted ? 0 : 0.6;
-      masterGain.connect(ctx.destination);
-    }
-    if (ctx.state === 'suspended') {
-      ctx.resume().then(() => {
-        const nudge = document.getElementById('audio-nudge');
-        if (nudge) nudge.classList.remove('show');
-      }).catch(() => {
-        const nudge = document.getElementById('audio-nudge');
-        if (nudge) nudge.classList.add('show');
-      });
-    }
-    return ctx;
-  }
-
-  function setMuted(val) {
-    muted = val;
-    if (masterGain) masterGain.gain.value = muted ? 0 : 0.6;
-  }
-
-  function isMuted() { return muted; }
-
-  function playMidi(midi, dur = 0.9) {
-    const ac = ensureCtx();
-    const now = ac.currentTime;
-    const f = midiToFreq(midi);
-
-    const env = ac.createGain();
-    env.gain.setValueAtTime(0.0001, now);
-    env.gain.exponentialRampToValueAtTime(0.9, now + 0.01);
-    env.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-    env.connect(masterGain);
-
-    const lp = ac.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.value = Math.min(8000, f * 8);
-    lp.Q.value = 0.6;
-    lp.connect(env);
-
-    const partials = [
-      { type: 'triangle', mult: 1, gain: 0.55, detune: 0 },
-      { type: 'sine', mult: 2, gain: 0.18, detune: 4 },
-      { type: 'sine', mult: 3, gain: 0.07, detune: -3 },
-      { type: 'sine', mult: 4, gain: 0.03, detune: 0 },
-    ];
-    const stopAt = now + dur + 0.05;
-    partials.forEach(p => {
-      const osc = ac.createOscillator();
-      osc.type = p.type;
-      osc.frequency.value = f * p.mult;
-      osc.detune.value = p.detune;
-      const g = ac.createGain();
-      g.gain.value = p.gain;
-      osc.connect(g);
-      g.connect(lp);
-      osc.start(now);
-      osc.stop(stopAt);
-    });
-
-    // Hammer click
-    const click = ac.createOscillator();
-    click.type = 'square';
-    click.frequency.value = f * 2;
-    const cg = ac.createGain();
-    cg.gain.setValueAtTime(0.0001, now);
-    cg.gain.exponentialRampToValueAtTime(0.18, now + 0.004);
-    cg.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-    click.connect(cg);
-    cg.connect(masterGain);
-    click.start(now);
-    click.stop(now + 0.06);
-  }
-
-  function playChime(midi, streak) {
-    const ac = ensureCtx();
-    const now = ac.currentTime;
-    const SCALE = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16];
-    const len = Math.max(3, Math.min(streak || 1, SCALE.length));
-    let baseMidi = midi + 12;
-    while (baseMidi + SCALE[len - 1] > 100) baseMidi -= 12;
-    const baseF = midiToFreq(baseMidi);
-    const step = len <= 4 ? 0.06 : len <= 7 ? 0.07 : 0.08;
-    const ints = SCALE.slice(0, len);
-    ints.forEach((semi, i) => {
-      const f = baseF * Math.pow(2, semi / 12);
-      const osc = ac.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = f;
-      const g = ac.createGain();
-      const start = now + i * step;
-      g.gain.setValueAtTime(0.0001, start);
-      g.gain.exponentialRampToValueAtTime(0.18, start + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.5);
-      osc.connect(g); g.connect(masterGain);
-      osc.start(start); osc.stop(start + 0.55);
-    });
-  }
-
-  function playBoop() {
-    const ac = ensureCtx();
-    const now = ac.currentTime;
-    const osc = ac.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(380, now);
-    osc.frequency.exponentialRampToValueAtTime(200, now + 0.22);
-    const g = ac.createGain();
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
-    osc.connect(g); g.connect(masterGain);
-    osc.start(now); osc.stop(now + 0.3);
-  }
-
-  function playTick() {
-    const ac = ensureCtx();
-    const now = ac.currentTime;
-    const osc = ac.createOscillator();
-    osc.type = 'square';
-    osc.frequency.value = 1400;
-    const g = ac.createGain();
-    g.gain.setValueAtTime(0.0001, now);
-    g.gain.exponentialRampToValueAtTime(0.06, now + 0.005);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-    osc.connect(g); g.connect(masterGain);
-    osc.start(now); osc.stop(now + 0.1);
-  }
-
-
-  function playFanfare(tier) {
-    const ac = ensureCtx();
-    if (!ac || muted) return;
-    const now = ac.currentTime;
-    if (tier === 'perfect') {
-      const melody = [60,64,67,72,76,79,84];
-      melody.forEach((midi, i) => {
-        const f = midiToFreq(midi), t = now + i * 0.09;
-        const osc = ac.createOscillator(), g = ac.createGain();
-        osc.type = 'triangle'; osc.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.22, t + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
-        osc.connect(g); g.connect(masterGain);
-        osc.start(t); osc.stop(t + 0.6);
-      });
-      const chordT = now + melody.length * 0.09 + 0.05;
-      [60,64,67,72].forEach(midi => {
-        const f = midiToFreq(midi);
-        const osc = ac.createOscillator(), g = ac.createGain();
-        osc.type = 'triangle'; osc.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, chordT);
-        g.gain.exponentialRampToValueAtTime(0.18, chordT + 0.015);
-        g.gain.exponentialRampToValueAtTime(0.0001, chordT + 1.1);
-        osc.connect(g); g.connect(masterGain);
-        osc.start(chordT); osc.stop(chordT + 1.2);
-      });
-    } else if (tier === 'great') {
-      [60,64,67,72,76].forEach((midi, i) => {
-        const f = midiToFreq(midi), t = now + i * 0.09;
-        const osc = ac.createOscillator(), g = ac.createGain();
-        osc.type = 'triangle'; osc.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
-        osc.connect(g); g.connect(masterGain);
-        osc.start(t); osc.stop(t + 0.5);
-      });
-    } else if (tier === 'good') {
-      [60, 67].forEach((midi, i) => {
-        const f = midiToFreq(midi), t = now + i * 0.14;
-        const osc = ac.createOscillator(), g = ac.createGain();
-        osc.type = 'sine'; osc.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.18, t + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
-        osc.connect(g); g.connect(masterGain);
-        osc.start(t); osc.stop(t + 0.75);
-      });
-    } else {
-      const f = midiToFreq(64);
-      const osc = ac.createOscillator(), g = ac.createGain();
-      osc.type = 'sine'; osc.frequency.value = f;
-      g.gain.setValueAtTime(0.0001, now);
-      g.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-      osc.connect(g); g.connect(masterGain);
-      osc.start(now); osc.stop(now + 1.0);
-    }
-  }
-
-  NH.audio = { ensureCtx, playMidi, playChime, playBoop, playTick, setMuted, isMuted, playFanfare };
+  // Audio engine — provided by qn-audio.js (loaded above with defer).
+  // NH.audio exposes: ensureCtx, setMuted, isMuted, getMasterGain,
+  //   playMidi, playBoop, playTick, playChime, playFanfare, midiToFreq.
 })();
 </script>
 
@@ -2052,7 +1854,10 @@
   const NH = window.NH;
   const { parsePitch, displayName, midiEquals } = NH.music;
   const R = NH.render;
-  const A = NH.audio;
+  // NH.audio comes from qn-audio.js (deferred). Resolve lazily.
+  const A = new Proxy({}, {
+    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
+  });
 
   // Pitch pools by clef + difficulty
   const RANGES = {
