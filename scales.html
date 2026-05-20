@@ -706,6 +706,29 @@
     transform: translateY(2px);
     box-shadow: 0 1px 0 var(--ink);
   }
+  .profile-chip-slot {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+  }
+  .save-scores-prompt {
+    background: var(--teal-lt);
+    border: 2px solid var(--teal);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin: 4px 0 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .save-scores-prompt .ssp-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
   .site-tagline {
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
@@ -809,6 +832,7 @@
 <header class="site-header">
   <div class="brand-name">Quiz<span>Note</span></div>
   <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
+  <div class="profile-chip-slot" id="profile-chip-slot"></div>
 </header>
 
 <!-- ============ START SCREEN ============ -->
@@ -959,6 +983,11 @@
     <div class="miss-list" id="miss-list">
       <h3>Scales to practice next time</h3>
       <ul id="miss-items"></ul>
+    </div>
+
+    <div class="save-scores-prompt" id="save-scores-prompt" hidden>
+      <div class="ssp-text">💾 Save your scores? Add a name to track your progress.</div>
+      <a href="profile.html" class="btn teal big" style="text-decoration:none;">Add a name →</a>
     </div>
 
     <div class="summary-actions">
@@ -1643,7 +1672,8 @@
    'staff-wrap','replay-btn','toast','q-num','score-num','last-dots','choices-grid',
    'confetti','summary-title','summary-sub','sum-score','sum-streak','sum-stars',
    'miss-list','miss-items','again-btn','change-btn','pb-row','pb-score','pb-streak',
-   'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm'
+   'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+   'save-scores-prompt','profile-chip-slot'
   ].forEach(id => els[id] = document.getElementById(id));
 
   // ============ State ============
@@ -2500,9 +2530,10 @@
       els['pb-row'].hidden = true;
     }
 
-    // Log this round to the shared event store (no-op if no active profile)
+    // Log this round, or HOLD it if no profile yet (back-filled on create)
+    var roundOutcome = 'logged';
     if (window.QN && QN.events) {
-      QN.events.log({
+      roundOutcome = QN.events.logOrHold({
         module:     'scales',
         tier:       state.settings.difficulty,
         length:     state.settings.total,
@@ -2512,6 +2543,10 @@
         timedMode:  !!state.settings.timer.enabled
       });
     }
+
+    // If the round was held (no profile), invite the player to save it.
+    var ssp = els['save-scores-prompt'];
+    if (ssp) ssp.hidden = !(roundOutcome === 'held' && window.QN && QN.events && QN.events.pendingCount() > 0);
 
     // Fanfare + visual celebration. 700ms delay lets the summary content animate in first,
     // then the celebration lands as a payoff. Skip on timeout.
@@ -2562,6 +2597,7 @@
   // ============ Boot ============
   initStartScreen();
   initWiring();
+  if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
 })();
 </script>
 
