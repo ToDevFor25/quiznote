@@ -256,8 +256,6 @@
     const topCenterY = midY - lineGap * 1.02;
     const botCenterY = midY + lineGap * 1.02;
 
-    const classAttr = className ? ` class="${className}"` : '';
-
     // Digit weight calibrated via ts-weight-calibrator.html (weight = -2.00).
     // feMorphology "erode" thins the filled glyphs uniformly. Radius is in
     // glyph-box units (applied to the path BEFORE the per-glyph scale), so the
@@ -269,10 +267,12 @@
       `<defs><filter id="${filterId}" x="-20%" y="-20%" width="140%" height="140%">` +
       `<feMorphology operator="erode" radius="${ERODE_RADIUS}"/></filter></defs>`;
 
-    function renderStack(numStr, centerY) {
+    function renderStack(numStr, centerY, posClass) {
       const n = numStr.length;
       const totalW = n * glyphW + (n - 1) * digitGap;
       const startLeft = x - totalW / 2;
+      const cls = [className, posClass].filter(Boolean).join(' ');
+      const clsAttr = cls ? ` class="${cls}"` : '';
       let out = '';
       for (let i = 0; i < n; i++) {
         const d = numStr[i];
@@ -282,13 +282,15 @@
         const leftX = startLeft + i * (glyphW + digitGap);
         const tx = leftX;
         const ty = centerY - glyphH / 2;
-        out += `<g${classAttr} fill="${color}" transform="translate(${tx} ${ty}) scale(${scale})">` +
+        out += `<g${clsAttr} fill="${color}" transform="translate(${tx} ${ty}) scale(${scale})">` +
                `<path d="${path}" fill-rule="evenodd" filter="url(#${filterId})"/></g>`;
       }
       return out;
     }
 
-    return defs + renderStack(String(top), topCenterY) + renderStack(String(bottom), botCenterY);
+    return defs +
+      renderStack(String(top), topCenterY, 'ts-top') +
+      renderStack(String(bottom), botCenterY, 'ts-bottom');
   }
 
   // ─────────────────────────────────────────────────────────────
