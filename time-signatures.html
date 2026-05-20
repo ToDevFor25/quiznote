@@ -343,7 +343,7 @@
   .staff-label {
     position: absolute;
     top: 14px; left: 14px; right: 14px;
-    height: 22px;
+    height: 34px;
     display: flex; align-items: center;
     font-family: 'Fredoka', sans-serif; font-weight: 500;
     font-size: 13px; color: var(--ink-soft);
@@ -355,7 +355,7 @@
      question, independent of prompt text or time-signature glyphs. */
   .staff-svg-wrap {
     position: absolute;
-    top: 44px; left: 14px; right: 14px; bottom: 10px;
+    top: 56px; left: 14px; right: 14px; bottom: 10px;
     display: flex; align-items: center; justify-content: center;
   }
   /* ============================================================
@@ -371,14 +371,13 @@
      Animations: @keyframes {{moduleSlug}}Pop, etc.
      ============================================================ */
   /* Time Signatures puts the actual question prompt in the .staff-label slot,
-     so make it read as a question, not a tiny uppercase tag. Single line,
-     fits within the fixed 22px label band pinned at the card top. */
+     so make it read as a real question. Single line; fits the label band. */
   #play-screen .staff-label {
-    font-size: 15px;
+    font-size: 22px;
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
-    color: var(--ink-soft);
+    color: var(--ink);
   }
 
   /* Time Signatures — staff display */
