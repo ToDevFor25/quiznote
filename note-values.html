@@ -1255,7 +1255,12 @@
 <script>
 // ============ QuizNote Note Values — Game Loop ============
 (function () {
-  const A = window.NH.audio;
+  // NH.audio comes from qn-audio.js (deferred). It may not exist
+  // at script-parse time, but it will exist by the time any handler
+  // runs. Resolve lazily on every access via this proxy.
+  const A = new Proxy({}, {
+    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
+  });
   const NV = window.NV;
   const SYMBOLS = NV.SYMBOLS;
   const R = NV.render;
