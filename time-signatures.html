@@ -1,370 +1,2324 @@
-/* ============================================================
-   QuizNote — Shared Staff Renderer
-   ============================================================
+<!doctype html>
+<!--
+  ============================================================
+  QuizNote — Module Template (v1)
+  ============================================================
 
-   Purpose:
-     Single source for SVG staff rendering across all QuizNote
-     modules that show notation (Key Signatures, Time Signatures,
-     Scales, Intervals, future Triads/Cadences/etc).
+  This file is the canonical scaffold every new QuizNote module
+  is built from. The shared 80% (CSS, HTML structure, audio,
+  profile chip, game loop) is here. The module-specific 20%
+  is filled in via placeholders (handlebars-style {{NAME}})
+  and one global object: window.QNM.
 
-     Renders staff lines, clefs, accidentals (key signatures),
-     and time signatures with calibrated positioning. Uses
-     Bravura SMuFL glyphs for engraving-quality output.
+  HOW TO USE THIS TEMPLATE:
 
-   Loaded via:
-     <script src="qn-staff.js" defer></script>
+  1. Copy this file to <module-name>.html.
 
-   Exposes:
-     window.NH.staff = {
-       SMUFL, OFFSET,
-       getAccidentalSteps,
-       buildStaffLines,
-       buildClef,
-       buildAccidentals,
-       buildTimeSignature,
-       buildStaff,
+  2. Replace every {{PLACEHOLDER}} in the file:
+
+     Time Signatures         e.g. "Note Values"
+     See the meter. Name it.       e.g. "See the symbol. Name it. Fast."
+     Easy      e.g. "Easy"
+     2/4, 3/4, 4/4        e.g. "whole, half<br/>quarter"
+     Medium    e.g. "Medium"
+     + 6/8, 3/8, 2/2      e.g. "+ eighth<br/>notes & rests"
+     Tricky    e.g. "Tricky"
+     + 9/8, 12/8<br/>5/4, 7/8      e.g. "+ sixteenth<br/>notes & rests"
+     What is this?  e.g. "What is this?"
+     You read those meters.  e.g. "You named those symbols."
+     Meters to practice next time e.g. "Notes to practice next time"
+     Drill missed meters   e.g. "Drill missed notes"
+     {{MODULE_CSS}}           the module's render-area CSS
+     {{MODULE_FX_LAYERS}}     any module-specific FX DOM nodes (or empty)
+     {{MODULE_NAMESPACE}}     e.g. "NV" (replace in renderer comments)
+
+  3. Replace the MODULE-SPECIFIC RENDERER + FX ENGINE script
+     block (marked clearly below) with your module's renderer.
+     The renderer must set window.QNM = { ... } following the
+     contract below before the game-loop script runs.
+
+  4. window.QNM API contract:
+
+     {
+       // ─── Identity ────────────────────────────────────
+       slug:      'note-values',  // localStorage prefix + events log
+       namespace: 'NV',           // JS namespace global
+
+       // ─── Question generation ──────────────────────────
+       buildPool(tier),
+         // returns array of question keys for this tier
+
+       buildChoices(correctKey, pool, tier),
+         // returns array of 4 choice keys (one correct)
+
+       labelFor(key),
+         // display label for a question key
+
+       // ─── Rendering ────────────────────────────────────
+       render: {
+         renderQuestion(container, key),
+           // draw the question in the play-screen wrap
+         animateQuestionIn(container, key),
+           // optional: pop-in animation
+         recolorAfterAnswer(container, correct),
+           // optional: e.g. turn the symbol red on wrong;
+           // correct === null means reset to default
+       },
+
+       // ─── Effects (optional, default to no-op) ────────
+       explode(correct, x, y, streak),
+         // optional: celebration FX on correct answer
+
+       // ─── Summary copy ─────────────────────────────────
+       encouragingLine(score, total),
+         // dynamic encouragement for the summary screen
      }
 
-   Coordinate system convention:
-     - All builders work in SVG units where one staff space = `lineGap`.
-     - `bottomY` is the y-coordinate of the bottom staff line.
-     - `step 0` = bottom line. Each step is a half-staff-space.
-       So step 1 = the space immediately above the bottom line,
-       step 2 = the second line from the bottom, etc.
-     - `xOffset` allows multiple staff segments side-by-side.
+  5. Verify before pushing:
+       - View in browser; start screen looks right
+       - Tier and length tiles toggle "on" correctly
+       - Start round, answer a question, hear the sound
+       - Streak chime fires on correct answers
+       - Round end → summary screen with stars and copy
+       - All four post-round actions work (again, drill, settings, all modules)
 
-   Calibration:
-     OFFSET values were tuned during a Samsung Android device sweep
-     for Key Signatures. Bravura glyphs render with their visual
-     center offset from the SVG y-anchor, so each glyph type needs
-     a per-glyph downward shift. DO NOT change these without
-     re-testing on real devices.
+  Architecture notes:
+    - qn-profile.js   provides window.QN (profile + events + chip)
+    - qn-audio.js     provides window.NH.audio (engine)
+    - This template   provides window.QN_FX (fanfare) + game loop
+    - The module      provides window.QNM (everything else)
 
-   Authored: May 2026. Extracted from key-signatures-8-2.html.
-   ============================================================ */
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAACBIUz2AABAAElEQVR4nO19CZgkV3Xm...">
+<title>QuizNote — Time Signatures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root {
+    --cream: #FFFAF0;
+    --cream-2: #FFF3DC;
+    --ink: #2A2A3E;
+    --ink-soft: #5a5a6e;
+    --ink-faint: #8a8472;
+    --teal: #1FB8A8;
+    --teal-dk: #0e8475;
+    --teal-lt: #d3f1ec;
+    --sun: #FFB627;
+    --sun-dk: #c98800;
+    --grape: #5B3FE4;
+    --grape-dk: #3d28a8;
+    --coral: #FF6B6B;
+    --coral-dk: #c2453f;
+    --white: #ffffff;
+    --shadow-cool: #d8d6cc;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+      radial-gradient(circle at 90% 80%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+  }
+  button, .pressable { font-family: inherit; cursor: pointer; }
+  h1, h2, h3, h4 { margin: 0; }
 
+  /* ---- Chunky button system ---- */
+  .btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    border: none; border-radius: 16px;
+    padding: 12px 24px; font-size: 18px;
+    color: white; background: var(--teal);
+    box-shadow: 0 5px 0 var(--teal-dk);
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+    position: relative;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .btn:active, .btn.is-pressed {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--teal-dk);
+  }
+  .btn.sun { background: var(--sun); color: var(--ink); box-shadow: 0 5px 0 var(--sun-dk); }
+  .btn.sun:active { box-shadow: 0 1px 0 var(--sun-dk); }
+  .btn.grape { background: var(--grape); box-shadow: 0 5px 0 var(--grape-dk); }
+  .btn.grape:active { box-shadow: 0 1px 0 var(--grape-dk); }
+  .btn.ghost {
+    background: white; color: var(--ink);
+    border: 2px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 10px 22px;
+  }
+  .btn.ghost:active { box-shadow: 0 1px 0 var(--ink); }
+  .btn.big { font-size: 22px; padding: 14px 32px; border-radius: 18px; }
+  .btn.huge { font-size: 26px; padding: 16px 40px; border-radius: 20px; }
+
+  .icon-btn {
+    width: 46px; height: 46px;
+    border: 2px solid var(--ink); background: white;
+    color: var(--ink); font-size: 20px;
+    border-radius: 13px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+  }
+  .icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ---- Cards ---- */
+  .card {
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 0 6px 0 var(--ink);
+  }
+  .card.sun-card { background: var(--sun); }
+  .card.teal-card { background: var(--teal); color: white; }
+
+  /* ---- Screen system ---- */
+  .screen { display: none !important; flex: 1; pointer-events: none; }
+  .screen.active { display: flex !important; flex-direction: column; pointer-events: auto; }
+
+  /* ============ START SCREEN ============ */
+  #start-screen {
+    align-items: center; justify-content: center;
+    padding: 24px 20px 40px;
+  }
+  .start-wrap { width: 100%; max-width: 720px; }
+  .brand { text-align: center; margin-bottom: 22px; }
+  .brand .logo-mark {
+    display: inline-flex; align-items: center; gap: 12px;
+    justify-content: center;
+  }
+  .brand h1 {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 56px; line-height: 1; color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .brand .tagline {
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+    font-size: 17px; color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .q-block { margin-top: 22px; }
+  .q-label {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 18px; color: var(--ink);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .q-label .num {
+    width: 28px; height: 28px;
+    background: var(--ink); color: white;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700;
+  }
+
+  .tile-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .tile {
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 10px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 80ms, box-shadow 80ms;
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+  }
+  .tile:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .tile.on { background: var(--teal); color: white; box-shadow: 0 5px 0 var(--teal-dk); }
+  .tile.on svg .clef { fill: white; }
+  .tile.on svg .staff-line { stroke: white; }
+  .tile-title { font-size: 20px; font-weight: 700; line-height: 1.1; }
+  .tile-emoji { font-size: 38px; line-height: 1; margin-bottom: 4px; }
+  .tile-sub {
+    font-family: 'Nunito', sans-serif; font-weight: 600;
+    font-size: 12px; color: var(--ink-soft);
+    margin-top: 4px; line-height: 1.3;
+  }
+  .tile.on .tile-sub { color: rgba(255,255,255,0.9); }
+  .tile-clef { height: 54px; margin-bottom: 4px; }
+
+  .start-cta { text-align: center; margin-top: 28px; }
+
+  /* ============ PLAY SCREEN ============ */
+  #play-screen { padding: 10px 12px 8px; gap: 8px; position: relative; }
+
+  @media (max-width: 760px) {
+    #play-screen.active {
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
+      padding: 8px 10px 6px;
+      gap: 6px;
+    }
+  }
+
+  .topbar {
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .progress-track {
+    flex: 1; height: 22px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 0 rgba(0,0,0,0.04);
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(180deg, #34d4c2, var(--teal));
+    border-right: 2.5px solid var(--teal-dk);
+    border-radius: 8px 0 0 8px;
+    transition: width 280ms cubic-bezier(.5,1.6,.6,1);
+    position: relative;
+  }
+  .progress-fill::after {
+    content: ""; position: absolute;
+    top: 3px; left: 8px; right: 8px; height: 5px;
+    background: rgba(255,255,255,0.55);
+    border-radius: 4px;
+  }
+  .streak-badge {
+    display: flex; align-items: center; gap: 4px;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 20px; color: var(--sun-dk);
+    background: white; border: 2.5px solid var(--ink);
+    border-radius: 14px; padding: 6px 12px;
+    box-shadow: 0 4px 0 var(--ink);
+    min-width: 62px; justify-content: center;
+  }
+  .streak-badge .num { color: var(--ink); }
+
+  .play-body {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 12px;
+    align-items: start;
+    flex-shrink: 0;
+  }
+
+  .staff-card {
+    padding: 14px 14px 10px;
+    position: relative;
+    overflow: hidden;
+    height: 320px;        /* fixed: label band + 250px staff, never grows with neighbor */
+  }
+  /* Label pinned to the top of the card with a fixed height, so its text
+     length never shifts what's below it. */
+  .staff-label {
+    position: absolute;
+    top: 14px; left: 14px; right: 14px;
+    height: 34px;
+    display: flex; align-items: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+    font-size: 13px; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  /* Staff wrap pinned to fill the card BELOW the fixed label. Fixed
+     rectangle → the centered SVG lands in exactly the same place every
+     question, independent of prompt text or time-signature glyphs. */
+  .staff-svg-wrap {
+    position: absolute;
+    top: 56px; left: 14px; right: 14px; bottom: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* ============================================================
+     MODULE-SPECIFIC CSS
+     ============================================================
+     Each module fills this with its own render-area styles
+     (e.g. .nv-symbol for Note Values, .ks-stage for Key Signatures,
+     piano keyboard styles for Piano Quiz). Also: FX particle styles,
+     streak banner, shake animation — whatever's bespoke to this
+     module's visual feedback.
+
+     Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
+     Animations: @keyframes {{moduleSlug}}Pop, etc.
+     ============================================================ */
+  /* Time Signatures puts the actual question prompt in the .staff-label slot,
+     so make it read as a real question. Single line; fits the label band. */
+  #play-screen .staff-label {
+    font-size: 22px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink);
+  }
+
+  /* Time Signatures — staff display */
+  .ts-stage {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 200ms cubic-bezier(.5,1.6,.6,1);
+  }
+  /* Render the staff SVG at its NATIVE size (no scaling). Scaling the SVG
+     (width:100% → 340px for a 360-unit viewBox) made WebKit compute text
+     baselines at a scale that didn't track the geometry, so the time-sig
+     digits drifted vertically while the staff lines stayed put. At 1:1 the
+     baseline math is exact. The wrap centers the fixed-size SVG. */
+  .staff-svg-wrap .ts-stage svg {
+    width: 450px;
+    height: 250px;
+    max-width: 100%;
+    display: block;
+  }
+
+  /* Pop-in animation on new question */
+  .ts-stage.pop { animation: tsPop 240ms cubic-bezier(.5,1.6,.6,1); }
+  @keyframes tsPop {
+    0%   { transform: scale(0.85); opacity: 0; }
+    60%  { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1);    opacity: 1; }
+  }
+
+  /* Question prompt — varies per question type */
+  .ts-prompt {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 0 0 14px 0;
+    min-height: 1.4em;
+  }
+
+  /* Recolor on answer — applied via CSS class on .ts-stage */
+  .ts-stage.correct .ts-timesig { fill: var(--teal); }
+  .ts-stage.wrong   .ts-timesig { fill: var(--coral); }
+
+  /* Body shake on wrong */
+  body.ts-shake { animation: tsShake 0.4s ease-in-out; }
+  @keyframes tsShake {
+    0%, 100% { transform: translate(0, 0); }
+    20%      { transform: translate(-6px, 2px); }
+    40%      { transform: translate(6px, -2px); }
+    60%      { transform: translate(-4px, -2px); }
+    80%      { transform: translate(4px, 2px); }
+  }
+
+  .staff-svg-wrap svg {
+    width: 100%;
+    height: auto;
+    max-width: 340px;
+  }
+  .staff-actions {
+    display: flex; gap: 10px; justify-content: center;
+  }
+
+  .stats-col {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .stat-card { padding: 10px 12px; border-radius: 16px; }
+  .stat-label {
+    font-family: 'Nunito', sans-serif; font-weight: 800;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .stat-card.sun-card .stat-label { color: #7a4f00; }
+  .stat-card.teal-card .stat-label { color: rgba(255,255,255,0.85); }
+  .stat-value {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 34px; line-height: 1.05;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .stat-card.teal-card .stat-value { color: white; }
+  .stat-value .of { color: var(--ink-faint); font-size: 22px; font-weight: 600; }
+  .stat-card.sun-card .stat-value .of { color: #7a4f00; }
+  .last-dots { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .last-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--ink); background: white;
+  }
+  .last-dot.correct { background: var(--teal); }
+  .last-dot.wrong { background: var(--coral); }
+  .last-dot.retry { background: var(--sun); }
+
+  /* ---- Choice buttons area ---- */
+  .choices-card {
+    padding: 12px 12px 10px;
+    background: #fff8e6;
+    flex-shrink: 0;
+    border-radius: 20px;
+  }
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .choice-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 22px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out, background 120ms;
+    color: var(--ink);
+    line-height: 1.1;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .choice-btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--ink);
+  }
+  .choice-btn.correct {
+    background: var(--teal); color: white;
+    border-color: var(--teal-dk);
+    box-shadow: 0 5px 0 var(--teal-dk);
+  }
+  .choice-btn.wrong {
+    background: var(--coral); color: white;
+    border-color: var(--coral-dk);
+    box-shadow: 0 5px 0 var(--coral-dk);
+  }
+  .choice-btn.reveal-correct {
+    background: var(--teal-lt); color: var(--teal-dk);
+    border-color: var(--teal-dk);
+    box-shadow: 0 5px 0 var(--teal-dk);
+  }
+  .choice-btn:disabled { cursor: default; }
+  .choice-acc {
+    font-size: 16px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .choice-btn.correct .choice-acc,
+  .choice-btn.wrong .choice-acc { color: rgba(255,255,255,0.8); }
+  .choice-btn.reveal-correct .choice-acc { color: var(--teal-dk); }
+
+  /* Feedback toasts */
+  .toast {
+    position: absolute; left: 50%; top: 38px;
+    transform: translateX(-50%) translateY(-10px) scale(0.6);
+    opacity: 0;
+    pointer-events: none;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    text-align: center;
+    z-index: 5;
+    transition: transform 240ms cubic-bezier(.4,1.8,.5,1), opacity 180ms;
+    white-space: nowrap;
+    max-width: 92%;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1) rotate(-3deg); }
+  .toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); }
+  .toast.correct.cycle-1 { color: var(--grape); text-shadow: 3px 3px 0 rgba(91,63,228,0.18); }
+  .toast.correct.cycle-2 { color: var(--sun-dk); text-shadow: 3px 3px 0 rgba(255,182,39,0.25); }
+  .toast.retry { color: var(--sun-dk); font-size: 30px; }
+  .toast.reveal { color: var(--grape); font-size: 26px; }
+
+  /* Confetti + note-burst layer */
+  .fx-layer {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;
+    z-index: 4;
+    left: 0; top: 0;
+  }
+  .fx-layer i {
+    position: absolute; width: 10px; height: 14px;
+    top: 0; left: 0;
+    margin: -7px 0 0 -5px;
+    border-radius: 2px;
+    opacity: 0;
+  }
+  @keyframes confetti-fly {
+    0% { opacity: 0; transform: translate(0,0) rotate(0deg) scale(0.6); }
+    8% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--dr)) scale(1); }
+  }
+  .fx-layer.go i { animation: confetti-fly 1100ms ease-out forwards; }
+
+  .fx-layer .note-burst {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: 'Fredoka', serif;
+    font-size: 38px;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.08);
+    transform-origin: center;
+  }
+  @keyframes noteFloat {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(0) scale(0.4); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) rotate(var(--br)) scale(1.2); }
+  }
+  .fx-layer .note-burst.go { animation: noteFloat 1100ms ease-out forwards; }
+
+  /* Note animations */
+  @keyframes notePop {
+    0% { transform: translateY(-30px) scale(0.4); opacity: 0; }
+    60% { transform: translateY(6px) scale(1.15); opacity: 1; }
+    80% { transform: translateY(-2px) scale(0.95); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .note-pop { animation: notePop 480ms cubic-bezier(.4,1.6,.6,1); transform-origin: 50% 50%; transform-box: fill-box; }
+  @keyframes noteShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px) rotate(-3deg); }
+    40% { transform: translateX(5px) rotate(3deg); }
+    60% { transform: translateX(-4px) rotate(-2deg); }
+    80% { transform: translateX(4px) rotate(2deg); }
+  }
+  .note-shake { animation: noteShake 380ms; transform-box: fill-box; transform-origin: 50% 50%; }
+  @keyframes notePulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+  .note-pulse { animation: notePulse 900ms ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+
+  /* Streak jiggle */
+  @keyframes jiggle {
+    0%,100% { transform: scale(1) rotate(0); }
+    25% { transform: scale(1.18) rotate(-5deg); }
+    50% { transform: scale(1.1) rotate(4deg); }
+    75% { transform: scale(1.14) rotate(-2deg); }
+  }
+  .jiggle { animation: jiggle 420ms ease-out; }
+
+  /* ============ Summary Fanfare ============ */
+  @keyframes summaryPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+    80%  { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes scoreShimmer {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.08); color: var(--sun-dk); }
+  }
+  @keyframes fanfareFloat {
+    0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-120px) scale(1.2); }
+  }
+  .summary-title.tier-perfect { animation: summaryPop 600ms cubic-bezier(.4,1.6,.5,1) both; color: var(--teal); }
+  .summary-title.tier-great   { animation: summaryPop 500ms cubic-bezier(.4,1.6,.5,1) both; color: var(--grape); }
+  .summary-title.tier-good    { animation: summaryPop 450ms cubic-bezier(.4,1.4,.5,1) both; color: var(--ink); }
+  .summary-title.tier-practice{ animation: summaryPop 400ms cubic-bezier(.4,1.2,.5,1) both; color: var(--ink); }
+  #sum-score.score-shimmer { display: inline-block; animation: scoreShimmer 400ms ease-in-out 2; }
+  .summary-sub.tier-perfect { color: var(--teal-dk); font-size: 19px; font-weight: 600; }
+  .summary-sub.tier-great   { color: var(--grape-dk); }
+  .summary-sub.tier-good    { color: var(--ink-soft); }
+  .summary-sub.tier-practice{ color: var(--ink-soft); }
+  .fanfare-note {
+    position: fixed; font-size: 32px; pointer-events: none; z-index: 300;
+    opacity: 0; animation: fanfareFloat 1.4s ease-out forwards;
+  }
+
+  /* ============ SUMMARY SCREEN ============ */
+  #summary-screen {
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .summary-wrap { width: 100%; max-width: 640px; text-align: center; }
+  .summary-title {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 52px; line-height: 1;
+    color: var(--ink);
+  }
+  .summary-sub {
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+    font-size: 17px; color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-top: 22px;
+  }
+  .summary-grid .stat-value { font-size: 44px; }
+  .summary-grid .stars { color: var(--sun-dk); font-size: 36px; letter-spacing: 4px; }
+
+  .miss-list {
+    margin-top: 22px; text-align: left;
+    background: white; border: 2.5px solid var(--ink); border-radius: 18px;
+    box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 18px;
+  }
+  .miss-list h3 {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 17px; color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .miss-list ul {
+    list-style: none; padding: 0; margin: 0;
+    font-family: 'Nunito', sans-serif; font-weight: 600;
+    font-size: 14px; color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .miss-list li::before { content: "• "; color: var(--coral); font-weight: 800; }
+  .miss-empty { font-family: 'Nunito',sans-serif; font-weight: 600; font-size:14px; color: var(--teal-dk); }
+
+  .summary-actions {
+    display: flex; gap: 12px; justify-content: center; margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .summary-speed {
+    margin-top: 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white;
+    border: 2px solid var(--ink); border-radius: 999px;
+    padding: 7px 18px;
+    box-shadow: 0 3px 0 var(--ink);
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 15px; color: var(--ink);
+  }
+  .summary-speed.timed-out { background: var(--coral); color: white; box-shadow: 0 3px 0 var(--coral-dk); }
+  .summary-speed[hidden] { display: none; }
+
+  /* ============ Accidentals filter ============ */
+  .acc-block { text-align: center; }
+  .acc-block[hidden] { display: none; }
+  .acc-label {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px; color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .acc-row {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .acc-pill {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 0 3px 0 var(--ink);
+    padding: 6px 16px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 80ms, box-shadow 80ms;
+    white-space: nowrap;
+  }
+  .acc-pill:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .acc-pill.on { background: var(--grape); color: white; box-shadow: 0 3px 0 var(--grape-dk, #3d1fa3); }
+
+  /* ============ Timer ============ */
+  #timer-block { text-align: center; }
+  .timer-toggle {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 16px;
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 17px; color: var(--ink);
+    transition: transform 80ms, box-shadow 80ms;
+  }
+  .timer-toggle:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .timer-toggle.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
+  .timer-toggle .t-icon { font-size: 20px; line-height: 1; }
+  .timer-toggle .t-state {
+    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 600;
+    background: rgba(0,0,0,0.08);
+    padding: 3px 9px; border-radius: 999px;
+    color: var(--ink-soft);
+  }
+  .timer-toggle.on .t-state { background: rgba(255,255,255,0.25); color: white; }
+  .timer-pills {
+    display: flex; gap: 10px; justify-content: center;
+    margin-top: 14px; flex-wrap: wrap;
+  }
+  .timer-pills[hidden] { display: none; }
+  .tpill {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 18px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 18px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 80ms, box-shadow 80ms;
+  }
+  .tpill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .tpill.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
+
+  /* Play-screen timer badge */
+  .timer-badge {
+    display: flex; align-items: center; gap: 4px;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 20px; color: var(--ink);
+    background: var(--teal-lt); border: 2.5px solid var(--teal-dk);
+    border-radius: 14px; padding: 6px 12px;
+    box-shadow: 0 4px 0 var(--teal-dk);
+    min-width: 82px; justify-content: center;
+    line-height: 1;
+  }
+  .timer-badge[hidden] { display: none; }
+  .timer-badge .t-icon { font-size: 16px; margin-right: 2px; }
+  .timer-badge.urgent {
+    background: var(--coral); color: white;
+    border-color: var(--coral-dk);
+    box-shadow: 0 4px 0 var(--coral-dk);
+    animation: timerPulse 700ms ease-in-out infinite;
+  }
+  @keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.09); }
+  }
+
+  /* Personal best row */
+  .pb-row {
+    margin-top: 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pb-row[hidden] { display: none; }
+  .pb-label { color: var(--ink-faint); font-weight: 600; }
+  .pb-sep { color: var(--ink-faint); }
+  .pb-new { color: var(--teal-dk); font-weight: 800; }
+
+  /* ============ Modal ============ */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(42, 42, 62, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    animation: modalFade 200ms ease-out;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal-card {
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--ink);
+    padding: 28px 28px 24px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    animation: modalPop 320ms cubic-bezier(.4,1.6,.6,1);
+  }
+  .modal-card h2 {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 28px; color: var(--ink);
+    line-height: 1.1;
+  }
+  .modal-card p {
+    font-family: 'Nunito', sans-serif; font-weight: 500;
+    font-size: 15px; color: var(--ink-soft);
+    margin: 8px 0 22px;
+    line-height: 1.4;
+  }
+  .modal-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalPop {
+    0% { transform: scale(0.7) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  /* ============ Site Header ============ */
+  .site-header {
+    background: white;
+    border-bottom: 2.5px solid var(--ink);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .site-header .brand-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .site-header .brand-name span { color: var(--teal); }
+  .start-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    text-decoration: none;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 7px 14px 7px 12px;
+    box-shadow: 0 3px 0 var(--ink);
+    transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+    margin-bottom: 18px;
+    align-self: flex-start;
+  }
+  .start-back-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--ink);
+  }
+  .start-back-link:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--ink);
+  }
+  .site-tagline {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal-dk);
+    background: var(--teal-lt);
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+  }
+
+  /* ============ Site Footer ============ */
+  .site-footer {
+    background: white;
+    border-top: 2px solid var(--shadow-cool);
+    padding: 14px 20px;
+    text-align: center;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+  .site-footer a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .site-footer a:hover { text-decoration: underline; }
+  .site-footer .sep { margin: 0 8px; }
+
+  /* ============ Mute button ============ */
+  .mute-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 20px;
+    width: 46px; height: 46px;
+    border: 2.5px solid var(--ink); background: white;
+    color: var(--ink);
+    border-radius: 13px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .mute-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .mute-btn.muted { background: var(--cream-2); color: var(--ink-faint); }
+
+  /* Audio nudge */
+  .audio-nudge {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+    padding: 10px 20px; border-radius: 999px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms;
+    z-index: 200;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .audio-nudge.show { opacity: 1; pointer-events: auto; }
+
+  /* Hide header/footer during gameplay */
+  #play-screen.active ~ .site-footer,
+  body.playing .site-header,
+  body.playing .site-footer { display: none; }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 760px) {
+    .play-body { grid-template-columns: 1fr; gap: 8px; }
+    .stats-col { flex-direction: row; gap: 8px; }
+    .stats-col .stat-card { flex: 1; }
+    .stats-col .last-dots-card { display: none; }
+    .stat-value { font-size: 28px; }
+    .topbar { gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: 10px; font-size: 16px; }
+    .streak-badge { font-size: 15px; padding: 4px 8px; min-width: 50px; }
+    .timer-badge { font-size: 16px; padding: 4px 8px; min-width: 64px; }
+    .brand h1 { font-size: 44px; }
+    .summary-title { font-size: 40px; }
+    .tile-emoji { font-size: 30px; }
+    .tile-title { font-size: 17px; }
+    .staff-svg-wrap svg { max-width: 280px; }
+    .staff-card { padding: 10px 10px 8px; height: 220px; }
+    .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
+    .staff-actions { gap: 6px; }
+    .choice-btn { font-size: 18px; padding: 12px 8px; }
+    .choices-grid { gap: 8px; }
+  }
+
+  @media (min-width: 1100px) {
+    #play-screen { padding: 22px 32px 24px; gap: 14px; }
+    .play-body { gap: 20px; }
+    .staff-svg-wrap svg { max-width: 360px; }
+    .stat-value { font-size: 38px; }
+    .choice-btn { font-size: 26px; padding: 18px 14px; }
+  }
+</style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
+<script src="qn-audio.js" defer></script>
+<script src="qn-staff.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand-name">Quiz<span>Note</span></div>
+  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
+</header>
+
+<!-- ============ START SCREEN ============ -->
+<section class="screen active" id="start-screen">
+  <div class="start-wrap">
+    <a href="play.html" class="start-back-link">← All modules</a>
+    <div class="brand">
+      <div class="logo-mark">
+        <div>
+          <h1>Time Signatures</h1>
+          <div class="tagline">See the meter. Name it.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="tile-row" id="diff-tiles">
+        <button class="tile" data-diff="easy">
+          <div class="tile-emoji">🐢</div>
+          <div class="tile-title">Easy</div>
+          <div class="tile-sub">2/4, 3/4, 4/4</div>
+        </button>
+        <button class="tile on" data-diff="medium">
+          <div class="tile-emoji">🐰</div>
+          <div class="tile-title">Medium</div>
+          <div class="tile-sub">+ 6/8, 3/8, 2/2</div>
+        </button>
+        <button class="tile" data-diff="tricky">
+          <div class="tile-emoji">🐆</div>
+          <div class="tile-title">Tricky</div>
+          <div class="tile-sub">+ 9/8, 12/8<br/>5/4, 7/8</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="tile-row" id="length-tiles">
+        <button class="tile" data-len="5">
+          <div class="tile-emoji">⚡</div>
+          <div class="tile-title">Quick</div>
+          <div class="tile-sub">5 questions</div>
+        </button>
+        <button class="tile on" data-len="10">
+          <div class="tile-emoji">🎯</div>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">10 questions</div>
+        </button>
+        <button class="tile" data-len="20">
+          <div class="tile-emoji">🏋️</div>
+          <div class="tile-title">Long</div>
+          <div class="tile-sub">20 questions</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block" id="timer-block">
+      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
+        <span class="t-icon">⏱</span>
+        <span class="t-label">Add a timer</span>
+        <span class="t-state" id="timer-toggle-state">off</span>
+      </button>
+      <div class="timer-pills" id="timer-pills" hidden>
+        <button class="tpill" data-secs="30">30s</button>
+        <button class="tpill" data-secs="45">45s</button>
+        <button class="tpill on" data-secs="60">60s</button>
+      </div>
+    </div>
+
+    <div class="start-cta">
+      <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
+        🔇 Start muted
+      </label>
+      <button class="btn sun huge" id="start-btn">Start Game →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAY SCREEN ============ -->
+<section class="screen" id="play-screen">
+  <div class="topbar">
+    <a href="play.html" class="icon-btn" title="Back to modules" style="text-decoration:none;">🏠</a>
+    <button class="icon-btn" id="exit-btn" title="Quit round">✕</button>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="timer-badge" id="timer-badge" hidden><span class="t-icon">⏱</span><span id="timer-num">60</span>s</div>
+    <div class="streak-badge" id="streak-badge">🔥 <span class="num" id="streak-num">0</span></div>
+    <button class="mute-btn" id="mute-btn" title="Toggle sound">🔊</button>
+  </div>
+
+  <div class="play-body">
+    <div class="card staff-card">
+      <div class="staff-label">What is this?</div>
+      <div class="staff-svg-wrap" id="staff-wrap"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="stats-col">
+      <div class="card stat-card">
+        <div class="stat-label">Question</div>
+        <div class="stat-value"><span id="q-num">1</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value"><span id="score-num">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card last-dots-card">
+        <div class="stat-label">Last answers</div>
+        <div class="last-dots" id="last-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-choice buttons replacing keyboard -->
+  <div class="card choices-card">
+    <div class="choices-grid" id="choices-grid">
+      <!-- buttons injected by JS -->
+    </div>
+  </div>
+
+  <div class="fx-layer" id="confetti"></div>
+  <!-- Time Signatures uses no module-specific FX layer -->
+</section>
+
+<!-- ============ SUMMARY SCREEN ============ -->
+<section class="screen" id="summary-screen">
+  <div class="summary-wrap">
+    <div class="summary-title">Round done! 🎉</div>
+    <div class="summary-sub" id="summary-sub">You read those meters.</div>
+    <div class="summary-speed" id="summary-speed" hidden></div>
+
+    <div class="summary-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Best streak</div>
+        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Stars</div>
+        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
+      </div>
+    </div>
+
+    <div class="miss-list" id="miss-list">
+      <h3>Meters to practice next time</h3>
+      <ul id="miss-items"></ul>
+    </div>
+
+    <div class="summary-actions">
+      <button class="btn sun big" id="again-btn">↻ Play again</button>
+      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed meters</button>
+      <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
+      <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
+    </div>
+
+    <div class="pb-row" id="pb-row" hidden>
+      <span class="pb-label">Personal best:</span>
+      <span id="pb-score"></span>
+      <span class="pb-sep">·</span>
+      <span id="pb-streak"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2 id="modal-title">Quit this round?</h2>
+    <p id="modal-body">Your score for this round won't be saved.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Quit round</button>
+      <button class="btn" id="modal-confirm">Keep playing</button>
+    </div>
+  </div>
+</div>
+
+<div class="audio-nudge" id="audio-nudge">🔇 Tap here to enable sound</div>
+
+<footer class="site-footer">
+  © 2026 QuizNote <span class="sep">·</span>
+  <a href="privacy.html" target="_blank">Privacy Policy</a>
+  <span class="sep">·</span>
+  <a href="terms.html" target="_blank">Terms of Service</a>
+  <span class="sep">·</span>
+  Made by musicians, for musicians
+</footer>
+
+<script>
+// ============ QuizNote Note Values — Music Helpers ============
+// NH.music namespace (letter/step parsing, MIDI conversion).
+// NH.audio is provided externally by qn-audio.js.
 (function () {
-  'use strict';
+  const NH = window.NH = window.NH || {};
+  const LETTER_STEP = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+  const STEP_LETTER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const LETTER_SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
-  // ─────────────────────────────────────────────────────────────
-  // SMuFL codepoints (Bravura Text font)
-  // ─────────────────────────────────────────────────────────────
-
-  const SMUFL = {
-    gClef:    '\uE050',   // treble clef
-    fClef:    '\uE062',   // bass clef
-    sharp:    '\uE262',
-    flat:     '\uE260',
-    natural:  '\uE261',
-    // Time-signature digits — Bravura has dedicated glyphs that visually
-    // sit centered on a staff line. Use digit(n) helper to get the right one.
-    tsDigit: (n) => String.fromCharCode(0xE080 + n),
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // OFFSET calibration constants
-  // Locked from Samsung Android device sweep. Each value is in
-  // units of lineGap (staff spaces). Bravura glyphs render their
-  // visual content ABOVE the SVG text y-anchor, so we shift each
-  // glyph DOWN by these calibrated amounts.
-  // ─────────────────────────────────────────────────────────────
-
-  const OFFSET = {
-    trebleClef: 0.75,   // from G4 line (step 2)
-    bassClef:   2.375,  // from F3 line (step 6)
-    sharp:      1.625,  // from target line
-    flat:       1.625,
-    natural:    1.625,
-    tsDigit:    1.5,    // time-signature digit visual center vs y-anchor
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // Accidental positions for key signatures
-  // step 0 = bottom staff line. Half-step increments going up.
-  // Sharps and flats appear in canonical order:
-  //   Sharps: F# C# G# D# A# E# B#
-  //   Flats:  Bb Eb Ab Db Gb Cb Fb
-  // ─────────────────────────────────────────────────────────────
-
-  const SHARP_STEPS_TREBLE = [8, 5, 9, 6, 3, 7, 4];
-  const FLAT_STEPS_TREBLE  = [4, 7, 3, 6, 2, 5, 8];
-  const SHARP_STEPS_BASS   = [6, 3, 7, 4, 1, 5, 2];
-  const FLAT_STEPS_BASS    = [2, 5, 1, 4, 0, 3, -1];
-
-  function getAccidentalSteps(clef, type, count) {
-    let arr;
-    if (clef === 'treble') {
-      arr = (type === 'sharp') ? SHARP_STEPS_TREBLE : FLAT_STEPS_TREBLE;
-    } else {
-      arr = (type === 'sharp') ? SHARP_STEPS_BASS : FLAT_STEPS_BASS;
-    }
-    return arr.slice(0, count);
+  function diatonicStep(letter, octave) { return octave * 7 + LETTER_STEP[letter]; }
+  function toMidi(letter, accidental, octave) {
+    const acc = accidental === '#' ? 1 : accidental === 'b' ? -1 : 0;
+    return 12 * (octave + 1) + LETTER_SEMI[letter] + acc;
   }
-
-  // ─────────────────────────────────────────────────────────────
-  // Atomic builders
-  //
-  // Each returns an SVG string fragment. The caller wraps these
-  // fragments in an <svg> element with appropriate viewBox.
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * Five staff lines.
-   * @param {object} opts
-   * @param {number} opts.bottomY - y of bottom line
-   * @param {number} opts.lineGap - distance between adjacent lines
-   * @param {number} opts.width   - overall staff width
-   * @param {number} [opts.xOffset=0]
-   * @param {string} [opts.color='#2A2A3E']
-   * @returns {string} SVG fragment
-   */
-  function buildStaffLines(opts) {
-    const { bottomY, lineGap, width, xOffset = 0, color = '#2A2A3E' } = opts;
-    let svg = '';
-    for (let i = 0; i < 5; i++) {
-      const y = bottomY - i * lineGap;
-      svg += `<line x1="${xOffset + 8}" y1="${y}" x2="${xOffset + width - 8}" y2="${y}" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
-    }
-    return svg;
+  function parsePitch(s) {
+    const m = /^([A-G])([#b]?)(-?\d+)$/.exec(s);
+    if (!m) throw new Error('bad pitch ' + s);
+    const letter = m[1], accidental = m[2], octave = parseInt(m[3], 10);
+    return { letter, accidental, octave, midi: toMidi(letter, accidental, octave), name: s };
   }
-
-  /**
-   * A clef glyph.
-   * @param {object} opts
-   * @param {'treble'|'bass'} opts.clef
-   * @param {number} opts.bottomY
-   * @param {number} opts.lineGap
-   * @param {number} [opts.xOffset=0]
-   * @param {number} [opts.x] - explicit x, defaults to xOffset + 14
-   * @param {string} [opts.color='#2A2A3E']
-   * @returns {string} SVG fragment
-   */
-  function buildClef(opts) {
-    const { clef, bottomY, lineGap, xOffset = 0, color = '#2A2A3E' } = opts;
-    const fontSize = lineGap * 4;
-    const x = (opts.x !== undefined) ? opts.x : xOffset + 14;
-    let y, glyph;
-    if (clef === 'treble') {
-      // Anchor at G4 line (step 2), shift down by calibrated offset
-      y = (bottomY - 1 * lineGap) + OFFSET.trebleClef * lineGap;
-      glyph = SMUFL.gClef;
-    } else {
-      // Anchor at F3 line (step 6), shift down by calibrated offset
-      y = (bottomY - 3 * lineGap) + OFFSET.bassClef * lineGap;
-      glyph = SMUFL.fClef;
-    }
-    return `<text x="${x}" y="${y}" font-family="Bravura Text" font-size="${fontSize}" fill="${color}">${glyph}</text>`;
+  function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+  function displayName(pitch) {
+    const acc = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
+    return pitch.letter + acc;
   }
+  function midiEquals(a, b) { return a === b; }
+  NH.music = { LETTER_STEP, STEP_LETTER, LETTER_SEMI, diatonicStep, toMidi, parsePitch, midiToFreq, displayName, midiEquals };
 
-  /**
-   * A row of accidentals (sharps or flats), in canonical key-signature order.
-   * @param {object} opts
-   * @param {'treble'|'bass'} opts.clef
-   * @param {'sharp'|'flat'} opts.type
-   * @param {number} opts.count - number of accidentals (1..7)
-   * @param {number} opts.bottomY
-   * @param {number} opts.lineGap
-   * @param {number} [opts.startX]
-   * @param {string} [opts.color='#2A2A3E']
-   * @param {string} [opts.className]
-   * @returns {string} SVG fragment
-   */
-  function buildAccidentals(opts) {
-    const { clef, type, count, bottomY, lineGap, color = '#2A2A3E', className } = opts;
-    if (!count || count === 0) return '';
-    const halfStep = lineGap / 2;
-    const startX = (opts.startX !== undefined) ? opts.startX : (clef === 'treble' ? 72 : 70);
-    const spacing = lineGap * 1.05;
-    const fontSize = lineGap * 4;
-    const sym = (type === 'sharp') ? SMUFL.sharp : SMUFL.flat;
-    const offset = (type === 'sharp') ? OFFSET.sharp : OFFSET.flat;
-    const steps = getAccidentalSteps(clef, type, count);
-    const classAttr = className ? ` class="${className}"` : '';
-    let svg = '';
-    steps.forEach((step, i) => {
-      const ax = startX + i * spacing;
-      const ay = (bottomY - step * halfStep) + offset * lineGap;
-      svg += `<text${classAttr} x="${ax}" y="${ay}" font-family="Bravura Text" font-size="${fontSize}" text-anchor="middle" fill="${color}">${sym}</text>`;
-    });
-    return svg;
-  }
-
-  /**
-   * Time signature: two numerals stacked vertically, centered on the staff.
-   * Top numeral sits in the space between lines 3 and 4 (centered on G4 in treble);
-   * bottom numeral sits in the space between lines 1 and 2 (centered on D4 in treble).
-   * For multi-digit numerals (e.g. 12), digits are placed side-by-side.
-   *
-   * @param {object} opts
-   * @param {number} opts.top - top numeral (e.g. 4 in 4/4)
-   * @param {number} opts.bottom - bottom numeral (e.g. 4 in 4/4)
-   * @param {number} opts.bottomY
-   * @param {number} opts.lineGap
-   * @param {number} [opts.x] - x center of the time signature
-   * @param {string} [opts.color='#2A2A3E']
-   * @param {string} [opts.className]
-   * @returns {string} SVG fragment
-   */
-  // ─────────────────────────────────────────────────────────────
-  // Vector digit glyphs for time signatures.
-  //
-  // WHY PATHS, NOT TEXT: font-rendered digits drifted vertically and
-  // changed size between questions on real devices — the same glyph would
-  // render at different pixel widths, and dominant-baseline centered by the
-  // font's metric box (not each glyph's ink), so symmetric digits (6, 8)
-  // looked centered while asymmetric ones (3, 4) sat off. Vector paths have
-  // no font dependency, no baseline, no load-timing, no metric box: a path
-  // at given coordinates renders pixel-identically every time, everywhere.
-  //
-  // Each digit is defined in a normalized box: width DIGIT_W × height DIGIT_H,
-  // with its top-left at (0,0). The geometric center is therefore
-  // (DIGIT_W/2, DIGIT_H/2). Glyphs are placed by translate+scale only.
-  // Bold, monoline-ish forms to read as engraved time-signature numerals.
-  // ─────────────────────────────────────────────────────────────
-
-  const DIGIT_W = 100;
-  const DIGIT_H = 140;
-
-  // Filled-outline paths (even-odd) for 0-9 in the 100x140 box.
-  const DIGIT_PATHS = {
-    '0': 'M50 4 C76 4 92 30 92 70 C92 110 76 136 50 136 C24 136 8 110 8 70 C8 30 24 4 50 4 Z M50 30 C38 30 32 48 32 70 C32 92 38 110 50 110 C62 110 68 92 68 70 C68 48 62 30 50 30 Z',
-    '1': 'M58 4 L58 136 L34 136 L34 36 L14 46 L14 22 L40 4 Z',
-    '2': 'M14 40 C14 14 34 4 52 4 C74 4 90 18 90 42 C90 60 78 74 60 90 L44 104 L92 104 L92 136 L12 136 L12 112 L52 74 C62 64 66 56 66 46 C66 36 60 30 50 30 C40 30 36 38 36 48 L36 52 L14 52 Z',
-    '3': 'M14 38 C16 14 36 4 54 4 C76 4 90 16 90 38 C90 52 82 62 70 66 C84 70 92 82 92 98 C92 122 74 136 52 136 C30 136 12 124 12 98 L12 96 L36 96 L36 100 C36 108 42 114 52 114 C62 114 68 108 68 98 C68 88 60 82 48 82 L40 82 L40 60 L48 60 C58 60 66 54 66 44 C66 36 60 30 52 30 C42 30 38 36 38 46 L14 46 Z',
-    '4': 'M62 4 L92 4 L92 88 L106 88 L106 110 L92 110 L92 136 L68 136 L68 110 L8 110 L8 86 Z M68 88 L68 38 L36 88 Z',
-    '5': 'M20 4 L88 4 L88 28 L42 28 L40 54 C46 50 54 48 62 48 C82 48 94 64 94 92 C94 120 76 136 52 136 C30 136 12 122 12 98 L12 96 L36 96 L36 98 C36 108 42 114 52 114 C62 114 70 106 70 92 C70 78 62 70 50 70 C42 70 36 74 32 80 L12 76 Z',
-    '6': 'M52 4 C72 4 86 14 88 32 L64 36 C62 32 58 28 52 28 C40 28 34 42 33 64 C40 56 50 52 60 52 C80 52 94 68 94 92 C94 118 76 136 52 136 C26 136 10 116 10 78 C10 32 28 4 52 4 Z M52 74 C42 74 34 82 34 94 C34 106 42 114 52 114 C62 114 70 106 70 94 C70 82 62 74 52 74 Z',
-    '7': 'M12 4 L92 4 L92 26 L52 136 L26 136 L66 28 L12 28 Z',
-    '8': 'M50 4 C72 4 88 16 88 36 C88 50 80 60 68 64 C82 68 92 80 92 96 C92 120 74 136 50 136 C26 136 8 120 8 96 C8 80 18 68 32 64 C20 60 12 50 12 36 C12 16 28 4 50 4 Z M50 26 C42 26 36 32 36 40 C36 48 42 54 50 54 C58 54 64 48 64 40 C64 32 58 26 50 26 Z M50 76 C40 76 32 84 32 94 C32 106 40 112 50 112 C60 112 68 106 68 94 C68 84 60 76 50 76 Z',
-    '9': 'M48 4 C74 4 90 24 90 62 C90 108 72 136 48 136 C28 136 14 126 12 108 L36 104 C38 108 42 112 48 112 C60 112 66 98 67 76 C60 84 50 88 40 88 C20 88 6 72 6 48 C6 22 24 4 48 4 Z M48 26 C38 26 30 34 30 46 C30 58 38 66 48 66 C58 66 66 58 66 46 C66 34 58 26 48 26 Z',
-  };
-
-  function buildTimeSignature(opts) {
-    const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
-    const x = (opts.x !== undefined) ? opts.x : 60;
-
-    // Glyph height ~2.0 staff spaces — standard engraving size for time-sig
-    // numerals (each digit roughly spans two staff spaces). Width scales
-    // proportionally from the normalized box aspect ratio.
-    const glyphH = lineGap * 2.00;
-    const scale  = glyphH / DIGIT_H;
-    const glyphW = DIGIT_W * scale;
-    const digitGap = glyphW * 0.04;   // small gap between multi-digit numerals
-
-    // Anchored to the MIDDLE staff line: top numeral center one staff-space
-    // above it, bottom numeral center one staff-space below.
-    const midY = bottomY - 2 * lineGap;
-    const topCenterY = midY - lineGap * 1.02;
-    const botCenterY = midY + lineGap * 1.02;
-
-    const classAttr = className ? ` class="${className}"` : '';
-
-    function renderStack(numStr, centerY) {
-      const n = numStr.length;
-      const totalW = n * glyphW + (n - 1) * digitGap;
-      const startLeft = x - totalW / 2;
-      let out = '';
-      for (let i = 0; i < n; i++) {
-        const d = numStr[i];
-        const path = DIGIT_PATHS[d];
-        if (!path) continue;
-        // Place the glyph box so its center lands on (digitCenterX, centerY).
-        const leftX = startLeft + i * (glyphW + digitGap);
-        const tx = leftX;
-        const ty = centerY - glyphH / 2;
-        out += `<g${classAttr} fill="${color}" transform="translate(${tx} ${ty}) scale(${scale})">` +
-               `<path d="${path}" fill-rule="evenodd"/></g>`;
-      }
-      return out;
-    }
-
-    return renderStack(String(top), topCenterY) + renderStack(String(bottom), botCenterY);
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // High-level composer
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * Build a complete staff: lines + clef + optional key signature + optional time signature.
-   * Returns just the inner SVG fragment; caller wraps in <svg>.
-   *
-   * @param {object} opts
-   * @param {'treble'|'bass'} [opts.clef='treble']
-   * @param {number} [opts.width=360]
-   * @param {number} [opts.lineGap=16]
-   * @param {number} [opts.bottomY=130]
-   * @param {number} [opts.xOffset=0]
-   * @param {object} [opts.keySig] - { type: 'sharp'|'flat', count: 0..7 }
-   * @param {object} [opts.timeSig] - { top: number, bottom: number }
-   * @param {string} [opts.color='#2A2A3E']
-   * @param {string} [opts.accClassName] - CSS class to attach to accidentals (for recoloring)
-   * @param {string} [opts.tsClassName] - CSS class to attach to time-sig digits
-   * @returns {{ svg: string, accStartX: number, tsX: number, accEndX: number }}
-   *          svg fragment plus useful x-coordinates for composing further elements
-   */
-  function buildStaff(opts) {
-    const {
-      clef = 'treble',
-      width = 360,
-      height = 200,
-      lineGap = 16,
-      bottomY = 130,
-      xOffset = 0,
-      keySig = null,
-      timeSig = null,
-      color = '#2A2A3E',
-      accClassName,
-      tsClassName,
-    } = opts;
-
-    let svg = '';
-
-    // Lines
-    svg += buildStaffLines({ bottomY, lineGap, width, xOffset, color });
-
-    // Clef
-    svg += buildClef({ clef, bottomY, lineGap, xOffset, color });
-
-    // Key signature (if any)
-    const accStartX = xOffset + (clef === 'treble' ? 72 : 70);
-    let accEndX = accStartX;
-    if (keySig && keySig.count > 0 && keySig.type) {
-      svg += buildAccidentals({
-        clef, type: keySig.type, count: keySig.count,
-        bottomY, lineGap, startX: accStartX, color, className: accClassName,
-      });
-      accEndX = accStartX + keySig.count * (lineGap * 1.05);
-    }
-
-    // Time signature (if any) — placed after key signature with a small gap
-    let tsX = 0;
-    if (timeSig) {
-      tsX = accEndX + lineGap * 1.2;
-      svg += buildTimeSignature({
-        top: timeSig.top, bottom: timeSig.bottom,
-        bottomY, lineGap, x: tsX, color, className: tsClassName,
-      });
-    }
-
-    return { svg, accStartX, accEndX, tsX };
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // Expose
-  // ─────────────────────────────────────────────────────────────
-
-  window.NH = window.NH || {};
-  window.NH.staff = {
-    SMUFL,
-    OFFSET,
-    getAccidentalSteps,
-    buildStaffLines,
-    buildClef,
-    buildAccidentals,
-    buildTimeSignature,
-    buildStaff,
-  };
-  window.NH.staff.version = '1.0.0';
-
+  // NH.audio is provided by qn-audio.js (loaded above with defer).
+  // Exposes: ensureCtx, setMuted, isMuted, playMidi, playBoop,
+  //          playTick, playChime, playFanfare, midiToFreq.
 })();
+</script>
+
+
+
+<script>
+// ============ QuizNote Time Signatures — Renderer + Module Adapter ============
+(function () {
+  const TS = window.TS = window.TS || {};
+
+  // ─── Time signature catalog ──────────────────────────────
+  const SIGS = {
+    '2-4':  { top: 2,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '3-4':  { top: 3,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '4-4':  { top: 4,  bottom: 4,  category: 'simple',   beatUnit: 'Quarter note' },
+    '6-8':  { top: 6,  bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '3-8':  { top: 3,  bottom: 8,  category: 'simple',   beatUnit: 'Eighth note'  },
+    '2-2':  { top: 2,  bottom: 2,  category: 'simple',   beatUnit: 'Half note'    },
+    '9-8':  { top: 9,  bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '12-8': { top: 12, bottom: 8,  category: 'compound', beatUnit: 'Eighth note'  },
+    '5-4':  { top: 5,  bottom: 4,  category: 'odd',      beatUnit: 'Quarter note' },
+    '7-8':  { top: 7,  bottom: 8,  category: 'odd',      beatUnit: 'Eighth note'  },
+  };
+
+  // ─── Random key signature generator (visual noise on Medium/Tricky) ─
+  function randomKeySig() {
+    const r = Math.random();
+    if (r < 0.3) return null;  // 30% no accidentals
+    const isSharp = Math.random() < 0.5;
+    const count = 1 + Math.floor(Math.random() * 4);  // 1..4 accidentals
+    return { type: isSharp ? 'sharp' : 'flat', count };
+  }
+
+  // ─── Question-type prompts ───────────────────────────────
+  const PROMPT = {
+    label:  'What time signature is this?',
+    top:    'How many beats per measure?',
+    bottom: 'Which note gets the beat?',
+  };
+
+  // ─── Difficulty pools ────────────────────────────────────
+  const TIER_SIGS = {
+    easy:   ['2-4', '3-4', '4-4'],
+    medium: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2'],
+    tricky: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2', '9-8', '12-8', '5-4', '7-8'],
+  };
+
+  const TIER_TYPE_WEIGHTS = {
+    easy:   { label: 0.7, top: 0.3, bottom: 0.0 },
+    medium: { label: 0.4, top: 0.3, bottom: 0.3 },
+    tricky: { label: 0.34, top: 0.33, bottom: 0.33 },
+  };
+
+  function pickType(tier) {
+    const w = TIER_TYPE_WEIGHTS[tier];
+    const r = Math.random();
+    if (r < w.label) return 'label';
+    if (r < w.label + w.top) return 'top';
+    return 'bottom';
+  }
+
+  // ─── Question key encoding ───────────────────────────────
+  // Format: "sigKey|type|clef|ksStr::answer"
+  // The "::answer" suffix lets the generic game loop's equality
+  // check work (chosen key must equal correctKey verbatim).
+  function encodeKey(sigKey, type, clef, keySig, answer) {
+    const ksStr = (keySig && keySig.count > 0) ? `${keySig.count}${keySig.type[0]}` : '0';
+    return `${sigKey}|${type}|${clef}|${ksStr}::${answer}`;
+  }
+
+  function decodeKey(key) {
+    const [body, answer] = key.split('::');
+    const [sigKey, type, clef, ksStr] = body.split('|');
+    let keySig = null;
+    if (ksStr !== '0') {
+      keySig = { count: parseInt(ksStr, 10), type: ksStr.endsWith('s') ? 'sharp' : 'flat' };
+    }
+    return { sigKey, type, clef, keySig, answer, body };
+  }
+
+  function answerFor(sigKey, type) {
+    if (type === 'label') return sigKey.replace('-', '/');
+    if (type === 'top')   return String(SIGS[sigKey].top);
+    return SIGS[sigKey].beatUnit;
+  }
+
+  // ─── QNM contract: buildPool ─────────────────────────────
+  function buildPool(tier) {
+    const sigs = TIER_SIGS[tier];
+    const pool = [];
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+      const sigKey = sigs[Math.floor(Math.random() * sigs.length)];
+      const type = pickType(tier);
+      const clef = (tier === 'tricky' && Math.random() < 0.4) ? 'bass' : 'treble';
+      const keySig = (tier === 'easy') ? null : randomKeySig();
+      pool.push(encodeKey(sigKey, type, clef, keySig, answerFor(sigKey, type)));
+    }
+    return pool;
+  }
+
+  // ─── QNM contract: buildChoices ──────────────────────────
+  function buildChoices(correctKey, pool, tier) {
+    const q = decodeKey(correctKey);
+    let distractors;
+
+    // Helper: shuffle an array in place
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    if (q.type === 'label') {
+      let sigPool = TIER_SIGS[tier].filter(s => s !== q.sigKey);
+      if (tier === 'tricky') {
+        const sig = SIGS[q.sigKey];
+        const sameNum = Object.keys(SIGS).filter(k => k !== q.sigKey && SIGS[k].top    === sig.top);
+        const sameDen = Object.keys(SIGS).filter(k => k !== q.sigKey && SIGS[k].bottom === sig.bottom);
+        sigPool = [...new Set([...sameNum, ...sameDen, ...sigPool])];
+      }
+      distractors = shuffle(sigPool.map(s => s.replace('-', '/'))).slice(0, 3);
+    } else if (q.type === 'top') {
+      // PEDAGOGY: include the BOTTOM number of the time signature as a
+      // choice when it differs from the top — forces the learner to pick
+      // between the two visible numbers. When top === bottom (e.g. 4/4,
+      // 2/2), there's only one distinct visible number, so we skip the
+      // forced bottom and fill entirely from nearby numbers (avoids a
+      // duplicate answer tile).
+      const sig = SIGS[q.sigKey];
+      const c = sig.top;
+      const forced = (sig.bottom !== c) ? String(sig.bottom) : null;
+      const nearby = shuffle(
+        [...new Set(
+          [c - 2, c - 1, c + 1, c + 2, c * 2, Math.floor(c / 2)]
+            .filter(n => n > 0 && n !== c)
+            .map(String)
+            .filter(n => n !== forced)
+        )]
+      );
+      if (forced) {
+        distractors = [forced, ...nearby.slice(0, 2)];
+      } else {
+        distractors = nearby.slice(0, 3);
+      }
+    } else {
+      // 'bottom' — note-value question. Distractors are other note values.
+      const allUnits = ['Whole note', 'Half note', 'Quarter note', 'Eighth note', 'Sixteenth note'];
+      distractors = shuffle(allUnits.filter(u => u !== q.answer)).slice(0, 3);
+    }
+
+    while (distractors.length < 3) distractors.push('—');
+
+    // Wrap each distractor in the same body as the question (so labelFor works on all 4)
+    const choices = shuffle([correctKey, ...distractors.map(d => `${q.body}::${d}`)]);
+    return choices;
+  }
+
+  // ─── QNM contract: labelFor ──────────────────────────────
+  function labelFor(key) {
+    if (!key || !key.includes('::')) return key || '';
+    return key.split('::')[1];
+  }
+
+  // ─── QNM contract: render ────────────────────────────────
+  // Uses NH.staff.buildStaff (shared engraver) — same calibrated
+  // positioning as Key Signatures. Lazy-resolves at call time.
+  //
+  // IMPORTANT: only the staff SVG goes into .staff-svg-wrap, exactly like
+  // Note Values / Key Signatures. The per-question prompt goes into the
+  // .staff-label slot ABOVE the staff. Putting the prompt inside the wrap
+  // made it share a centered flex ROW with the SVG, so different prompt
+  // lengths changed the SVG's width/scale and the staff drifted vertically
+  // between questions. Keeping the wrap to a single child fixes that.
+  function setPrompt(text) {
+    const label = document.querySelector('#play-screen .staff-label');
+    if (label) label.textContent = text;
+  }
+
+  function renderQuestion(container, key) {
+    const q = decodeKey(key);
+    const staffApi = window.NH && window.NH.staff;
+    if (!staffApi) {
+      setPrompt('Loading…');
+      container.innerHTML = '';
+      return;
+    }
+    setPrompt(PROMPT[q.type]);
+    const sig = SIGS[q.sigKey];
+    const result = staffApi.buildStaff({
+      clef: q.clef,
+      width: 450,
+      height: 250,
+      lineGap: 20,
+      bottomY: 162,
+      keySig: q.keySig,
+      timeSig: { top: sig.top, bottom: sig.bottom },
+      tsClassName: 'ts-timesig',
+    });
+    container.innerHTML =
+      `<div class="ts-stage pop"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
+  }
+
+  function animateQuestionIn(container, key) {
+    const stage = container.querySelector('.ts-stage');
+    if (!stage) return;
+    stage.classList.remove('pop');
+    void stage.offsetWidth;
+    stage.classList.add('pop');
+  }
+
+  function recolorAfterAnswer(container, correct) {
+    const stage = container.querySelector('.ts-stage');
+    if (!stage) return;
+    stage.classList.remove('correct', 'wrong');
+    if (correct === true) {
+      stage.classList.add('correct');
+    } else if (correct === false) {
+      stage.classList.add('wrong');
+      document.body.classList.remove('ts-shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('ts-shake');
+      setTimeout(() => document.body.classList.remove('ts-shake'), 400);
+    }
+  }
+
+  // ─── QNM contract: encouragingLine ───────────────────────
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['METER MASTER! Every signature nailed! 🎯','Perfect score — you read every meter! 🌟',"Flawless! You can spot a time signature anywhere! 🎶"]);
+    if (pct >= 0.8) return pick(["Brilliant round — just a couple slipped by!","Nearly perfect! Your eye is sharp 👁️","Amazing round — meters are clicking!"]);
+    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Solid round! The compound meters take time.","Good progress — keep reading those staves!"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Music takes time — you're on your way!","Great practice! The meters are starting to make sense."]);
+  }
+
+  // ─── Export QNM contract ─────────────────────────────────
+  window.QNM = {
+    slug:      'time-signatures',
+    namespace: 'TS',
+    buildPool, buildChoices, labelFor,
+    render: { renderQuestion, animateQuestionIn, recolorAfterAnswer },
+    encouragingLine,
+  };
+
+  TS.SIGS = SIGS;
+  TS.decodeKey = decodeKey;
+})();
+</script>
+
+<script>
+// ============ QuizNote Note Values — Game Loop ============
+(function () {
+  // NH.audio comes from qn-audio.js (deferred). It may not exist
+  // at script-parse time, but it will exist by the time any handler
+  // runs. Resolve lazily on every access via this proxy.
+  const A = new Proxy({}, {
+    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
+  });
+  // ─── Module contract ──────────────────────────────────────
+  // window.QNM is defined by the module-specific renderer script
+  // above. It provides identity, question generation, rendering,
+  // optional FX, and summary copy. See template header for the
+  // full contract. The game loop below is fully generic — it
+  // never references a specific module's data shape.
+  const M = window.QNM;
+  if (!M) {
+    console.error('[QN] window.QNM is not defined — module renderer script must set window.QNM before this script runs.');
+    return;
+  }
+  // Convenience local for readability at call sites.
+  const R = M.render;
+
+  const state = {
+    settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
+    pool: [], deck: [], drillPool: [],
+    q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
+    history: [], current: null, locked: false,
+    timeLeft: 0, timerInterval: null, timedOut: false,
+    startedAt: 0, timerWasRunning: false, endedRound: false,
+    currentChoices: [],
+  };
+
+  const $ = id => document.getElementById(id);
+  const els = {};
+
+  function cacheEls() {
+    ['start-screen','play-screen','summary-screen',
+     'diff-tiles','length-tiles','start-btn',
+     'exit-btn','progress-fill','streak-badge','streak-num',
+     'staff-wrap','toast','confetti',
+     'q-num','score-num','last-dots',
+     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'again-btn','drill-btn','change-btn','choices-grid',
+     'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+     'pb-row','pb-score','pb-streak',
+     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
+     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
+  }
+
+  function showScreen(name) {
+    if (name !== 'play') stopTimer();
+    ['start','play','summary'].forEach(s => {
+      const el = document.getElementById(s + '-screen');
+      if (el) el.classList.toggle('active', s === name);
+    });
+    document.body.classList.toggle('playing', name === 'play');
+    window.scrollTo(0, 0);
+  }
+
+  function syncMuteUI(muted) {
+    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
+    if (els['mute-btn']) {
+      els['mute-btn'].textContent = muted ? '🔇' : '🔊';
+      els['mute-btn'].classList.toggle('muted', muted);
+      els['mute-btn'].setAttribute('aria-pressed', String(muted));
+    }
+  }
+
+  function saveMutedPreference(muted) {
+    localStorage.setItem(M.slug + '_muted', String(muted));
+    A.setMuted(muted);
+    syncMuteUI(muted);
+  }
+
+  function loadMutedPreference() {
+    return localStorage.getItem(M.slug + '_muted') === 'true';
+  }
+
+  // ===== Round Setup =====
+  function buildPool() {
+    return M.buildPool(state.settings.difficulty);
+  }
+
+  function shuffleDeck(pool, total, drillPool) {
+    const out = [];
+    const source = (drillPool && drillPool.length) ? drillPool : pool;
+    if (!source.length) return out;
+    let prev = null;
+    for (let i = 0; i < total; i++) {
+      let pick, tries = 0;
+      do {
+        pick = source[Math.floor(Math.random() * source.length)];
+        tries++;
+      } while (pick === prev && source.length > 1 && tries < 6);
+      out.push(pick);
+      prev = pick;
+    }
+    return out;
+  }
+
+  function startGame() {
+    state.pool = buildPool();
+    state.deck = shuffleDeck(state.pool, state.settings.total, state.drillPool);
+    state.q = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.history = [];
+    state.locked = false;
+    state.timedOut = false;
+    state.endedRound = false;
+    state.total = state.settings.total;
+    state.startedAt = Date.now();
+
+    renderLastDots();
+    updateStreakBadge();
+    updateProgressAndStats();
+    showScreen('play');
+    if (state.settings.timer.enabled) startTimer();
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    if (state.q >= state.total) { endRound(); return; }
+    const key = state.deck[state.q];
+    state.current = { key: key };
+    state.locked = false;
+    state.currentChoices = M.buildChoices(key, state.pool, state.settings.difficulty);
+
+    R.renderQuestion(els['staff-wrap'], key);
+    if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], key);
+    renderChoices();
+    A.playTick();
+  }
+
+  function renderChoices() {
+    const grid = els['choices-grid'];
+    grid.innerHTML = '';
+    state.currentChoices.forEach(key => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = M.labelFor(key);
+      btn.dataset.key = key;
+      btn.addEventListener('click', () => handleAnswer(key, btn));
+      grid.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(pickedKey, buttonEl) {
+    if (state.locked) return;
+    state.locked = true;
+    const correct = state.current.key;
+    const isCorrect = (pickedKey === correct);
+
+    if (isCorrect) {
+      state.score++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      state.history.push({ key: correct, correct: true });
+      buttonEl.classList.add('correct');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], true);
+      if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], correct);
+      A.playChime(60, state.streak);
+
+      // Explosion at the staff symbol location
+      const stage = els['staff-wrap'];
+      const r = stage.getBoundingClientRect();
+      if (M.explode) M.explode(correct, r.left + r.width / 2, r.top + r.height / 2, state.streak);
+    } else {
+      state.streak = 0;
+      state.history.push({ key: correct, correct: false, picked: pickedKey });
+      buttonEl.classList.add('wrong');
+      // Highlight correct answer
+      const correctBtn = [...els['choices-grid'].children].find(b => b.dataset.key === correct);
+      if (correctBtn) correctBtn.classList.add('correct');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], false);
+      A.playBoop();
+    }
+
+    updateStreakBadge();
+    updateProgressAndStats();
+    renderLastDots();
+
+    setTimeout(() => {
+      state.q++;
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
+      nextQuestion();
+    }, isCorrect ? 700 : 1200);
+  }
+
+  function updateStreakBadge() {
+    if (els['streak-num']) els['streak-num'].textContent = state.streak;
+    if (els['streak-badge']) els['streak-badge'].classList.toggle('hot', state.streak >= 3);
+  }
+
+  function updateProgressAndStats() {
+    if (els['q-num']) els['q-num'].textContent = Math.min(state.q + 1, state.total);
+    if (els['score-num']) els['score-num'].textContent = state.score;
+    // Update " / N" labels everywhere
+    document.querySelectorAll('.of').forEach(of => {
+      // Don't change labels we shouldn't
+    });
+    const pct = state.total ? (state.q / state.total) * 100 : 0;
+    if (els['progress-fill']) els['progress-fill'].style.width = pct + '%';
+
+    // Update the "/ 10" displays in stat cards if total differs
+    const qOf = document.querySelector('#play-screen .stat-card:nth-of-type(1) .of');
+    if (qOf) qOf.textContent = ' / ' + state.total;
+    const scoreOf = document.querySelector('#play-screen .stat-card.sun-card .of');
+    if (scoreOf) scoreOf.textContent = ' / ' + state.total;
+  }
+
+  function renderLastDots() {
+    const wrap = els['last-dots'];
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const last5 = state.history.slice(-5);
+    last5.forEach(h => {
+      const d = document.createElement('div');
+      d.className = 'last-dot ' + (h.correct ? 'correct' : 'wrong');
+      wrap.appendChild(d);
+    });
+  }
+
+  // ===== Timer =====
+  function startTimer() {
+    if (!state.settings.timer.enabled) return;
+    state.timeLeft = state.settings.timer.seconds;
+    if (els['timer-badge']) els['timer-badge'].hidden = false;
+    if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+    state.timerInterval = setInterval(() => {
+      state.timeLeft--;
+      if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+      if (state.timeLeft <= 5) A.playTick();
+      if (state.timeLeft <= 0) {
+        stopTimer();
+        state.timedOut = true;
+        endRound();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (state.timerInterval) clearInterval(state.timerInterval);
+    state.timerInterval = null;
+    if (els['timer-badge']) els['timer-badge'].hidden = true;
+  }
+
+  // ===== Encouraging line per tier =====
+  function encouragingLine(score, total) {
+    if (typeof M.encouragingLine === 'function') return M.encouragingLine(score, total);
+    // Fallback if module didn't supply one
+    const pct = score / total;
+    if (pct >= 1)   return 'Perfect round!';
+    if (pct >= 0.8) return 'Great round!';
+    if (pct >= 0.5) return 'Solid round!';
+    return 'Keep practicing!';
+  }
+
+  // ===== Shared Fanfare FX (ported from piano-quiz) =====
+  // Shared design across all modules. Module-specific fanfare music plays underneath via A.playFanfare(tier).
+  // Tiers: 'perfect' (full show), 'great' (3 fireworks), 'good' (1 firework), anything else (no fx).
+  const QN_FX = (() => {
+    const FW_COLORS = ['#FFB627','#FF6B6B','#1FB8A8','#5B3FE4','#34d4c2','#FF8FB1','#FFD700','#00E5FF'];
+    // SMuFL music glyphs + Unicode fallbacks + emoji for the finale explosion
+    const NOTE_GLYPHS = ['\uE1D5','\uE1D7','\uE1D9','\uE1F2','\u266A','\u266B','\u266C','\u2669'];
+    const NOTE_EMOJI = ['🎵','🎶','⭐','✨'];
+    const NOTE_COLORS = ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2','#FFD700','#FF8FB1'];
+
+    function getLayer() {
+      let layer = document.getElementById('qn-fx-layer');
+      if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'qn-fx-layer';
+        layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1000;overflow:hidden;';
+        document.body.appendChild(layer);
+      }
+      return layer;
+    }
+
+    function getBadge() {
+      let badge = document.getElementById('qn-celeb-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'qn-celeb-badge';
+        badge.style.cssText = [
+          'position:fixed','left:50%','top:28%',
+          'transform:translate(-50%,-50%) scale(0.3)',
+          "font-family:'Fredoka',sans-serif",'font-weight:700',
+          'font-size:clamp(1.6rem,5vw,2.8rem)',
+          'color:#c98800','background:white',
+          'border:4px solid #2A2A3E','border-radius:22px',
+          'box-shadow:0 8px 0 #2A2A3E','padding:14px 30px',
+          'z-index:1100','opacity:0','pointer-events:none','white-space:nowrap'
+        ].join(';');
+        document.body.appendChild(badge);
+      }
+      return badge;
+    }
+
+    function ensureKeyframes() {
+      if (document.getElementById('qn-celeb-keyframes')) return;
+      const s = document.createElement('style');
+      s.id = 'qn-celeb-keyframes';
+      s.textContent = `
+        @keyframes qnBadgePop {
+          0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+          12%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+          22%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          80%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0; }
+        }
+        #qn-celeb-badge.show { animation: qnBadgePop 2.5s cubic-bezier(.5,1.5,.5,1) forwards; }
+      `;
+      document.head.appendChild(s);
+    }
+
+    function showBadge(text) {
+      ensureKeyframes();
+      const b = getBadge();
+      b.textContent = text;
+      b.classList.remove('show');
+      void b.offsetWidth;
+      b.classList.add('show');
+    }
+
+    function launchFirework(targetX, targetY, color, delay, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const startX = targetX + (Math.random() - 0.5) * 40;
+      const startY = window.innerHeight + 20;
+
+      setTimeout(() => {
+        const trail = document.createElement('div');
+        trail.style.cssText = 'position:absolute;width:5px;height:5px;border-radius:50%;background:' + color + ';box-shadow:0 0 12px ' + color + ';';
+        trail.style.left = startX + 'px';
+        trail.style.top = startY + 'px';
+        layer.appendChild(trail);
+        trail.animate(
+          [{ transform: 'translate(0,0)', opacity: 1 },
+           { transform: 'translate(' + (targetX - startX) + 'px,' + (targetY - startY) + 'px)', opacity: 0.5 }],
+          { duration: 450, easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)', fill: 'forwards' }
+        );
+        setTimeout(() => { trail.remove(); burst(targetX, targetY, color, scale); }, 450);
+      }, delay);
+    }
+
+    function burst(x, y, color, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const sparkCount = Math.floor(40 * scale);
+      const baseDist = 160 * scale;
+      for (let i = 0; i < sparkCount; i++) {
+        const spark = document.createElement('div');
+        const size = (5 + Math.random() * 5) * Math.min(scale, 1.4);
+        spark.style.cssText = 'position:absolute;border-radius:50%;width:' + size + 'px;height:' + size + 'px;background:' + color + ';box-shadow:0 0 8px ' + color + ';';
+        spark.style.left = x + 'px';
+        spark.style.top = y + 'px';
+        layer.appendChild(spark);
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.3;
+        const speed = baseDist * (0.6 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        const dur = 900 + Math.random() * 500;
+        spark.animate(
+          [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.5) + 'px), calc(-50% + ' + (dy*0.5) + 'px)) scale(1)', opacity: 1, offset: 0.4 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 100) + 'px)) scale(0.3)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.15, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => spark.remove(), dur + 50);
+      }
+    }
+
+    function noteExplosion(x, y, count) {
+      const layer = getLayer();
+      const baseDist = 380;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const size = 38 + Math.random() * 40;
+        const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)];
+        p.style.cssText = "position:absolute;font-family:'Bravura Text',serif;line-height:1;user-select:none;text-shadow:0 0 8px " + color + ';color:' + color + ';font-size:' + size + 'px;';
+        p.textContent = (Math.random() < 0.7)
+          ? NOTE_GLYPHS[Math.floor(Math.random() * NOTE_GLYPHS.length)]
+          : NOTE_EMOJI[Math.floor(Math.random() * NOTE_EMOJI.length)];
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.transform = 'translate(-50%,-50%)';
+        layer.appendChild(p);
+        const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const speed = baseDist * (0.5 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 40;
+        const rot = (Math.random() - 0.5) * 720;
+        const dur = 1400 + Math.random() * 600;
+        p.animate(
+          [{ transform: 'translate(-50%,-50%) rotate(0deg) scale(0.7)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.4) + 'px), calc(-50% + ' + (dy*0.4 - 40) + 'px)) rotate(' + (rot*0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.25 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 240) + 'px)) rotate(' + rot + 'deg) scale(0.7)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => p.remove(), dur + 50);
+      }
+    }
+
+    // ===== Audio helpers (built into the FX system; reach into module's AudioContext via NH.audio.ensureCtx) =====
+    function getAudioCtx() {
+      try { return NH.audio.ensureCtx(); } catch (e) { return null; }
+    }
+
+    function boomSound(t, freq, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      freq = freq || 80; vol = vol || 0.55;
+      const dest = ac.destination;
+      const osc = ac.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * 2.5, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.3);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+      osc.connect(g); g.connect(dest);
+      osc.start(t); osc.stop(t + 0.5);
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * 0.35, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = Math.random() * 2 - 1;
+      const noise = ac.createBufferSource(); noise.buffer = nbuf;
+      const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 1800;
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(vol * 0.5, t + 0.008);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      noise.connect(nf); nf.connect(ng); ng.connect(dest);
+      noise.start(t); noise.stop(t + 0.35);
+    }
+
+    function crowdCheer(t, dur, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      dur = dur || 2.5; vol = vol || 0.4;
+      const dest = ac.destination;
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = (Math.random() * 2 - 1) * 0.5;
+      const voices = [{f:700,q:8,g:1.0},{f:1200,q:6,g:0.7},{f:2400,q:4,g:0.4}];
+      voices.forEach(v => {
+        const noise = ac.createBufferSource(); noise.buffer = nbuf;
+        const filter = ac.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = v.f; filter.Q.value = v.q;
+        const gain = ac.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(vol * v.g, t + 0.25);
+        gain.gain.setValueAtTime(vol * v.g, t + dur * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        noise.connect(filter); filter.connect(gain); gain.connect(dest);
+        noise.start(t); noise.stop(t + dur + 0.05);
+      });
+      const whoopCount = Math.floor(dur * 2);
+      for (let i = 0; i < whoopCount; i++) {
+        const wt = t + Math.random() * (dur - 0.2);
+        const wbuf = ac.createBuffer(1, ac.sampleRate * 0.18, ac.sampleRate);
+        const wd = wbuf.getChannelData(0);
+        for (let j = 0; j < wd.length; j++) wd[j] = (Math.random() * 2 - 1) * 0.6;
+        const w = ac.createBufferSource(); w.buffer = wbuf;
+        const wf = ac.createBiquadFilter();
+        wf.type = 'bandpass'; wf.Q.value = 4;
+        wf.frequency.setValueAtTime(800 + Math.random() * 400, wt);
+        wf.frequency.exponentialRampToValueAtTime(1800 + Math.random() * 600, wt + 0.15);
+        const wg = ac.createGain();
+        wg.gain.setValueAtTime(0.0001, wt);
+        wg.gain.exponentialRampToValueAtTime(vol * 0.6, wt + 0.04);
+        wg.gain.exponentialRampToValueAtTime(0.0001, wt + 0.16);
+        w.connect(wf); wf.connect(wg); wg.connect(dest);
+        w.start(wt); w.stop(wt + 0.2);
+      }
+    }
+
+    // ===== Tiered celebration entry point =====
+    function fire(tier) {
+      const ac = getAudioCtx();
+      const now = ac ? ac.currentTime : 0;
+      const w = window.innerWidth, h = window.innerHeight;
+
+      if (tier === 'perfect') {
+        showBadge('PERFECT! 🎆');
+        const launches = [
+          { x: w*0.25, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.4 },
+          { x: w*0.70, y: h*0.25, color: FW_COLORS[1], delay: 250,  scale: 1.4 },
+          { x: w*0.45, y: h*0.20, color: FW_COLORS[2], delay: 550,  scale: 1.5 },
+          { x: w*0.18, y: h*0.32, color: FW_COLORS[3], delay: 900,  scale: 1.3 },
+          { x: w*0.78, y: h*0.28, color: FW_COLORS[4], delay: 1300, scale: 1.3 },
+          { x: w*0.50, y: h*0.18, color: FW_COLORS[6], delay: 1800, scale: 1.7 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0,0.25,0.55,0.90,1.30,1.80].forEach((t,i) => {
+            const isFinale = i === 5;
+            boomSound(now + t + 0.45, isFinale ? 60 : (70 + i*8), isFinale ? 0.55 : 0.38);
+          });
+          crowdCheer(now + 0.1, 3.2, 0.4);
+        }
+        // Finale 100-note explosion synced to finale burst (1800ms launch + 450ms = 2250ms)
+        setTimeout(() => noteExplosion(w / 2, h * 0.35, 100), 2250);
+      } else if (tier === 'great') {
+        showBadge('GREAT! ✨');
+        const launches = [
+          { x: w*0.30, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.2 },
+          { x: w*0.70, y: h*0.28, color: FW_COLORS[2], delay: 500,  scale: 1.2 },
+          { x: w*0.50, y: h*0.22, color: FW_COLORS[1], delay: 1100, scale: 1.3 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0, 0.5, 1.1].forEach((t,i) => boomSound(now + t + 0.45, 75 + i*5, 0.36));
+          crowdCheer(now + 0.1, 2.0, 0.3);
+        }
+      } else if (tier === 'good') {
+        showBadge('NICE! 🎵');
+        launchFirework(w*0.5, h*0.30, FW_COLORS[0], 200, 1.0);
+        if (ac) {
+          boomSound(now + 0.65, 80, 0.32);
+          crowdCheer(now + 0.2, 1.2, 0.22);
+        }
+      } else {
+        // 'okay' / 'practice' — polite badge only, no fx
+        showBadge('Good try!');
+      }
+    }
+
+    return { fire };
+  })();
+
+  // ===== End of Round =====
+  function endRound() {
+    if (state.endedRound) return;
+    state.endedRound = true;
+    stopTimer();
+    const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
+    showScreen('summary');
+
+    // Tier
+    const pct = state.total > 0 ? state.score / state.total : 0;
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.6 ? 'good' : 'practice';
+
+    // Score + streak + stars
+    if (els['sum-score']) els['sum-score'].textContent = state.score;
+    const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
+    if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
+    if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
+    if (els['sum-stars']) {
+      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
+      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
+      els['sum-stars'].textContent = starStr.trim();
+    }
+
+    // Subtitle
+    if (els['summary-sub']) {
+      els['summary-sub'].textContent = state.timedOut
+        ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
+        : encouragingLine(state.score, state.total);
+    }
+
+    // Speed chip
+    const speed = els['summary-speed'];
+    if (speed) {
+      speed.classList.remove('timed-out');
+      if (state.settings.timer.enabled) {
+        speed.hidden = false;
+        if (state.timedOut) {
+          speed.classList.add('timed-out');
+          speed.textContent = '⏱ Time up at ' + state.history.length + '/' + state.total;
+        } else {
+          const allotted = state.settings.timer.seconds;
+          const left = Math.max(0, allotted - elapsed);
+          const emoji = left >= 10 ? '🚀' : left > 0 ? '✨' : '⏱';
+          speed.textContent = emoji + ' Finished in ' + elapsed + 's' + (left > 0 ? ' (' + left + 's to spare)' : ' — right at the buzzer');
+        }
+      } else {
+        speed.hidden = false;
+        speed.textContent = '⏱ ' + elapsed + 's · ' + (elapsed / state.total).toFixed(1) + 's per symbol';
+      }
+    }
+
+    // Miss list + drill pool
+    const counts = {};
+    const missedKeys = new Set();
+    state.history.forEach(h => {
+      if (!h.correct) {
+        const label = M.labelFor(h.key) || h.key;
+        counts[label] = (counts[label] || 0) + 1;
+        missedKeys.add(h.key);
+      }
+    });
+    state.drillPool = [...missedKeys];
+    if (els['drill-btn']) els['drill-btn'].hidden = (state.drillPool.length === 0);
+
+    if (els['miss-items']) {
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      if (sorted.length === 0) {
+        els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no symbols to practice. ⭐</li>';
+      } else {
+        els['miss-items'].innerHTML = sorted.map(([name, n]) =>
+          '<li>' + name + ' — ' + (n === 1 ? 'needed a retry' : 'tripped you up ' + n + ' times') + '</li>'
+        ).join('');
+      }
+    }
+
+    // Personal best (per-difficulty key, preserves note-values convention)
+    let pb = { score: 0, pct: 0, streak: 0 };
+    const pbKey = M.slug + '_pb_' + state.settings.difficulty;
+    try {
+      pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
+    } catch(e) {}
+    const thisPct = state.total > 0 ? state.score / state.total : 0;
+    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
+    const newStreakPB = state.bestStreak > pb.streak;
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newStreakPB) pb.streak = state.bestStreak;
+    try { localStorage.setItem(pbKey, JSON.stringify(pb)); } catch(e) {}
+    const pbRow = els['pb-row'];
+    if (pbRow) {
+      if (pb.score > 0 || pb.streak > 0) {
+        pbRow.hidden = false;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
+        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+      } else {
+        pbRow.hidden = true;
+      }
+    }
+
+    // Tier-colored title + sub
+    const titleMap = {
+      perfect: 'RHYTHM MASTER! 🎯',
+      great:   'Amazing Round! ⭐',
+      good:    'Nice Playing! 🎶',
+      practice:'Keep Practising! 🌱'
+    };
+    const titleEl = document.querySelector('.summary-title');
+    if (titleEl) {
+      titleEl.textContent = titleMap[tier];
+      titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      // Force reflow so pop animation restarts cleanly on replay
+      void titleEl.offsetWidth;
+      titleEl.classList.add('tier-' + tier);
+    }
+    const subEl = els['summary-sub'];
+    if (subEl) {
+      subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      subEl.classList.add('tier-' + tier);
+    }
+
+    // Score shimmer on perfect
+    if (tier === 'perfect') {
+      setTimeout(() => {
+        const scoreEl = document.getElementById('sum-score');
+        if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
+      }, 300);
+    }
+
+    // Log this round to the shared event store (no-op if no active profile)
+    if (window.QN && QN.events) {
+      QN.events.log({
+        module:     M.slug,
+        tier:       state.settings.difficulty,
+        length:     state.total,
+        correct:    state.score,
+        total:      state.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled
+      });
+    }
+
+    // Music + shared fireworks/crowd/note-explosion celebration. 700ms delay
+    // lets the summary content animate in first, then the celebration lands.
+    setTimeout(() => {
+      A.playFanfare(tier);
+      QN_FX.fire(tier);
+    }, 700);
+  }
+
+  // ===== Wire up settings =====
+  function setupSettings() {
+    // Difficulty tiles
+    if (els['diff-tiles']) {
+      els['diff-tiles'].addEventListener('click', e => {
+        const t = e.target.closest('.tile');
+        if (!t) return;
+        [...els['diff-tiles'].children].forEach(c => c.classList.remove('on'));
+        t.classList.add('on');
+        state.settings.difficulty = t.dataset.diff;
+      });
+    }
+
+    // Question count tiles
+    if (els['length-tiles']) {
+      els['length-tiles'].addEventListener('click', e => {
+        const t = e.target.closest('.tile');
+        if (!t) return;
+        [...els['length-tiles'].children].forEach(c => c.classList.remove('on'));
+        t.classList.add('on');
+        state.settings.total = parseInt(t.dataset.len, 10);
+      });
+    }
+
+    // Timer toggle
+    if (els['timer-toggle']) {
+      els['timer-toggle'].addEventListener('click', () => {
+        state.settings.timer.enabled = !state.settings.timer.enabled;
+        if (els['timer-toggle-state']) els['timer-toggle-state'].textContent = state.settings.timer.enabled ? 'on' : 'off';
+        if (els['timer-pills']) els['timer-pills'].hidden = !state.settings.timer.enabled;
+      });
+    }
+    // Timer pill selections
+    if (els['timer-pills']) {
+      els['timer-pills'].addEventListener('click', e => {
+        const p = e.target.closest('.tpill');
+        if (!p) return;
+        [...els['timer-pills'].children].forEach(c => c.classList.remove('on'));
+        p.classList.add('on');
+        state.settings.timer.seconds = parseInt(p.dataset.secs, 10);
+      });
+    }
+
+    // Start muted toggle
+    if (els['start-muted-toggle']) {
+      els['start-muted-toggle'].addEventListener('change', e => {
+        saveMutedPreference(e.target.checked);
+      });
+    }
+
+    // Start button
+    if (els['start-btn']) {
+      els['start-btn'].addEventListener('click', () => {
+        try { A.ensureCtx(); } catch(e) {}
+        state.drillPool = [];
+        startGame();
+      });
+    }
+
+    // Mute button on play screen
+    if (els['mute-btn']) {
+      els['mute-btn'].addEventListener('click', () => {
+        try { A.ensureCtx(); } catch(e) {}
+        saveMutedPreference(!A.isMuted());
+      });
+    }
+
+    // Exit button → modal
+    if (els['exit-btn']) {
+      els['exit-btn'].addEventListener('click', () => {
+        if (els['modal-overlay']) {
+          els['modal-overlay'].classList.add('show');
+          state.timerWasRunning = !!state.timerInterval;
+          if (state.timerWasRunning) stopTimer();
+        }
+      });
+    }
+    if (els['modal-cancel']) {
+      els['modal-cancel'].addEventListener('click', () => {
+        if (els['modal-overlay']) els['modal-overlay'].classList.remove('show');
+        if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
+          // Resume timer
+          state.timerInterval = setInterval(() => {
+            state.timeLeft--;
+            if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+            if (state.timeLeft <= 5) A.playTick();
+            if (state.timeLeft <= 0) {
+              stopTimer();
+              state.timedOut = true;
+              endRound();
+            }
+          }, 1000);
+        }
+      });
+    }
+    if (els['modal-confirm']) {
+      els['modal-confirm'].addEventListener('click', () => {
+        if (els['modal-overlay']) els['modal-overlay'].classList.remove('show');
+        state.endedRound = true;
+        stopTimer();
+        showScreen('start');
+      });
+    }
+
+    // Summary screen buttons
+    if (els['again-btn']) {
+      els['again-btn'].addEventListener('click', () => {
+        state.drillPool = [];
+        startGame();
+      });
+    }
+    if (els['drill-btn']) {
+      els['drill-btn'].addEventListener('click', () => {
+        startGame();
+      });
+    }
+    if (els['change-btn']) {
+      els['change-btn'].addEventListener('click', () => {
+        state.drillPool = [];
+        showScreen('start');
+      });
+    }
+  }
+
+  // ===== Init =====
+  document.addEventListener('DOMContentLoaded', () => {
+    cacheEls();
+    const muted = loadMutedPreference();
+    A.setMuted(muted);
+    syncMuteUI(muted);
+    setupSettings();
+    // Load PBs
+    try {
+      const pbKey = M.slug + '_pb_' + state.settings.difficulty;
+      const pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
+      if (els['pb-score']) els['pb-score'].textContent = pb.score || 0;
+      if (els['pb-streak']) els['pb-streak'].textContent = pb.streak || 0;
+    } catch(e) {}
+
+    // Audio nudge for browsers requiring user gesture
+    const nudge = document.getElementById('audio-nudge');
+    if (nudge) nudge.addEventListener('click', () => { A.ensureCtx(); nudge.classList.remove('show'); });
+  });
+})();
+</script>
+
+
+</body>
+</html>
