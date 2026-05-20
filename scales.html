@@ -474,6 +474,10 @@
     80%  { transform: scale(0.96) rotate(-1deg); }
     100% { transform: scale(1) rotate(0deg); }
   }
+  @keyframes scoreShimmer {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.08); color: var(--sun-dk); }
+  }
   @keyframes fanfareFloat {
     0%   { opacity: 0; transform: translateY(0) scale(0.5); }
     20%  { opacity: 1; }
@@ -483,6 +487,18 @@
     position: fixed; font-size: 32px; pointer-events: none; z-index: 300;
     opacity: 0; animation: fanfareFloat 1.4s ease-out forwards;
   }
+  /* Tier-specific title animations + colors (match piano-quiz / intervals / etc.) */
+  .summary-title.tier-perfect { animation: summaryPop 600ms cubic-bezier(.4,1.6,.5,1) both; color: var(--teal); }
+  .summary-title.tier-great   { animation: summaryPop 500ms cubic-bezier(.4,1.6,.5,1) both; color: var(--grape); }
+  .summary-title.tier-good    { animation: summaryPop 450ms cubic-bezier(.4,1.4,.5,1) both; color: var(--ink); }
+  .summary-title.tier-practice{ animation: summaryPop 400ms cubic-bezier(.4,1.2,.5,1) both; color: var(--ink); }
+  /* Score shimmer on a perfect round */
+  #sum-score.score-shimmer { display: inline-block; animation: scoreShimmer 400ms ease-in-out 2; }
+  /* Tier-colored sub */
+  .summary-sub.tier-perfect { color: var(--teal-dk); font-size: 19px; font-weight: 600; }
+  .summary-sub.tier-great   { color: var(--grape-dk); }
+  .summary-sub.tier-good    { color: var(--ink-soft); }
+  .summary-sub.tier-practice{ color: var(--ink-soft); }
   #summary-screen {
     align-items: center; justify-content: center;
     padding: 20px;
@@ -492,15 +508,25 @@
     font-family: 'Fredoka', sans-serif; font-weight: 700;
     font-size: 52px; line-height: 1;
     color: var(--ink);
-    animation: summaryPop 500ms cubic-bezier(.4,1.6,.5,1) both;
   }
-  .summary-title.tier-perfect { color: var(--teal); }
-  .summary-title.tier-great   { color: var(--grape); }
   .summary-sub {
     font-family: 'Fredoka', sans-serif; font-weight: 500;
     font-size: 17px; color: var(--ink-soft);
     margin-top: 6px;
   }
+  /* Speed / time-up chip in summary */
+  .summary-speed {
+    margin-top: 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white;
+    border: 2px solid var(--ink); border-radius: 999px;
+    padding: 7px 18px;
+    box-shadow: 0 3px 0 var(--ink);
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 15px; color: var(--ink);
+  }
+  .summary-speed.timed-out { background: var(--coral); color: white; box-shadow: 0 3px 0 var(--coral-dk); }
+  .summary-speed[hidden] { display: none; }
   .summary-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
     margin-top: 22px;
@@ -926,6 +952,7 @@
   <div class="summary-wrap">
     <div class="summary-title" id="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You named those scales.</div>
+    <div class="summary-speed" id="summary-speed" hidden></div>
 
     <div class="summary-grid">
       <div class="card stat-card">
@@ -1671,7 +1698,7 @@
    'start-btn','start-muted-toggle',
    'exit-btn','mute-btn','timer-badge','timer-num','progress-fill','streak-num',
    'staff-wrap','replay-btn','toast','q-num','score-num','last-dots','choices-grid',
-   'confetti','summary-title','summary-sub','sum-score','sum-streak','sum-stars',
+   'confetti','summary-title','summary-sub','summary-speed','sum-score','sum-streak','sum-stars',
    'miss-list','miss-items','again-btn','change-btn','pb-row','pb-score','pb-streak',
    'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm'
   ].forEach(id => els[id] = document.getElementById(id));
@@ -1697,6 +1724,7 @@
     timerInterval: null,
     timerRemaining: 0,
     seqController: null,
+    startedAt: 0,
   };
 
   // Load persisted bests
@@ -1808,6 +1836,7 @@
     state.bestStreak = 0;
     state.lastResults = [];
     state.missed = [];
+    state.startedAt = Date.now();
     show('play-screen');
     updatePlayUI();
     startTimerIfNeeded();
@@ -2463,7 +2492,53 @@
     els['sum-stars'].textContent = stars;
     els['summary-title'].textContent = timedOut ? 'Time\'s up!' : titleText;
     els['summary-sub'].textContent = timedOut ? 'You ran out of time — give it another go.' : subText;
-    els['summary-title'].className = 'summary-title tier-' + tier;
+    // Toggle tier class with a reflow so the pop animation replays even when
+    // the tier is the same as the previous round.
+    const titleEl = els['summary-title'];
+    titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+    void titleEl.offsetWidth;
+    titleEl.classList.add('tier-' + tier);
+    const subEl = els['summary-sub'];
+    subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+    subEl.classList.add('tier-' + tier);
+
+    // Score shimmer on perfect
+    const scoreEl = els['sum-score'];
+    scoreEl.classList.remove('score-shimmer');
+    if (tier === 'perfect' && !timedOut) {
+      setTimeout(() => {
+        void scoreEl.offsetWidth; // restart animation
+        scoreEl.classList.add('score-shimmer');
+      }, 300);
+    }
+
+    // Speed / time-up chip — shows how the round ended.
+    // When timed out: red coral chip "Time up at N/total".
+    // When timed run completed: "Finished in Xs (Ys to spare)" with emoji by spare.
+    // When untimed run completed: "Finished in Xs".
+    const speed = els['summary-speed'];
+    if (speed) {
+      speed.classList.remove('timed-out');
+      const elapsed = state.startedAt
+        ? Math.max(1, Math.round((Date.now() - state.startedAt) / 1000))
+        : 0;
+      if (timedOut) {
+        speed.classList.add('timed-out');
+        speed.textContent = '⏱ Time up at ' + state.score + '/' + state.settings.total;
+        speed.hidden = false;
+      } else if (state.settings.timer && state.settings.timer.enabled) {
+        const total = state.settings.timer.seconds || 0;
+        const left = Math.max(0, total - elapsed);
+        const emoji = left >= 10 ? '🚀' : left > 0 ? '✨' : '⏱';
+        speed.textContent = emoji + ' Finished in ' + elapsed + 's (' + left + 's to spare)';
+        speed.hidden = false;
+      } else if (elapsed > 0) {
+        speed.textContent = '⏱ Finished in ' + elapsed + 's';
+        speed.hidden = false;
+      } else {
+        speed.hidden = true;
+      }
+    }
 
     // Fanfare + visual celebration. 700ms delay lets the summary content animate in first,
     // then the celebration lands as a payoff.
