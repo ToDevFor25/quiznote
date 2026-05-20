@@ -372,17 +372,23 @@
 
   /* Time Signatures — staff display */
   .ts-stage {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px 4px;
+    padding: 0;
     transition: transform 200ms cubic-bezier(.5,1.6,.6,1);
   }
-  .ts-stage svg {
+  /* Win the specificity battle against the generic `.staff-svg-wrap svg`
+     rule (which sets height:100% and made the staff height depend on the
+     parent's resolved height — unstable and the cause of vertical drift).
+     Here the SVG sizes off its OWN fixed aspect ratio: width drives height. */
+  .staff-svg-wrap .ts-stage svg {
     width: 100%;
-    max-width: 360px;
+    max-width: 340px;
     height: auto;
+    max-height: none;
     display: block;
   }
 
