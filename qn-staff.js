@@ -208,29 +208,28 @@
   function buildTimeSignature(opts) {
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
-    // Bravura SMuFL time-sig digits (U+E080-E089) silently fail to render
-    // in Bravura Text on some devices, so we use a bold serif fallback that
-    // approximates the engraved look. Georgia is widely available; Times
-    // and serif round out the stack.
+    // Bravura SMuFL time-sig digits (U+E080-E089) silently fail to render in
+    // Bravura Text on some devices, so we use a bold serif fallback (Georgia,
+    // then Times, then generic serif) which approximates the engraved look.
     //
-    // Sizing: each digit ~2 staff spaces tall (engraving convention).
-    // Positioning:
-    //   - Top digit center on line 4 (step 6) — upper half of staff
-    //   - Bottom digit center on line 2 (step 2) — lower half
-    // SVG text y is BASELINE; the visual center of a serif digit sits
-    // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
-    // Use dominant-baseline="central" so each digit is vertically centered
-    // on its target Y — independent of glyph shape. Without this, digits sit
-    // on the alphabetic baseline and different shapes (2 vs 6 vs 8) appear at
-    // inconsistent heights across time signatures.
-    const fontSize = lineGap * 2.3;
+    // dominant-baseline="central" centers each digit vertically on its target
+    // Y regardless of glyph shape (a 2, 6, and 8 all center identically).
+    //
+    // Positioning is anchored to the MIDDLE staff line:
+    //   - top digit center sits topOffset above the middle line
+    //   - bottom digit center sits botOffset below the middle line
+    //   - yShift slides the whole pair if needed
+    // These values were calibrated visually across all ten time signatures
+    // using ts-calibrator.html. Re-run that harness before changing them.
+    const fontSize   = lineGap * 2.30;
     const digitWidth = lineGap * 1.15;
-    // Each digit center sits halfSep from the staff midline (top above, bottom below).
-    const halfSep = lineGap * 1.1;
+    const topOffset  = lineGap * 1.02;
+    const botOffset  = lineGap * 1.02;
+    const yShift     = lineGap * 0.00;
 
-    const midY = bottomY - 2 * lineGap;          // middle staff line
-    const topY = midY - halfSep;                 // top digit visual center
-    const botY = midY + halfSep;                 // bottom digit visual center
+    const midY = bottomY - 2 * lineGap;   // middle staff line
+    const topY = midY - topOffset + yShift;
+    const botY = midY + botOffset + yShift;
 
     function renderStack(numStr, y) {
       const totalWidth = numStr.length * digitWidth;
