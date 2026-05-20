@@ -913,6 +913,9 @@
     .choice-btn { font-size: 26px; padding: 18px 14px; }
   }
 </style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
 </head>
 <body>
 
@@ -2182,83 +2185,157 @@
     if (els['timer-badge']) els['timer-badge'].hidden = true;
   }
 
+  // ===== Encouraging line per tier =====
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['KEY MASTER! Every key spotted! 🔑','Perfect score — you crushed it! 🌟','Flawless! Not one key missed! 🎶']);
+    if (pct >= 0.8) return pick(["Amazing round — so close to perfect!","Nearly flawless! Those signatures are locking in! ⭐","Brilliant — just a couple slipped by!"]);
+    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good work — those sharps and flats are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! Read those sharps and flats 🎵","Music takes time — you're on your way! Keep practising!"]);
+  }
+
   // ===== End of Round =====
   function endRound() {
     if (state.endedRound) return;
     state.endedRound = true;
     stopTimer();
+    const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
+    showScreen('summary');
 
-    const pct = state.score / state.total;
-    let tier = 'okay';
-    if (pct === 1) tier = 'perfect';
-    else if (pct >= 0.8) tier = 'great';
-    else if (pct >= 0.6) tier = 'good';
+    // Tier (preserves key-signatures' 0.6 threshold for "good")
+    const pct = state.total > 0 ? state.score / state.total : 0;
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.6 ? 'good' : 'practice';
 
+    // Score + streak + stars
     if (els['sum-score']) els['sum-score'].textContent = state.score;
     const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
     if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
-
     if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
-
-    // Star tier
     if (els['sum-stars']) {
-      let stars = '☆☆☆';
-      if (tier === 'perfect') stars = '★★★';
-      else if (tier === 'great') stars = '★★☆';
-      else if (tier === 'good') stars = '★☆☆';
-      els['sum-stars'].textContent = stars;
+      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
+      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
+      els['sum-stars'].textContent = starStr.trim();
     }
 
     // Subtitle
     if (els['summary-sub']) {
-      if (tier === 'perfect') els['summary-sub'].textContent = "Perfect round! 🌟";
-      else if (tier === 'great') els['summary-sub'].textContent = "Great work — those key signatures are locked in!";
-      else if (tier === 'good') els['summary-sub'].textContent = "Solid! A few more reps will lock it in.";
-      else els['summary-sub'].textContent = "Keep practicing — read those sharps and flats.";
+      els['summary-sub'].textContent = state.timedOut
+        ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
+        : encouragingLine(state.score, state.total);
     }
 
-    // Missed items → build drill pool
-    const missed = state.history.filter(h => !h.correct).map(h => h.keyId);
-    state.drillPool = [...new Set(missed)];
-    if (els['miss-list']) {
-      els['miss-list'].hidden = (missed.length === 0);
-      els['miss-list'].innerHTML = '';
-      if (missed.length > 0) {
-        const h3 = document.createElement('h3');
-        h3.textContent = 'Keys to practice next time';
-        els['miss-list'].appendChild(h3);
-        state.drillPool.forEach(k => {
-          const chip = document.createElement('span');
-          chip.className = 'miss-chip';
-          chip.textContent = KEYS[k].name;
-          els['miss-list'].appendChild(chip);
-        });
+    // Speed chip
+    const speed = els['summary-speed'];
+    if (speed) {
+      speed.classList.remove('timed-out');
+      if (state.settings.timer.enabled) {
+        speed.hidden = false;
+        if (state.timedOut) {
+          speed.classList.add('timed-out');
+          speed.textContent = '⏱ Time up at ' + state.history.length + '/' + state.total;
+        } else {
+          const allotted = state.settings.timer.seconds;
+          const left = Math.max(0, allotted - elapsed);
+          const emoji = left >= 10 ? '🚀' : left > 0 ? '✨' : '⏱';
+          speed.textContent = emoji + ' Finished in ' + elapsed + 's' + (left > 0 ? ' (' + left + 's to spare)' : ' — right at the buzzer');
+        }
+      } else {
+        speed.hidden = false;
+        speed.textContent = '⏱ ' + elapsed + 's · ' + (elapsed / state.total).toFixed(1) + 's per key';
       }
     }
+
+    // Miss list + drill pool (canonical pattern: <li> items inside #miss-items)
+    const counts = {};
+    const missedIds = new Set();
+    state.history.forEach(h => {
+      if (!h.correct) {
+        const label = (KEYS[h.keyId] && KEYS[h.keyId].name) || h.keyId;
+        counts[label] = (counts[label] || 0) + 1;
+        missedIds.add(h.keyId);
+      }
+    });
+    state.drillPool = [...missedIds];
     if (els['drill-btn']) els['drill-btn'].hidden = (state.drillPool.length === 0);
 
-    // Speed
-    const elapsed = (Date.now() - state.startedAt) / 1000;
-    if (els['summary-speed']) {
-      els['summary-speed'].hidden = false;
-      els['summary-speed'].textContent = '⏱ ' + Math.round(elapsed) + 's · ' + (elapsed / state.total).toFixed(1) + 's per key';
+    if (els['miss-items']) {
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      if (sorted.length === 0) {
+        els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no keys to practice. ⭐</li>';
+      } else {
+        els['miss-items'].innerHTML = sorted.map(([name, n]) =>
+          '<li>' + name + ' — ' + (n === 1 ? 'needed a retry' : 'tripped you up ' + n + ' times') + '</li>'
+        ).join('');
+      }
     }
 
-    // Personal bests
+    // Personal best (per-difficulty key, preserves key-signatures convention)
+    let pb = { score: 0, pct: 0, streak: 0 };
+    const pbKey = 'ks_pb_' + state.settings.difficulty;
     try {
-      const pbKey = 'ks_pb_' + state.settings.difficulty;
-      const pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
-      const newPB = {
-        score: Math.max(pb.score || 0, state.score),
-        streak: Math.max(pb.streak || 0, state.bestStreak),
-      };
-      localStorage.setItem(pbKey, JSON.stringify(newPB));
-      if (els['pb-score']) els['pb-score'].textContent = newPB.score;
-      if (els['pb-streak']) els['pb-streak'].textContent = newPB.streak;
-      if (els['pb-row']) els['pb-row'].hidden = false;
+      pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
+    const thisPct = state.total > 0 ? state.score / state.total : 0;
+    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
+    const newStreakPB = state.bestStreak > pb.streak;
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newStreakPB) pb.streak = state.bestStreak;
+    try { localStorage.setItem(pbKey, JSON.stringify(pb)); } catch(e) {}
+    const pbRow = els['pb-row'];
+    if (pbRow) {
+      if (pb.score > 0 || pb.streak > 0) {
+        pbRow.hidden = false;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
+        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+      } else {
+        pbRow.hidden = true;
+      }
+    }
 
-    showScreen('summary');
+    // Tier-colored title + sub
+    const titleMap = {
+      perfect:  'KEY MASTER! 🔑',
+      great:    'Amazing Round! ⭐',
+      good:     'Nice Playing! 🎶',
+      practice: 'Keep Practising! 🌱'
+    };
+    const titleEl = document.querySelector('.summary-title');
+    if (titleEl) {
+      titleEl.textContent = titleMap[tier];
+      titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      void titleEl.offsetWidth;
+      titleEl.classList.add('tier-' + tier);
+    }
+    const subEl = els['summary-sub'];
+    if (subEl) {
+      subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      subEl.classList.add('tier-' + tier);
+    }
+
+    // Score shimmer on perfect
+    if (tier === 'perfect') {
+      setTimeout(() => {
+        const scoreEl = document.getElementById('sum-score');
+        if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
+      }, 300);
+    }
+
+    // Log this round to the shared event store (no-op if no active profile)
+    if (window.QN && QN.events) {
+      QN.events.log({
+        module:     'key-signatures',
+        tier:       state.settings.difficulty,
+        length:     state.total,
+        correct:    state.score,
+        total:      state.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled
+      });
+    }
 
     // Fanfare + visual celebration. 700ms delay lets the summary content animate in first,
     // then the celebration lands as a payoff.
