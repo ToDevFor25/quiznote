@@ -421,9 +421,20 @@
     min-height: 1.4em;
   }
 
-  /* Recolor on answer — applied via CSS class on .ts-stage */
-  .ts-stage.correct .ts-timesig { fill: var(--teal); }
-  .ts-stage.wrong   .ts-timesig { fill: var(--coral); }
+  /* Recolor on answer — applied via CSS class on .ts-stage.
+     Default scope colors the whole time signature (used for the
+     "name this signature" question). scope-top / scope-bottom narrow the
+     highlight to just the relevant numeral, so concept and single-number
+     questions light up exactly the number the answer refers to. */
+  .ts-stage.correct.scope-both .ts-timesig,
+  .ts-stage.correct:not(.scope-top):not(.scope-bottom) .ts-timesig { fill: var(--teal); }
+  .ts-stage.wrong.scope-both .ts-timesig,
+  .ts-stage.wrong:not(.scope-top):not(.scope-bottom) .ts-timesig { fill: var(--coral); }
+
+  .ts-stage.correct.scope-top .ts-top    { fill: var(--teal); }
+  .ts-stage.wrong.scope-top   .ts-top    { fill: var(--coral); }
+  .ts-stage.correct.scope-bottom .ts-bottom { fill: var(--teal); }
+  .ts-stage.wrong.scope-bottom   .ts-bottom { fill: var(--coral); }
 
   /* Body shake on wrong */
   body.ts-shake { animation: tsShake 0.4s ease-in-out; }
@@ -1449,8 +1460,17 @@
       timeSig: { top: sig.top, bottom: sig.bottom },
       tsClassName: 'ts-timesig',
     });
+    // Scope which numeral(s) the answer-feedback highlight should color,
+    // based on what the question is actually about:
+    //   top / whichBeats   → the TOP number (beats per measure)
+    //   bottom / whichUnit → the BOTTOM number (beat unit)
+    //   label              → BOTH (the whole signature is the answer)
+    let scope = 'scope-both';
+    if (q.type === 'top' || q.type === 'whichBeats') scope = 'scope-top';
+    else if (q.type === 'bottom' || q.type === 'whichUnit') scope = 'scope-bottom';
+
     container.innerHTML =
-      `<div class="ts-stage pop"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
+      `<div class="ts-stage pop ${scope}"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
   }
 
   function animateQuestionIn(container, key) {
