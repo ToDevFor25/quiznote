@@ -221,13 +221,13 @@
     // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
     const fontSize = lineGap * 2.6;
     const digitWidth = lineGap * 1.15;
-    const baselineShift = fontSize * 0.28;
-    // Add separation between the two digits so they don't touch:
-    // push top up by 0.3 staff space, bottom down by 0.3 staff space.
-    const separation = lineGap * 0.3;
+    const baselineShift = fontSize * 0.32;
+    // No separation: real engraved time signatures have the digits nearly
+    // touching at the middle staff line, fully contained within the staff.
+    // Top digit center on line 4 (step 6), bottom on line 2 (step 2).
 
-    const topCenterY = bottomY - 3 * lineGap - separation;   // line 4, slightly up
-    const botCenterY = bottomY - 1 * lineGap + separation;   // line 2, slightly down
+    const topCenterY = bottomY - 3 * lineGap;
+    const botCenterY = bottomY - 1 * lineGap;
     const topY = topCenterY + baselineShift;
     const botY = botCenterY + baselineShift;
 
