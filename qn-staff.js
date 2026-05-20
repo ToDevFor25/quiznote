@@ -221,7 +221,7 @@
     // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
     const fontSize = lineGap * 2.6;
     const digitWidth = lineGap * 1.15;
-    const baselineShift = fontSize * 0.35;
+    const baselineShift = fontSize * 0.20;
 
     const topCenterY = bottomY - 3 * lineGap;
     const botCenterY = bottomY - 1 * lineGap;
