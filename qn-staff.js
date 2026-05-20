@@ -243,10 +243,9 @@
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
 
-    // Glyph height ~2.0 staff spaces — standard engraving size for time-sig
-    // numerals (each digit roughly spans two staff spaces). Width scales
-    // proportionally from the normalized box aspect ratio.
-    const glyphH = lineGap * 2.00;
+    // Glyph height calibrated via ts-weight-calibrator.html (glyphH = 1.80).
+    // Width scales proportionally from the normalized box aspect ratio.
+    const glyphH = lineGap * 1.80;
     const scale  = glyphH / DIGIT_H;
     const glyphW = DIGIT_W * scale;
     const digitGap = glyphW * 0.04;   // small gap between multi-digit numerals
@@ -258,6 +257,17 @@
     const botCenterY = midY + lineGap * 1.02;
 
     const classAttr = className ? ` class="${className}"` : '';
+
+    // Digit weight calibrated via ts-weight-calibrator.html (weight = -2.00).
+    // feMorphology "erode" thins the filled glyphs uniformly. Radius is in
+    // glyph-box units (applied to the path BEFORE the per-glyph scale), so the
+    // thinning is consistent regardless of staff size. A single shared <defs>
+    // is emitted once and referenced by every digit.
+    const ERODE_RADIUS = 2.0;
+    const filterId = 'qnTsErode';
+    const defs =
+      `<defs><filter id="${filterId}" x="-20%" y="-20%" width="140%" height="140%">` +
+      `<feMorphology operator="erode" radius="${ERODE_RADIUS}"/></filter></defs>`;
 
     function renderStack(numStr, centerY) {
       const n = numStr.length;
@@ -273,12 +283,12 @@
         const tx = leftX;
         const ty = centerY - glyphH / 2;
         out += `<g${classAttr} fill="${color}" transform="translate(${tx} ${ty}) scale(${scale})">` +
-               `<path d="${path}" fill-rule="evenodd"/></g>`;
+               `<path d="${path}" fill-rule="evenodd" filter="url(#${filterId})"/></g>`;
       }
       return out;
     }
 
-    return renderStack(String(top), topCenterY) + renderStack(String(bottom), botCenterY);
+    return defs + renderStack(String(top), topCenterY) + renderStack(String(bottom), botCenterY);
   }
 
   // ─────────────────────────────────────────────────────────────
