@@ -1334,12 +1334,15 @@
       }
       distractors = shuffle(sigPool.map(s => s.replace('-', '/'))).slice(0, 3);
     } else if (q.type === 'top') {
-      // PEDAGOGY: always include the BOTTOM number of the time signature
-      // as one of the four choices, so the learner must choose between
-      // the two VISIBLE numbers (and not just generic nearby numbers).
+      // PEDAGOGY: include the BOTTOM number of the time signature as a
+      // choice when it differs from the top — forces the learner to pick
+      // between the two visible numbers. When top === bottom (e.g. 4/4,
+      // 2/2), there's only one distinct visible number, so we skip the
+      // forced bottom and fill entirely from nearby numbers (avoids a
+      // duplicate answer tile).
       const sig = SIGS[q.sigKey];
       const c = sig.top;
-      const forced = String(sig.bottom);
+      const forced = (sig.bottom !== c) ? String(sig.bottom) : null;
       const nearby = shuffle(
         [...new Set(
           [c - 2, c - 1, c + 1, c + 2, c * 2, Math.floor(c / 2)]
@@ -1348,8 +1351,11 @@
             .filter(n => n !== forced)
         )]
       );
-      // Forced first, then 2 nearby — guaranteed 3 distractors
-      distractors = [forced, ...nearby.slice(0, 2)];
+      if (forced) {
+        distractors = [forced, ...nearby.slice(0, 2)];
+      } else {
+        distractors = nearby.slice(0, 3);
+      }
     } else {
       // 'bottom' — note-value question. Distractors are other note values.
       const allUnits = ['Whole note', 'Half note', 'Quarter note', 'Eighth note', 'Sixteenth note'];
