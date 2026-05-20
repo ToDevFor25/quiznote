@@ -228,20 +228,20 @@
     const topY = midY - topOffset + yShift;
     const botY = midY + botOffset + yShift;
 
-    function renderStack(numStr, y) {
+    function renderStack(numStr, centerY) {
       const totalWidth = numStr.length * digitWidth;
       const startX = x - totalWidth / 2 + digitWidth / 2;
       let out = '';
       for (let i = 0; i < numStr.length; i++) {
         const dx = startX + i * digitWidth;
         const classAttr = className ? ` class="${className}"` : '';
-        // dominant-baseline="central" centers each glyph on its target Y
-        // independent of the glyph's own ascent/descent (so 3, 4, 6, 8 all
-        // center identically). This requires the SVG to render at 1:1 scale —
-        // the module must NOT scale the SVG via preserveAspectRatio/width,
-        // or WebKit miscomputes the central baseline. See the .ts-stage svg
-        // rule in the module CSS (fixed 360x200, no scaling).
-        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="${color}">${numStr[i]}</text>`;
+        // Place baseline at centerY as a first approximation; the consumer
+        // measures each glyph's actual ink box (getBBox) and shifts it so the
+        // ink-center lands exactly on data-cy. We do NOT use dominant-baseline:
+        // it centers by the font's metric box, not each glyph's ink, so
+        // symmetric digits (6, 8) look centered while asymmetric ones (3, 4)
+        // sit visibly off. Per-glyph bbox centering is shape-exact.
+        out += `<text${classAttr} data-cy="${centerY}" x="${dx}" y="${centerY}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
       }
       return out;
     }
