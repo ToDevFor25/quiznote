@@ -947,6 +947,9 @@
     .stat-value { font-size: 38px; }
   }
 </style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
 </head>
 <body>
 
@@ -2973,6 +2976,19 @@
         if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
       }, 300);
     }
+    // Log this round to the shared event store (no-op if no active profile)
+    if (window.QN && QN.events) {
+      QN.events.log({
+        module:     'piano-quiz',
+        tier:       state.settings.difficulty,
+        length:     state.total,
+        correct:    state.score,
+        total:      state.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled
+      });
+    }
+
     // Music + shared fireworks/crowd/note-explosion celebration. 700ms delay
     // lets the summary content animate in first, then the celebration lands.
     setTimeout(() => {
