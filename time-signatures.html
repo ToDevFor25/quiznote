@@ -1438,25 +1438,6 @@
     });
     container.innerHTML =
       `<div class="ts-stage pop"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
-    centerTimeSigDigits(container);
-  }
-
-  // Shift each time-sig digit so its actual rendered ink-center sits on its
-  // target center-Y. getBBox() gives the real ink box for THIS glyph in THIS
-  // font, so 3, 4, 6, 8 all end up optically centered identically — something
-  // dominant-baseline could not do (it centers by font metric box, not ink).
-  function centerTimeSigDigits(container) {
-    const digits = container.querySelectorAll('text.ts-timesig[data-cy]');
-    digits.forEach((t) => {
-      const targetCenter = parseFloat(t.getAttribute('data-cy'));
-      let box;
-      try { box = t.getBBox(); } catch (e) { return; }
-      if (!box || !box.height) return;
-      const inkCenter = box.y + box.height / 2;
-      const currentY = parseFloat(t.getAttribute('y'));
-      // Move the baseline so ink-center hits targetCenter.
-      t.setAttribute('y', currentY + (targetCenter - inkCenter));
-    });
   }
 
   function animateQuestionIn(container, key) {
