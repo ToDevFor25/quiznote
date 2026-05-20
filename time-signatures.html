@@ -336,7 +336,7 @@
     padding: 14px 14px 10px;
     position: relative;
     overflow: hidden;
-    height: 280px;        /* fixed: label + staff, never grows with neighbor */
+    height: 320px;        /* fixed: label band + 250px staff, never grows with neighbor */
   }
   /* Label pinned to the top of the card with a fixed height, so its text
      length never shifts what's below it. */
@@ -397,8 +397,8 @@
      digits drifted vertically while the staff lines stayed put. At 1:1 the
      baseline math is exact. The wrap centers the fixed-size SVG. */
   .staff-svg-wrap .ts-stage svg {
-    width: 360px;
-    height: 200px;
+    width: 450px;
+    height: 250px;
     max-width: 100%;
     display: block;
   }
@@ -1428,16 +1428,35 @@
     const sig = SIGS[q.sigKey];
     const result = staffApi.buildStaff({
       clef: q.clef,
-      width: 360,
-      height: 200,
-      lineGap: 16,
-      bottomY: 130,
+      width: 450,
+      height: 250,
+      lineGap: 20,
+      bottomY: 162,
       keySig: q.keySig,
       timeSig: { top: sig.top, bottom: sig.bottom },
       tsClassName: 'ts-timesig',
     });
     container.innerHTML =
-      `<div class="ts-stage pop"><svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
+      `<div class="ts-stage pop"><svg viewBox="0 0 450 250" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
+    centerTimeSigDigits(container);
+  }
+
+  // Shift each time-sig digit so its actual rendered ink-center sits on its
+  // target center-Y. getBBox() gives the real ink box for THIS glyph in THIS
+  // font, so 3, 4, 6, 8 all end up optically centered identically — something
+  // dominant-baseline could not do (it centers by font metric box, not ink).
+  function centerTimeSigDigits(container) {
+    const digits = container.querySelectorAll('text.ts-timesig[data-cy]');
+    digits.forEach((t) => {
+      const targetCenter = parseFloat(t.getAttribute('data-cy'));
+      let box;
+      try { box = t.getBBox(); } catch (e) { return; }
+      if (!box || !box.height) return;
+      const inkCenter = box.y + box.height / 2;
+      const currentY = parseFloat(t.getAttribute('y'));
+      // Move the baseline so ink-center hits targetCenter.
+      t.setAttribute('y', currentY + (targetCenter - inkCenter));
+    });
   }
 
   function animateQuestionIn(container, key) {
