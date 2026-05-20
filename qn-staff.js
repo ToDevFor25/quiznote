@@ -208,18 +208,27 @@
   function buildTimeSignature(opts) {
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
-    // DIAGNOSTIC v1: using plain ASCII digits with a standard font.
-    // If these appear, positioning math is OK and the issue was Bravura SMuFL codepoints.
-    // If they don't appear, positioning math is wrong (likely off-canvas).
-    // Bold, sans-serif, sized at 2 staff spaces. Anchored to staff lines.
-    const fontSize = lineGap * 2.2;
-    const digitWidth = lineGap * 1.0;
-
-    // Top digit visual center on line 4 (step 6); bottom on line 2 (step 2).
-    // SVG text y is baseline, so shift down by ~0.35 * fontSize for visual center.
+    // Engraving-correct time signatures:
+    // - Each digit visually spans ~2 staff spaces tall (top one occupies
+    //   upper half of staff, bottom one occupies lower half).
+    // - Top digit's vertical center sits on line 4 from bottom (step 6).
+    // - Bottom digit's vertical center sits on line 2 from bottom (step 2).
+    // - Digits stacked with no fraction line; nearly touch at the middle line.
+    //
+    // Font sizing: using a bold sans-serif at ~2.6 * lineGap gives the
+    // characteristic chunky engraved look while keeping legibility.
+    // SVG text y is the BASELINE — for a digit roughly square in proportions,
+    // the visual center sits ~0.35 * fontSize above the baseline, so shift
+    // baseline DOWN by that amount from the target center.
+    const fontSize = lineGap * 2.6;
+    const digitWidth = lineGap * 1.25;
     const baselineShift = fontSize * 0.35;
-    const topY = (bottomY - 3 * lineGap) + baselineShift;
-    const botY = (bottomY - 1 * lineGap) + baselineShift;
+
+    // Centers
+    const topCenterY = bottomY - 3 * lineGap;   // line 4 from bottom
+    const botCenterY = bottomY - 1 * lineGap;   // line 2 from bottom
+    const topY = topCenterY + baselineShift;
+    const botY = botCenterY + baselineShift;
 
     function renderStack(numStr, y) {
       const totalWidth = numStr.length * digitWidth;
