@@ -1600,7 +1600,7 @@
       state.history.push({ key: correct, correct: true });
       buttonEl.classList.add('correct');
       if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], true);
-      if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], key);
+      if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], correct);
       A.playChime(60, state.streak);
 
       // Explosion at the staff symbol location
