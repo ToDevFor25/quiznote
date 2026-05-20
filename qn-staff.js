@@ -285,13 +285,6 @@
 
     let svg = '';
 
-    // Invisible bounds rect spanning the full viewBox. This pins the SVG's
-    // content bounding box to the viewBox regardless of what glyphs are drawn
-    // (clef, accidentals, digits). Without it, preserveAspectRatio="...meet"
-    // recenters content based on glyph extents, which made the whole staff
-    // drift vertically between questions with different key signatures.
-    svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="none" stroke="none"/>`;
-
     // Lines
     svg += buildStaffLines({ bottomY, lineGap, width, xOffset, color });
 
