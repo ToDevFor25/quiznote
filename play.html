@@ -80,6 +80,22 @@
       letter-spacing: -0.01em;
     }
     .nav-brand span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-progress {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+      text-decoration: none;
+      background: white;
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 3px 0 var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .nav-progress:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+    .nav-progress:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
     .nav-tag {
       font-family: 'Nunito', sans-serif;
       font-weight: 800;
@@ -294,7 +310,10 @@
 
   <nav>
     <a href="index.html" class="nav-brand">Quiz<span>Note</span></a>
-    <span class="nav-tag">PRACTICE</span>
+    <div class="nav-right">
+      <a href="dashboard.html" class="nav-progress">📊 Progress</a>
+      <span class="nav-tag">PRACTICE</span>
+    </div>
   </nav>
 
   <main>
