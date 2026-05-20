@@ -219,15 +219,17 @@
     //   - Bottom digit center on line 2 (step 2) — lower half
     // SVG text y is BASELINE; the visual center of a serif digit sits
     // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
-    const fontSize = lineGap * 2.6;
+    const fontSize = lineGap * 2.3;
     const digitWidth = lineGap * 1.15;
     const baselineShift = fontSize * 0.30;
-    // No separation: real engraved time signatures have the digits nearly
-    // touching at the middle staff line, fully contained within the staff.
-    // Top digit center on line 4 (step 6), bottom on line 2 (step 2).
+    // Serif digits are taller than Bravura's purpose-built time-sig glyphs,
+    // so separate the centers by slightly more than 2 staff spaces to keep
+    // a clean gap in the middle without floating outside the staff.
+    const halfSep = lineGap * 1.15;  // distance of each digit center from staff midline
 
-    const topCenterY = bottomY - 3 * lineGap;
-    const botCenterY = bottomY - 1 * lineGap;
+    const midY = bottomY - 2 * lineGap;          // middle staff line
+    const topCenterY = midY - halfSep;
+    const botCenterY = midY + halfSep;
     const topY = topCenterY + baselineShift;
     const botY = botCenterY + baselineShift;
 
