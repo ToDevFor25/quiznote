@@ -170,6 +170,25 @@
   .data-table tr:last-child td { border-bottom: none; }
   .data-table tr:nth-child(even) td { background: #fdf9f2; }
 
+  .todo-block {
+    background: #ffe9c2;
+    border: 2.5px dashed #c98800;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.88rem; line-height: 1.55;
+    color: var(--ink); margin: 12px 0;
+    font-family: 'Nunito', sans-serif;
+  }
+  .todo-block::before {
+    content: "TODO — decide before publish";
+    display: block;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #8a5a00; margin-bottom: 6px;
+  }
+  .todo-block strong { color: #8a5a00; }
+  .todo-block code { background: #fff4d6; padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+
   .site-footer {
     border-top: 2.5px solid var(--ink);
     padding: 24px 28px;
@@ -198,12 +217,16 @@
   <p class="doc-eyebrow">Legal</p>
   <h1>Privacy Policy</h1>
   <p class="doc-meta">
-    Effective date: May 16, 2026 &nbsp;·&nbsp; Last updated: May 16, 2026
+    Effective date: [TODO] &nbsp;·&nbsp; Last updated: May 20, 2026 (draft v2)
     &nbsp;·&nbsp; Questions? <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>
   </p>
 
+  <div class="todo-block">
+    <strong>This is a draft.</strong> Final privacy language requires review by a qualified attorney before non-beta launch — especially the children's-privacy and parent/guardian sections. Tier 3 decisions are flagged inline throughout.
+  </div>
+
   <div class="plain-note">
-    <strong>The short version:</strong> QuizNote is a free, no-account music theory game. We collect almost nothing — just basic anonymous usage data to keep the app running well. We don't sell your data. We never will.
+    <strong>The short version:</strong> QuizNote is a free music theory practice app. We collect the minimum necessary to keep the App running well. Your learning data lives on your device, not on our servers. We don't show ads, we don't sell data, and we never will.
   </div>
 
   <nav class="toc">
@@ -227,25 +250,38 @@
     <h2><span class="sec-num">01</span> Who We Are</h2>
     <p>QuizNote ("we," "us," or "our") is an independent music education project operating at <a href="https://quiznote.online">quiznote.online</a>. QuizNote is currently operated as an unincorporated project. A formal legal entity may be established in the future, at which point this policy will be updated.</p>
     <p>This Privacy Policy explains how we handle information when you use our web application (the "App").</p>
+    <div class="todo-block">
+      <strong>Tier 3 — entity status.</strong> The build log mentions "the company being formed." Confirm: still unincorporated at publish time, or has an LLC / other entity been registered? If registered, the entity name and state should appear here.
+    </div>
   </div>
 
   <div class="doc-section" id="s2">
     <h2><span class="sec-num">02</span> What We Collect</h2>
-    <p>QuizNote is designed to collect as little information as possible. Here's what may be collected when you use the App:</p>
+    <p>QuizNote is designed to collect as little information as possible. Most of what is stored never leaves your device. Here's the full picture:</p>
     <table class="data-table">
       <thead>
-        <tr><th>Type</th><th>What it includes</th><th>Why</th></tr>
+        <tr><th>Type</th><th>What it includes</th><th>Where it lives / why</th></tr>
       </thead>
       <tbody>
+        <tr>
+          <td><strong>Profile data</strong></td>
+          <td>A randomly-generated profile ID, a nickname you choose, a color, an optional self-reported experience level, and timestamps for when the profile was created and last used</td>
+          <td>Stored only in your browser's local storage. Never transmitted to us. You can have multiple profiles on one device, and you can delete any profile at any time from within the App.</td>
+        </tr>
+        <tr>
+          <td><strong>Practice round log</strong></td>
+          <td>An append-only log of completed rounds: which profile, which module, difficulty tier, number of questions, number correct, time taken, and completion timestamp</td>
+          <td>Stored only in your browser's local storage. Used by the App to show personal-best scores and (in the future) to recommend what to practice next. Not transmitted to us.</td>
+        </tr>
+        <tr>
+          <td><strong>UI preferences</strong></td>
+          <td>Selected difficulty tier per module, sound on/off, timed-mode setting, and similar per-module UI state</td>
+          <td>Stored only in your browser's local storage. Convenience only.</td>
+        </tr>
         <tr>
           <td><strong>Technical / usage data</strong></td>
           <td>Browser type, OS, approximate region, referring URL, pages visited, time of visit</td>
           <td>Collected automatically by Vercel (our host) for uptime and performance. Not used to identify you personally.</td>
-        </tr>
-        <tr>
-          <td><strong>Local game data</strong></td>
-          <td>Quiz scores, streak counts, player display name, and settings (difficulty, instrument)</td>
-          <td>Stored only in your browser's local storage. Never transmitted to us.</td>
         </tr>
         <tr>
           <td><strong>Voluntary contact</strong></td>
@@ -254,7 +290,10 @@
         </tr>
       </tbody>
     </table>
-    <p>We do <strong>not</strong> collect names, email addresses, or account information during normal App use. There is no login or registration system at this time.</p>
+    <p>We do <strong>not</strong> collect real names, email addresses, or account information during normal App use. There is no login or registration system at this time. Nicknames are freely chosen and are not verified as real names.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — level of detail.</strong> This table now describes the profile system and round-event log in detail (Option A — full transparency). The alternative (Option B) would keep this brief since nothing leaves the device, expanding only when Supabase ships. I went with A because the v2 doc lists privacy as a first-class feature and "we collect the minimum necessary for a robust experience and nothing more" reads better with everything itemized.
+    </div>
   </div>
 
   <div class="doc-section" id="s3">
@@ -271,7 +310,7 @@
   <div class="doc-section" id="s4">
     <h2><span class="sec-num">04</span> Cookies and Local Storage</h2>
     <p>QuizNote does not use advertising cookies or third-party tracking cookies.</p>
-    <p>We use <strong>browser local storage</strong> to save your game progress, player display name, preferences, and settings on your device. This data is stored entirely on your device and is not transmitted to our servers. You can clear it at any time through your browser settings.</p>
+    <p>We use <strong>browser local storage</strong> on your device to save the profile data, practice round log, and UI preferences described in Section 2. This data is stored entirely on your device and is not transmitted to our servers. You can clear it at any time through your browser settings, or by deleting individual profiles from within the App.</p>
     <p>Our hosting provider (Vercel) may set minimal technical cookies necessary for the delivery and security of the App. These are not used to track you across other websites.</p>
   </div>
 
@@ -281,15 +320,23 @@
     <ul>
       <li><strong>Vercel</strong> (hosting) — automatically receives standard server logs including IP addresses. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Vercel's Privacy Policy</a>.</li>
       <li><strong>Google Fonts</strong> — fonts are loaded from Google's servers, which may log your IP address. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+      <li><strong>Bravura music notation font</strong> — loaded from a content delivery network so that music symbols render correctly. The CDN may log your IP address.</li>
     </ul>
+    <div class="todo-block">
+      <strong>Tier 3 — name the Bravura CDN.</strong> Confirm which CDN serves the Bravura Text font (jsDelivr, unpkg, etc.) and replace the generic phrasing above with the actual provider plus a link to their privacy policy.
+    </div>
     <p>We do not currently use analytics platforms, ad networks, or any other data-collecting third-party services beyond those listed above.</p>
   </div>
 
   <div class="doc-section" id="s6">
     <h2><span class="sec-num">06</span> Children's Privacy</h2>
-    <p>QuizNote is designed to be safe and appropriate for all ages, including children. Because we do not collect names, email addresses, or any personally identifiable information during normal use, no parental consent is required under COPPA for children under 13 to use the App.</p>
-    <p>The "What can I call you?" feature stores a chosen display name (e.g., a nickname) in the browser's local storage on the player's own device. This name is never sent to our servers.</p>
-    <p>If we inadvertently receive personal information from a child under 13 via email, we will delete it promptly. Parent or guardian concerns: <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>.</p>
+    <p>QuizNote is designed to be safe and appropriate for learners of any age, including children.</p>
+    <p>The App does not collect real names, email addresses, phone numbers, photographs, geolocation, or any other personally identifiable information from any user during normal use. All profile data — including the nickname a learner chooses and their record of completed practice rounds — is stored locally on the device and is not transmitted to our servers.</p>
+    <p>If a learner is under 18, the App should be set up and managed by a parent or guardian. Profiles intended for use by a minor are owned and managed by the parent or guardian, not by the minor independently.</p>
+    <p>If we inadvertently receive personal information from a child via email or another contact channel, we will delete it promptly. Parents and guardians with concerns can reach us at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a>.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — COPPA stance.</strong> The previous version said no parental consent was required under COPPA because no PII is collected. The v2 project doc commits to parent/guardian ownership of child profiles, which is a stronger posture. This draft states the parent/guardian ownership rule but does <em>not</em> claim COPPA compliance either way. A qualified attorney should review this section specifically, and confirm whether: (1) the current "no PII collected" position still holds with profiles, nicknames, and round logs added (we believe it does, since none of this leaves the device, but it is a legal question); (2) the parent/guardian language is enforceable without an actual parent-account mechanism in the App; (3) any additional notice or consent language is required for users in the EEA, UK, or California regardless of COPPA's reach.
+    </div>
   </div>
 
   <div class="doc-section" id="s7">
@@ -301,8 +348,7 @@
   <div class="doc-section" id="s8">
     <h2><span class="sec-num">08</span> Your Rights</h2>
     <ul>
-      <li><strong>Game data:</strong> Clear your browser's local storage at any time — that's it.</li>
-      <li><strong>Server logs:</strong> Use a VPN or privacy-focused browser to minimize technical data sent to servers.</li>
+      <li><strong>Profile and practice data:</strong> Delete any profile from within the App, or clear your browser's local storage to remove everything at once.</li>
       <li><strong>Email inquiries:</strong> Contact us and we'll delete any message you've sent us.</li>
     </ul>
     <p>If you are in the EEA, UK, or California, you may have additional rights under GDPR, UK GDPR, or the CCPA. Contact us at <a href="mailto:[legal@quiznote.online]">[legal@quiznote.online]</a> with any request.</p>
@@ -329,6 +375,9 @@
       Website: <a href="https://quiznote.online">quiznote.online</a>
     </p>
     <p>We aim to respond within 10 business days.</p>
+    <div class="todo-block">
+      <strong>Tier 3 — resolve contact email.</strong> The address <code>legal@quiznote.online</code> appears in brackets throughout. Either set up the mailbox and remove the brackets, or substitute a different working address. Same TODO in terms.html.
+    </div>
   </div>
 
 </div>
