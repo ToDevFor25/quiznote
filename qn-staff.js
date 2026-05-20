@@ -221,11 +221,11 @@
     // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
     const fontSize = lineGap * 2.3;
     const digitWidth = lineGap * 1.15;
-    const baselineShift = fontSize * 0.22;
+    const baselineShift = fontSize * 0.15;
     // Serif digits are taller than Bravura's purpose-built time-sig glyphs,
     // so separate the centers by slightly more than 2 staff spaces to keep
     // a clean gap in the middle without floating outside the staff.
-    const halfSep = lineGap * 0.92;  // distance of each digit center from staff midline
+    const halfSep = lineGap * 1.15;  // distance of each digit center from staff midline
 
     const midY = bottomY - 2 * lineGap;          // middle staff line
     const topCenterY = midY - halfSep;
