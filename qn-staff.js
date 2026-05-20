@@ -208,19 +208,23 @@
   function buildTimeSignature(opts) {
     const { top, bottom, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     const x = (opts.x !== undefined) ? opts.x : 60;
-    // Engraving-correct time signatures using Bravura SMuFL time-sig digits
-    // (U+E080–U+E089). Bravura's digits are designed to span ~2 staff spaces
-    // tall. We place each digit's vertical center on a staff line:
-    //   - Top digit center on line 4 (step 6) — sits in upper half of staff
-    //   - Bottom digit center on line 2 (step 2) — sits in lower half
-    // SVG text y is the BASELINE; SMuFL digits' visual content sits above
-    // the baseline. The empirical baselineShift centers the glyph visually.
-    const fontSize = lineGap * 2.4;
-    const digitWidth = lineGap * 1.25;
-    const baselineShift = fontSize * 0.32;
+    // Bravura SMuFL time-sig digits (U+E080-E089) silently fail to render
+    // in Bravura Text on some devices, so we use a bold serif fallback that
+    // approximates the engraved look. Georgia is widely available; Times
+    // and serif round out the stack.
+    //
+    // Sizing: each digit ~2 staff spaces tall (engraving convention).
+    // Positioning:
+    //   - Top digit center on line 4 (step 6) — upper half of staff
+    //   - Bottom digit center on line 2 (step 2) — lower half
+    // SVG text y is BASELINE; the visual center of a serif digit sits
+    // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
+    const fontSize = lineGap * 2.6;
+    const digitWidth = lineGap * 1.15;
+    const baselineShift = fontSize * 0.35;
 
-    const topCenterY = bottomY - 3 * lineGap;   // line 4 from bottom
-    const botCenterY = bottomY - 1 * lineGap;   // line 2 from bottom
+    const topCenterY = bottomY - 3 * lineGap;
+    const botCenterY = bottomY - 1 * lineGap;
     const topY = topCenterY + baselineShift;
     const botY = botCenterY + baselineShift;
 
@@ -231,7 +235,7 @@
       for (let i = 0; i < numStr.length; i++) {
         const dx = startX + i * digitWidth;
         const classAttr = className ? ` class="${className}"` : '';
-        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Bravura Text" font-size="${fontSize}" text-anchor="middle" fill="${color}">${SMUFL.tsDigit(parseInt(numStr[i], 10))}</text>`;
+        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
       }
       return out;
     }
