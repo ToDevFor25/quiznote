@@ -474,6 +474,16 @@
     80%  { transform: scale(0.96) rotate(-1deg); }
     100% { transform: scale(1) rotate(0deg); }
   }
+  @keyframes scoreShimmer {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.08); color: var(--sun-dk); }
+  }
+  #sum-score.score-shimmer { display: inline-block; animation: scoreShimmer 400ms ease-in-out 2; }
+  .summary-sub.tier-perfect { color: var(--teal-dk); font-size: 19px; font-weight: 600; }
+  .summary-sub.tier-great   { color: var(--grape-dk); }
+  .summary-sub.tier-good    { color: var(--ink-soft); }
+  .summary-sub.tier-practice{ color: var(--ink-soft); }
+  .pb-new { color: var(--teal-dk); font-weight: 800; }
   @keyframes fanfareFloat {
     0%   { opacity: 0; transform: translateY(0) scale(0.5); }
     20%  { opacity: 1; }
@@ -789,6 +799,9 @@
     .choice-btn { font-size: 24px; padding: 18px 14px; }
   }
 </style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
 </head>
 <body>
 
@@ -1808,6 +1821,7 @@
     state.bestStreak = 0;
     state.lastResults = [];
     state.missed = [];
+    state.startedAt = Date.now();
     show('play-screen');
     updatePlayUI();
     startTimerIfNeeded();
@@ -2443,6 +2457,16 @@
     renderSummary(timedOut);
   }
 
+  // ===== Encouraging line per tier (scales-themed) =====
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['SCALE MASTER! Every scale nailed! 🎼','Perfect score — you crushed it! 🌟','Flawless! Not one slipped by! 🎶']);
+    if (pct >= 0.85) return pick(["Amazing round — so close to perfect!","Nearly flawless! Those scales are locking in! ⭐","Brilliant — just a couple slipped by!"]);
+    if (pct >= 0.65) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good ear — those tricky scales are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! Your ear is tuning in 🎵","Music takes time — you're on your way! Keep practising!"]);
+  }
+
   function renderSummary(timedOut) {
     els['sum-score'].textContent = state.score;
     document.querySelectorAll('#summary-screen .stat-value .of').forEach(of => {
@@ -2450,56 +2474,95 @@
     });
     els['sum-streak'].textContent = state.bestStreak;
 
-    const pct = state.score / state.settings.total;
-    let stars = '☆ ☆ ☆ ☆';
-    let tier = 'practice';
-    let titleText = 'Round done! 🎉';
-    let subText = '';
-    if (pct >= 1) { stars = '★ ★ ★ ★'; tier = 'perfect'; titleText = 'Perfect! 🌟'; subText = 'You nailed every scale.'; }
-    else if (pct >= 0.85) { stars = '★ ★ ★ ☆'; tier = 'great'; titleText = 'Great round!'; subText = 'Almost flawless.'; }
-    else if (pct >= 0.65) { stars = '★ ★ ☆ ☆'; tier = 'good'; titleText = 'Nice work!'; subText = 'Solid round — keep going!'; }
-    else if (pct >= 0.4) { stars = '★ ☆ ☆ ☆'; tier = 'good'; titleText = 'Good start.'; subText = 'Practice the missed ones next time.'; }
-    else { stars = '☆ ☆ ☆ ☆'; tier = 'practice'; titleText = 'Keep at it!'; subText = 'Listen carefully and replay if you need.'; }
-    els['sum-stars'].textContent = stars;
-    els['summary-title'].textContent = timedOut ? 'Time\'s up!' : titleText;
-    els['summary-sub'].textContent = timedOut ? 'You ran out of time — give it another go.' : subText;
-    els['summary-title'].className = 'summary-title tier-' + tier;
+    // Tier (preserves scales' stricter thresholds: 0.85 for great, 0.65 for good)
+    const pct = state.settings.total > 0 ? state.score / state.settings.total : 0;
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.85 ? 'great' : pct >= 0.65 ? 'good' : 'practice';
+
+    // 4-star arrangement
+    const starCount = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
+    const starStr = '★ '.repeat(starCount).trim() + ' ' + '☆ '.repeat(4 - starCount).trim();
+    els['sum-stars'].textContent = starStr.trim();
+
+    // Branded tier titles
+    const titleMap = {
+      perfect:  'SCALE MASTER! 🎼',
+      great:    'Amazing Round! ⭐',
+      good:     'Nice Playing! 🎶',
+      practice: 'Keep Practising! 🌱'
+    };
+    const titleEl = els['summary-title'];
+    const subEl = els['summary-sub'];
+    if (titleEl) {
+      titleEl.textContent = timedOut ? 'Time\'s up!' : titleMap[tier];
+      titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      void titleEl.offsetWidth;
+      titleEl.classList.add('tier-' + tier);
+    }
+    if (subEl) {
+      subEl.textContent = timedOut ? 'You ran out of time — give it another go.' : encouragingLine(state.score, state.settings.total);
+      subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      subEl.classList.add('tier-' + tier);
+    }
+
+    // Score shimmer on perfect
+    if (tier === 'perfect' && !timedOut) {
+      setTimeout(() => {
+        const scoreEl = document.getElementById('sum-score');
+        if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
+      }, 300);
+    }
+
+    // Missed list — canonical pattern: <li> items into #miss-items, miss-empty if clean
+    if (els['miss-items']) {
+      if (state.missed.length === 0) {
+        els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no scales to practice. ⭐</li>';
+      } else {
+        const seen = new Set();
+        const items = [];
+        state.missed.forEach(s => {
+          if (seen.has(s.name)) return;
+          seen.add(s.name);
+          items.push('<li>' + formatScaleName(s.name) + '</li>');
+        });
+        els['miss-items'].innerHTML = items.join('');
+      }
+    }
+
+    // Personal best with NEW! badges
+    const best = loadBest();
+    const newScoreBest  = state.score > (best.score || 0);
+    const newStreakBest = state.bestStreak > (best.streak || 0);
+    if (newScoreBest)  best.score  = state.score;
+    if (newStreakBest) best.streak = state.bestStreak;
+    saveBest(best);
+    if (best.score > 0 || best.streak > 0) {
+      els['pb-row'].hidden = false;
+      els['pb-score'].innerHTML  = newScoreBest  ? '<span class="pb-new">🏆 ' + best.score + '/' + state.settings.total + ' NEW!</span>' : best.score + '/' + state.settings.total;
+      els['pb-streak'].innerHTML = newStreakBest ? '<span class="pb-new">🔥 ' + best.streak + ' streak NEW!</span>' : '🔥 ' + best.streak + ' streak';
+    } else {
+      els['pb-row'].hidden = true;
+    }
+
+    // Log this round to the shared event store (no-op if no active profile)
+    if (window.QN && QN.events) {
+      QN.events.log({
+        module:     'scales',
+        tier:       state.settings.difficulty,
+        length:     state.settings.total,
+        correct:    state.score,
+        total:      state.settings.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled
+      });
+    }
 
     // Fanfare + visual celebration. 700ms delay lets the summary content animate in first,
-    // then the celebration lands as a payoff.
+    // then the celebration lands as a payoff. Skip on timeout.
     if (!timedOut) {
       setTimeout(() => {
         A.playFanfare(tier);
         fireSummaryCelebration(tier);
       }, 700);
-    }
-
-    // Missed list
-    if (state.missed.length === 0) {
-      els['miss-list'].innerHTML = '<h3>Scales to practice next time</h3><div class="miss-empty">None — you got them all! 🎉</div>';
-    } else {
-      els['miss-items'].innerHTML = '';
-      const seen = new Set();
-      state.missed.forEach(s => {
-        if (seen.has(s.name)) return;
-        seen.add(s.name);
-        const li = document.createElement('li');
-        li.textContent = formatScaleName(s.name);
-        els['miss-items'].appendChild(li);
-      });
-    }
-
-    // Personal best
-    const best = loadBest();
-    const newScoreBest = state.score > (best.score || 0);
-    const newStreakBest = state.bestStreak > (best.streak || 0);
-    if (newScoreBest) best.score = state.score;
-    if (newStreakBest) best.streak = state.bestStreak;
-    saveBest(best);
-    if (best.score > 0 || best.streak > 0) {
-      els['pb-row'].hidden = false;
-      els['pb-score'].textContent = 'Score ' + best.score + (newScoreBest ? ' 🆕' : '');
-      els['pb-streak'].textContent = 'Streak 🔥 ' + best.streak + (newStreakBest ? ' 🆕' : '');
     }
   }
 
