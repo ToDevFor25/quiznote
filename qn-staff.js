@@ -219,19 +219,18 @@
     //   - Bottom digit center on line 2 (step 2) — lower half
     // SVG text y is BASELINE; the visual center of a serif digit sits
     // ~0.35 * fontSize above baseline, so shift baseline DOWN by that.
+    // Use dominant-baseline="central" so each digit is vertically centered
+    // on its target Y — independent of glyph shape. Without this, digits sit
+    // on the alphabetic baseline and different shapes (2 vs 6 vs 8) appear at
+    // inconsistent heights across time signatures.
     const fontSize = lineGap * 2.3;
     const digitWidth = lineGap * 1.15;
-    const baselineShift = fontSize * 0.22;
-    // Serif digits are taller than Bravura's purpose-built time-sig glyphs,
-    // so separate the centers by slightly more than 2 staff spaces to keep
-    // a clean gap in the middle without floating outside the staff.
-    const halfSep = lineGap * 1.15;  // distance of each digit center from staff midline
+    // Each digit center sits halfSep from the staff midline (top above, bottom below).
+    const halfSep = lineGap * 1.1;
 
     const midY = bottomY - 2 * lineGap;          // middle staff line
-    const topCenterY = midY - halfSep;
-    const botCenterY = midY + halfSep;
-    const topY = topCenterY + baselineShift;
-    const botY = botCenterY + baselineShift;
+    const topY = midY - halfSep;                 // top digit visual center
+    const botY = midY + halfSep;                 // bottom digit visual center
 
     function renderStack(numStr, y) {
       const totalWidth = numStr.length * digitWidth;
@@ -240,7 +239,7 @@
       for (let i = 0; i < numStr.length; i++) {
         const dx = startX + i * digitWidth;
         const classAttr = className ? ` class="${className}"` : '';
-        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" fill="${color}">${numStr[i]}</text>`;
+        out += `<text${classAttr} x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central" fill="${color}">${numStr[i]}</text>`;
       }
       return out;
     }
