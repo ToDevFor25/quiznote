@@ -360,7 +360,17 @@
      Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
      Animations: @keyframes {{moduleSlug}}Pop, etc.
      ============================================================ */
-  /* Time Signatures — staff display + prompt text */
+  /* Time Signatures puts the actual question prompt in the .staff-label slot,
+     so make it read as a question, not a tiny uppercase tag. */
+  #play-screen .staff-label {
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-soft);
+  }
+
+  /* Time Signatures — staff display */
   .ts-stage {
     display: flex;
     flex-direction: column;
@@ -1378,13 +1388,27 @@
   // ─── QNM contract: render ────────────────────────────────
   // Uses NH.staff.buildStaff (shared engraver) — same calibrated
   // positioning as Key Signatures. Lazy-resolves at call time.
+  //
+  // IMPORTANT: only the staff SVG goes into .staff-svg-wrap, exactly like
+  // Note Values / Key Signatures. The per-question prompt goes into the
+  // .staff-label slot ABOVE the staff. Putting the prompt inside the wrap
+  // made it share a centered flex ROW with the SVG, so different prompt
+  // lengths changed the SVG's width/scale and the staff drifted vertically
+  // between questions. Keeping the wrap to a single child fixes that.
+  function setPrompt(text) {
+    const label = document.querySelector('#play-screen .staff-label');
+    if (label) label.textContent = text;
+  }
+
   function renderQuestion(container, key) {
     const q = decodeKey(key);
     const staffApi = window.NH && window.NH.staff;
     if (!staffApi) {
-      container.innerHTML = '<div class="ts-prompt">Loading…</div>';
+      setPrompt('Loading…');
+      container.innerHTML = '';
       return;
     }
+    setPrompt(PROMPT[q.type]);
     const sig = SIGS[q.sigKey];
     const result = staffApi.buildStaff({
       clef: q.clef,
@@ -1397,7 +1421,6 @@
       tsClassName: 'ts-timesig',
     });
     container.innerHTML =
-      `<div class="ts-prompt">${PROMPT[q.type]}</div>` +
       `<div class="ts-stage pop"><svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${result.svg}</svg></div>`;
   }
 
