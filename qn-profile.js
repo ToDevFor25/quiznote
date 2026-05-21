@@ -54,6 +54,10 @@
   // color picker in profile.html.
   var COLOR_OPTIONS = ['teal', 'sun', 'grape', 'coral', 'mint', 'rose'];
 
+  // In-session record of any corrupt-data reads (see readStorage). Surfaced
+  // via QN.diagnostics so corruption is checkable in the console during builds.
+  var _corruptionLog = [];
+
   // ─────────────────────────────────────────────────────────────
   // INTERNAL UTILITIES
   // ─────────────────────────────────────────────────────────────
@@ -74,15 +78,35 @@
   /**
    * Read and JSON-parse a localStorage key.
    * Returns fallback (default []) on any error.
+   *
+   * Corruption handling (v1.5.0): a parse failure means data EXISTED but is
+   * unreadable — very different from "no data". Rather than silently treating
+   * a corrupt blob as empty (which makes a user's history appear to vanish
+   * with no trace), we (1) log it distinctly, (2) preserve the raw corrupt
+   * value under a timestamped backup key so it's recoverable, and (3) still
+   * return the safe fallback so the app keeps working. This makes a
+   * corruption visible/recoverable during the build instead of a silent loss.
    */
   function readStorage(key, fallback) {
     if (fallback === undefined) fallback = [];
+    var raw;
     try {
-      var raw = localStorage.getItem(key);
-      if (raw === null || raw === undefined) return fallback;
+      raw = localStorage.getItem(key);
+    } catch (e) {
+      console.warn('[QN] localStorage unavailable for', key, e);
+      return fallback;
+    }
+    if (raw === null || raw === undefined) return fallback;  // genuinely no data — normal
+    try {
       return JSON.parse(raw);
     } catch (e) {
-      console.warn('[QN] readStorage failed for', key, e);
+      // Data exists but won't parse → corruption. Preserve + flag, don't vanish silently.
+      console.error('[QN] CORRUPT data at "' + key + '" — preserving a backup, falling back to empty.', e);
+      try {
+        var backupKey = key + '__corrupt_' + Date.now();
+        localStorage.setItem(backupKey, raw);
+        _corruptionLog.push({ key: key, backupKey: backupKey, at: Date.now() });
+      } catch (e2) { /* backup is best-effort; never throw from a read */ }
       return fallback;
     }
   }
@@ -881,6 +905,15 @@
   window.QN.events    = eventsAPI;
   window.QN.ui        = uiAPI;
   window.QN.recommend = recommendAPI;
-  window.QN.version = '1.4.1';  // logOrHold: active-check-first + drain stranded pending (guest-prompt bug fix)
+
+  // Lightweight diagnostics surface (v1.5.0). During builds, run
+  // QN.diagnostics.corruption() in the console to see if any stored key
+  // failed to parse this session (and where its recoverable backup lives).
+  window.QN.diagnostics = {
+    corruption: function () { return _corruptionLog.slice(); },
+    hasCorruption: function () { return _corruptionLog.length > 0; }
+  };
+
+  window.QN.version = '1.5.0';  // corruption-aware readStorage (corrupt vs empty) + QN.diagnostics
 
 })();
