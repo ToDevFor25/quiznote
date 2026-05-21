@@ -264,7 +264,22 @@
     'time-signatures/top':        'Beats per measure',
     'time-signatures/bottom':     'Which note gets the beat',
     'time-signatures/whichBeats': 'Top vs bottom (beats)',
-    'time-signatures/whichUnit':  'Top vs bottom (unit)'
+    'time-signatures/whichUnit':  'Top vs bottom (unit)',
+    // Note Names + Piano Quiz tag by clef
+    'note-names/treble':  'Treble clef',
+    'note-names/bass':    'Bass clef',
+    'piano-quiz/treble':  'Treble clef',
+    'piano-quiz/bass':    'Bass clef',
+    // Scales tag by mode
+    'scales/major':          'Major',
+    'scales/minor-natural':  'Natural minor',
+    'scales/minor-harmonic': 'Harmonic minor',
+    'scales/minor-melodic':  'Melodic minor',
+    // Note Values (note-value keys) and Key Signatures (key names) and
+    // Intervals (interval shorthand like M3/P5) are self-readable via the
+    // raw-key fallback in skillLabel(), so they need no explicit entries.
+    'bass':   'Bass clef',
+    'treble': 'Treble clef'
   };
   function skillLabel(slug, key) {
     return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key;
