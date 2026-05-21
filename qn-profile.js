@@ -126,6 +126,31 @@
     }
   }
 
+  /**
+   * Validate + normalize an optional per-skill tally object.
+   * Input shape: { skillKey: { c: <correct>, t: <total> }, ... }
+   * Returns a clean object, or null if there's nothing usable. Defensive
+   * so a module passing junk can't corrupt the event log.
+   */
+  function sanitizeSkills(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var out = {};
+    var any = false;
+    for (var key in raw) {
+      if (!Object.prototype.hasOwnProperty.call(raw, key)) continue;
+      var v = raw[key];
+      if (!v || typeof v !== 'object') continue;
+      var c = Number(v.c) || 0;
+      var t = Number(v.t) || 0;
+      if (t <= 0) continue;            // skill with no attempts is meaningless
+      if (c < 0) c = 0;
+      if (c > t) c = t;                // clamp impossible values
+      out[String(key)] = { c: c, t: t };
+      any = true;
+    }
+    return any ? out : null;
+  }
+
   // ─────────────────────────────────────────────────────────────
   // QN.profile — identity layer
   // ─────────────────────────────────────────────────────────────
@@ -323,6 +348,11 @@
         timedMode:   !!eventData.timedMode,
         completedAt: Date.now()
       };
+      // Optional per-skill tallies: { skillKey: { c, t } }. Additive —
+      // events without it are valid; the dashboard treats them as
+      // round-level only. See sanitizeSkills().
+      var sk = sanitizeSkills(eventData.skills);
+      if (sk) event.skills = sk;
 
       var events = readStorage(STORAGE_KEYS.EVENTS, []);
       events.push(event);
@@ -374,7 +404,7 @@
       // No profile: stash a normalized event (without profileId) in
       // the pending slot. profileId is assigned at backfill time.
       var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
-      pending.push({
+      var held = {
         module:      eventData.module,
         tier:        eventData.tier || null,
         length:      Number(eventData.length) || 0,
@@ -383,7 +413,10 @@
         durationMs:  Number(eventData.durationMs) || 0,
         timedMode:   !!eventData.timedMode,
         completedAt: Date.now()
-      });
+      };
+      var heldSk = sanitizeSkills(eventData.skills);
+      if (heldSk) held.skills = heldSk;
+      pending.push(held);
       // Cap: keep only the most recent MAX_PENDING_EVENTS.
       if (pending.length > MAX_PENDING_EVENTS) {
         pending = pending.slice(pending.length - MAX_PENDING_EVENTS);
@@ -419,7 +452,7 @@
       for (var i = 0; i < pending.length; i++) {
         var p = pending[i];
         if (!p || !p.module) continue;
-        events.push({
+        var ev = {
           profileId:   profileId,
           module:      p.module,
           tier:        p.tier || null,
@@ -429,7 +462,10 @@
           durationMs:  Number(p.durationMs) || 0,
           timedMode:   !!p.timedMode,
           completedAt: Number(p.completedAt) || Date.now()
-        });
+        };
+        var bfSk = sanitizeSkills(p.skills);
+        if (bfSk) ev.skills = bfSk;
+        events.push(ev);
         n++;
       }
       writeStorage(STORAGE_KEYS.EVENTS, events);
@@ -566,6 +602,6 @@
   window.QN.profile = profileAPI;
   window.QN.events  = eventsAPI;
   window.QN.ui      = uiAPI;
-  window.QN.version = '1.0.0';
+  window.QN.version = '1.2.0';  // + optional per-skill tallies on events (sub-skill tagging)
 
 })();

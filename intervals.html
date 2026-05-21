@@ -2270,6 +2270,19 @@
     }
     // Log this round, or HOLD it if no profile yet (back-filled on create)
     var roundOutcome = 'logged';
+    // Per-sub-skill tallies from this round's history (keyed by label).
+    // Derived from history so it can't drift from the score. Additive.
+    var roundSkills = {};
+    try {
+      for (var _i = 0; _i < state.history.length; _i++) {
+        var h = state.history[_i];
+        var _k = h && h.label != null ? String(h.label) : 'unknown';
+        if (!roundSkills[_k]) roundSkills[_k] = { c: 0, t: 0 };
+        roundSkills[_k].t++;
+        if (h.kind === 'correct') roundSkills[_k].c++;
+      }
+    } catch (e) { roundSkills = null; }
+
     if (window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'intervals',
@@ -2278,7 +2291,8 @@
         correct:    state.score,
         total:      state.total,
         durationMs: Date.now() - state.startedAt,
-        timedMode:  !!state.settings.timer.enabled
+        timedMode:  !!state.settings.timer.enabled,
+        skills:     roundSkills
       });
     }
 
