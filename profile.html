@@ -1,1094 +1,678 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#FFF8E7" />
-<title>Profile · QuizNote</title>
-<meta name="description" content="Make a QuizNote profile to track your practice streaks and progress. No emails, no passwords, no data sold." />
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAAA=">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+/* ============================================================
+   QuizNote — Shared Profile + Event Helper
+   ============================================================
 
-<style>
-/* ─────────────────────────────────────────────────────────────
-   QuizNote — Profile / Onboarding
-   Matches the chunky-button design system used across modules.
-   Single file: all views as hidden sections, JS swaps visibility.
-   ───────────────────────────────────────────────────────────── */
+   Purpose:
+     Single source of truth for learner identity and round
+     event logging across all QuizNote modules. Loaded once per
+     module via <script src="qn-profile.js" defer></script>.
 
-:root {
-  --cream:  #FFF8E7;
-  --ink:    #2A2A3E;
-  --teal:   #1FB8A8;
-  --sun:    #FFB627;
-  --grape:  #5B3FE4;
-  --coral:  #FF6B6B;
-  --mint:   #7FD1AE;
-  --rose:   #F4A5BE;
+   Exposes one global: window.QN
 
-  --ink-dim:   rgba(42, 42, 62, 0.65);
-  --ink-faint: rgba(42, 42, 62, 0.12);
-  --ink-shadow: rgba(42, 42, 62, 0.18);
-}
+   Three namespaces:
+     QN.profile  — identity (create, list, switch, update, delete)
+     QN.events   — round logging (log, query)
+     QN.ui       — shared widgets (profile chip)
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; padding: 0; }
+   Storage model (localStorage, all values JSON-encoded):
+     qn_profiles      Array<Profile>   list of all profiles on device
+     qn_activeProfile string | null    id of currently active profile
+     qn_events        Array<Event>     append-only round log
 
-body {
-  font-family: 'Fredoka', system-ui, -apple-system, sans-serif;
-  font-weight: 500;
-  color: var(--ink);
-  background: var(--cream);
-  min-height: 100vh;
-  min-height: 100dvh;
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(31, 184, 168, 0.06) 0%, transparent 35%),
-    radial-gradient(circle at 85% 80%, rgba(91, 63, 228, 0.05) 0%, transparent 40%);
-}
+   Forward-compatibility notes:
+     - Profile ids are opaque 10-char random strings, NOT
+       sequential. Safe to sync to a backend later.
+     - Profiles carry syncedAt: null until claimed by a parent
+       account (post-Supabase). syncedAt: <timestamp> means the
+       profile has been pushed to the backend.
+     - Event shape is final. Backend table will mirror this.
 
-/* ── header / footer ─────────────────────────────────────── */
+   Authored: May 2026. No external dependencies.
+   ============================================================ */
 
-.page {
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 24px 20px 80px;
-  min-height: 100vh;
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
-.brand-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.brand {
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-  text-decoration: none;
-}
-.brand .acc { color: var(--teal); }
-
-.back-link {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--ink-dim);
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 999px;
-  transition: color 140ms, background 140ms;
-}
-.back-link:hover { color: var(--ink); background: rgba(0,0,0,0.04); }
-
-.foot {
-  margin-top: auto;
-  padding-top: 32px;
-  font-size: 12px;
-  color: var(--ink-dim);
-  text-align: center;
-}
-.foot a { color: var(--ink-dim); text-decoration: underline; }
-.foot a:hover { color: var(--ink); }
-
-/* ── view container ──────────────────────────────────────── */
-
-.view { display: none; flex: 1; flex-direction: column; }
-.view.active { display: flex; }
-
-.view-head { text-align: center; margin-bottom: 28px; }
-.view-title {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  margin: 0 0 8px;
-  color: var(--ink);
-}
-.view-sub {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--ink-dim);
-  margin: 0;
-  max-width: 380px;
-  margin-inline: auto;
-  line-height: 1.4;
-}
-
-/* ── chunky buttons ──────────────────────────────────────── */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  border-radius: 16px;
-  padding: 16px 24px;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 17px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--ink);
-  background: #fff;
-  border: 1.5px solid var(--ink-faint);
-  box-shadow: 0 2px 0 var(--ink-faint);
-  transition: transform 100ms ease-out, box-shadow 100ms ease-out, background 140ms;
-  user-select: none;
-  width: 100%;
-}
-.btn:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--ink-faint); }
-.btn-primary {
-  background: var(--teal);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
-}
-.btn-primary:active { box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
-.btn-ghost {
-  background: transparent;
-  box-shadow: none;
-  border-color: transparent;
-  color: var(--ink-dim);
-  font-weight: 500;
-}
-.btn-ghost:hover { color: var(--ink); }
-
-.btn-row { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-.btn-row-h { display: flex; gap: 12px; }
-.btn-row-h .btn { flex: 1; }
-
-.btn-danger {
-  background: var(--coral);
-  color: #fff;
-  border-color: transparent;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.18);
-}
-.btn-danger:active { box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
-
-/* ── nickname input ──────────────────────────────────────── */
-
-.nickname-wrap { margin-bottom: 20px; }
-.nickname-input {
-  width: 100%;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 22px;
-  text-align: center;
-  padding: 18px 16px;
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 16px;
-  background: #fff;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 140ms, box-shadow 140ms;
-}
-.nickname-input:focus {
-  border-color: var(--teal);
-  box-shadow: 0 0 0 4px rgba(31, 184, 168, 0.15);
-}
-
-.hint {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-dim);
-  text-align: center;
-  margin: 8px 0 16px;
-  min-height: 18px;
-}
-.hint.err { color: var(--coral); }
-
-/* ── suggestion pills ────────────────────────────────────── */
-
-.suggest-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-dim);
-  margin: 24px 0 12px;
-}
-.reroll {
-  background: transparent;
-  border: none;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--teal);
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.reroll:hover { background: rgba(31,184,168,0.1); }
-
-.suggest-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-.suggest-pill {
-  background: #fff;
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--ink);
-  cursor: pointer;
-  transition: transform 100ms, background 140ms, border-color 140ms;
-  text-align: center;
-}
-.suggest-pill:hover { background: var(--cream); border-color: var(--teal); }
-.suggest-pill:active { transform: scale(0.97); }
-
-/* ── level options ───────────────────────────────────────── */
-
-.level-options { display: flex; flex-direction: column; gap: 12px; }
-.level-option {
-  background: #fff;
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 16px;
-  padding: 18px 20px;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 17px;
-  color: var(--ink);
-  cursor: pointer;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  transition: transform 100ms, border-color 140ms, background 140ms;
-}
-.level-option:hover { border-color: var(--teal); background: rgba(31, 184, 168, 0.04); }
-.level-option:active { transform: scale(0.98); }
-.level-option.selected {
-  border-color: var(--teal);
-  background: rgba(31, 184, 168, 0.08);
-  box-shadow: 0 2px 0 var(--ink-faint);
-}
-/* Maps the self-reported answer to the gameplay difficulty tiers so the
-   skill-level connection is legible at choice time (Beginner→Easy, etc.). */
-.level-tag {
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--teal-dk, #0F8A7E);
-  background: rgba(31, 184, 168, 0.12);
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-
-/* ── color picker ────────────────────────────────────────── */
-
-.color-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 8px;
-}
-.color-tile {
-  aspect-ratio: 1;
-  border-radius: 20px;
-  border: 3px solid transparent;
-  cursor: pointer;
-  position: relative;
-  transition: transform 120ms, border-color 140ms;
-  outline: none;
-}
-.color-tile:hover { transform: scale(1.05); }
-.color-tile:active { transform: scale(0.97); }
-.color-tile.selected {
-  border-color: var(--ink);
-  transform: scale(1.05);
-}
-.color-tile.selected::after {
-  content: '✓';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 32px;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
-}
-.color-teal  { background: var(--teal); }
-.color-sun   { background: var(--sun); }
-.color-grape { background: var(--grape); }
-.color-coral { background: var(--coral); }
-.color-mint  { background: var(--mint); }
-.color-rose  { background: var(--rose); }
-
-/* ── profile list (switcher) ─────────────────────────────── */
-
-.profile-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.profile-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #fff;
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 16px;
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: transform 100ms, border-color 140ms, background 140ms;
-  text-align: left;
-  font-family: inherit;
-  width: 100%;
-}
-.profile-row:hover { border-color: var(--teal); }
-.profile-row:active { transform: scale(0.99); }
-.profile-row.active {
-  border-color: var(--teal);
-  background: rgba(31, 184, 168, 0.06);
-  box-shadow: 0 2px 0 var(--ink-faint);
-}
-
-.profile-dot {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.profile-info { flex: 1; min-width: 0; }
-.profile-name {
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.profile-meta {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-dim);
-  margin-top: 2px;
-}
-.profile-active-badge {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--teal);
-  background: rgba(31, 184, 168, 0.12);
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-left: 8px;
-  flex-shrink: 0;
-}
-.profile-edit {
-  background: transparent;
-  border: none;
-  color: var(--ink-dim);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-.profile-edit:hover { background: rgba(0,0,0,0.05); color: var(--ink); }
-
-/* ── delete confirmation ─────────────────────────────────── */
-
-.confirm-card {
-  background: #fff;
-  border: 1.5px solid var(--ink-faint);
-  border-radius: 20px;
-  padding: 24px;
-  text-align: center;
-  margin-bottom: 20px;
-}
-.confirm-dot {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  margin: 0 auto 16px;
-}
-.confirm-name {
-  font-weight: 700;
-  font-size: 22px;
-  margin-bottom: 6px;
-}
-.confirm-stats {
-  font-size: 14px;
-  color: var(--ink-dim);
-  margin-bottom: 8px;
-}
-.confirm-warn {
-  font-size: 13px;
-  color: var(--coral);
-  font-weight: 600;
-  margin-top: 12px;
-}
-
-/* ── progress dots (onboarding screens) ──────────────────── */
-
-.progress-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 28px;
-}
-.progress-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ink-faint);
-  transition: background 140ms, width 140ms;
-}
-.progress-dot.active {
-  background: var(--teal);
-  width: 24px;
-  border-radius: 999px;
-}
-
-/* ── responsive nudges ───────────────────────────────────── */
-
-@media (max-width: 380px) {
-  .view-title { font-size: 24px; }
-  .nickname-input { font-size: 19px; }
-  .color-grid { gap: 12px; }
-  .suggest-grid { grid-template-columns: 1fr; }
-}
-</style>
-</head>
-
-<body>
-<div class="page">
-
-  <div class="brand-bar">
-    <a class="brand" href="index.html">Quiz<span class="acc">Note</span></a>
-    <a class="back-link" href="play.html">← Back to modules</a>
-  </div>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 0 — Who's playing? (first visit or returning anon)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-welcome">
-    <div class="view-head">
-      <h1 class="view-title">What can I call you?</h1>
-      <p class="view-sub">Make a profile to save your streaks and progress.</p>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="welcome-start">Make a profile</button>
-      <button class="btn btn-ghost" id="welcome-guest">Just playing, no name</button>
-    </div>
-    <p class="hint" style="margin-top:24px;">
-      Profiles live only on this device. <a href="privacy.html" style="color:var(--teal);">How we handle data</a>.
-    </p>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 1 — Switcher (returning user with profiles)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-switcher">
-    <div class="view-head">
-      <h1 class="view-title">Who's playing today?</h1>
-      <p class="view-sub">Tap a profile to play as them. Or add a new one for someone else.</p>
-    </div>
-    <div class="profile-list" id="profile-list"><!-- rendered by JS --></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="switcher-add">+ Add new profile</button>
-      <a class="btn" href="play.html">Go to modules</a>
-    </div>
-    <p class="hint" style="margin-top:20px;">
-      <a href="#" id="reset-device-link" style="color:var(--ink-faint);">Reset all data on this device</a>
-    </p>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 2 — Nickname (onboarding step 1 of 3)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-nickname">
-    <div class="progress-dots">
-      <span class="progress-dot active"></span>
-      <span class="progress-dot"></span>
-      <span class="progress-dot"></span>
-    </div>
-    <div class="view-head">
-      <h1 class="view-title">What should we call you?</h1>
-      <p class="view-sub">Pick a fun name. Use your real name only if you want to — most people don't.</p>
-    </div>
-    <div class="nickname-wrap">
-      <input type="text" class="nickname-input" id="nickname-input"
-             maxlength="20" autocomplete="off" autocapitalize="off"
-             spellcheck="false" placeholder="Type a name..." />
-      <p class="hint" id="nickname-hint">1 to 20 characters</p>
-    </div>
-    <div class="suggest-label">
-      <span>Or pick one of these:</span>
-      <button class="reroll" id="reroll-btn" type="button">🎲 Reroll</button>
-    </div>
-    <div class="suggest-grid" id="suggest-grid"><!-- rendered by JS --></div>
-    <div class="btn-row" style="margin-top:28px;">
-      <button class="btn btn-primary" id="nickname-continue" disabled style="opacity:0.5;">Continue →</button>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 3 — Skill level (onboarding step 2 of 3)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-level">
-    <div class="progress-dots">
-      <span class="progress-dot"></span>
-      <span class="progress-dot active"></span>
-      <span class="progress-dot"></span>
-    </div>
-    <div class="view-head">
-      <h1 class="view-title">How much music have you done?</h1>
-      <p class="view-sub">This helps us pick a good starting difficulty. You can change it anytime.</p>
-    </div>
-    <div class="level-options">
-      <button class="level-option" data-level="starting" type="button">Just starting out <span class="level-tag">Beginner</span></button>
-      <button class="level-option" data-level="some" type="button">I know some notes <span class="level-tag">Intermediate</span></button>
-      <button class="level-option" data-level="while" type="button">I've been playing a while <span class="level-tag">Advanced</span></button>
-    </div>
-    <div class="btn-row" style="margin-top:28px;">
-      <button class="btn btn-primary" id="level-continue">Continue →</button>
-      <button class="btn btn-ghost" id="level-skip">Skip this</button>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 4 — Color picker (onboarding step 3 of 3)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-color">
-    <div class="progress-dots">
-      <span class="progress-dot"></span>
-      <span class="progress-dot"></span>
-      <span class="progress-dot active"></span>
-    </div>
-    <div class="view-head">
-      <h1 class="view-title">Pick your color</h1>
-      <p class="view-sub">This is how your profile shows up across the app.</p>
-    </div>
-    <div class="color-grid" id="color-grid"><!-- rendered by JS --></div>
-    <div class="btn-row" style="margin-top:28px;">
-      <button class="btn btn-primary" id="color-finish">Start practicing →</button>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 5 — Edit / manage profile
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-edit">
-    <div class="view-head">
-      <h1 class="view-title">Manage profile</h1>
-      <p class="view-sub">Rename, change color, or delete this profile.</p>
-    </div>
-    <div class="nickname-wrap">
-      <label class="suggest-label" style="margin-top:0;"><span>Name</span></label>
-      <input type="text" class="nickname-input" id="edit-nickname-input"
-             maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" />
-      <p class="hint" id="edit-nickname-hint">1 to 20 characters</p>
-    </div>
-    <label class="suggest-label" style="margin-top:8px;"><span>Color</span></label>
-    <div class="color-grid" id="edit-color-grid"><!-- rendered by JS --></div>
-    <div class="btn-row" style="margin-top:28px;">
-      <button class="btn btn-primary" id="edit-save">Save changes</button>
-      <button class="btn btn-danger" id="edit-delete">Delete this profile</button>
-      <button class="btn btn-ghost" id="edit-cancel">Cancel</button>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW 6 — Delete confirmation
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-delete">
-    <div class="view-head">
-      <h1 class="view-title">Delete this profile?</h1>
-      <p class="view-sub">This can't be undone. All practice history will be erased.</p>
-    </div>
-    <div class="confirm-card">
-      <div class="confirm-dot" id="confirm-dot"></div>
-      <div class="confirm-name" id="confirm-name"></div>
-      <div class="confirm-stats" id="confirm-stats"></div>
-      <div class="confirm-warn">This action cannot be undone.</div>
-    </div>
-    <div class="btn-row">
-      <button class="btn" id="delete-cancel">Cancel</button>
-      <button class="btn btn-danger" id="delete-confirm">Yes, delete forever</button>
-    </div>
-  </section>
-
-  <!-- ─────────────────────────────────────────────────────────
-       VIEW — Reset device (wipe ALL data on this device)
-       ───────────────────────────────────────────────────────── -->
-  <section class="view" id="view-reset">
-    <div class="view-head">
-      <h1 class="view-title">Reset all data?</h1>
-      <p class="view-sub">This erases <b>every</b> profile and all practice history saved on this device — for everyone, not just one person.</p>
-    </div>
-    <div class="confirm-card">
-      <div class="confirm-stats" id="reset-stats"></div>
-      <div class="confirm-warn">This cannot be undone.</div>
-    </div>
-    <div class="btn-row">
-      <button class="btn" id="reset-cancel">Cancel</button>
-      <button class="btn btn-danger" id="reset-confirm">Yes, erase everything</button>
-    </div>
-  </section>
-
-  <div class="foot">
-    <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a><br>
-    <span style="opacity:0.7;">© 2026 QuizNote</span>
-  </div>
-
-</div>
-
-<script src="qn-profile.js" defer></script>
-<script defer>
 (function () {
   'use strict';
 
-  // ─────────────────────────────────────────────────────────
-  // POOL OF NICKNAME SUGGESTIONS
-  // ─────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────
+  // CONSTANTS
+  // ─────────────────────────────────────────────────────────────
 
-  var NICKNAME_POOL = [
-    'PianoPanda', 'TrebleTroll', 'RestNinja', 'SharpFox',
-    'BassyBear', 'ClefCub', 'NotaNoodle', 'RhythmRaccoon',
-    'ScaleSquid', 'ChordChicken', 'FlatFinch', 'TempoTiger',
-    'MezzoMoth', 'LedgerLemur', 'StaccatoSnake', 'AllegroAlpaca'
-  ];
-
-  // ─────────────────────────────────────────────────────────
-  // STATE — ephemeral, lives only during a single onboarding
-  // ─────────────────────────────────────────────────────────
-
-  var state = {
-    draftNickname: '',
-    draftLevel:    null,
-    draftColor:    'teal',
-    editingId:     null   // when editing/deleting an existing profile
+  var STORAGE_KEYS = {
+    PROFILES:       'qn_profiles',
+    ACTIVE_PROFILE: 'qn_activeProfile',
+    EVENTS:         'qn_events',
+    PENDING_EVENTS: 'qn_pendingEvents'  // anonymous rounds awaiting a profile
   };
 
-  // ─────────────────────────────────────────────────────────
-  // VIEW SWITCHING
-  // ─────────────────────────────────────────────────────────
+  var MAX_EVENTS_PER_PROFILE = 5000;
+  // Anonymous rounds held before a profile exists. Capped so a long
+  // anonymous session can't grow storage without bound; oldest dropped.
+  var MAX_PENDING_EVENTS = 50;
 
-  function showView(id) {
-    var views = document.querySelectorAll('.view');
-    for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
-    var el = document.getElementById('view-' + id);
-    if (el) el.classList.add('active');
-    // scroll to top whenever view changes
-    window.scrollTo(0, 0);
+  // Color palette IDs match the design system tokens in each
+  // module's CSS. Keep this list in sync with the onboarding
+  // color picker in profile.html.
+  var COLOR_OPTIONS = ['teal', 'sun', 'grape', 'coral', 'mint', 'rose'];
+
+  // In-session record of any corrupt-data reads (see readStorage). Surfaced
+  // via QN.diagnostics so corruption is checkable in the console during builds.
+  var _corruptionLog = [];
+
+  // ─────────────────────────────────────────────────────────────
+  // INTERNAL UTILITIES
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Generate an opaque 10-char alphanumeric id.
+   * 62^10 = enough entropy to never collide across devices.
+   */
+  function generateId() {
+    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    var id = 'p_';
+    for (var i = 0; i < 10; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
   }
 
-  // ─────────────────────────────────────────────────────────
-  // ENTRY POINT — decide which view to start on
-  // ─────────────────────────────────────────────────────────
-
-  function init() {
-    // qn-profile.js may not be loaded yet if defer ordering is odd;
-    // guard and retry.
-    if (!window.QN || !QN.profile) {
-      setTimeout(init, 50);
-      return;
+  /**
+   * Read and JSON-parse a localStorage key.
+   * Returns fallback (default []) on any error.
+   *
+   * Corruption handling (v1.5.0): a parse failure means data EXISTED but is
+   * unreadable — very different from "no data". Rather than silently treating
+   * a corrupt blob as empty (which makes a user's history appear to vanish
+   * with no trace), we (1) log it distinctly, (2) preserve the raw corrupt
+   * value under a timestamped backup key so it's recoverable, and (3) still
+   * return the safe fallback so the app keeps working. This makes a
+   * corruption visible/recoverable during the build instead of a silent loss.
+   */
+  function readStorage(key, fallback) {
+    if (fallback === undefined) fallback = [];
+    var raw;
+    try {
+      raw = localStorage.getItem(key);
+    } catch (e) {
+      console.warn('[QN] localStorage unavailable for', key, e);
+      return fallback;
     }
-
-    // Check URL hash for explicit view requests
-    // (e.g., #add forces add-flow even if profiles exist)
-    var hash = window.location.hash.replace('#', '');
-    if (hash === 'add') {
-      startAddFlow();
-      return;
-    }
-
-    var profiles = QN.profile.list();
-    if (profiles.length === 0) {
-      showView('welcome');
-    } else {
-      renderSwitcher();
-      showView('switcher');
+    if (raw === null || raw === undefined) return fallback;  // genuinely no data — normal
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      // Data exists but won't parse → corruption. Preserve + flag, don't vanish silently.
+      console.error('[QN] CORRUPT data at "' + key + '" — preserving a backup, falling back to empty.', e);
+      try {
+        var backupKey = key + '__corrupt_' + Date.now();
+        localStorage.setItem(backupKey, raw);
+        _corruptionLog.push({ key: key, backupKey: backupKey, at: Date.now() });
+      } catch (e2) { /* backup is best-effort; never throw from a read */ }
+      return fallback;
     }
   }
 
-  // ─────────────────────────────────────────────────────────
-  // VIEW 0 — Welcome
-  // ─────────────────────────────────────────────────────────
+  /**
+   * JSON-stringify and write to localStorage.
+   * Silently swallows quota errors so modules don't crash.
+   */
+  function writeStorage(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      console.warn('[QN] writeStorage failed for', key, e);
+      return false;
+    }
+  }
 
-  document.getElementById('welcome-start').addEventListener('click', function () {
-    startAddFlow();
-  });
+  /**
+   * Read raw string from localStorage (no JSON parse).
+   * Used for the active profile pointer.
+   */
+  function readStorageRaw(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
 
-  document.getElementById('welcome-guest').addEventListener('click', function () {
-    // Guest path: no profile created, jump to modules
-    window.location.href = 'play.html';
-  });
+  function writeStorageRaw(key, value) {
+    try {
+      if (value === null || value === undefined) {
+        localStorage.removeItem(key);
+      } else {
+        localStorage.setItem(key, value);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
-  // ─────────────────────────────────────────────────────────
-  // VIEW 1 — Switcher
-  // ─────────────────────────────────────────────────────────
+  /**
+   * Validate + normalize an optional per-skill tally object.
+   * Input shape: { skillKey: { c: <correct>, t: <total> }, ... }
+   * Returns a clean object, or null if there's nothing usable. Defensive
+   * so a module passing junk can't corrupt the event log.
+   */
+  function sanitizeSkills(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var out = {};
+    var any = false;
+    for (var key in raw) {
+      if (!Object.prototype.hasOwnProperty.call(raw, key)) continue;
+      var v = raw[key];
+      if (!v || typeof v !== 'object') continue;
+      var c = Number(v.c) || 0;
+      var t = Number(v.t) || 0;
+      if (t <= 0) continue;            // skill with no attempts is meaningless
+      if (c < 0) c = 0;
+      if (c > t) c = t;                // clamp impossible values
+      out[String(key)] = { c: c, t: t };
+      any = true;
+    }
+    return any ? out : null;
+  }
 
-  function renderSwitcher() {
-    var listEl = document.getElementById('profile-list');
-    while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+  // ─────────────────────────────────────────────────────────────
+  // QN.profile — identity layer
+  // ─────────────────────────────────────────────────────────────
 
-    var profiles = QN.profile.list();
-    var active = QN.profile.getActive();
-    var activeId = active ? active.id : null;
+  var profileAPI = {
 
-    profiles.forEach(function (p) {
-      // Container row holds the main tap target + edit button side-by-side.
-      var row = document.createElement('div');
-      row.className = 'profile-row' + (p.id === activeId ? ' active' : '');
-      row.style.cursor = 'default';
+    /**
+     * Return the currently active profile object, or null.
+     */
+    getActive: function () {
+      var id = readStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE);
+      if (!id) return null;
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].id === id) return profiles[i];
+      }
+      // active pointer points to a deleted profile; clear it
+      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
+      return null;
+    },
 
-      // Main button: dot + name/meta + (optional) Active badge.
-      // Clicking it switches active profile and navigates to play.html.
-      var main = document.createElement('button');
-      main.type = 'button';
-      main.style.cssText = 'all:unset;display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer;';
-      main.setAttribute('aria-label', 'Play as ' + p.nickname);
+    /**
+     * Return array of all profiles on this device.
+     */
+    list: function () {
+      return readStorage(STORAGE_KEYS.PROFILES, []);
+    },
 
-      var dot = document.createElement('div');
-      dot.className = 'profile-dot';
-      dot.style.background = colorToHex(p.color);
+    /**
+     * Create a new profile.
+     *
+     * @param {Object} data
+     * @param {string} data.nickname    required, 1-20 chars
+     * @param {string} [data.level]     'starting' | 'some' | 'while' | null
+     * @param {string} [data.color]     one of COLOR_OPTIONS, defaults to 'teal'
+     * @returns {Object} the new profile, or null if invalid input
+     *
+     * Also sets the new profile as active.
+     */
+    create: function (data) {
+      if (!data || typeof data.nickname !== 'string') return null;
+      var nickname = data.nickname.trim();
+      if (nickname.length < 1 || nickname.length > 20) return null;
 
-      var info = document.createElement('div');
-      info.className = 'profile-info';
-      var name = document.createElement('div');
-      name.className = 'profile-name';
-      name.textContent = p.nickname;
-      var meta = document.createElement('div');
-      meta.className = 'profile-meta';
-      meta.textContent = levelLabel(p.level) + ' · ' + lastActiveLabel(p.lastActiveAt);
-      info.appendChild(name);
-      info.appendChild(meta);
+      var now = Date.now();
+      var profile = {
+        id:            generateId(),
+        nickname:      nickname,
+        level:         data.level || null,
+        color:         (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0)
+                         ? data.color : 'teal',
+        createdAt:     now,
+        lastActiveAt:  now,
+        syncedAt:      null  // becomes a timestamp once pushed to backend
+      };
 
-      main.appendChild(dot);
-      main.appendChild(info);
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      profiles.push(profile);
+      writeStorage(STORAGE_KEYS.PROFILES, profiles);
+      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, profile.id);
 
-      if (p.id === activeId) {
-        var badge = document.createElement('span');
-        badge.className = 'profile-active-badge';
-        badge.textContent = 'Active';
-        main.appendChild(badge);
+      // Claim any anonymous rounds played before this profile existed.
+      // Safe no-op if there are none.
+      eventsAPI.backfill(profile.id);
+
+      return profile;
+    },
+
+    /**
+     * Switch the active profile by id.
+     * Returns true on success, false if id not found.
+     */
+    setActive: function (id) {
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      var found = false;
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].id === id) {
+          profiles[i].lastActiveAt = Date.now();
+          found = true;
+          break;
+        }
+      }
+      if (!found) return false;
+      writeStorage(STORAGE_KEYS.PROFILES, profiles);
+      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, id);
+      return true;
+    },
+
+    /**
+     * Update fields on an existing profile.
+     * Only nickname, level, and color can be updated.
+     * Returns the updated profile, or null if not found.
+     */
+    update: function (id, data) {
+      if (!data) return null;
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].id === id) {
+          if (typeof data.nickname === 'string') {
+            var nn = data.nickname.trim();
+            if (nn.length >= 1 && nn.length <= 20) profiles[i].nickname = nn;
+          }
+          if (data.level !== undefined) {
+            profiles[i].level = data.level;
+          }
+          if (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0) {
+            profiles[i].color = data.color;
+          }
+          writeStorage(STORAGE_KEYS.PROFILES, profiles);
+          return profiles[i];
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Delete a profile AND all its events.
+     * If the deleted profile was active, active becomes null.
+     * Returns true on success, false if id not found.
+     */
+    'delete': function (id) {
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      var filtered = [];
+      var found = false;
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].id === id) {
+          found = true;
+        } else {
+          filtered.push(profiles[i]);
+        }
+      }
+      if (!found) return false;
+
+      writeStorage(STORAGE_KEYS.PROFILES, filtered);
+
+      // also purge this profile's events
+      var events = readStorage(STORAGE_KEYS.EVENTS, []);
+      var remainingEvents = [];
+      for (var j = 0; j < events.length; j++) {
+        if (events[j].profileId !== id) remainingEvents.push(events[j]);
+      }
+      writeStorage(STORAGE_KEYS.EVENTS, remainingEvents);
+
+      // clear active pointer if it pointed here
+      if (readStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE) === id) {
+        writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
       }
 
-      main.addEventListener('click', function () {
-        QN.profile.setActive(p.id);
-        window.location.href = 'play.html';
-      });
+      return true;
+    },
 
-      var editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.className = 'profile-edit';
-      editBtn.textContent = 'Edit';
-      editBtn.setAttribute('aria-label', 'Edit ' + p.nickname);
-      editBtn.addEventListener('click', function (ev) {
-        ev.stopPropagation();
-        startEditFlow(p.id);
-      });
+    /**
+     * Wipe ALL QuizNote data from this device: every profile, the event
+     * log, held anonymous rounds, the active pointer, and every module's
+     * personal-best keys. Parent-friendly "start completely fresh" / shared-
+     * device reset. Irreversible. Returns a small summary of what was cleared.
+     *
+     * PB keys are written by modules as "<slug>_pb_<tier>" and aren't in
+     * STORAGE_KEYS, so we scan all localStorage keys and match the pattern —
+     * this way new modules' PBs are caught automatically (no hardcoded list).
+     *
+     * @returns {{ profiles:number, events:number, pbKeys:number }}
+     */
+    resetDevice: function () {
+      var summary = { profiles: 0, events: 0, pbKeys: 0 };
+      try {
+        summary.profiles = readStorage(STORAGE_KEYS.PROFILES, []).length;
+        summary.events = readStorage(STORAGE_KEYS.EVENTS, []).length;
+      } catch (e) {}
 
-      row.appendChild(main);
-      row.appendChild(editBtn);
-      listEl.appendChild(row);
-    });
-  }
+      // 1. the four known qn_* keys
+      writeStorageRaw(STORAGE_KEYS.PROFILES, null);
+      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
+      writeStorageRaw(STORAGE_KEYS.EVENTS, null);
+      writeStorageRaw(STORAGE_KEYS.PENDING_EVENTS, null);
 
-  document.getElementById('switcher-add').addEventListener('click', function () {
-    startAddFlow();
-  });
+      // 2. scan for per-module PB keys ("<slug>_pb_<tier>") and any stray
+      //    qn_* keys, collect first then remove (don't mutate while iterating)
+      try {
+        var toRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (!k) continue;
+          if (/_pb_/.test(k) || k.indexOf('qn_') === 0) toRemove.push(k);
+        }
+        for (var r = 0; r < toRemove.length; r++) {
+          try { localStorage.removeItem(toRemove[r]); summary.pbKeys += (/_pb_/.test(toRemove[r]) ? 1 : 0); } catch (e) {}
+        }
+      } catch (e) {}
 
-  // ─────────────────────────────────────────────────────────
-  // VIEW 2 — Nickname
-  // ─────────────────────────────────────────────────────────
+      return summary;
+    },
 
-  var nicknameInput  = document.getElementById('nickname-input');
-  var nicknameHint   = document.getElementById('nickname-hint');
-  var nicknameBtn    = document.getElementById('nickname-continue');
-  var suggestGrid    = document.getElementById('suggest-grid');
-  var rerollBtn      = document.getElementById('reroll-btn');
+    /**
+     * Expose color options so onboarding UI can render the picker
+     * without hardcoding the same list.
+     */
+    colors: COLOR_OPTIONS.slice()
+  };
 
-  function startAddFlow() {
-    state.draftNickname = '';
-    state.draftLevel = null;
-    state.draftColor = 'teal';
-    state.editingId = null;
-    nicknameInput.value = '';
-    updateNicknameValidity();
-    rerollSuggestions();
-    showView('nickname');
-    // tiny delay so iOS keyboard pops smoothly
-    setTimeout(function () { nicknameInput.focus(); }, 60);
-  }
+  // ─────────────────────────────────────────────────────────────
+  // QN.events — round logging layer
+  // ─────────────────────────────────────────────────────────────
 
-  function updateNicknameValidity() {
-    var val = nicknameInput.value.trim();
-    var ok = val.length >= 1 && val.length <= 20;
-    nicknameBtn.disabled = !ok;
-    nicknameBtn.style.opacity = ok ? '1' : '0.5';
-    if (val.length === 0) {
-      nicknameHint.textContent = '1 to 20 characters';
-      nicknameHint.classList.remove('err');
-    } else if (val.length > 20) {
-      nicknameHint.textContent = 'Too long — keep it under 20 characters';
-      nicknameHint.classList.add('err');
-    } else {
-      nicknameHint.textContent = val.length + '/20';
-      nicknameHint.classList.remove('err');
+  var eventsAPI = {
+
+    /**
+     * Append one round event to the log.
+     *
+     * Modules call this from their summary-screen code when a
+     * round completes. If no profile is active, the event is
+     * NOT logged (anonymous play is not tracked).
+     *
+     * @param {Object} eventData
+     * @param {string} eventData.module     e.g. 'note-names'
+     * @param {string} eventData.tier       'easy' | 'medium' | 'tricky'
+     * @param {number} eventData.length     total questions in round
+     * @param {number} eventData.correct    correct answers
+     * @param {number} eventData.total      attempted answers
+     * @param {number} eventData.durationMs round duration in ms
+     * @param {boolean} eventData.timedMode whether timer was on
+     * @returns {boolean} true if logged, false if no active profile
+     */
+    log: function (eventData) {
+      var active = profileAPI.getActive();
+      if (!active) return false;
+      if (!eventData || !eventData.module) return false;
+
+      var event = {
+        profileId:   active.id,
+        module:      eventData.module,
+        tier:        eventData.tier || null,
+        length:      Number(eventData.length) || 0,
+        correct:     Number(eventData.correct) || 0,
+        total:       Number(eventData.total) || 0,
+        durationMs:  Number(eventData.durationMs) || 0,
+        timedMode:   !!eventData.timedMode,
+        completedAt: Date.now()
+      };
+      // Optional per-skill tallies: { skillKey: { c, t } }. Additive —
+      // events without it are valid; the dashboard treats them as
+      // round-level only. See sanitizeSkills().
+      var sk = sanitizeSkills(eventData.skills);
+      if (sk) event.skills = sk;
+
+      var events = readStorage(STORAGE_KEYS.EVENTS, []);
+      events.push(event);
+
+      // Enforce per-profile cap: count events for THIS profile,
+      // drop oldest if over cap. Other profiles' events untouched.
+      var thisProfileCount = 0;
+      for (var i = 0; i < events.length; i++) {
+        if (events[i].profileId === active.id) thisProfileCount++;
+      }
+      if (thisProfileCount > MAX_EVENTS_PER_PROFILE) {
+        var toRemove = thisProfileCount - MAX_EVENTS_PER_PROFILE;
+        var pruned = [];
+        for (var j = 0; j < events.length; j++) {
+          if (events[j].profileId === active.id && toRemove > 0) {
+            toRemove--;
+            continue;
+          }
+          pruned.push(events[j]);
+        }
+        events = pruned;
+      }
+
+      writeStorage(STORAGE_KEYS.EVENTS, events);
+
+      // touch lastActiveAt on the profile
+      profileAPI.setActive(active.id);
+
+      return true;
+    },
+
+    /**
+     * Log a round if a profile is active; otherwise HOLD it as a
+     * pending anonymous round so it can be back-filled when the
+     * player makes a profile right after.
+     *
+     * Modules should call this (not log) from round-completion code.
+     *
+     * @param {Object} eventData  same shape as log()
+     * @returns {string} 'logged' | 'held'
+     */
+    logOrHold: function (eventData) {
+      var active = profileAPI.getActive();
+
+      // ACTIVE PROFILE: always log directly; never return the 'held'
+      // signal for a signed-in user. (Bug fix v1.4.1: the old guard
+      // `if (!eventData || !eventData.module) return 'held'` ran BEFORE
+      // this check, so a malformed/slug-less event from an active user
+      // returned 'held' — which, combined with any stranded pending
+      // event, mis-fired the guest "save your scores?" prompt for a
+      // well-established profile.)
+      if (active) {
+        // Drain any stranded pending events — they are meaningless once a
+        // profile is active, and left lying around they keep pendingCount()
+        // > 0, which is half of what mis-triggered the guest prompt.
+        if (eventsAPI.pendingCount() > 0) {
+          try { eventsAPI.backfill(active.id); } catch (e) {}
+        }
+        if (eventData && eventData.module) {
+          eventsAPI.log(eventData);
+          return 'logged';
+        }
+        // Malformed event but a real profile is active: do not log a junk
+        // event, but never claim 'held'. Signal a no-op so the caller's
+        // prompt stays hidden.
+        return 'skipped';
+      }
+
+      // NO PROFILE (anonymous): a malformed event can't be held meaningfully.
+      if (!eventData || !eventData.module) return 'skipped';
+
+      // Stash a normalized event (without profileId) in the pending slot.
+      // profileId is assigned at backfill time.
+      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      var held = {
+        module:      eventData.module,
+        tier:        eventData.tier || null,
+        length:      Number(eventData.length) || 0,
+        correct:     Number(eventData.correct) || 0,
+        total:       Number(eventData.total) || 0,
+        durationMs:  Number(eventData.durationMs) || 0,
+        timedMode:   !!eventData.timedMode,
+        completedAt: Date.now()
+      };
+      var heldSk = sanitizeSkills(eventData.skills);
+      if (heldSk) held.skills = heldSk;
+      pending.push(held);
+      // Cap: keep only the most recent MAX_PENDING_EVENTS.
+      if (pending.length > MAX_PENDING_EVENTS) {
+        pending = pending.slice(pending.length - MAX_PENDING_EVENTS);
+      }
+      writeStorage(STORAGE_KEYS.PENDING_EVENTS, pending);
+      return 'held';
+    },
+
+    /**
+     * How many anonymous rounds are currently held, awaiting a profile.
+     * Modules use this to decide whether to show the "save your scores"
+     * prompt on the summary screen.
+     * @returns {number}
+     */
+    pendingCount: function () {
+      return readStorage(STORAGE_KEYS.PENDING_EVENTS, []).length;
+    },
+
+    /**
+     * Move all held anonymous rounds into the real event log under the
+     * given profileId, then clear the pending slot. Called automatically
+     * by profile.create(). Safe no-op if nothing is pending.
+     * @param {string} profileId
+     * @returns {number} how many events were back-filled
+     */
+    backfill: function (profileId) {
+      if (!profileId) return 0;
+      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      if (!pending.length) return 0;
+
+      var events = readStorage(STORAGE_KEYS.EVENTS, []);
+      var n = 0;
+      for (var i = 0; i < pending.length; i++) {
+        var p = pending[i];
+        if (!p || !p.module) continue;
+        var ev = {
+          profileId:   profileId,
+          module:      p.module,
+          tier:        p.tier || null,
+          length:      Number(p.length) || 0,
+          correct:     Number(p.correct) || 0,
+          total:       Number(p.total) || 0,
+          durationMs:  Number(p.durationMs) || 0,
+          timedMode:   !!p.timedMode,
+          completedAt: Number(p.completedAt) || Date.now()
+        };
+        var bfSk = sanitizeSkills(p.skills);
+        if (bfSk) ev.skills = bfSk;
+        events.push(ev);
+        n++;
+      }
+      writeStorage(STORAGE_KEYS.EVENTS, events);
+      writeStorage(STORAGE_KEYS.PENDING_EVENTS, []);
+      return n;
+    },
+
+    /**
+     * Query events for a profile, with optional filters.
+     *
+     * @param {string} profileId
+     * @param {Object} [opts]
+     * @param {string} [opts.module]  filter to one module
+     * @param {number} [opts.since]   only events with completedAt >= since
+     * @param {number} [opts.limit]   max results, most recent first
+     * @returns {Array<Event>} matching events, newest first
+     */
+    query: function (profileId, opts) {
+      if (!profileId) return [];
+      opts = opts || {};
+      var events = readStorage(STORAGE_KEYS.EVENTS, []);
+      var results = [];
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (ev.profileId !== profileId) continue;
+        if (opts.module && ev.module !== opts.module) continue;
+        if (opts.since && ev.completedAt < opts.since) continue;
+        results.push(ev);
+      }
+      // newest first
+      results.sort(function (a, b) { return b.completedAt - a.completedAt; });
+      if (opts.limit && results.length > opts.limit) {
+        results = results.slice(0, opts.limit);
+      }
+      return results;
     }
-  }
+  };
 
-  nicknameInput.addEventListener('input', updateNicknameValidity);
-  nicknameInput.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && !nicknameBtn.disabled) {
-      e.preventDefault();
-      nicknameBtn.click();
+  // ─────────────────────────────────────────────────────────────
+  // QN.ui — shared widgets
+  // ─────────────────────────────────────────────────────────────
+
+  var uiAPI = {
+
+    /**
+     * Render the profile chip into a container element.
+     * The chip shows the active profile's nickname + color dot.
+     * Tapping it navigates to profile.html (the switcher).
+     *
+     * If no profile is active, renders a subtle "Sign in" prompt
+     * that links to profile.html.
+     *
+     * Call this once per page, after DOMContentLoaded, passing
+     * the element where you want the chip mounted (typically a
+     * top-right header slot).
+     *
+     * @param {HTMLElement} containerEl
+     */
+    chip: function (containerEl) {
+      if (!containerEl) return;
+      var active = profileAPI.getActive();
+
+      // Clear container
+      while (containerEl.firstChild) containerEl.removeChild(containerEl.firstChild);
+
+      var link = document.createElement('a');
+      link.href = 'profile.html';
+      link.className = 'qn-chip';
+      link.setAttribute('aria-label',
+        active ? 'Switch profile (currently ' + active.nickname + ')'
+               : 'Make a profile');
+
+      // Inline styles so the chip works without any new CSS in
+      // module files. Modules can override .qn-chip rules in
+      // their own CSS if they want a tighter visual fit.
+      link.style.cssText = [
+        'display:inline-flex',
+        'align-items:center',
+        'gap:8px',
+        'padding:6px 12px 6px 8px',
+        'border-radius:999px',
+        'background:rgba(255,255,255,0.85)',
+        'border:1px solid rgba(42,42,62,0.12)',
+        'font-family:Fredoka,sans-serif',
+        'font-weight:600',
+        'font-size:14px',
+        'color:#2A2A3E',
+        'text-decoration:none',
+        'cursor:pointer',
+        'transition:background 140ms, transform 120ms'
+      ].join(';');
+
+      var dot = document.createElement('span');
+      dot.style.cssText = [
+        'display:inline-block',
+        'width:18px',
+        'height:18px',
+        'border-radius:50%',
+        'background:' + colorHex(active ? active.color : 'teal'),
+        'flex-shrink:0'
+      ].join(';');
+
+      var label = document.createElement('span');
+      label.textContent = active ? active.nickname : 'Sign in';
+
+      link.appendChild(dot);
+      link.appendChild(label);
+      containerEl.appendChild(link);
     }
-  });
+  };
 
-  function rerollSuggestions() {
-    // pick 6 random unique items from pool
-    var pool = NICKNAME_POOL.slice();
-    var picks = [];
-    while (picks.length < 6 && pool.length > 0) {
-      var idx = Math.floor(Math.random() * pool.length);
-      picks.push(pool.splice(idx, 1)[0]);
-    }
-    while (suggestGrid.firstChild) suggestGrid.removeChild(suggestGrid.firstChild);
-    picks.forEach(function (name) {
-      var pill = document.createElement('button');
-      pill.className = 'suggest-pill';
-      pill.type = 'button';
-      pill.textContent = name;
-      pill.addEventListener('click', function () {
-        nicknameInput.value = name;
-        updateNicknameValidity();
-        nicknameInput.focus();
-      });
-      suggestGrid.appendChild(pill);
-    });
-  }
-
-  rerollBtn.addEventListener('click', rerollSuggestions);
-
-  nicknameBtn.addEventListener('click', function () {
-    var val = nicknameInput.value.trim();
-    if (val.length < 1 || val.length > 20) return;
-    state.draftNickname = val;
-    showView('level');
-    clearLevelSelection();
-  });
-
-  // ─────────────────────────────────────────────────────────
-  // VIEW 3 — Level
-  // ─────────────────────────────────────────────────────────
-
-  var levelOptions = document.querySelectorAll('.level-option');
-
-  function clearLevelSelection() {
-    state.draftLevel = null;
-    for (var i = 0; i < levelOptions.length; i++) {
-      levelOptions[i].classList.remove('selected');
-    }
-  }
-
-  for (var i = 0; i < levelOptions.length; i++) {
-    levelOptions[i].addEventListener('click', function () {
-      for (var j = 0; j < levelOptions.length; j++) levelOptions[j].classList.remove('selected');
-      this.classList.add('selected');
-      state.draftLevel = this.getAttribute('data-level');
-    });
-  }
-
-  document.getElementById('level-continue').addEventListener('click', function () {
-    showView('color');
-    renderColorGrid('color-grid', state.draftColor, function (c) { state.draftColor = c; });
-  });
-
-  document.getElementById('level-skip').addEventListener('click', function () {
-    state.draftLevel = null;
-    showView('color');
-    renderColorGrid('color-grid', state.draftColor, function (c) { state.draftColor = c; });
-  });
-
-  // ─────────────────────────────────────────────────────────
-  // VIEW 4 — Color
-  // ─────────────────────────────────────────────────────────
-
-  function renderColorGrid(targetId, selectedColor, onPick) {
-    var grid = document.getElementById(targetId);
-    while (grid.firstChild) grid.removeChild(grid.firstChild);
-    QN.profile.colors.forEach(function (c) {
-      var tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'color-tile color-' + c + (c === selectedColor ? ' selected' : '');
-      tile.setAttribute('aria-label', c);
-      tile.addEventListener('click', function () {
-        var tiles = grid.querySelectorAll('.color-tile');
-        for (var k = 0; k < tiles.length; k++) tiles[k].classList.remove('selected');
-        tile.classList.add('selected');
-        onPick(c);
-      });
-      grid.appendChild(tile);
-    });
-  }
-
-  document.getElementById('color-finish').addEventListener('click', function () {
-    var created = QN.profile.create({
-      nickname: state.draftNickname,
-      level:    state.draftLevel,
-      color:    state.draftColor
-    });
-    if (!created) {
-      alert('Could not create profile. Please try again.');
-      return;
-    }
-    // Send them straight into modules
-    window.location.href = 'play.html';
-  });
-
-  // ─────────────────────────────────────────────────────────
-  // VIEW 5 — Edit profile
-  // ─────────────────────────────────────────────────────────
-
-  var editNicknameInput = document.getElementById('edit-nickname-input');
-  var editNicknameHint  = document.getElementById('edit-nickname-hint');
-
-  function startEditFlow(id) {
-    var profiles = QN.profile.list();
-    var p = null;
-    for (var i = 0; i < profiles.length; i++) {
-      if (profiles[i].id === id) { p = profiles[i]; break; }
-    }
-    if (!p) return;
-    state.editingId = id;
-    state.draftColor = p.color;
-    editNicknameInput.value = p.nickname;
-    updateEditNicknameValidity();
-    renderColorGrid('edit-color-grid', p.color, function (c) { state.draftColor = c; });
-    showView('edit');
-  }
-
-  function updateEditNicknameValidity() {
-    var val = editNicknameInput.value.trim();
-    if (val.length === 0) {
-      editNicknameHint.textContent = 'Name cannot be empty';
-      editNicknameHint.classList.add('err');
-    } else if (val.length > 20) {
-      editNicknameHint.textContent = 'Keep it under 20 characters';
-      editNicknameHint.classList.add('err');
-    } else {
-      editNicknameHint.textContent = val.length + '/20';
-      editNicknameHint.classList.remove('err');
-    }
-  }
-
-  editNicknameInput.addEventListener('input', updateEditNicknameValidity);
-
-  document.getElementById('edit-save').addEventListener('click', function () {
-    var val = editNicknameInput.value.trim();
-    if (val.length < 1 || val.length > 20) return;
-    QN.profile.update(state.editingId, {
-      nickname: val,
-      color:    state.draftColor
-    });
-    renderSwitcher();
-    showView('switcher');
-  });
-
-  document.getElementById('edit-cancel').addEventListener('click', function () {
-    showView('switcher');
-  });
-
-  document.getElementById('edit-delete').addEventListener('click', function () {
-    showDeleteConfirm(state.editingId);
-  });
-
-  // ─────────────────────────────────────────────────────────
-  // VIEW 6 — Delete confirmation
-  // ─────────────────────────────────────────────────────────
-
-  function showDeleteConfirm(id) {
-    var profiles = QN.profile.list();
-    var p = null;
-    for (var i = 0; i < profiles.length; i++) {
-      if (profiles[i].id === id) { p = profiles[i]; break; }
-    }
-    if (!p) return;
-
-    document.getElementById('confirm-dot').style.background = colorToHex(p.color);
-    document.getElementById('confirm-name').textContent = p.nickname;
-
-    var events = QN.events.query(p.id);
-    var rounds = events.length;
-    var stats = rounds === 0
-      ? 'No practice yet'
-      : rounds + (rounds === 1 ? ' round' : ' rounds') + ' of practice will be erased';
-    document.getElementById('confirm-stats').textContent = stats;
-
-    showView('delete');
-  }
-
-  document.getElementById('delete-cancel').addEventListener('click', function () {
-    showView('edit');
-  });
-
-  document.getElementById('delete-confirm').addEventListener('click', function () {
-    QN.profile['delete'](state.editingId);
-    state.editingId = null;
-    var remaining = QN.profile.list();
-    if (remaining.length === 0) {
-      showView('welcome');
-    } else {
-      renderSwitcher();
-      showView('switcher');
-    }
-  });
-
-  // ---- device-wide reset (wipe everything) ----
-  function fillResetPreview() {
-    var statsEl = document.getElementById('reset-stats');
-    if (statsEl) {
-      var n = QN.profile.list().length;
-      statsEl.textContent = n === 1 ? '1 profile and all its history' : (n + ' profiles and all their history');
-    }
-  }
-  var resetLink = document.getElementById('reset-device-link');
-  if (resetLink) {
-    resetLink.addEventListener('click', function (e) {
-      e.preventDefault();
-      fillResetPreview();
-      showView('reset');
-    });
-  }
-  var resetCancel = document.getElementById('reset-cancel');
-  if (resetCancel) resetCancel.addEventListener('click', function () { showView('switcher'); });
-
-  var resetConfirm = document.getElementById('reset-confirm');
-  if (resetConfirm) resetConfirm.addEventListener('click', function () {
-    QN.profile.resetDevice();
-    // back to a clean first-run state
-    showView('welcome');
-  });
-
-  // ─────────────────────────────────────────────────────────
-  // HELPERS — color hex + level + relative time
-  // ─────────────────────────────────────────────────────────
-
-  function colorToHex(c) {
-    switch (c) {
+  /**
+   * Map color id to a hex value. Mirrors the design tokens used
+   * across modules. Local to ui.chip so the chip can render
+   * without depending on any specific module's CSS.
+   */
+  function colorHex(colorId) {
+    switch (colorId) {
       case 'teal':  return '#1FB8A8';
       case 'sun':   return '#FFB627';
       case 'grape': return '#5B3FE4';
@@ -1099,42 +683,237 @@ body {
     }
   }
 
-  function levelLabel(level) {
-    switch (level) {
-      case 'starting': return 'Just starting';
-      case 'some':     return 'Knows some notes';
-      case 'while':    return 'Playing a while';
-      default:         return 'No level set';
+  // ─────────────────────────────────────────────────────────────
+  // RECOMMENDER  (weak-spot system, phase 2 — pure logic, no UI)
+  //
+  // QN.recommend.next(profileId) -> a single "what to practice next"
+  // recommendation. Personality: encouraging + forward-moving, but it
+  // doesn't let weak spots rot. Balanced (mostly progress, weak spots
+  // woven in) with a no-nag cap so the same weak spot isn't served
+  // back-to-back. Phase 3 (the "Today" surface) will consume this; the
+  // function itself commits to no UI.
+  //
+  // DESIGN PRINCIPLE (evidence-based — see BUILD_LOG): learning research
+  // favors INTERLEAVING (mixed question types) over blocked drilling, and
+  // SPACING over massed repetition. So: (1) the recommender biases a round
+  // toward a weak *module*, but the round itself must stay interleaved —
+  // never collapse into a single-sub-skill blocked drill. (2) The no-nag
+  // cap is the spacing effect, not just politeness: a weak spot resurfaces
+  // later rather than back-to-back, which is the more effective pattern.
+  // ─────────────────────────────────────────────────────────────
+
+  // v1 linear path: live modules only, in the roster's pedagogical order.
+  var PATH = [
+    'note-names', 'note-values', 'key-signatures',
+    'time-signatures', 'piano-quiz', 'scales', 'intervals'
+  ];
+  var TIER_ORDER = ['easy', 'medium', 'tricky'];
+
+  var REC = {
+    // tuning knobs (single place to re-tune the engine's feel)
+    MIN_SAMPLES_FOR_WEAK: 4,    // need >= this many attempts before trusting an accuracy
+    WEAK_THRESHOLD:       0.60, // sub-skill accuracy under this is "weak"
+    SEVERE_THRESHOLD:     0.40, // under this is "severe" — jumps the queue
+    RECENT_WINDOW:        20,   // how many recent rounds inform recency weighting
+    NO_NAG_LOOKBACK:      2,    // don't re-serve a weak spot if it was the focus
+                                //   of either of the last N recommendations-as-played
+    TIER_UP_ACCURACY:     0.85, // clear a tier at >= this to advance to the next
+    MIN_ROUNDS_PER_TIER:  2,    // and only after this many rounds at the tier
+    DEFAULT_LENGTH:       10
+  };
+
+  function recencyWeight(idx, total) {
+    // idx 0 = most recent. Linear decay from 1.0 (newest) to 0.4 (oldest
+    // in window). Rounds beyond the window contribute nothing.
+    if (idx >= REC.RECENT_WINDOW) return 0;
+    var span = Math.min(total, REC.RECENT_WINDOW);
+    if (span <= 1) return 1;
+    return 1 - 0.6 * (idx / (span - 1));
+  }
+
+  var recommendAPI = {
+    /**
+     * Compute the next-practice recommendation for a profile.
+     * Pure read over qn_events — no side effects, no UI.
+     * @param {string} profileId
+     * @returns {Object} {
+     *   module, tier, length,
+     *   kind: 'cold-start'|'remediation'|'progress'|'review',
+     *   reason: string,
+     *   weakSkills: [{ module, skill, acc, attempts }]   // may be empty
+     * }
+     */
+    next: function (profileId) {
+      var path = PATH.slice();
+      var fallback = {
+        module: path[0], tier: 'easy', length: REC.DEFAULT_LENGTH,
+        kind: 'cold-start', reason: 'Start at the beginning.', weakSkills: []
+      };
+      if (!profileId) return fallback;
+
+      var events = eventsAPI.query(profileId); // newest first
+      if (!events || !events.length) return fallback;
+
+      // ---- per-module rollups + recency-weighted sub-skill accuracy ----
+      var perModule = {};   // slug -> { rounds, recentRoundAcc:[], skills:{ key:{wc,wt} } }
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (path.indexOf(ev.module) === -1) continue; // ignore non-path modules
+        if (!perModule[ev.module]) perModule[ev.module] = { rounds: 0, recentAcc: [], tierRounds: {}, tierAcc: {}, skills: {} };
+        var pm = perModule[ev.module];
+        pm.rounds++;
+        var w = recencyWeight(i, events.length);
+
+        if (i < REC.RECENT_WINDOW && ev.total > 0) pm.recentAcc.push(ev.correct / ev.total);
+
+        var t = ev.tier || 'easy';
+        pm.tierRounds[t] = (pm.tierRounds[t] || 0) + 1;
+        if (ev.total > 0) {
+          if (!pm.tierAcc[t]) pm.tierAcc[t] = { c: 0, n: 0 };
+          pm.tierAcc[t].c += ev.correct; pm.tierAcc[t].n += ev.total;
+        }
+
+        if (ev.skills && w > 0) {
+          for (var sk in ev.skills) {
+            if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
+            if (!pm.skills[sk]) pm.skills[sk] = { wc: 0, wt: 0 };
+            pm.skills[sk].wc += ev.skills[sk].c * w;  // recency-weighted
+            pm.skills[sk].wt += ev.skills[sk].t * w;
+          }
+        }
+      }
+
+      // ---- collect weak sub-skills across path modules ----
+      var weak = [];
+      for (var slug in perModule) {
+        var sk2 = perModule[slug].skills;
+        for (var key in sk2) {
+          var wt = sk2[key].wt;
+          if (wt < REC.MIN_SAMPLES_FOR_WEAK) continue; // not enough signal
+          var acc = sk2[key].wc / wt;
+          if (acc < REC.WEAK_THRESHOLD) {
+            weak.push({ module: slug, skill: key, acc: acc, attempts: Math.round(wt), severe: acc < REC.SEVERE_THRESHOLD });
+          }
+        }
+      }
+      weak.sort(function (a, b) { return a.acc - b.acc; }); // weakest first
+
+      // ---- no-nag: what were the last couple of things actually practiced? ----
+      var recentModules = [];
+      for (var r = 0; r < events.length && recentModules.length < REC.NO_NAG_LOOKBACK; r++) {
+        if (path.indexOf(events[r].module) !== -1) recentModules.push(events[r].module);
+      }
+
+      // ---- 1. severe weak spot jumps the queue (unless just practiced) ----
+      var severe = weak.filter(function (w2) { return w2.severe; });
+      for (var s = 0; s < severe.length; s++) {
+        if (recentModules.indexOf(severe[s].module) === -1) {
+          var sv = severe[s];
+          return {
+            module: sv.module,
+            tier: weakestTierFor(perModule[sv.module]),
+            length: REC.DEFAULT_LENGTH,
+            kind: 'remediation',
+            reason: 'Let\u2019s shore up ' + sv.module + ' \u2014 ' + Math.round(sv.acc * 100) + '% on one part of it.',
+            weakSkills: [sv]
+          };
+        }
+      }
+
+      // ---- 2. forward progress: first path module not yet "cleared" ----
+      for (var p = 0; p < path.length; p++) {
+        var mslug = path[p];
+        var info = perModule[mslug];
+        if (!info) {
+          // never touched -> start it
+          return {
+            module: mslug, tier: 'easy', length: REC.DEFAULT_LENGTH,
+            kind: 'progress',
+            reason: 'New skill: time to start ' + mslug + '.',
+            weakSkills: weak.filter(function (w3) { return w3.module === mslug; })
+          };
+        }
+        var tier = nextTierFor(info);
+        if (tier) {
+          return {
+            module: mslug, tier: tier, length: REC.DEFAULT_LENGTH,
+            kind: 'progress',
+            reason: tier === 'easy'
+              ? 'Keep going on ' + mslug + '.'
+              : 'You\u2019re ready for ' + tier + ' in ' + mslug + '.',
+            weakSkills: weak.filter(function (w4) { return w4.module === mslug; })
+          };
+        }
+        // else this module is cleared at all tiers -> continue to next
+      }
+
+      // ---- 3. everything cleared: review the weakest remaining spot, or
+      //         the least-recently practiced module ----
+      if (weak.length) {
+        var firstNonRecent = weak.find(function (w5) { return recentModules.indexOf(w5.module) === -1; }) || weak[0];
+        return {
+          module: firstNonRecent.module,
+          tier: weakestTierFor(perModule[firstNonRecent.module]),
+          length: REC.DEFAULT_LENGTH,
+          kind: 'review',
+          reason: 'Sharpen ' + firstNonRecent.module + ' \u2014 still a soft spot.',
+          weakSkills: [firstNonRecent]
+        };
+      }
+      // truly all strong: gentle review of the least-recently-played module
+      var lru = path.filter(function (m) { return recentModules.indexOf(m) === -1; })[0] || path[0];
+      return {
+        module: lru, tier: 'tricky', length: REC.DEFAULT_LENGTH,
+        kind: 'review',
+        reason: 'You\u2019re strong everywhere \u2014 a quick refresher on ' + lru + '.',
+        weakSkills: []
+      };
+
+      // ---- helpers ----
+      function nextTierFor(info) {
+        // Returns the tier to practice next in this module, or null if the
+        // module is "cleared" (all tiers practiced enough and accurate).
+        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+          var tr = TIER_ORDER[ti];
+          var rounds = info.tierRounds[tr] || 0;
+          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : 0;
+          if (rounds < REC.MIN_ROUNDS_PER_TIER) return tr;          // under-practiced
+          if (acc < REC.TIER_UP_ACCURACY) return tr;                // not yet mastered
+          // else cleared; check next tier
+        }
+        return null;
+      }
+      function weakestTierFor(info) {
+        // For remediation: practice at the lowest tier that isn't mastered,
+        // so we rebuild from where it broke down.
+        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+          var tr = TIER_ORDER[ti];
+          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : null;
+          if (acc !== null && acc < REC.TIER_UP_ACCURACY) return tr;
+        }
+        return 'easy';
+      }
     }
-  }
+  };
 
-  function lastActiveLabel(ts) {
-    if (!ts) return 'New';
-    var now = Date.now();
-    var diff = now - ts;
-    var min = 60 * 1000;
-    var hr  = 60 * min;
-    var day = 24 * hr;
-    if (diff < 5 * min)   return 'Active now';
-    if (diff < hr)        return Math.floor(diff / min) + ' min ago';
-    if (diff < day)       return Math.floor(diff / hr) + ' hr ago';
-    if (diff < 7 * day)   return Math.floor(diff / day) + ' days ago';
-    if (diff < 30 * day)  return Math.floor(diff / (7 * day)) + ' wk ago';
-    return Math.floor(diff / (30 * day)) + ' mo ago';
-  }
+  // ─────────────────────────────────────────────────────────────
+  // EXPOSE GLOBAL NAMESPACE
+  // ─────────────────────────────────────────────────────────────
 
-  // ─────────────────────────────────────────────────────────
-  // BOOT
-  // ─────────────────────────────────────────────────────────
+  window.QN = window.QN || {};
+  window.QN.profile   = profileAPI;
+  window.QN.events    = eventsAPI;
+  window.QN.ui        = uiAPI;
+  window.QN.recommend = recommendAPI;
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  // Lightweight diagnostics surface (v1.5.0). During builds, run
+  // QN.diagnostics.corruption() in the console to see if any stored key
+  // failed to parse this session (and where its recoverable backup lives).
+  window.QN.diagnostics = {
+    corruption: function () { return _corruptionLog.slice(); },
+    hasCorruption: function () { return _corruptionLog.length > 0; }
+  };
+
+  window.QN.version = '1.5.0';  // corruption-aware readStorage (corrupt vs empty) + QN.diagnostics
 
 })();
-</script>
-
-</body>
-</html>
