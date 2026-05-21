@@ -2216,6 +2216,20 @@
       }, 300);
     }
 
+    // Build per-sub-skill tallies from this round's history. Each TS
+    // question has a type (label/top/bottom/whichBeats/whichUnit) which is
+    // its sub-skill. Derived from state.history so it can't drift from score.
+    var skills = {};
+    try {
+      for (var hi = 0; hi < state.history.length; hi++) {
+        var h = state.history[hi];
+        var qtype = (TS.decodeKey ? TS.decodeKey(h.key).type : null) || 'unknown';
+        if (!skills[qtype]) skills[qtype] = { c: 0, t: 0 };
+        skills[qtype].t++;
+        if (h.correct) skills[qtype].c++;
+      }
+    } catch (e) { skills = null; }
+
     // Log this round, or HOLD it if no profile yet (back-filled on create)
     var roundOutcome = 'logged';
     if (window.QN && QN.events) {
@@ -2226,7 +2240,8 @@
         correct:    state.score,
         total:      state.total,
         durationMs: Date.now() - state.startedAt,
-        timedMode:  !!state.settings.timer.enabled
+        timedMode:  !!state.settings.timer.enabled,
+        skills:     skills
       });
     }
 
