@@ -303,6 +303,24 @@
       .ltile-name { font-size: 0.98rem; }
       .ltile-body { padding: 12px 10px 14px; }
       .tier-name { font-size: 1.3rem; }
+
+      /* Nav declutters on phones: keep brand + profile chip only.
+         The PRACTICE tag is redundant (the page title says it) and
+         Progress is reachable from the chip's dropdown menu, so the
+         standalone buttons are dropped to give the chip room. */
+      nav { padding: 12px 16px; }
+      .nav-brand { font-size: 22px; }
+      .nav-progress, .nav-tag { display: none; }
+      .nav-right { gap: 8px; min-width: 0; }
+      .profile-chip-slot { min-width: 0; }
+      /* Long nicknames (up to 20 chars) shouldn't re-trigger overflow:
+         cap and ellipsis the chip's label span on small screens. */
+      .qn-chip { max-width: 46vw; }
+      .qn-chip span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
