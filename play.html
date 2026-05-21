@@ -1,919 +1,867 @@
-/* ============================================================
-   QuizNote — Shared Profile + Event Helper
-   ============================================================
-
-   Purpose:
-     Single source of truth for learner identity and round
-     event logging across all QuizNote modules. Loaded once per
-     module via <script src="qn-profile.js" defer></script>.
-
-   Exposes one global: window.QN
-
-   Three namespaces:
-     QN.profile  — identity (create, list, switch, update, delete)
-     QN.events   — round logging (log, query)
-     QN.ui       — shared widgets (profile chip)
-
-   Storage model (localStorage, all values JSON-encoded):
-     qn_profiles      Array<Profile>   list of all profiles on device
-     qn_activeProfile string | null    id of currently active profile
-     qn_events        Array<Event>     append-only round log
-
-   Forward-compatibility notes:
-     - Profile ids are opaque 10-char random strings, NOT
-       sequential. Safe to sync to a backend later.
-     - Profiles carry syncedAt: null until claimed by a parent
-       account (post-Supabase). syncedAt: <timestamp> means the
-       profile has been pushed to the backend.
-     - Event shape is final. Backend table will mirror this.
-
-   Authored: May 2026. No external dependencies.
-   ============================================================ */
-
-(function () {
-  'use strict';
-
-  // ─────────────────────────────────────────────────────────────
-  // CONSTANTS
-  // ─────────────────────────────────────────────────────────────
-
-  var STORAGE_KEYS = {
-    PROFILES:       'qn_profiles',
-    ACTIVE_PROFILE: 'qn_activeProfile',
-    EVENTS:         'qn_events',
-    PENDING_EVENTS: 'qn_pendingEvents'  // anonymous rounds awaiting a profile
-  };
-
-  var MAX_EVENTS_PER_PROFILE = 5000;
-  // Anonymous rounds held before a profile exists. Capped so a long
-  // anonymous session can't grow storage without bound; oldest dropped.
-  var MAX_PENDING_EVENTS = 50;
-
-  // Color palette IDs match the design system tokens in each
-  // module's CSS. Keep this list in sync with the onboarding
-  // color picker in profile.html.
-  var COLOR_OPTIONS = ['teal', 'sun', 'grape', 'coral', 'mint', 'rose'];
-
-  // In-session record of any corrupt-data reads (see readStorage). Surfaced
-  // via QN.diagnostics so corruption is checkable in the console during builds.
-  var _corruptionLog = [];
-
-  // ─────────────────────────────────────────────────────────────
-  // INTERNAL UTILITIES
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * Generate an opaque 10-char alphanumeric id.
-   * 62^10 = enough entropy to never collide across devices.
-   */
-  function generateId() {
-    var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    var id = 'p_';
-    for (var i = 0; i < 10; i++) {
-      id += chars.charAt(Math.floor(Math.random() * chars.length));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizNote — Pick Your Module</title>
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAAA=">
+  <meta name="description" content="Choose a music theory module and start practicing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+    @font-face {
+      font-family: 'Bravura Text';
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+      src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+           url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
     }
-    return id;
+
+    :root {
+      --cream:      #FFFAF0;
+      --cream-2:    #FFF3DC;
+      --paper:      #ffffff;
+      --ink:        #2A2A3E;
+      --ink-soft:   #5a5a6e;
+      --ink-faint:  #8a8472;
+      --line:       rgba(42, 42, 62, 0.09);
+      --line-strong:rgba(42, 42, 62, 0.16);
+      --teal:       #1FB8A8;
+      --teal-dk:    #0e8475;
+      --teal-lt:    #d3f1ec;
+      --sun:        #FFB627;
+      --sun-dk:     #c98800;
+      --sun-lt:     #fff3cc;
+      --coral:      #FF6B6B;
+      --coral-dk:   #c2453f;
+      --grape:      #5B3FE4;
+      --grape-dk:   #3d28a8;
+      --slate:      #6b7a99;
+      --white:      #ffffff;
+      --shadow:     #d8d6cc;
+      --shadow-soft:    0 6px 22px -8px rgba(42,42,62,0.12), 0 1px 2px rgba(42,42,62,0.04);
+      --shadow-soft-lg: 0 14px 36px -12px rgba(42,42,62,0.18), 0 2px 4px rgba(42,42,62,0.05);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+        radial-gradient(circle at 90% 85%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+    }
+
+    /* ---- Nav ---- */
+    nav {
+      background: white;
+      border-bottom: 2.5px solid var(--ink);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-brand span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-progress {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+      text-decoration: none;
+      background: white;
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 3px 0 var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .nav-progress:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+    .nav-progress:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+    .nav-tag {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--teal-dk);
+      background: var(--teal-lt);
+      border-radius: 999px;
+      padding: 4px 12px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- Main ---- */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-header h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .page-header p {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-top: 8px;
+    }
+
+    /* ---- Tier sections ---- */
+    .tier-section { margin-bottom: 48px; }
+    .tier-section:last-child { margin-bottom: 0; }
+    .tier-header {
+      display: flex; align-items: baseline; gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line-strong);
+      flex-wrap: wrap;
+    }
+    .tier-name {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: 1.55rem; letter-spacing: -0.018em;
+    }
+    .tier-section.foundations .tier-name { color: var(--sun-dk); }
+    .tier-section.reading     .tier-name { color: var(--teal-dk); }
+    .tier-section.theory      .tier-name { color: var(--grape-dk); }
+    .tier-meta {
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      margin-right: auto;
+    }
+    .tier-desc {
+      font-family: 'Fredoka', sans-serif; font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      width: 100%; flex-basis: 100%;
+    }
+
+    /* ---- Tile grid ---- */
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 16px;
+    }
+    .ltile {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow-soft);
+      padding: 0;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      position: relative;
+      transition: box-shadow 220ms, transform 220ms;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .ltile:hover { box-shadow: var(--shadow-soft-lg); transform: translateY(-2px); }
+    .ltile.soon { opacity: 0.72; cursor: default; }
+    .ltile.soon:hover { transform: none; box-shadow: var(--shadow-soft); }
+    .ltile.soon::after {
+      content: 'Soon';
+      position: absolute; top: 12px; right: 12px;
+      font-family: 'Fredoka', sans-serif; font-weight: 600;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      background: white;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 3px 8px;
+      z-index: 2;
+      box-shadow: 0 2px 6px -2px rgba(42,42,62,0.1);
+    }
+    .ltile-art {
+      width: 100%;
+      height: 116px;
+      border-bottom: 1px solid var(--line);
+      background: var(--cream-2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .ltile-art svg { width: 100%; height: 100%; display: block; }
+    .ltile-art.bg-teal  { background: #e8f6f3; }
+    .ltile-art.bg-coral { background: #fff0f0; }
+    .ltile-art.bg-sun   { background: #fff7d9; }
+    .ltile-art.bg-grape { background: #f0ebff; }
+    .ltile-art.bg-green { background: #e7f5e6; }
+    .ltile-art.bg-pink  { background: #ffeef7; }
+    .ltile-art.bg-slate { background: #eef1f7; }
+    .ltile-body {
+      padding: 14px 14px 16px;
+      text-align: center;
+      display: flex; flex-direction: column; gap: 4px;
+      flex: 1;
+    }
+    .ltile-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--ink); letter-spacing: -0.005em; }
+    .ltile-blurb { font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.4; }
+
+    /* "More to come" placeholder tile */
+    .ltile.more-soon { background: var(--cream-2); cursor: default; }
+    .ltile.more-soon:hover { transform: none; box-shadow: var(--shadow-soft); }
+    .ltile.more-soon::after { display: none; }
+    .ltile.more-soon .ltile-art { background: var(--cream); border-bottom-color: var(--line); }
+    .ltile.more-soon .ltile-name { color: var(--ink-soft); }
+    .ltile.more-soon .ltile-blurb { color: var(--ink-faint); }
+
+    /* ---- Tile art animations ---- */
+    @keyframes tile-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes tile-shimmer {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+    @keyframes tile-wiggle {
+      0%, 100% { transform: rotate(0); }
+      35% { transform: rotate(-10deg); }
+      65% { transform: rotate(10deg); }
+    }
+    @keyframes tile-wave-out {
+      0%   { transform: translateX(-4px) scale(0.85); opacity: 1; }
+      100% { transform: translateX(12px) scale(1.2); opacity: 0; }
+    }
+    @keyframes tile-key-blink {
+      0%, 100% { fill: var(--teal); }
+      50% { fill: #38e8d2; }
+    }
+    @keyframes tile-bar-grow {
+      0% { transform: scaleX(0.4); }
+      50% { transform: scaleX(1); }
+      100% { transform: scaleX(0.4); }
+    }
+    @keyframes more-drift {
+      0%, 100% { transform: translateY(0); opacity: 0.55; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+    .anim-pulse   { animation: tile-pulse 2200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .anim-shimmer { animation: tile-shimmer 2600ms ease-in-out infinite; }
+    .anim-wiggle  { animation: tile-wiggle 1800ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .anim-wave    { animation: tile-wave-out 2400ms ease-out infinite; }
+    .anim-blink   { animation: tile-key-blink 1400ms ease-in-out infinite; }
+    .anim-bar     { animation: tile-bar-grow 2800ms ease-in-out infinite; transform-origin: left center; }
+    .more-glyph   { animation: more-drift 4200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+
+    /* ---- Footer ---- */
+    footer {
+      background: white;
+      border-top: 2px solid var(--shadow);
+      padding: 16px 24px;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      color: var(--ink-faint);
+      flex-shrink: 0;
+    }
+    footer a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover { text-decoration: underline; }
+    footer .sep { margin: 0 8px; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 560px) {
+      main { padding: 28px 16px 48px; }
+      .tile-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .page-header h1 { font-size: 1.8rem; }
+      .ltile-name { font-size: 0.98rem; }
+      .ltile-body { padding: 12px 10px 14px; }
+      .tier-name { font-size: 1.3rem; }
+
+      /* Nav declutters on phones: keep brand + profile chip only.
+         The PRACTICE tag is redundant (the page title says it) and
+         Progress is reachable from the chip's dropdown menu, so the
+         standalone buttons are dropped to give the chip room. */
+      nav { padding: 12px 16px; }
+      .nav-brand { font-size: 22px; }
+      .nav-progress, .nav-tag { display: none; }
+      .nav-right { gap: 8px; min-width: 0; }
+      .profile-chip-slot { min-width: 0; }
+      /* Long nicknames (up to 20 chars) shouldn't re-trigger overflow:
+         cap and ellipsis the chip's label span on small screens. */
+      .qn-chip { max-width: 46vw; }
+      .qn-chip span:last-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html" class="nav-brand">Quiz<span>Note</span></a>
+    <div class="nav-right">
+      <a href="dashboard.html" class="nav-progress">📊 Progress</a>
+      <span class="nav-tag">PRACTICE</span>
+      <span class="profile-chip-slot" id="profile-chip-slot"></span>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>What do you want to practice?</h1>
+      <p>Each module drills one skill. Short sessions, real progress.</p>
+    </div>
+
+    <!-- FOUNDATIONS -->
+    <div class="tier-section foundations">
+      <div class="tier-header">
+        <div class="tier-name">Foundations</div>
+        <div class="tier-meta">First notes · Levels 1–2</div>
+        <div class="tier-desc">Reading notes and rhythm. Where every musician starts.</div>
+      </div>
+      <div class="tile-grid">
+        <!-- PianoQuiz : staff note → arrow → mini piano with one key lit -->
+        <a class="ltile" href="piano-quiz.html">
+          <div class="ltile-art bg-teal">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=14, 22, 30, 38, 46 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="14" x2="170" y2="14"/>
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="46" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- E note on bottom line (y=46) - stem up - aligned above lit E key (3rd white, center x=79) -->
+              <g class="anim-pulse">
+                <line x1="83" y1="45" x2="83" y2="24" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="79" cy="46" rx="5" ry="3.6" transform="rotate(-20 79 46)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- Arrow down pointing at center of lit E key -->
+              <path d="M79 58 L79 72 M74 67 L79 72 L84 67" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Piano: 8 white keys, C D E F G A B C, w=14 starting at x=44 -->
+              <g stroke="#2A2A3E" stroke-width="1.5">
+                <rect x="44"  y="82" width="14" height="38" fill="white"/>
+                <rect x="58"  y="82" width="14" height="38" fill="white"/>
+                <rect x="72"  y="82" width="14" height="38" fill="#1FB8A8" class="anim-blink"/>
+                <rect x="86"  y="82" width="14" height="38" fill="white"/>
+                <rect x="100" y="82" width="14" height="38" fill="white"/>
+                <rect x="114" y="82" width="14" height="38" fill="white"/>
+                <rect x="128" y="82" width="14" height="38" fill="white"/>
+                <rect x="142" y="82" width="14" height="38" fill="white"/>
+              </g>
+              <!-- Black keys: between C-D, D-E, F-G, G-A, A-B -->
+              <g fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1.2">
+                <rect x="53"  y="82" width="10" height="22"/>
+                <rect x="67"  y="82" width="10" height="22"/>
+                <rect x="95"  y="82" width="10" height="22"/>
+                <rect x="109" y="82" width="10" height="22"/>
+                <rect x="123" y="82" width="10" height="22"/>
+              </g>
+              <!-- Fix arrow Y to point AT the lit E key (x=79 center of teal rect) -->
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">PianoQuiz</div>
+            <div class="ltile-blurb">See a note. Tap the key.</div>
+          </div>
+        </a>
+
+        <!-- Note Names : staff note + 4 letter chips with right one teal -->
+        <a class="ltile" href="note-names.html">
+          <div class="ltile-art bg-coral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- B note on middle line (y=38) - stem down -->
+              <g>
+                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Names</div>
+            <div class="ltile-blurb">A note appears. Pick its letter.</div>
+          </div>
+        </a>
+
+        <!-- Note Values : 4 note glyphs over proportional duration bars -->
+        <a class="ltile" href="note-values.html">
+          <div class="ltile-art bg-sun">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="36" fill="#2A2A3E" text-anchor="middle">
+                <text x="22"  y="48">&#xE1D2;</text>
+                <text x="62"  y="48">&#xE1D3;</text>
+                <text x="102" y="48">&#xE1D5;</text>
+                <text x="142" y="48">&#xE1D7;</text>
+              </g>
+              <g stroke="#2A2A3E" stroke-width="1.6">
+                <rect x="6"   y="66" width="32" height="12" fill="#FF6B6B" class="anim-bar" style="animation-delay: 0ms"/>
+                <rect x="52"  y="66" width="20" height="12" fill="#FFB627" class="anim-bar" style="animation-delay: 120ms"/>
+                <rect x="96"  y="66" width="12" height="12" fill="#1FB8A8" class="anim-bar" style="animation-delay: 240ms"/>
+                <rect x="139" y="66" width="6"  height="12" fill="#5B3FE4" class="anim-bar" style="animation-delay: 360ms"/>
+              </g>
+              <g font-family="Fredoka" font-weight="600" font-size="12" fill="#5a5a6e" text-anchor="middle">
+                <text x="22"  y="94">4</text>
+                <text x="62"  y="94">2</text>
+                <text x="102" y="94">1</text>
+                <text x="142" y="94">½</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Values</div>
+            <div class="ltile-blurb">How long does each note last?</div>
+          </div>
+        </a>
+
+        <!-- Time Signatures : staff with treble clef + 4/4 + "meter?" chip -->
+        <a class="ltile" href="time-signatures.html">
+          <div class="ltile-art bg-green">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 4 over 4, bold serif digits centered on the spaces -->
+              <g font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="22" fill="#2A2A3E" text-anchor="middle">
+                <text x="58" y="38" class="anim-pulse" style="animation-delay: 0ms">4</text>
+                <text x="58" y="54" class="anim-pulse" style="animation-delay: 200ms">4</text>
+              </g>
+              <!-- question chip -->
+              <rect x="78" y="76" width="74" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="115" y="93" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">meter?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Time Signatures</div>
+            <div class="ltile-blurb">See the meter. Name it.</div>
+          </div>
+        </a>
+
+        <!-- More to come -->
+        <div class="ltile more-soon">
+          <div class="ltile-art" style="background:#f0ebff;">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
+                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
+                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
+              </g>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">More to come</div>
+            <div class="ltile-blurb">New modules in the works.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- READING -->
+    <div class="tier-section reading">
+      <div class="tier-header">
+        <div class="tier-name">Reading</div>
+        <div class="tier-meta">Building fluency · Levels 2–4</div>
+        <div class="tier-desc">Keys and scales. For anyone fluent on the staff.</div>
+      </div>
+      <div class="tile-grid">
+        <!-- Key Signatures : staff with 3 sharps + "A major?" chip -->
+        <a class="ltile" href="key-signatures.html">
+          <div class="ltile-art bg-grape">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 3 sharps for A major, clustered after clef in order: F# top line, C# 3rd space, G# above staff -->
+              <text x="34" y="30" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 0ms">&#xE262;</text>
+              <text x="45" y="42" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 140ms">&#xE262;</text>
+              <text x="56" y="26" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 280ms">&#xE262;</text>
+              <rect x="32" y="76" width="96" height="26" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="14" fill="white" text-anchor="middle">A major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Key Signatures</div>
+            <div class="ltile-blurb">Count the sharps. Name the key.</div>
+          </div>
+        </a>
+
+        <!-- Scales : 8 notes climbing diagonally -->
+        <a class="ltile" href="scales.html">
+          <div class="ltile-art bg-green">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
+                <text x="40"  y="64" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="54"  y="58" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 90ms">&#xE1D5;</text>
+                <text x="68"  y="52" fill="#FFB627" class="anim-pulse" style="animation-delay: 180ms">&#xE1D5;</text>
+                <text x="82"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 270ms">&#xE1D5;</text>
+                <text x="96"  y="40" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
+                <text x="110" y="34" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 450ms">&#xE1D5;</text>
+                <text x="124" y="28" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 540ms">&#xE1D5;</text>
+                <text x="138" y="22" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 630ms">&#xE1D5;</text>
+              </g>
+              <rect x="36" y="78" width="88" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="95" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">C major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scales</div>
+            <div class="ltile-blurb">Spot the major. Spot the minor.</div>
+          </div>
+        </a>
+
+        <!-- More to come -->
+        <div class="ltile more-soon">
+          <div class="ltile-art" style="background:#f0ebff;">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
+                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
+                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
+              </g>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">More to come</div>
+            <div class="ltile-blurb">New modules in the works.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEORY -->
+    <div class="tier-section theory">
+      <div class="tier-header">
+        <div class="tier-name">Theory</div>
+        <div class="tier-meta">Fluent reader · Levels 4–6</div>
+        <div class="tier-desc">Intervals and ear training. Intermediate theory — the app's ceiling.</div>
+      </div>
+      <div class="tile-grid">
+        <!-- Intervals : two stacked notes + bracket + answer chips -->
+        <a class="ltile" href="intervals.html">
+          <div class="ltile-art bg-slate">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="14" x2="154" y2="14"/>
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+              </g>
+              <text x="6"  y="44" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <text x="80" y="48" font-family="Bravura Text" font-size="22" fill="#FF6B6B" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+              <text x="80" y="32" font-family="Bravura Text" font-size="22" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 150ms">&#xE1D5;</text>
+              <path d="M100 22 L108 22 L108 46 L100 46" stroke="#2A2A3E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="120" y="40" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">5th?</text>
+              <g>
+                <rect x="10"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="26"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">3rd</text>
+                <rect x="46"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="62"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">4th</text>
+                <rect x="82"  y="74" width="32" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="98"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="white" text-anchor="middle">5th</text>
+                <rect x="118" y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="134" y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">6th</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Intervals</div>
+            <div class="ltile-blurb">Two notes. How far apart?</div>
+          </div>
+        </a>
+
+        <!-- Ear Training : speaker + sound waves + headphones question -->
+        <div class="ltile soon">
+          <div class="ltile-art bg-pink">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <!-- chunky speaker silhouette -->
+              <path d="M42 44 L60 44 L80 28 L80 84 L60 68 L42 68 Z"
+                    fill="#FFB627" stroke="#2A2A3E" stroke-width="2.4" stroke-linejoin="round"/>
+              <!-- sound waves: emanating outward from speaker face (left-to-right) -->
+              <g stroke="#1FB8A8" stroke-width="2.6" fill="none" stroke-linecap="round">
+                <path d="M88 38 Q108 56 88 74" class="anim-wave" style="animation-delay: 0ms; transform-origin: 88px 56px"/>
+                <path d="M100 28 Q128 56 100 84" class="anim-wave" style="animation-delay: 400ms; transform-origin: 100px 56px"/>
+              </g>
+              <!-- question chip -->
+              <rect x="118" y="44" width="34" height="34" rx="9" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2.4"/>
+              <text x="135" y="68" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">?</text>
+              <!-- little decorative notes -->
+              <text x="22" y="38" font-family="Bravura Text" font-size="18" fill="#5B3FE4" opacity="0.7">&#xE1D5;</text>
+              <text x="26" y="86" font-family="Bravura Text" font-size="16" fill="#FF6B6B" opacity="0.7">&#xE1D7;</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear Training</div>
+            <div class="ltile-blurb">Hear an interval. Name it.</div>
+          </div>
+        </div>
+
+        <!-- More to come -->
+        <div class="ltile more-soon">
+          <div class="ltile-art" style="background:#f0ebff;">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
+                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
+                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
+              </g>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">More to come</div>
+            <div class="ltile-blurb">New modules in the works.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 QuizNote
+    <span class="sep">·</span>
+    <a href="privacy.html">Privacy Policy</a>
+    <span class="sep">·</span>
+    <a href="terms.html">Terms of Service</a>
+    <span class="sep">·</span>
+    Made by musicians, for musicians
+  </footer>
+
+
+<script src="qn-profile.js" defer></script>
+<!-- ===== QuizNote profile dropdown menu =====
+     Additive enhancement layered on top of QN.ui.chip.
+     ui.chip still renders a plain <a href="profile.html"> (works with no JS).
+     This snippet intercepts the chip click and opens a small anchored
+     dropdown instead. Pages opt in by including this block AND calling
+     QNMenu.attach({ showProgress: <bool> }) after the chip is rendered.
+     Lives in the two hub pages only (play, dashboard) per scope. -->
+<style>
+  .qn-menu-wrap { position: relative; display: inline-flex; }
+  .qn-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: #fff;
+    border: 1px solid rgba(42,42,62,0.12);
+    border-radius: 14px;
+    box-shadow: 0 8px 28px rgba(42,42,62,0.16);
+    padding: 6px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease;
+    font-family: Fredoka, sans-serif;
   }
-
-  /**
-   * Read and JSON-parse a localStorage key.
-   * Returns fallback (default []) on any error.
-   *
-   * Corruption handling (v1.5.0): a parse failure means data EXISTED but is
-   * unreadable — very different from "no data". Rather than silently treating
-   * a corrupt blob as empty (which makes a user's history appear to vanish
-   * with no trace), we (1) log it distinctly, (2) preserve the raw corrupt
-   * value under a timestamped backup key so it's recoverable, and (3) still
-   * return the safe fallback so the app keeps working. This makes a
-   * corruption visible/recoverable during the build instead of a silent loss.
-   */
-  function readStorage(key, fallback) {
-    if (fallback === undefined) fallback = [];
-    var raw;
-    try {
-      raw = localStorage.getItem(key);
-    } catch (e) {
-      console.warn('[QN] localStorage unavailable for', key, e);
-      return fallback;
-    }
-    if (raw === null || raw === undefined) return fallback;  // genuinely no data — normal
-    try {
-      return JSON.parse(raw);
-    } catch (e) {
-      // Data exists but won't parse → corruption. Preserve + flag, don't vanish silently.
-      console.error('[QN] CORRUPT data at "' + key + '" — preserving a backup, falling back to empty.', e);
-      try {
-        var backupKey = key + '__corrupt_' + Date.now();
-        localStorage.setItem(backupKey, raw);
-        _corruptionLog.push({ key: key, backupKey: backupKey, at: Date.now() });
-      } catch (e2) { /* backup is best-effort; never throw from a read */ }
-      return fallback;
-    }
+  .qn-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .qn-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: none;
+    background: none;
+    border-radius: 10px;
+    font-family: Fredoka, sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #2A2A3E;
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease;
   }
-
-  /**
-   * JSON-stringify and write to localStorage.
-   * Silently swallows quota errors so modules don't crash.
-   */
-  function writeStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch (e) {
-      console.warn('[QN] writeStorage failed for', key, e);
-      return false;
-    }
+  .qn-menu-item:hover { background: rgba(31,184,168,0.12); }
+  .qn-menu-item .qn-menu-ico { font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .qn-menu-divider { height: 1px; background: rgba(42,42,62,0.10); margin: 6px 8px; }
+  .qn-menu-item.danger { color: #E0697A; }
+  .qn-menu-item.danger:hover { background: rgba(224,105,122,0.12); }
+  .qn-menu-active-name {
+    padding: 8px 12px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgba(42,42,62,0.45);
   }
-
-  /**
-   * Read raw string from localStorage (no JSON parse).
-   * Used for the active profile pointer.
-   */
-  function readStorageRaw(key) {
-    try {
-      return localStorage.getItem(key);
-    } catch (e) {
-      return null;
-    }
+  /* On narrow screens, drop full-width-ish and a touch larger for taps */
+  @media (max-width: 760px) {
+    .qn-menu { min-width: 220px; }
+    .qn-menu-item { padding: 12px 14px; font-size: 16px; }
   }
+</style>
+<script>
+  window.QNMenu = (function () {
+    function buildMenu(opts) {
+      var active = (window.QN && QN.profile && QN.profile.getActive)
+        ? QN.profile.getActive() : null;
 
-  function writeStorageRaw(key, value) {
-    try {
-      if (value === null || value === undefined) {
-        localStorage.removeItem(key);
-      } else {
-        localStorage.setItem(key, value);
-      }
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+      var menu = document.createElement('div');
+      menu.className = 'qn-menu';
+      menu.setAttribute('role', 'menu');
 
-  /**
-   * Validate + normalize an optional per-skill tally object.
-   * Input shape: { skillKey: { c: <correct>, t: <total> }, ... }
-   * Returns a clean object, or null if there's nothing usable. Defensive
-   * so a module passing junk can't corrupt the event log.
-   */
-  function sanitizeSkills(raw) {
-    if (!raw || typeof raw !== 'object') return null;
-    var out = {};
-    var any = false;
-    for (var key in raw) {
-      if (!Object.prototype.hasOwnProperty.call(raw, key)) continue;
-      var v = raw[key];
-      if (!v || typeof v !== 'object') continue;
-      var c = Number(v.c) || 0;
-      var t = Number(v.t) || 0;
-      if (t <= 0) continue;            // skill with no attempts is meaningless
-      if (c < 0) c = 0;
-      if (c > t) c = t;                // clamp impossible values
-      out[String(key)] = { c: c, t: t };
-      any = true;
-    }
-    return any ? out : null;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // QN.profile — identity layer
-  // ─────────────────────────────────────────────────────────────
-
-  var profileAPI = {
-
-    /**
-     * Return the currently active profile object, or null.
-     */
-    getActive: function () {
-      var id = readStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE);
-      if (!id) return null;
-      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
-      for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].id === id) return profiles[i];
-      }
-      // active pointer points to a deleted profile; clear it
-      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
-      return null;
-    },
-
-    /**
-     * Return array of all profiles on this device.
-     */
-    list: function () {
-      return readStorage(STORAGE_KEYS.PROFILES, []);
-    },
-
-    /**
-     * Create a new profile.
-     *
-     * @param {Object} data
-     * @param {string} data.nickname    required, 1-20 chars
-     * @param {string} [data.level]     'starting' | 'some' | 'while' | null
-     * @param {string} [data.color]     one of COLOR_OPTIONS, defaults to 'teal'
-     * @returns {Object} the new profile, or null if invalid input
-     *
-     * Also sets the new profile as active.
-     */
-    create: function (data) {
-      if (!data || typeof data.nickname !== 'string') return null;
-      var nickname = data.nickname.trim();
-      if (nickname.length < 1 || nickname.length > 20) return null;
-
-      var now = Date.now();
-      var profile = {
-        id:            generateId(),
-        nickname:      nickname,
-        level:         data.level || null,
-        color:         (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0)
-                         ? data.color : 'teal',
-        createdAt:     now,
-        lastActiveAt:  now,
-        syncedAt:      null  // becomes a timestamp once pushed to backend
-      };
-
-      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
-      profiles.push(profile);
-      writeStorage(STORAGE_KEYS.PROFILES, profiles);
-      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, profile.id);
-
-      // Claim any anonymous rounds played before this profile existed.
-      // Safe no-op if there are none.
-      eventsAPI.backfill(profile.id);
-
-      return profile;
-    },
-
-    /**
-     * Switch the active profile by id.
-     * Returns true on success, false if id not found.
-     */
-    setActive: function (id) {
-      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
-      var found = false;
-      for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].id === id) {
-          profiles[i].lastActiveAt = Date.now();
-          found = true;
-          break;
-        }
-      }
-      if (!found) return false;
-      writeStorage(STORAGE_KEYS.PROFILES, profiles);
-      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, id);
-      return true;
-    },
-
-    /**
-     * Update fields on an existing profile.
-     * Only nickname, level, and color can be updated.
-     * Returns the updated profile, or null if not found.
-     */
-    update: function (id, data) {
-      if (!data) return null;
-      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
-      for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].id === id) {
-          if (typeof data.nickname === 'string') {
-            var nn = data.nickname.trim();
-            if (nn.length >= 1 && nn.length <= 20) profiles[i].nickname = nn;
-          }
-          if (data.level !== undefined) {
-            profiles[i].level = data.level;
-          }
-          if (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0) {
-            profiles[i].color = data.color;
-          }
-          writeStorage(STORAGE_KEYS.PROFILES, profiles);
-          return profiles[i];
-        }
-      }
-      return null;
-    },
-
-    /**
-     * Delete a profile AND all its events.
-     * If the deleted profile was active, active becomes null.
-     * Returns true on success, false if id not found.
-     */
-    'delete': function (id) {
-      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
-      var filtered = [];
-      var found = false;
-      for (var i = 0; i < profiles.length; i++) {
-        if (profiles[i].id === id) {
-          found = true;
-        } else {
-          filtered.push(profiles[i]);
-        }
-      }
-      if (!found) return false;
-
-      writeStorage(STORAGE_KEYS.PROFILES, filtered);
-
-      // also purge this profile's events
-      var events = readStorage(STORAGE_KEYS.EVENTS, []);
-      var remainingEvents = [];
-      for (var j = 0; j < events.length; j++) {
-        if (events[j].profileId !== id) remainingEvents.push(events[j]);
-      }
-      writeStorage(STORAGE_KEYS.EVENTS, remainingEvents);
-
-      // clear active pointer if it pointed here
-      if (readStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE) === id) {
-        writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
-      }
-
-      return true;
-    },
-
-    /**
-     * Wipe ALL QuizNote data from this device: every profile, the event
-     * log, held anonymous rounds, the active pointer, and every module's
-     * personal-best keys. Parent-friendly "start completely fresh" / shared-
-     * device reset. Irreversible. Returns a small summary of what was cleared.
-     *
-     * PB keys are written by modules as "<slug>_pb_<tier>" and aren't in
-     * STORAGE_KEYS, so we scan all localStorage keys and match the pattern —
-     * this way new modules' PBs are caught automatically (no hardcoded list).
-     *
-     * @returns {{ profiles:number, events:number, pbKeys:number }}
-     */
-    resetDevice: function () {
-      var summary = { profiles: 0, events: 0, pbKeys: 0 };
-      try {
-        summary.profiles = readStorage(STORAGE_KEYS.PROFILES, []).length;
-        summary.events = readStorage(STORAGE_KEYS.EVENTS, []).length;
-      } catch (e) {}
-
-      // 1. the four known qn_* keys
-      writeStorageRaw(STORAGE_KEYS.PROFILES, null);
-      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
-      writeStorageRaw(STORAGE_KEYS.EVENTS, null);
-      writeStorageRaw(STORAGE_KEYS.PENDING_EVENTS, null);
-
-      // 2. scan for per-module PB keys ("<slug>_pb_<tier>") and any stray
-      //    qn_* keys, collect first then remove (don't mutate while iterating)
-      try {
-        var toRemove = [];
-        for (var i = 0; i < localStorage.length; i++) {
-          var k = localStorage.key(i);
-          if (!k) continue;
-          if (/_pb_/.test(k) || k.indexOf('qn_') === 0) toRemove.push(k);
-        }
-        for (var r = 0; r < toRemove.length; r++) {
-          try { localStorage.removeItem(toRemove[r]); summary.pbKeys += (/_pb_/.test(toRemove[r]) ? 1 : 0); } catch (e) {}
-        }
-      } catch (e) {}
-
-      return summary;
-    },
-
-    /**
-     * Expose color options so onboarding UI can render the picker
-     * without hardcoding the same list.
-     */
-    colors: COLOR_OPTIONS.slice()
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // QN.events — round logging layer
-  // ─────────────────────────────────────────────────────────────
-
-  var eventsAPI = {
-
-    /**
-     * Append one round event to the log.
-     *
-     * Modules call this from their summary-screen code when a
-     * round completes. If no profile is active, the event is
-     * NOT logged (anonymous play is not tracked).
-     *
-     * @param {Object} eventData
-     * @param {string} eventData.module     e.g. 'note-names'
-     * @param {string} eventData.tier       'easy' | 'medium' | 'tricky'
-     * @param {number} eventData.length     total questions in round
-     * @param {number} eventData.correct    correct answers
-     * @param {number} eventData.total      attempted answers
-     * @param {number} eventData.durationMs round duration in ms
-     * @param {boolean} eventData.timedMode whether timer was on
-     * @returns {boolean} true if logged, false if no active profile
-     */
-    log: function (eventData) {
-      var active = profileAPI.getActive();
-      if (!active) return false;
-      if (!eventData || !eventData.module) return false;
-
-      var event = {
-        profileId:   active.id,
-        module:      eventData.module,
-        tier:        eventData.tier || null,
-        length:      Number(eventData.length) || 0,
-        correct:     Number(eventData.correct) || 0,
-        total:       Number(eventData.total) || 0,
-        durationMs:  Number(eventData.durationMs) || 0,
-        timedMode:   !!eventData.timedMode,
-        completedAt: Date.now()
-      };
-      // Optional per-skill tallies: { skillKey: { c, t } }. Additive —
-      // events without it are valid; the dashboard treats them as
-      // round-level only. See sanitizeSkills().
-      var sk = sanitizeSkills(eventData.skills);
-      if (sk) event.skills = sk;
-
-      var events = readStorage(STORAGE_KEYS.EVENTS, []);
-      events.push(event);
-
-      // Enforce per-profile cap: count events for THIS profile,
-      // drop oldest if over cap. Other profiles' events untouched.
-      var thisProfileCount = 0;
-      for (var i = 0; i < events.length; i++) {
-        if (events[i].profileId === active.id) thisProfileCount++;
-      }
-      if (thisProfileCount > MAX_EVENTS_PER_PROFILE) {
-        var toRemove = thisProfileCount - MAX_EVENTS_PER_PROFILE;
-        var pruned = [];
-        for (var j = 0; j < events.length; j++) {
-          if (events[j].profileId === active.id && toRemove > 0) {
-            toRemove--;
-            continue;
-          }
-          pruned.push(events[j]);
-        }
-        events = pruned;
-      }
-
-      writeStorage(STORAGE_KEYS.EVENTS, events);
-
-      // touch lastActiveAt on the profile
-      profileAPI.setActive(active.id);
-
-      return true;
-    },
-
-    /**
-     * Log a round if a profile is active; otherwise HOLD it as a
-     * pending anonymous round so it can be back-filled when the
-     * player makes a profile right after.
-     *
-     * Modules should call this (not log) from round-completion code.
-     *
-     * @param {Object} eventData  same shape as log()
-     * @returns {string} 'logged' | 'held'
-     */
-    logOrHold: function (eventData) {
-      var active = profileAPI.getActive();
-
-      // ACTIVE PROFILE: always log directly; never return the 'held'
-      // signal for a signed-in user. (Bug fix v1.4.1: the old guard
-      // `if (!eventData || !eventData.module) return 'held'` ran BEFORE
-      // this check, so a malformed/slug-less event from an active user
-      // returned 'held' — which, combined with any stranded pending
-      // event, mis-fired the guest "save your scores?" prompt for a
-      // well-established profile.)
       if (active) {
-        // Drain any stranded pending events — they are meaningless once a
-        // profile is active, and left lying around they keep pendingCount()
-        // > 0, which is half of what mis-triggered the guest prompt.
-        if (eventsAPI.pendingCount() > 0) {
-          try { eventsAPI.backfill(active.id); } catch (e) {}
-        }
-        if (eventData && eventData.module) {
-          eventsAPI.log(eventData);
-          return 'logged';
-        }
-        // Malformed event but a real profile is active: do not log a junk
-        // event, but never claim 'held'. Signal a no-op so the caller's
-        // prompt stays hidden.
-        return 'skipped';
+        var nameEl = document.createElement('div');
+        nameEl.className = 'qn-menu-active-name';
+        nameEl.textContent = active.nickname;
+        menu.appendChild(nameEl);
       }
 
-      // NO PROFILE (anonymous): a malformed event can't be held meaningfully.
-      if (!eventData || !eventData.module) return 'skipped';
+      // Switch profile
+      menu.appendChild(item('👤', active ? 'Switch profile' : 'Make a profile',
+        'profile.html', false));
 
-      // Stash a normalized event (without profileId) in the pending slot.
-      // profileId is assigned at backfill time.
-      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
-      var held = {
-        module:      eventData.module,
-        tier:        eventData.tier || null,
-        length:      Number(eventData.length) || 0,
-        correct:     Number(eventData.correct) || 0,
-        total:       Number(eventData.total) || 0,
-        durationMs:  Number(eventData.durationMs) || 0,
-        timedMode:   !!eventData.timedMode,
-        completedAt: Date.now()
-      };
-      var heldSk = sanitizeSkills(eventData.skills);
-      if (heldSk) held.skills = heldSk;
-      pending.push(held);
-      // Cap: keep only the most recent MAX_PENDING_EVENTS.
-      if (pending.length > MAX_PENDING_EVENTS) {
-        pending = pending.slice(pending.length - MAX_PENDING_EVENTS);
+      // Progress (omitted on the dashboard itself to avoid a no-op item)
+      if (opts.showProgress) {
+        menu.appendChild(item('📊', 'Progress', 'dashboard.html', false));
       }
-      writeStorage(STORAGE_KEYS.PENDING_EVENTS, pending);
-      return 'held';
-    },
 
-    /**
-     * How many anonymous rounds are currently held, awaiting a profile.
-     * Modules use this to decide whether to show the "save your scores"
-     * prompt on the summary screen.
-     * @returns {number}
-     */
-    pendingCount: function () {
-      return readStorage(STORAGE_KEYS.PENDING_EVENTS, []).length;
-    },
+      // Reset lives on profile.html (the manage-data page), not in this
+      // everyday menu — a destructive device-wide wipe shouldn't sit next
+      // to frequent actions. "Switch profile" routes there.
+      return menu;
+    }
 
-    /**
-     * Move all held anonymous rounds into the real event log under the
-     * given profileId, then clear the pending slot. Called automatically
-     * by profile.create(). Safe no-op if nothing is pending.
-     * @param {string} profileId
-     * @returns {number} how many events were back-filled
-     */
-    backfill: function (profileId) {
-      if (!profileId) return 0;
-      var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
-      if (!pending.length) return 0;
+    function item(ico, text, href, danger) {
+      var a = document.createElement('a');
+      a.className = 'qn-menu-item' + (danger ? ' danger' : '');
+      a.href = href;
+      a.setAttribute('role', 'menuitem');
+      var ic = document.createElement('span');
+      ic.className = 'qn-menu-ico';
+      ic.textContent = ico;
+      var tx = document.createElement('span');
+      tx.textContent = text;
+      a.appendChild(ic);
+      a.appendChild(tx);
+      return a;
+    }
 
-      var events = readStorage(STORAGE_KEYS.EVENTS, []);
-      var n = 0;
-      for (var i = 0; i < pending.length; i++) {
-        var p = pending[i];
-        if (!p || !p.module) continue;
-        var ev = {
-          profileId:   profileId,
-          module:      p.module,
-          tier:        p.tier || null,
-          length:      Number(p.length) || 0,
-          correct:     Number(p.correct) || 0,
-          total:       Number(p.total) || 0,
-          durationMs:  Number(p.durationMs) || 0,
-          timedMode:   !!p.timedMode,
-          completedAt: Number(p.completedAt) || Date.now()
-        };
-        var bfSk = sanitizeSkills(p.skills);
-        if (bfSk) ev.skills = bfSk;
-        events.push(ev);
-        n++;
-      }
-      writeStorage(STORAGE_KEYS.EVENTS, events);
-      writeStorage(STORAGE_KEYS.PENDING_EVENTS, []);
-      return n;
-    },
-
-    /**
-     * Query events for a profile, with optional filters.
-     *
-     * @param {string} profileId
-     * @param {Object} [opts]
-     * @param {string} [opts.module]  filter to one module
-     * @param {number} [opts.since]   only events with completedAt >= since
-     * @param {number} [opts.limit]   max results, most recent first
-     * @returns {Array<Event>} matching events, newest first
-     */
-    query: function (profileId, opts) {
-      if (!profileId) return [];
+    function attach(opts) {
       opts = opts || {};
-      var events = readStorage(STORAGE_KEYS.EVENTS, []);
-      var results = [];
-      for (var i = 0; i < events.length; i++) {
-        var ev = events[i];
-        if (ev.profileId !== profileId) continue;
-        if (opts.module && ev.module !== opts.module) continue;
-        if (opts.since && ev.completedAt < opts.since) continue;
-        results.push(ev);
+      var slot = document.getElementById('profile-chip-slot');
+      if (!slot) return;
+      var chip = slot.querySelector('.qn-chip');
+      if (!chip) return;
+
+      // Wrap chip so the menu can anchor to it
+      var wrap = document.createElement('span');
+      wrap.className = 'qn-menu-wrap';
+      chip.parentNode.insertBefore(wrap, chip);
+      wrap.appendChild(chip);
+
+      var menu = buildMenu(opts);
+      wrap.appendChild(menu);
+
+      function close() {
+        menu.classList.remove('open');
+        document.removeEventListener('click', onDoc, true);
+        document.removeEventListener('keydown', onKey, true);
       }
-      // newest first
-      results.sort(function (a, b) { return b.completedAt - a.completedAt; });
-      if (opts.limit && results.length > opts.limit) {
-        results = results.slice(0, opts.limit);
+      function open() {
+        menu.classList.add('open');
+        document.addEventListener('click', onDoc, true);
+        document.addEventListener('keydown', onKey, true);
       }
-      return results;
+      function onDoc(e) { if (!wrap.contains(e.target)) close(); }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+
+      chip.addEventListener('click', function (e) {
+        // Intercept the plain-link navigation; open the menu instead.
+        e.preventDefault();
+        if (menu.classList.contains('open')) close(); else open();
+      });
     }
-  };
 
-  // ─────────────────────────────────────────────────────────────
-  // QN.ui — shared widgets
-  // ─────────────────────────────────────────────────────────────
+    return { attach: attach };
+  })();
+</script>
 
-  var uiAPI = {
-
-    /**
-     * Render the profile chip into a container element.
-     * The chip shows the active profile's nickname + color dot.
-     * Tapping it navigates to profile.html (the switcher).
-     *
-     * If no profile is active, renders a subtle "Sign in" prompt
-     * that links to profile.html.
-     *
-     * Call this once per page, after DOMContentLoaded, passing
-     * the element where you want the chip mounted (typically a
-     * top-right header slot).
-     *
-     * @param {HTMLElement} containerEl
-     */
-    chip: function (containerEl) {
-      if (!containerEl) return;
-      var active = profileAPI.getActive();
-
-      // Clear container
-      while (containerEl.firstChild) containerEl.removeChild(containerEl.firstChild);
-
-      var link = document.createElement('a');
-      link.href = 'profile.html';
-      link.className = 'qn-chip';
-      link.setAttribute('aria-label',
-        active ? 'Switch profile (currently ' + active.nickname + ')'
-               : 'Make a profile');
-
-      // Inline styles so the chip works without any new CSS in
-      // module files. Modules can override .qn-chip rules in
-      // their own CSS if they want a tighter visual fit.
-      link.style.cssText = [
-        'display:inline-flex',
-        'align-items:center',
-        'gap:8px',
-        'padding:6px 12px 6px 8px',
-        'border-radius:999px',
-        'background:rgba(255,255,255,0.85)',
-        'border:1px solid rgba(42,42,62,0.12)',
-        'font-family:Fredoka,sans-serif',
-        'font-weight:600',
-        'font-size:14px',
-        'color:#2A2A3E',
-        'text-decoration:none',
-        'cursor:pointer',
-        'transition:background 140ms, transform 120ms'
-      ].join(';');
-
-      var dot = document.createElement('span');
-      dot.style.cssText = [
-        'display:inline-block',
-        'width:18px',
-        'height:18px',
-        'border-radius:50%',
-        'background:' + colorHex(active ? active.color : 'teal'),
-        'flex-shrink:0'
-      ].join(';');
-
-      var label = document.createElement('span');
-      label.textContent = active ? active.nickname : 'Sign in';
-
-      link.appendChild(dot);
-      link.appendChild(label);
-      containerEl.appendChild(link);
+<script defer>
+  document.addEventListener("DOMContentLoaded", function () {
+    var slot = document.getElementById("profile-chip-slot");
+    if (window.QN && QN.ui && slot) {
+      QN.ui.chip(slot);
+      QNMenu.attach({ showProgress: true });
     }
-  };
-
-  /**
-   * Map color id to a hex value. Mirrors the design tokens used
-   * across modules. Local to ui.chip so the chip can render
-   * without depending on any specific module's CSS.
-   */
-  function colorHex(colorId) {
-    switch (colorId) {
-      case 'teal':  return '#1FB8A8';
-      case 'sun':   return '#FFB627';
-      case 'grape': return '#5B3FE4';
-      case 'coral': return '#FF6B6B';
-      case 'mint':  return '#7FD1AE';
-      case 'rose':  return '#F4A5BE';
-      default:      return '#1FB8A8';
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // RECOMMENDER  (weak-spot system, phase 2 — pure logic, no UI)
-  //
-  // QN.recommend.next(profileId) -> a single "what to practice next"
-  // recommendation. Personality: encouraging + forward-moving, but it
-  // doesn't let weak spots rot. Balanced (mostly progress, weak spots
-  // woven in) with a no-nag cap so the same weak spot isn't served
-  // back-to-back. Phase 3 (the "Today" surface) will consume this; the
-  // function itself commits to no UI.
-  //
-  // DESIGN PRINCIPLE (evidence-based — see BUILD_LOG): learning research
-  // favors INTERLEAVING (mixed question types) over blocked drilling, and
-  // SPACING over massed repetition. So: (1) the recommender biases a round
-  // toward a weak *module*, but the round itself must stay interleaved —
-  // never collapse into a single-sub-skill blocked drill. (2) The no-nag
-  // cap is the spacing effect, not just politeness: a weak spot resurfaces
-  // later rather than back-to-back, which is the more effective pattern.
-  // ─────────────────────────────────────────────────────────────
-
-  // v1 linear path: live modules only, in the roster's pedagogical order.
-  var PATH = [
-    'note-names', 'note-values', 'key-signatures',
-    'time-signatures', 'piano-quiz', 'scales', 'intervals'
-  ];
-  var TIER_ORDER = ['easy', 'medium', 'tricky'];
-
-  var REC = {
-    // tuning knobs (single place to re-tune the engine's feel)
-    MIN_SAMPLES_FOR_WEAK: 4,    // need >= this many attempts before trusting an accuracy
-    WEAK_THRESHOLD:       0.60, // sub-skill accuracy under this is "weak"
-    SEVERE_THRESHOLD:     0.40, // under this is "severe" — jumps the queue
-    RECENT_WINDOW:        20,   // how many recent rounds inform recency weighting
-    NO_NAG_LOOKBACK:      2,    // don't re-serve a weak spot if it was the focus
-                                //   of either of the last N recommendations-as-played
-    TIER_UP_ACCURACY:     0.85, // clear a tier at >= this to advance to the next
-    MIN_ROUNDS_PER_TIER:  2,    // and only after this many rounds at the tier
-    DEFAULT_LENGTH:       10
-  };
-
-  function recencyWeight(idx, total) {
-    // idx 0 = most recent. Linear decay from 1.0 (newest) to 0.4 (oldest
-    // in window). Rounds beyond the window contribute nothing.
-    if (idx >= REC.RECENT_WINDOW) return 0;
-    var span = Math.min(total, REC.RECENT_WINDOW);
-    if (span <= 1) return 1;
-    return 1 - 0.6 * (idx / (span - 1));
-  }
-
-  var recommendAPI = {
-    /**
-     * Compute the next-practice recommendation for a profile.
-     * Pure read over qn_events — no side effects, no UI.
-     * @param {string} profileId
-     * @returns {Object} {
-     *   module, tier, length,
-     *   kind: 'cold-start'|'remediation'|'progress'|'review',
-     *   reason: string,
-     *   weakSkills: [{ module, skill, acc, attempts }]   // may be empty
-     * }
-     */
-    next: function (profileId) {
-      var path = PATH.slice();
-      var fallback = {
-        module: path[0], tier: 'easy', length: REC.DEFAULT_LENGTH,
-        kind: 'cold-start', reason: 'Start at the beginning.', weakSkills: []
-      };
-      if (!profileId) return fallback;
-
-      var events = eventsAPI.query(profileId); // newest first
-      if (!events || !events.length) return fallback;
-
-      // ---- per-module rollups + recency-weighted sub-skill accuracy ----
-      var perModule = {};   // slug -> { rounds, recentRoundAcc:[], skills:{ key:{wc,wt} } }
-      for (var i = 0; i < events.length; i++) {
-        var ev = events[i];
-        if (path.indexOf(ev.module) === -1) continue; // ignore non-path modules
-        if (!perModule[ev.module]) perModule[ev.module] = { rounds: 0, recentAcc: [], tierRounds: {}, tierAcc: {}, skills: {} };
-        var pm = perModule[ev.module];
-        pm.rounds++;
-        var w = recencyWeight(i, events.length);
-
-        if (i < REC.RECENT_WINDOW && ev.total > 0) pm.recentAcc.push(ev.correct / ev.total);
-
-        var t = ev.tier || 'easy';
-        pm.tierRounds[t] = (pm.tierRounds[t] || 0) + 1;
-        if (ev.total > 0) {
-          if (!pm.tierAcc[t]) pm.tierAcc[t] = { c: 0, n: 0 };
-          pm.tierAcc[t].c += ev.correct; pm.tierAcc[t].n += ev.total;
-        }
-
-        if (ev.skills && w > 0) {
-          for (var sk in ev.skills) {
-            if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
-            if (!pm.skills[sk]) pm.skills[sk] = { wc: 0, wt: 0 };
-            pm.skills[sk].wc += ev.skills[sk].c * w;  // recency-weighted
-            pm.skills[sk].wt += ev.skills[sk].t * w;
-          }
-        }
-      }
-
-      // ---- collect weak sub-skills across path modules ----
-      var weak = [];
-      for (var slug in perModule) {
-        var sk2 = perModule[slug].skills;
-        for (var key in sk2) {
-          var wt = sk2[key].wt;
-          if (wt < REC.MIN_SAMPLES_FOR_WEAK) continue; // not enough signal
-          var acc = sk2[key].wc / wt;
-          if (acc < REC.WEAK_THRESHOLD) {
-            weak.push({ module: slug, skill: key, acc: acc, attempts: Math.round(wt), severe: acc < REC.SEVERE_THRESHOLD });
-          }
-        }
-      }
-      weak.sort(function (a, b) { return a.acc - b.acc; }); // weakest first
-
-      // ---- no-nag: what were the last couple of things actually practiced? ----
-      var recentModules = [];
-      for (var r = 0; r < events.length && recentModules.length < REC.NO_NAG_LOOKBACK; r++) {
-        if (path.indexOf(events[r].module) !== -1) recentModules.push(events[r].module);
-      }
-
-      // ---- 1. severe weak spot jumps the queue (unless just practiced) ----
-      var severe = weak.filter(function (w2) { return w2.severe; });
-      for (var s = 0; s < severe.length; s++) {
-        if (recentModules.indexOf(severe[s].module) === -1) {
-          var sv = severe[s];
-          return {
-            module: sv.module,
-            tier: weakestTierFor(perModule[sv.module]),
-            length: REC.DEFAULT_LENGTH,
-            kind: 'remediation',
-            reason: 'Let\u2019s shore up ' + sv.module + ' \u2014 ' + Math.round(sv.acc * 100) + '% on one part of it.',
-            weakSkills: [sv]
-          };
-        }
-      }
-
-      // ---- 2. forward progress: first path module not yet "cleared" ----
-      for (var p = 0; p < path.length; p++) {
-        var mslug = path[p];
-        var info = perModule[mslug];
-        if (!info) {
-          // never touched -> start it
-          return {
-            module: mslug, tier: 'easy', length: REC.DEFAULT_LENGTH,
-            kind: 'progress',
-            reason: 'New skill: time to start ' + mslug + '.',
-            weakSkills: weak.filter(function (w3) { return w3.module === mslug; })
-          };
-        }
-        var tier = nextTierFor(info);
-        if (tier) {
-          return {
-            module: mslug, tier: tier, length: REC.DEFAULT_LENGTH,
-            kind: 'progress',
-            reason: tier === 'easy'
-              ? 'Keep going on ' + mslug + '.'
-              : 'You\u2019re ready for ' + tier + ' in ' + mslug + '.',
-            weakSkills: weak.filter(function (w4) { return w4.module === mslug; })
-          };
-        }
-        // else this module is cleared at all tiers -> continue to next
-      }
-
-      // ---- 3. everything cleared: review the weakest remaining spot, or
-      //         the least-recently practiced module ----
-      if (weak.length) {
-        var firstNonRecent = weak.find(function (w5) { return recentModules.indexOf(w5.module) === -1; }) || weak[0];
-        return {
-          module: firstNonRecent.module,
-          tier: weakestTierFor(perModule[firstNonRecent.module]),
-          length: REC.DEFAULT_LENGTH,
-          kind: 'review',
-          reason: 'Sharpen ' + firstNonRecent.module + ' \u2014 still a soft spot.',
-          weakSkills: [firstNonRecent]
-        };
-      }
-      // truly all strong: gentle review of the least-recently-played module
-      var lru = path.filter(function (m) { return recentModules.indexOf(m) === -1; })[0] || path[0];
-      return {
-        module: lru, tier: 'tricky', length: REC.DEFAULT_LENGTH,
-        kind: 'review',
-        reason: 'You\u2019re strong everywhere \u2014 a quick refresher on ' + lru + '.',
-        weakSkills: []
-      };
-
-      // ---- helpers ----
-      function nextTierFor(info) {
-        // Returns the tier to practice next in this module, or null if the
-        // module is "cleared" (all tiers practiced enough and accurate).
-        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
-          var tr = TIER_ORDER[ti];
-          var rounds = info.tierRounds[tr] || 0;
-          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : 0;
-          if (rounds < REC.MIN_ROUNDS_PER_TIER) return tr;          // under-practiced
-          if (acc < REC.TIER_UP_ACCURACY) return tr;                // not yet mastered
-          // else cleared; check next tier
-        }
-        return null;
-      }
-      function weakestTierFor(info) {
-        // For remediation: practice at the lowest tier that isn't mastered,
-        // so we rebuild from where it broke down.
-        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
-          var tr = TIER_ORDER[ti];
-          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : null;
-          if (acc !== null && acc < REC.TIER_UP_ACCURACY) return tr;
-        }
-        return 'easy';
-      }
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // EXPOSE GLOBAL NAMESPACE
-  // ─────────────────────────────────────────────────────────────
-
-  window.QN = window.QN || {};
-  window.QN.profile   = profileAPI;
-  window.QN.events    = eventsAPI;
-  window.QN.ui        = uiAPI;
-  window.QN.recommend = recommendAPI;
-
-  // Lightweight diagnostics surface (v1.5.0). During builds, run
-  // QN.diagnostics.corruption() in the console to see if any stored key
-  // failed to parse this session (and where its recoverable backup lives).
-  window.QN.diagnostics = {
-    corruption: function () { return _corruptionLog.slice(); },
-    hasCorruption: function () { return _corruptionLog.length > 0; }
-  };
-
-  window.QN.version = '1.5.0';  // corruption-aware readStorage (corrupt vs empty) + QN.diagnostics
-
-})();
+  });
+</script>
+</body>
+</html>
