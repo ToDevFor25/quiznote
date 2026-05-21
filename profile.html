@@ -266,6 +266,10 @@ body {
   color: var(--ink);
   cursor: pointer;
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   transition: transform 100ms, border-color 140ms, background 140ms;
 }
 .level-option:hover { border-color: var(--teal); background: rgba(31, 184, 168, 0.04); }
@@ -274,6 +278,19 @@ body {
   border-color: var(--teal);
   background: rgba(31, 184, 168, 0.08);
   box-shadow: 0 2px 0 var(--ink-faint);
+}
+/* Maps the self-reported answer to the gameplay difficulty tiers so the
+   skill-level connection is legible at choice time (Beginner→Easy, etc.). */
+.level-tag {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--teal-dk, #0F8A7E);
+  background: rgba(31, 184, 168, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 
 /* ── color picker ────────────────────────────────────────── */
@@ -539,9 +556,9 @@ body {
       <p class="view-sub">This helps us pick a good starting difficulty. You can change it anytime.</p>
     </div>
     <div class="level-options">
-      <button class="level-option" data-level="starting" type="button">Just starting out</button>
-      <button class="level-option" data-level="some" type="button">I know some notes</button>
-      <button class="level-option" data-level="while" type="button">I've been playing a while</button>
+      <button class="level-option" data-level="starting" type="button">Just starting out <span class="level-tag">Beginner</span></button>
+      <button class="level-option" data-level="some" type="button">I know some notes <span class="level-tag">Intermediate</span></button>
+      <button class="level-option" data-level="while" type="button">I've been playing a while <span class="level-tag">Advanced</span></button>
     </div>
     <div class="btn-row" style="margin-top:28px;">
       <button class="btn btn-primary" id="level-continue">Continue →</button>
