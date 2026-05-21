@@ -303,6 +303,48 @@
     },
 
     /**
+     * Wipe ALL QuizNote data from this device: every profile, the event
+     * log, held anonymous rounds, the active pointer, and every module's
+     * personal-best keys. Parent-friendly "start completely fresh" / shared-
+     * device reset. Irreversible. Returns a small summary of what was cleared.
+     *
+     * PB keys are written by modules as "<slug>_pb_<tier>" and aren't in
+     * STORAGE_KEYS, so we scan all localStorage keys and match the pattern —
+     * this way new modules' PBs are caught automatically (no hardcoded list).
+     *
+     * @returns {{ profiles:number, events:number, pbKeys:number }}
+     */
+    resetDevice: function () {
+      var summary = { profiles: 0, events: 0, pbKeys: 0 };
+      try {
+        summary.profiles = readStorage(STORAGE_KEYS.PROFILES, []).length;
+        summary.events = readStorage(STORAGE_KEYS.EVENTS, []).length;
+      } catch (e) {}
+
+      // 1. the four known qn_* keys
+      writeStorageRaw(STORAGE_KEYS.PROFILES, null);
+      writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
+      writeStorageRaw(STORAGE_KEYS.EVENTS, null);
+      writeStorageRaw(STORAGE_KEYS.PENDING_EVENTS, null);
+
+      // 2. scan for per-module PB keys ("<slug>_pb_<tier>") and any stray
+      //    qn_* keys, collect first then remove (don't mutate while iterating)
+      try {
+        var toRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (!k) continue;
+          if (/_pb_/.test(k) || k.indexOf('qn_') === 0) toRemove.push(k);
+        }
+        for (var r = 0; r < toRemove.length; r++) {
+          try { localStorage.removeItem(toRemove[r]); summary.pbKeys += (/_pb_/.test(toRemove[r]) ? 1 : 0); } catch (e) {}
+        }
+      } catch (e) {}
+
+      return summary;
+    },
+
+    /**
      * Expose color options so onboarding UI can render the picker
      * without hardcoding the same list.
      */
@@ -816,6 +858,6 @@
   window.QN.events    = eventsAPI;
   window.QN.ui        = uiAPI;
   window.QN.recommend = recommendAPI;
-  window.QN.version = '1.3.0';  // + weak-spot recommender (phase 2, logic only)
+  window.QN.version = '1.4.0';  // + QN.profile.resetDevice() (device-wide data wipe)
 
 })();
