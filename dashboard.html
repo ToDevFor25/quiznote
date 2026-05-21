@@ -170,6 +170,15 @@
     .summary-grid { gap: 10px; }
     .stat-card { padding: 14px 8px; }
     .stat-card .stat-value { font-size: 1.5rem; }
+    /* Header tidy on phones: brand + chip stay on the first line;
+       the tagline wraps to its own line beneath rather than crowding
+       or pushing the chip off-screen. */
+    .site-header { padding: 10px 16px; }
+    .site-header .brand-name { font-size: 22px; }
+    .site-tagline { order: 3; flex-basis: 100%; }
+    .profile-chip-slot { max-width: 46vw; }
+    .qn-chip { max-width: 100%; }
+    .qn-chip span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
   [hidden] { display: none !important; }
 </style>
