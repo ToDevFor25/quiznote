@@ -1041,16 +1041,18 @@ body {
   });
 
   // ---- device-wide reset (wipe everything) ----
+  function fillResetPreview() {
+    var statsEl = document.getElementById('reset-stats');
+    if (statsEl) {
+      var n = QN.profile.list().length;
+      statsEl.textContent = n === 1 ? '1 profile and all its history' : (n + ' profiles and all their history');
+    }
+  }
   var resetLink = document.getElementById('reset-device-link');
   if (resetLink) {
     resetLink.addEventListener('click', function (e) {
       e.preventDefault();
-      // show a preview of what will be erased
-      var statsEl = document.getElementById('reset-stats');
-      if (statsEl) {
-        var n = QN.profile.list().length;
-        statsEl.textContent = n === 1 ? '1 profile and all its history' : (n + ' profiles and all their history');
-      }
+      fillResetPreview();
       showView('reset');
     });
   }
