@@ -491,6 +491,9 @@ body {
       <button class="btn btn-primary" id="switcher-add">+ Add new profile</button>
       <a class="btn" href="play.html">Go to modules</a>
     </div>
+    <p class="hint" style="margin-top:20px;">
+      <a href="#" id="reset-device-link" style="color:var(--ink-faint);">Reset all data on this device</a>
+    </p>
   </section>
 
   <!-- ─────────────────────────────────────────────────────────
@@ -605,6 +608,24 @@ body {
     <div class="btn-row">
       <button class="btn" id="delete-cancel">Cancel</button>
       <button class="btn btn-danger" id="delete-confirm">Yes, delete forever</button>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       VIEW — Reset device (wipe ALL data on this device)
+       ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-reset">
+    <div class="view-head">
+      <h1 class="view-title">Reset all data?</h1>
+      <p class="view-sub">This erases <b>every</b> profile and all practice history saved on this device — for everyone, not just one person.</p>
+    </div>
+    <div class="confirm-card">
+      <div class="confirm-stats" id="reset-stats"></div>
+      <div class="confirm-warn">This cannot be undone.</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn" id="reset-cancel">Cancel</button>
+      <button class="btn btn-danger" id="reset-confirm">Yes, erase everything</button>
     </div>
   </section>
 
@@ -1017,6 +1038,30 @@ body {
       renderSwitcher();
       showView('switcher');
     }
+  });
+
+  // ---- device-wide reset (wipe everything) ----
+  var resetLink = document.getElementById('reset-device-link');
+  if (resetLink) {
+    resetLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      // show a preview of what will be erased
+      var statsEl = document.getElementById('reset-stats');
+      if (statsEl) {
+        var n = QN.profile.list().length;
+        statsEl.textContent = n === 1 ? '1 profile and all its history' : (n + ' profiles and all their history');
+      }
+      showView('reset');
+    });
+  }
+  var resetCancel = document.getElementById('reset-cancel');
+  if (resetCancel) resetCancel.addEventListener('click', function () { showView('switcher'); });
+
+  var resetConfirm = document.getElementById('reset-confirm');
+  if (resetConfirm) resetConfirm.addEventListener('click', function () {
+    QN.profile.resetDevice();
+    // back to a clean first-run state
+    showView('welcome');
   });
 
   // ─────────────────────────────────────────────────────────
