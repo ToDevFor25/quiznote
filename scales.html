@@ -1808,6 +1808,7 @@
     state.bestStreak = 0;
     state.lastResults = [];
     state.missed = [];
+    state.skillTally = {};   // { mode: { c, t } } — sub-skill tagging
     state.startedAt = Date.now();
     show('play-screen');
     updatePlayUI();
@@ -1967,6 +1968,12 @@
     const correct = choice.name === state.current.name;
     const buttons = els['choices-grid'].querySelectorAll('.choice-btn');
     buttons.forEach(b => b.disabled = true);
+
+    // Sub-skill tally by scale mode (major / minor-natural / -harmonic / -melodic)
+    var _mode = state.current.mode || 'unknown';
+    if (!state.skillTally[_mode]) state.skillTally[_mode] = { c: 0, t: 0 };
+    state.skillTally[_mode].t++;
+    if (correct) state.skillTally[_mode].c++;
 
     if (correct) {
       btn.classList.add('correct');
@@ -2540,7 +2547,8 @@
         correct:    state.score,
         total:      state.settings.total,
         durationMs: Date.now() - state.startedAt,
-        timedMode:  !!state.settings.timer.enabled
+        timedMode:  !!state.settings.timer.enabled,
+        skills:     state.skillTally
       });
     }
 
