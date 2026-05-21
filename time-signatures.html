@@ -370,15 +370,31 @@
      Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
      Animations: @keyframes {{moduleSlug}}Pop, etc.
      ============================================================ */
-  /* Time Signatures puts the actual question prompt in the .staff-label slot,
-     so make it read as a real question. Single line; fits the label band. */
+  /* Time Signatures puts the actual question prompt in the .staff-label slot.
+     Unlike the short uppercase labels other modules use, this is a full
+     question sentence — so it must WRAP rather than clip on narrow phones
+     (the base .staff-label is nowrap + fixed 34px height + ellipsis, which
+     cut off long prompts like "Which number tells you what…" on Samsung).
+     Allow up to ~2 lines, scale the font responsively, and reserve enough
+     vertical band so it doesn't collide with the staff below. */
   #play-screen .staff-label {
-    font-size: 22px;
+    font-size: clamp(15px, 4.4vw, 22px);
+    line-height: 1.15;
     font-weight: 600;
     text-transform: none;
     letter-spacing: 0;
     color: var(--ink);
+    white-space: normal;
+    height: auto;
+    max-height: 3.2em;
+    align-items: flex-start;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
+  /* Push the staff down to clear a possible two-line prompt. */
+  #play-screen .staff-svg-wrap { top: 72px; }
 
   /* Time Signatures — staff display */
   .ts-stage {
@@ -1027,7 +1043,9 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
     .staff-svg-wrap svg { max-width: 280px; }
-    .staff-card { padding: 10px 10px 8px; height: 220px; }
+    .staff-card { padding: 10px 10px 8px; height: 250px; }
+    /* Slightly smaller staff on phones so a 2-line prompt + staff both fit. */
+    #play-screen .staff-svg-wrap { top: 84px; }
     .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
     .staff-actions { gap: 6px; }
     .choice-btn { font-size: 18px; padding: 12px 8px; }
