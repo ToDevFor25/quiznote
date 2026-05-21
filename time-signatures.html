@@ -2262,7 +2262,7 @@
     var roundOutcome = 'logged';
     if (window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
-        module:     M.slug,
+        module:     (M && M.slug) || 'time-signatures',
         tier:       state.settings.difficulty,
         length:     state.total,
         correct:    state.score,
