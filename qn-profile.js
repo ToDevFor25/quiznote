@@ -437,14 +437,37 @@
      * @returns {string} 'logged' | 'held'
      */
     logOrHold: function (eventData) {
-      if (!eventData || !eventData.module) return 'held';
       var active = profileAPI.getActive();
+
+      // ACTIVE PROFILE: always log directly; never return the 'held'
+      // signal for a signed-in user. (Bug fix v1.4.1: the old guard
+      // `if (!eventData || !eventData.module) return 'held'` ran BEFORE
+      // this check, so a malformed/slug-less event from an active user
+      // returned 'held' — which, combined with any stranded pending
+      // event, mis-fired the guest "save your scores?" prompt for a
+      // well-established profile.)
       if (active) {
-        eventsAPI.log(eventData);
-        return 'logged';
+        // Drain any stranded pending events — they are meaningless once a
+        // profile is active, and left lying around they keep pendingCount()
+        // > 0, which is half of what mis-triggered the guest prompt.
+        if (eventsAPI.pendingCount() > 0) {
+          try { eventsAPI.backfill(active.id); } catch (e) {}
+        }
+        if (eventData && eventData.module) {
+          eventsAPI.log(eventData);
+          return 'logged';
+        }
+        // Malformed event but a real profile is active: do not log a junk
+        // event, but never claim 'held'. Signal a no-op so the caller's
+        // prompt stays hidden.
+        return 'skipped';
       }
-      // No profile: stash a normalized event (without profileId) in
-      // the pending slot. profileId is assigned at backfill time.
+
+      // NO PROFILE (anonymous): a malformed event can't be held meaningfully.
+      if (!eventData || !eventData.module) return 'skipped';
+
+      // Stash a normalized event (without profileId) in the pending slot.
+      // profileId is assigned at backfill time.
       var pending = readStorage(STORAGE_KEYS.PENDING_EVENTS, []);
       var held = {
         module:      eventData.module,
@@ -858,6 +881,6 @@
   window.QN.events    = eventsAPI;
   window.QN.ui        = uiAPI;
   window.QN.recommend = recommendAPI;
-  window.QN.version = '1.4.0';  // + QN.profile.resetDevice() (device-wide data wipe)
+  window.QN.version = '1.4.1';  // logOrHold: active-check-first + drain stranded pending (guest-prompt bug fix)
 
 })();

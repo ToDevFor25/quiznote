@@ -2151,7 +2151,7 @@
 
     if (window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
-        module:     M.slug,
+        module:     (M && M.slug) || 'note-values',
         tier:       state.settings.difficulty,
         length:     state.total,
         correct:    state.score,
