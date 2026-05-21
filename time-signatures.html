@@ -496,6 +496,14 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
+  /* 4 choices: 2×2 (the default, explicit for clarity). */
+  .choices-grid.count-4 { grid-template-columns: 1fr 1fr; }
+  /* 3 choices: stacked full-width on mobile (thumb-friendly, no empty cell);
+     a balanced row of three on tablet/desktop. Avoids the 2×2 hole. */
+  .choices-grid.count-3 { grid-template-columns: 1fr; }
+  @media (min-width: 760px) {
+    .choices-grid.count-3 { grid-template-columns: repeat(3, 1fr); }
+  }
   .choice-btn {
     font-family: 'Fredoka', sans-serif; font-weight: 700;
     font-size: 22px;
@@ -1441,10 +1449,23 @@
       distractors = shuffle(allUnits.filter(u => u !== q.answer)).slice(0, 3);
     }
 
-    while (distractors.length < 3) distractors.push('—');
+    // Use only real distractors. When a tier can't supply 3 (e.g. easy
+    // 'label' has just 3 signatures total → 2 distractors), we return 3
+    // tiles instead of padding with a placeholder; the choices grid lays
+    // 3 out cleanly (see .choices-grid.count-3). Dedupe defensively so a
+    // distractor can never collide with the correct answer's label.
+    const correctLabel = labelFor(correctKey);
+    const seen = {};
+    seen[correctLabel] = true;
+    const realDistractors = [];
+    for (let d = 0; d < distractors.length && realDistractors.length < 3; d++) {
+      const val = distractors[d];
+      if (val == null || val === '' || seen[val]) continue;
+      seen[val] = true;
+      realDistractors.push(val);
+    }
 
-    // Wrap each distractor in the same body as the question (so labelFor works on all 4)
-    const choices = shuffle([correctKey, ...distractors.map(d => `${q.body}::${d}`)]);
+    const choices = shuffle([correctKey, ...realDistractors.map(d => `${q.body}::${d}`)]);
     return choices;
   }
 
@@ -1689,6 +1710,13 @@
   function renderChoices() {
     const grid = els['choices-grid'];
     grid.innerHTML = '';
+    // Count-aware layout: most rounds have 4 tiles (2×2). Some tiers can
+    // only produce 3 valid choices (e.g. easy 'label' has just 3 signatures
+    // total). Tag the grid with the count so CSS lays 3 out cleanly —
+    // stacked on mobile, row-of-three on wider screens — instead of leaving
+    // a hole in the 2×2.
+    grid.classList.remove('count-3', 'count-4');
+    grid.classList.add('count-' + (state.currentChoices.length === 3 ? '3' : '4'));
     state.currentChoices.forEach(key => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
