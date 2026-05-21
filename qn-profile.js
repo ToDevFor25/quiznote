@@ -595,13 +595,227 @@
   }
 
   // ─────────────────────────────────────────────────────────────
+  // RECOMMENDER  (weak-spot system, phase 2 — pure logic, no UI)
+  //
+  // QN.recommend.next(profileId) -> a single "what to practice next"
+  // recommendation. Personality: encouraging + forward-moving, but it
+  // doesn't let weak spots rot. Balanced (mostly progress, weak spots
+  // woven in) with a no-nag cap so the same weak spot isn't served
+  // back-to-back. Phase 3 (the "Today" surface) will consume this; the
+  // function itself commits to no UI.
+  //
+  // DESIGN PRINCIPLE (evidence-based — see BUILD_LOG): learning research
+  // favors INTERLEAVING (mixed question types) over blocked drilling, and
+  // SPACING over massed repetition. So: (1) the recommender biases a round
+  // toward a weak *module*, but the round itself must stay interleaved —
+  // never collapse into a single-sub-skill blocked drill. (2) The no-nag
+  // cap is the spacing effect, not just politeness: a weak spot resurfaces
+  // later rather than back-to-back, which is the more effective pattern.
+  // ─────────────────────────────────────────────────────────────
+
+  // v1 linear path: live modules only, in the roster's pedagogical order.
+  var PATH = [
+    'note-names', 'note-values', 'key-signatures',
+    'time-signatures', 'piano-quiz', 'scales', 'intervals'
+  ];
+  var TIER_ORDER = ['easy', 'medium', 'tricky'];
+
+  var REC = {
+    // tuning knobs (single place to re-tune the engine's feel)
+    MIN_SAMPLES_FOR_WEAK: 4,    // need >= this many attempts before trusting an accuracy
+    WEAK_THRESHOLD:       0.60, // sub-skill accuracy under this is "weak"
+    SEVERE_THRESHOLD:     0.40, // under this is "severe" — jumps the queue
+    RECENT_WINDOW:        20,   // how many recent rounds inform recency weighting
+    NO_NAG_LOOKBACK:      2,    // don't re-serve a weak spot if it was the focus
+                                //   of either of the last N recommendations-as-played
+    TIER_UP_ACCURACY:     0.85, // clear a tier at >= this to advance to the next
+    MIN_ROUNDS_PER_TIER:  2,    // and only after this many rounds at the tier
+    DEFAULT_LENGTH:       10
+  };
+
+  function recencyWeight(idx, total) {
+    // idx 0 = most recent. Linear decay from 1.0 (newest) to 0.4 (oldest
+    // in window). Rounds beyond the window contribute nothing.
+    if (idx >= REC.RECENT_WINDOW) return 0;
+    var span = Math.min(total, REC.RECENT_WINDOW);
+    if (span <= 1) return 1;
+    return 1 - 0.6 * (idx / (span - 1));
+  }
+
+  var recommendAPI = {
+    /**
+     * Compute the next-practice recommendation for a profile.
+     * Pure read over qn_events — no side effects, no UI.
+     * @param {string} profileId
+     * @returns {Object} {
+     *   module, tier, length,
+     *   kind: 'cold-start'|'remediation'|'progress'|'review',
+     *   reason: string,
+     *   weakSkills: [{ module, skill, acc, attempts }]   // may be empty
+     * }
+     */
+    next: function (profileId) {
+      var path = PATH.slice();
+      var fallback = {
+        module: path[0], tier: 'easy', length: REC.DEFAULT_LENGTH,
+        kind: 'cold-start', reason: 'Start at the beginning.', weakSkills: []
+      };
+      if (!profileId) return fallback;
+
+      var events = eventsAPI.query(profileId); // newest first
+      if (!events || !events.length) return fallback;
+
+      // ---- per-module rollups + recency-weighted sub-skill accuracy ----
+      var perModule = {};   // slug -> { rounds, recentRoundAcc:[], skills:{ key:{wc,wt} } }
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (path.indexOf(ev.module) === -1) continue; // ignore non-path modules
+        if (!perModule[ev.module]) perModule[ev.module] = { rounds: 0, recentAcc: [], tierRounds: {}, tierAcc: {}, skills: {} };
+        var pm = perModule[ev.module];
+        pm.rounds++;
+        var w = recencyWeight(i, events.length);
+
+        if (i < REC.RECENT_WINDOW && ev.total > 0) pm.recentAcc.push(ev.correct / ev.total);
+
+        var t = ev.tier || 'easy';
+        pm.tierRounds[t] = (pm.tierRounds[t] || 0) + 1;
+        if (ev.total > 0) {
+          if (!pm.tierAcc[t]) pm.tierAcc[t] = { c: 0, n: 0 };
+          pm.tierAcc[t].c += ev.correct; pm.tierAcc[t].n += ev.total;
+        }
+
+        if (ev.skills && w > 0) {
+          for (var sk in ev.skills) {
+            if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
+            if (!pm.skills[sk]) pm.skills[sk] = { wc: 0, wt: 0 };
+            pm.skills[sk].wc += ev.skills[sk].c * w;  // recency-weighted
+            pm.skills[sk].wt += ev.skills[sk].t * w;
+          }
+        }
+      }
+
+      // ---- collect weak sub-skills across path modules ----
+      var weak = [];
+      for (var slug in perModule) {
+        var sk2 = perModule[slug].skills;
+        for (var key in sk2) {
+          var wt = sk2[key].wt;
+          if (wt < REC.MIN_SAMPLES_FOR_WEAK) continue; // not enough signal
+          var acc = sk2[key].wc / wt;
+          if (acc < REC.WEAK_THRESHOLD) {
+            weak.push({ module: slug, skill: key, acc: acc, attempts: Math.round(wt), severe: acc < REC.SEVERE_THRESHOLD });
+          }
+        }
+      }
+      weak.sort(function (a, b) { return a.acc - b.acc; }); // weakest first
+
+      // ---- no-nag: what were the last couple of things actually practiced? ----
+      var recentModules = [];
+      for (var r = 0; r < events.length && recentModules.length < REC.NO_NAG_LOOKBACK; r++) {
+        if (path.indexOf(events[r].module) !== -1) recentModules.push(events[r].module);
+      }
+
+      // ---- 1. severe weak spot jumps the queue (unless just practiced) ----
+      var severe = weak.filter(function (w2) { return w2.severe; });
+      for (var s = 0; s < severe.length; s++) {
+        if (recentModules.indexOf(severe[s].module) === -1) {
+          var sv = severe[s];
+          return {
+            module: sv.module,
+            tier: weakestTierFor(perModule[sv.module]),
+            length: REC.DEFAULT_LENGTH,
+            kind: 'remediation',
+            reason: 'Let\u2019s shore up ' + sv.module + ' \u2014 ' + Math.round(sv.acc * 100) + '% on one part of it.',
+            weakSkills: [sv]
+          };
+        }
+      }
+
+      // ---- 2. forward progress: first path module not yet "cleared" ----
+      for (var p = 0; p < path.length; p++) {
+        var mslug = path[p];
+        var info = perModule[mslug];
+        if (!info) {
+          // never touched -> start it
+          return {
+            module: mslug, tier: 'easy', length: REC.DEFAULT_LENGTH,
+            kind: 'progress',
+            reason: 'New skill: time to start ' + mslug + '.',
+            weakSkills: weak.filter(function (w3) { return w3.module === mslug; })
+          };
+        }
+        var tier = nextTierFor(info);
+        if (tier) {
+          return {
+            module: mslug, tier: tier, length: REC.DEFAULT_LENGTH,
+            kind: 'progress',
+            reason: tier === 'easy'
+              ? 'Keep going on ' + mslug + '.'
+              : 'You\u2019re ready for ' + tier + ' in ' + mslug + '.',
+            weakSkills: weak.filter(function (w4) { return w4.module === mslug; })
+          };
+        }
+        // else this module is cleared at all tiers -> continue to next
+      }
+
+      // ---- 3. everything cleared: review the weakest remaining spot, or
+      //         the least-recently practiced module ----
+      if (weak.length) {
+        var firstNonRecent = weak.find(function (w5) { return recentModules.indexOf(w5.module) === -1; }) || weak[0];
+        return {
+          module: firstNonRecent.module,
+          tier: weakestTierFor(perModule[firstNonRecent.module]),
+          length: REC.DEFAULT_LENGTH,
+          kind: 'review',
+          reason: 'Sharpen ' + firstNonRecent.module + ' \u2014 still a soft spot.',
+          weakSkills: [firstNonRecent]
+        };
+      }
+      // truly all strong: gentle review of the least-recently-played module
+      var lru = path.filter(function (m) { return recentModules.indexOf(m) === -1; })[0] || path[0];
+      return {
+        module: lru, tier: 'tricky', length: REC.DEFAULT_LENGTH,
+        kind: 'review',
+        reason: 'You\u2019re strong everywhere \u2014 a quick refresher on ' + lru + '.',
+        weakSkills: []
+      };
+
+      // ---- helpers ----
+      function nextTierFor(info) {
+        // Returns the tier to practice next in this module, or null if the
+        // module is "cleared" (all tiers practiced enough and accurate).
+        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+          var tr = TIER_ORDER[ti];
+          var rounds = info.tierRounds[tr] || 0;
+          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : 0;
+          if (rounds < REC.MIN_ROUNDS_PER_TIER) return tr;          // under-practiced
+          if (acc < REC.TIER_UP_ACCURACY) return tr;                // not yet mastered
+          // else cleared; check next tier
+        }
+        return null;
+      }
+      function weakestTierFor(info) {
+        // For remediation: practice at the lowest tier that isn't mastered,
+        // so we rebuild from where it broke down.
+        for (var ti = 0; ti < TIER_ORDER.length; ti++) {
+          var tr = TIER_ORDER[ti];
+          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : null;
+          if (acc !== null && acc < REC.TIER_UP_ACCURACY) return tr;
+        }
+        return 'easy';
+      }
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────────
   // EXPOSE GLOBAL NAMESPACE
   // ─────────────────────────────────────────────────────────────
 
   window.QN = window.QN || {};
-  window.QN.profile = profileAPI;
-  window.QN.events  = eventsAPI;
-  window.QN.ui      = uiAPI;
-  window.QN.version = '1.2.0';  // + optional per-skill tallies on events (sub-skill tagging)
+  window.QN.profile   = profileAPI;
+  window.QN.events    = eventsAPI;
+  window.QN.ui        = uiAPI;
+  window.QN.recommend = recommendAPI;
+  window.QN.version = '1.3.0';  // + weak-spot recommender (phase 2, logic only)
 
 })();
