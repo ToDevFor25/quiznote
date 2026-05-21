@@ -133,6 +133,19 @@
   .mod-stat .l { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-top: 2px; }
   .acc-bar { margin-top: 14px; height: 10px; border-radius: 999px; background: var(--cream-2); overflow: hidden; }
   .acc-fill { height: 100%; border-radius: 999px; background: var(--teal); transition: width 600ms ease-out; }
+  .subskills { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--shadow-cool); }
+  .subskills-head {
+    font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-faint); margin-bottom: 8px;
+  }
+  .subskill-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 3px 0;
+  }
+  .subskill-row .ss-name { display: inline-flex; align-items: center; gap: 4px; }
+  .subskill-row .ss-val { font-family: 'Fredoka', sans-serif; font-weight: 700; color: var(--ink); }
+  .subskill-row .ss-val.ss-weak { color: var(--coral-dk); }
+  .subskill-row .ss-flag { color: var(--coral); font-size: 9px; }
 
   /* empty / anonymous states */
   .empty-state { text-align: center; padding: 48px 24px; }
@@ -243,6 +256,20 @@
   };
   var TIERS = ['easy', 'medium', 'tricky'];
 
+  // Friendly labels for known sub-skill keys. Falls back to the raw key.
+  // Keyed by "module/skill" first, then bare "skill", so the same key can
+  // mean different things in different modules later.
+  var SKILL_LABELS = {
+    'time-signatures/label':      'Name the signature',
+    'time-signatures/top':        'Beats per measure',
+    'time-signatures/bottom':     'Which note gets the beat',
+    'time-signatures/whichBeats': 'Top vs bottom (beats)',
+    'time-signatures/whichUnit':  'Top vs bottom (unit)'
+  };
+  function skillLabel(slug, key) {
+    return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key;
+  }
+
   function metaFor(slug) {
     if (MODULE_META[slug]) return MODULE_META[slug];
     var pretty = String(slug).split('-').map(function (w) {
@@ -303,10 +330,19 @@
       totCorrect += ev.correct;
       totAnswered += ev.total;
       totMs += ev.durationMs;
-      if (!byModule[ev.module]) byModule[ev.module] = { correct: 0, total: 0, rounds: 0 };
+      if (!byModule[ev.module]) byModule[ev.module] = { correct: 0, total: 0, rounds: 0, skills: {} };
       byModule[ev.module].correct += ev.correct;
       byModule[ev.module].total += ev.total;
       byModule[ev.module].rounds += 1;
+      if (ev.skills) {
+        for (var sk in ev.skills) {
+          if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
+          var bucket = byModule[ev.module].skills;
+          if (!bucket[sk]) bucket[sk] = { c: 0, t: 0 };
+          bucket[sk].c += ev.skills[sk].c;
+          bucket[sk].t += ev.skills[sk].t;
+        }
+      }
     }
     document.getElementById('sum-accuracy').textContent =
       totAnswered > 0 ? fmtPct(100 * totCorrect / totAnswered) : '—';
@@ -355,6 +391,37 @@
       fill.style.background = COLOR_HEX[meta.color] || COLOR_HEX.teal;
       bar.appendChild(fill);
       card.appendChild(bar);
+
+      // Sub-skill breakdown (only when this module logged tagged questions).
+      // Weakest first — that's the actionable bit and the seed of the future
+      // weak-spot recommender.
+      var skillKeys = Object.keys(m.skills || {});
+      if (skillKeys.length) {
+        skillKeys.sort(function (a, b) {
+          var pa = m.skills[a].t ? m.skills[a].c / m.skills[a].t : 0;
+          var pb = m.skills[b].t ? m.skills[b].c / m.skills[b].t : 0;
+          return pa - pb; // ascending = weakest first
+        });
+        var sub = document.createElement('div');
+        sub.className = 'subskills';
+        var head = document.createElement('div');
+        head.className = 'subskills-head';
+        head.textContent = 'Within this skill';
+        sub.appendChild(head);
+        skillKeys.forEach(function (key) {
+          var s = m.skills[key];
+          var acc = s.t ? 100 * s.c / s.t : 0;
+          var row = document.createElement('div');
+          row.className = 'subskill-row';
+          var weak = acc < 60;
+          row.innerHTML =
+            '<span class="ss-name">' + (weak ? '<span class="ss-flag">●</span> ' : '') + skillLabel(slug, key) + '</span>' +
+            '<span class="ss-val' + (weak ? ' ss-weak' : '') + '">' + fmtPct(acc) + '</span>';
+          sub.appendChild(row);
+        });
+        card.appendChild(sub);
+      }
+
       grid.appendChild(card);
       // animate the fill in
       requestAnimationFrame(function () { setTimeout(function () { fill.style.width = acc + '%'; }, 60); });
