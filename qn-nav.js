@@ -39,7 +39,7 @@
     '  font-size: 13px; text-decoration: none; white-space: nowrap; max-width: 150px;',
     '  transition: background 120ms; }',
     '.qn-nav-pill:hover { background: #d3f1ec; }',
-    '.qn-nav-pill .qn-nav-name { overflow: hidden; text-overflow: ellipsis; }',
+    '.qn-nav-pill .qn-nav-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }',
     '.qn-nav-dot { width: 20px; height: 20px; border-radius: 50%; flex: none;',
     '  background: #1FB8A8; color: #fff; display: inline-flex; align-items: center;',
     '  justify-content: center; font-size: 11px; font-weight: 700; }',
@@ -69,6 +69,7 @@
     '@media (max-width: 760px) {',
     '  .qn-nav-panel { min-width: 220px; }',
     '  .qn-nav-item { padding: 13px 16px; font-size: 15px; }',
+    '  .qn-nav-pill { max-width: 132px; }',
     '}'
   ].join('\n');
 
