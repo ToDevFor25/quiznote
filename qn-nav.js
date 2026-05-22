@@ -174,6 +174,12 @@
       ic.textContent = it.icon;
       a.appendChild(ic);
       a.appendChild(document.createTextNode(it.label));
+      // Explicit navigation: don't rely solely on default <a> behavior, and
+      // make sure the click can't be swallowed by the menu's own listeners.
+      a.addEventListener('click', function (e) {
+        e.stopPropagation();
+        window.location.href = it.href;
+      });
       panel.appendChild(a);
     });
 
