@@ -1311,9 +1311,79 @@
     .staff-stage { height: 144px; }
     .try-toast { font-size: 48px; }
   }
+  /* Welcome-back bar (returning profile-holders only; injected by script) */
+  #qn-welcome-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; background: #1FB8A8; padding: 11px 22px;
+    border-bottom: 2px solid #2A2A3E; font-family: 'Fredoka', sans-serif;
+  }
+  #qn-welcome-bar .wb-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  #qn-welcome-bar .wb-dot {
+    width: 26px; height: 26px; border-radius: 50%; background: #fff; color: #0e8475;
+    display: flex; align-items: center; justify-content: center; font-weight: 700;
+    font-size: 13px; flex: none;
+  }
+  #qn-welcome-bar .wb-text { font-weight: 600; font-size: 15px; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #qn-welcome-bar .wb-right { display: flex; align-items: center; gap: 12px; flex: none; }
+  #qn-welcome-bar .wb-btn {
+    font-weight: 600; font-size: 14px; background: #FFB627; color: #2A2A3E;
+    border: 2px solid #2A2A3E; border-radius: 11px; padding: 7px 15px;
+    box-shadow: 0 3px 0 #2A2A3E; text-decoration: none; white-space: nowrap;
+    transition: transform 100ms, box-shadow 100ms;
+  }
+  #qn-welcome-bar .wb-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2A2A3E; }
+  #qn-welcome-bar .wb-x {
+    background: none; border: none; color: #fff; opacity: .8; font-size: 20px;
+    line-height: 1; cursor: pointer; padding: 0 2px; font-family: 'Fredoka', sans-serif;
+  }
+  #qn-welcome-bar .wb-x:hover { opacity: 1; }
+  @media (max-width: 560px) {
+    #qn-welcome-bar { padding: 10px 16px; }
+    #qn-welcome-bar .wb-text { font-size: 14px; }
+  }
 </style>
 </head>
 <body>
+
+<!-- Welcome-back bar mount point (populated only for returning profile-holders) -->
+<div id="qn-welcome-mount"></div>
+<script src="qn-profile.js" defer></script>
+<script defer>
+(function () {
+  function init() {
+    if (!window.QN || !QN.profile || !QN.profile.getActive) return;
+    // session-only dismiss: returns on next visit
+    try { if (sessionStorage.getItem('qn_welcome_dismissed') === '1') return; } catch (e) {}
+    var active = QN.profile.getActive();
+    if (!active) return;  // first-timers see nothing
+    var mount = document.getElementById('qn-welcome-mount');
+    if (!mount) return;
+    var initial = (active.nickname || '?').trim().charAt(0).toUpperCase() || '?';
+    var bar = document.createElement('div');
+    bar.id = 'qn-welcome-bar';
+    var left = document.createElement('div'); left.className = 'wb-left';
+    var dot = document.createElement('span'); dot.className = 'wb-dot'; dot.textContent = initial;
+    var txt = document.createElement('span'); txt.className = 'wb-text';
+    txt.textContent = 'Welcome back, ' + active.nickname;
+    left.appendChild(dot); left.appendChild(txt);
+    var right = document.createElement('div'); right.className = 'wb-right';
+    var btn = document.createElement('a'); btn.className = 'wb-btn';
+    btn.href = 'path.html'; btn.textContent = 'Continue your path →';
+    var x = document.createElement('button'); x.className = 'wb-x';
+    x.setAttribute('aria-label', 'Dismiss'); x.textContent = '×';
+    x.onclick = function () {
+      try { sessionStorage.setItem('qn_welcome_dismissed', '1'); } catch (e) {}
+      bar.parentNode && bar.parentNode.removeChild(bar);
+    };
+    right.appendChild(btn); right.appendChild(x);
+    bar.appendChild(left); bar.appendChild(right);
+    mount.appendChild(bar);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
 
 <!-- NAV -->
 <nav>
