@@ -70,10 +70,9 @@
       justify-content: space-between;
       gap: 12px;
       flex-shrink: 0;
-      flex-wrap: wrap;
-      row-gap: 10px;
     }
     .nav-brand {
+      flex: none;
       font-family: 'Fredoka', sans-serif;
       font-weight: 700;
       font-size: 26px;
@@ -82,7 +81,7 @@
       letter-spacing: -0.01em;
     }
     .nav-brand span { color: var(--teal); }
-    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .nav-progress {
       font-family: 'Fredoka', sans-serif;
       font-weight: 600;
@@ -314,15 +313,6 @@
       .nav-brand { font-size: 22px; }
       .nav-progress, .nav-tag { display: none; }
       .nav-right { gap: 8px; min-width: 0; }
-      .profile-chip-slot { min-width: 0; }
-      /* Long nicknames (up to 20 chars) shouldn't re-trigger overflow:
-         cap and ellipsis the chip's label span on small screens. */
-      .qn-chip { max-width: 46vw; }
-      .qn-chip span:last-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     }
   </style>
 </head>
