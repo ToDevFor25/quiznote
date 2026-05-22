@@ -2014,6 +2014,39 @@
   }
 
   // Start screen setup
+  // ── Path handoff (one-shot). See note-names for full rationale. Reads the
+  //    pre-seeded `piano-quiz_settings`, applies tier/length/clef, syncs the
+  //    start-screen .on highlights, then clears the key (handoff is for this
+  //    launch only). clef included for future clef-aware recommender.
+  function applyPathHandoff() {
+    var raw;
+    try { raw = localStorage.getItem('piano-quiz_settings'); } catch (e) { return; }
+    if (!raw) return;
+    try { localStorage.removeItem('piano-quiz_settings'); } catch (e) {}
+    var s;
+    try { s = JSON.parse(raw); } catch (e) { return; }
+    if (!s || typeof s !== 'object') return;
+    function highlight(group, attr, value) {
+      var box = els[group]; if (!box || value == null) return;
+      var kids = box.children, matched = false;
+      for (var i = 0; i < kids.length; i++) {
+        var on = String(kids[i].getAttribute(attr)) === String(value);
+        kids[i].classList.toggle('on', on);
+        if (on) matched = true;
+      }
+      return matched;
+    }
+    if (s.difficulty && ['easy','medium','tricky'].indexOf(s.difficulty) !== -1) {
+      if (highlight('diff-tiles', 'data-diff', s.difficulty)) state.settings.difficulty = s.difficulty;
+    }
+    if (s.total && [5,10,20].indexOf(s.total) !== -1) {
+      if (highlight('length-tiles', 'data-len', s.total)) state.settings.total = s.total;
+    }
+    if (s.clef && ['treble','bass','both'].indexOf(s.clef) !== -1) {
+      if (highlight('clef-tiles', 'data-clef', s.clef)) state.settings.clef = s.clef;
+    }
+  }
+
   function setupStart() {
     // Restore and apply saved sound preference on the settings screen.
     const savedMuted = localStorage.getItem('pq_muted') === 'true';
@@ -3057,6 +3090,7 @@
     cacheEls();
     if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
     setupStart();
+    applyPathHandoff();
     setupActions();
     injectLogo();
 
