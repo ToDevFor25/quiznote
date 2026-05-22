@@ -54,7 +54,7 @@
     '.qn-nav-btn:hover { background: #c2ebe3; }',
     '.qn-nav-btn[aria-expanded="true"] { background: #1FB8A8; color: #fff; }',
     '.qn-nav-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2A2A3E; }',
-    '.qn-nav-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 200;',
+    '.qn-nav-panel { position: fixed; z-index: 99999;',
     '  min-width: 200px; background: #fff; border: 2px solid #2A2A3E; border-radius: 14px;',
     '  box-shadow: 0 6px 0 #2A2A3E; overflow: hidden; font-family: Fredoka, sans-serif; }',
     '.qn-nav-panel[hidden] { display: none; }',
@@ -183,25 +183,42 @@
       panel.appendChild(a);
     });
 
-    function open() { panel.hidden = false; btn.setAttribute('aria-expanded', 'true'); bars.textContent = '\u2715'; }
+    // Position the (body-mounted, fixed) panel under the button's right edge.
+    // Body-mounting escapes nav's backdrop-filter stacking context, which was
+    // trapping the panel below the hero and stealing item clicks.
+    function place() {
+      var r = btn.getBoundingClientRect();
+      panel.style.top = (r.bottom + 8) + 'px';
+      // align panel's right edge to the button's right edge
+      panel.style.left = 'auto';
+      panel.style.right = (window.innerWidth - r.right) + 'px';
+    }
+    function open() { place(); panel.hidden = false; btn.setAttribute('aria-expanded', 'true'); bars.textContent = '\u2715'; }
     function close() { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); bars.textContent = '\u2630'; }
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
       panel.hidden ? open() : close();
     });
     document.addEventListener('click', function (e) {
-      if (!panel.hidden && !wrap.contains(e.target)) close();
+      // panel now lives on <body>, so check it explicitly as well as the wrap
+      if (!panel.hidden && !wrap.contains(e.target) && !panel.contains(e.target)) close();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !panel.hidden) close();
     });
+    window.addEventListener('resize', function () { if (!panel.hidden) place(); });
+    window.addEventListener('scroll', function () { if (!panel.hidden) place(); }, true);
 
     wrap.appendChild(pill);
     wrap.appendChild(btn);
-    wrap.appendChild(panel);
 
     slot.innerHTML = '';
     slot.appendChild(wrap);
+    // remove any stale panel from a previous mount, then attach the new one to body
+    var stale = document.getElementById('qn-nav-panel-mounted');
+    if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+    panel.id = 'qn-nav-panel-mounted';
+    document.body.appendChild(panel);  // detached from nav's stacking context
     return true;
   }
 
