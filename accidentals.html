@@ -241,6 +241,28 @@
     font-size: 13px; color: var(--ink-soft);
     text-transform: uppercase; letter-spacing: 0.1em;
   }
+  /* The question prompt lives in the .staff-label slot. Like Time Signatures,
+     Accidentals' prompts are full sentences ("Which note sounds the same as
+     C#?"), not short labels — so they must WRAP and scale responsively rather
+     than clip on narrow phones. Mirrors the TS treatment: bigger readable
+     weight, up to 2 lines, font clamps with viewport width. */
+  #play-screen #q-prompt {
+    font-size: clamp(15px, 4.4vw, 22px);
+    line-height: 1.15;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink);
+    text-align: center;
+    white-space: normal;
+    max-height: 3.2em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    margin: 0 auto 4px;
+    max-width: 22em;
+  }
   .staff-svg-wrap {
     flex: 1;
     display: flex; align-items: center; justify-content: center;
@@ -249,6 +271,12 @@
   .staff-svg-wrap svg {
     width: 100%; height: 100%;
     max-height: 200px;
+    /* Cap width like Time Signatures: a free-scaling staff (width:100% on a
+       phone) stretches the accidental <text> glyph and renders it at a scale
+       whose baseline doesn't track the geometry — the same class of issue as
+       the TS digit-drift. A fixed max-width keeps the symbol a consistent,
+       readable size across devices. */
+    max-width: 340px;
   }
   .staff-actions {
     display: flex; gap: 10px; justify-content: center;
@@ -524,6 +552,7 @@
   /* ============ Accidentals filter ============ */
   .acc-block { text-align: center; }
   .acc-block[hidden] { display: none; }
+  #clef-block[hidden] { display: none; }
   .acc-label {
     font-family: 'Fredoka', sans-serif; font-weight: 600;
     font-size: 16px; color: var(--ink-soft);
@@ -813,7 +842,7 @@
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
     .staff-svg-wrap { min-height: 100px; }
-    .staff-svg-wrap svg { max-height: 160px; }
+    .staff-svg-wrap svg { max-height: 160px; max-width: 280px; }
     .staff-card { padding: 10px 10px 8px; gap: 6px; }
     .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
     .staff-actions { gap: 6px; }
@@ -825,7 +854,7 @@
     #play-screen { padding: 22px 32px 24px; gap: 14px; }
     .play-body { gap: 20px; }
     .staff-svg-wrap { min-height: 200px; }
-    .staff-svg-wrap svg { max-height: 260px; }
+    .staff-svg-wrap svg { max-height: 260px; max-width: 360px; }
     .stat-value { font-size: 38px; }
     .choice-btn { font-size: 26px; padding: 18px 14px; }
   }
@@ -855,7 +884,7 @@
       </div>
     </div>
 
-    <div class="q-block">
+    <div class="q-block" id="clef-block" hidden>
       <div class="q-label"><span class="num">1</span> Which clef?</div>
       <div class="tile-row" id="clef-tiles">
         <button class="tile on" data-clef="treble">
@@ -901,22 +930,22 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">2</span> How tricky?</div>
+      <div class="q-label"><span class="num">1</span> How tricky?</div>
       <div class="tile-row" id="diff-tiles">
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
           <div class="tile-title">Easy</div>
-          <div class="tile-sub">middle notes<br/>white keys</div>
+          <div class="tile-sub">sharp · flat<br/>natural</div>
         </button>
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">wider range<br/>white keys</div>
+          <div class="tile-sub">+ double<br/>sharp · flat</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
-          <div class="tile-sub">full range</div>
+          <div class="tile-sub">+ enharmonic<br/>equivalents</div>
         </button>
       </div>
     </div>
@@ -932,7 +961,7 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">3</span> How many questions?</div>
+      <div class="q-label"><span class="num">2</span> How many questions?</div>
       <div class="tile-row" id="length-tiles">
         <button class="tile" data-len="5">
           <div class="tile-emoji">⚡</div>
@@ -988,7 +1017,7 @@
 
   <div class="play-body">
     <div class="card staff-card">
-      <div class="staff-label">What note is this?</div>
+      <div class="staff-label" id="q-prompt">What does this symbol do?</div>
       <div class="staff-svg-wrap" id="staff-wrap"></div>
       <div class="staff-actions">
         <button class="btn" id="play-note-btn">🔊 Play note</button>
@@ -1114,7 +1143,8 @@
   }
   function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
   function displayName(pitch) {
-    const acc = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
+    const G = { '#': '♯', 'b': '♭', 'n': '♮', 'x': '𝄪', 'bb': '𝄫' };
+    const acc = G[pitch.accidental] || '';
     return pitch.letter + acc;
   }
   function midiEquals(a, b) { return a === b; }
@@ -1319,8 +1349,9 @@
         svg += `<line x1="${nx - lineGap * 1.05}" y1="${ly}" x2="${nx + lineGap * 1.05}" y2="${ly}" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round"/>`;
       });
       if (pitch.accidental) {
-        const sym = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
-        svg += `<text x="${nx - lineGap * 1.2}" y="${ny + lineGap * 0.4}" font-family="serif" font-weight="700" font-size="${lineGap * 2.0}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
+        const GLYPH = { '#': '♯', 'b': '♭', 'n': '♮', 'x': '𝄪', 'bb': '𝄫' };
+        const sym = GLYPH[pitch.accidental] || '';
+        if (sym) svg += `<text x="${nx - lineGap * 1.2}" y="${ny + lineGap * 0.4}" font-family="serif" font-weight="700" font-size="${lineGap * 2.0}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
       }
       const stemUp = d < 4;
       const stemLen = lineGap * 3.5;
@@ -1381,99 +1412,141 @@
   const R = NH.render;
   const A = NH.audio;
 
-  // Note pools — same as PianoQuiz
-  const RANGES = {
-    treble: {
-      easy:   ['E4','F4','G4','A4','B4','C5','D5','E5','F5'],
-      medium: ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5'],
-      tricky: ['A3','B3','C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5','A5','B5','C6'],
-    },
-    bass: {
-      easy:   ['G2','A2','B2','C3','D3','E3','F3','G3','A3'],
-      medium: ['E2','F2','G2','A2','B2','C3','D3','E3','F3','G3','A3','B3','C4'],
-      tricky: ['C2','D2','E2','F2','G2','A2','B2','C3','D3','E3','F3','G3','A3','B3','C4','D4','E4'],
-    },
+  // ===================================================================
+  // ACCIDENTALS QUESTION ENGINE
+  // Three question types (the sub-skills): effect / name / enharmonic.
+  // Tiers gate which accidentals + types appear. See accidentals-spec.md.
+  // ===================================================================
+
+  // Accidental symbols and what each does.
+  const ACC = {
+    sharp:  { sym: '\u266F', label: 'sharp',        effect: 'Raises a half step',  semis: +1 },
+    flat:   { sym: '\u266D', label: 'flat',         effect: 'Lowers a half step',  semis: -1 },
+    natural:{ sym: '\u266E', label: 'natural',      effect: 'Cancels the accidental', semis: 0 },
+    dsharp: { sym: '\uD834\uDD2A', label: 'double-sharp', effect: 'Raises a whole step', semis: +2 },
+    dflat:  { sym: '\uD834\uDD2B', label: 'double-flat',  effect: 'Lowers a whole step', semis: -2 },
+  };
+  // The five directional-effect strings used as effect-question tiles.
+  const EFFECTS = {
+    halfUp:   'Raises a half step',
+    halfDown: 'Lowers a half step',
+    wholeUp:  'Raises a whole step',
+    wholeDown:'Lowers a whole step',
+    cancel:   'Cancels the accidental',
+  };
+  const EFFECT_OF = {
+    sharp: EFFECTS.halfUp, flat: EFFECTS.halfDown,
+    dsharp: EFFECTS.wholeUp, dflat: EFFECTS.wholeDown, natural: EFFECTS.cancel,
+  };
+  const OPP_EFFECT = {
+    sharp: EFFECTS.halfDown, flat: EFFECTS.halfUp,
+    dsharp: EFFECTS.wholeDown, dflat: EFFECTS.wholeUp, natural: EFFECTS.halfUp,
   };
 
-  function buildPool(clef, diff, accidentals) {
-    let base;
-    if (clef === 'both') base = [...RANGES.treble[diff], ...RANGES.bass[diff]];
-    else base = [...RANGES[clef][diff]];
+  // Enharmonic pairs (the five black keys), both directions. Spellings per doc §9.
+  const ENH = {
+    'C\u266F': 'D\u266D', 'D\u266D': 'C\u266F',
+    'D\u266F': 'E\u266D', 'E\u266D': 'D\u266F',
+    'F\u266F': 'G\u266D', 'G\u266D': 'F\u266F',
+    'G\u266F': 'A\u266D', 'A\u266D': 'G\u266F',
+    'A\u266F': 'B\u266D', 'B\u266D': 'A\u266F',
+  };
+  const ENH_KEYS = Object.keys(ENH);
 
-    if (diff === 'tricky') {
-      const acc = accidentals || 'both';
-      const sharps = [], flats = [];
-      base.forEach(p => {
-        const m = /^([A-G])(\d+)$/.exec(p);
-        if (!m) return;
-        const letter = m[1], oct = m[2];
-        if (letter !== 'E' && letter !== 'B') sharps.push(letter + '#' + oct);
-        if (letter !== 'C' && letter !== 'F') flats.push(letter + 'b' + oct);
-      });
-      if (acc === 'both')   base = base.concat(sharps, flats);
-      if (acc === 'sharps') base = sharps;
-      if (acc === 'flats')  base = flats;
-    }
-    return base;
+  // Letters whose sharp/flat are the natural black keys (avoid B#, E#, Cb, Fb for clarity).
+  const SHARP_LETTERS = ['C','D','F','G','A'];
+  const FLAT_LETTERS   = ['D','E','G','A','B'];
+  const ALL_LETTERS    = ['A','B','C','D','E','F','G'];
+
+  function whichAccidentals(diff) {
+    if (diff === 'easy')   return ['sharp','flat','natural'];
+    if (diff === 'medium') return ['sharp','flat','natural','dsharp','dflat'];
+    return ['sharp','flat','natural','dsharp','dflat'];
   }
+  function typeWeights(diff) {
+    if (diff === 'easy')   return { effect: 0.7, name: 0.3 };
+    if (diff === 'medium') return { effect: 0.45, name: 0.4, enharmonic: 0.15 };
+    return { effect: 0.3, name: 0.35, enharmonic: 0.35 };
+  }
+  function pickWeighted(weights) {
+    var r = Math.random(), acc = 0;
+    for (var k in weights) { acc += weights[k]; if (r <= acc) return k; }
+    return Object.keys(weights)[0];
+  }
+  function clefFor(diff) {
+    if (diff === 'easy') return 'treble';
+    return Math.random() < 0.5 ? 'treble' : 'bass';
+  }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
 
-  // Build smart distractors for 4-choice buttons
-  function buildChoices(correctPitch, pool) {
-    const correct = correctPitch;
-    const correctDisplay = displayName(correct);
+  // Build one question object. Shape:
+  //   { type, skill, prompt, staff:{letter,accidental,octave,clef}|null,
+  //     choices:[{label, correct:bool}], answer:'<label>' }
+  function makeQuestion(diff) {
+    var weights = typeWeights(diff);
+    var type = pickWeighted(weights);
+    var clef = clefFor(diff);
+    var octave = clef === 'treble' ? 4 : 3;
 
-    // Gather all parsed pitches from pool
-    const allPitches = pool.map(p => { try { return parsePitch(p); } catch(e) { return null; } }).filter(Boolean);
-
-    // Score each candidate by "confusability" — prefer:
-    // 1. Same letter, different octave
-    // 2. Adjacent diatonic steps (B/D, E/F style confusables)
-    // 3. Same accidental type
-    // 4. Just nearby notes
-    const correctStep = NH.music.diatonicStep(correct.letter, correct.octave);
-
-    const candidates = allPitches
-      .filter(p => p.name !== correct.name && displayName(p) !== correctDisplay)
-      .map(p => {
-        const step = NH.music.diatonicStep(p.letter, p.octave);
-        const stepDist = Math.abs(step - correctStep);
-        // Prefer nearby diatonic steps (1-3 away), same accidental type
-        let score = 100 - stepDist * 8;
-        if (p.accidental === correct.accidental) score += 10;
-        // Classic confusables get bonus
-        const confusables = {
-          'B': ['D'], 'D': ['B'], 'E': ['F'], 'F': ['E'],
-          'G': ['A'], 'A': ['G'], 'C': ['E'], 'E': ['C'],
-        };
-        if (confusables[correct.letter] && confusables[correct.letter].includes(p.letter)) score += 20;
-        score += Math.random() * 15; // small shuffle
-        return { pitch: p, score };
-      })
-      .sort((a, b) => b.score - a.score);
-
-    // Deduplicate by display name
-    const seen = new Set([correctDisplay]);
-    const distractors = [];
-    for (const c of candidates) {
-      const dn = displayName(c.pitch);
-      if (!seen.has(dn)) { seen.add(dn); distractors.push(c.pitch); }
-      if (distractors.length >= 3) break;
+    if (type === 'effect') {
+      var accKey = rand(whichAccidentals(diff));
+      var letter = accKey === 'sharp' || accKey === 'dsharp' ? rand(SHARP_LETTERS)
+                 : accKey === 'flat'  || accKey === 'dflat'  ? rand(FLAT_LETTERS)
+                 : rand(ALL_LETTERS);
+      var symFor = { sharp:'#', flat:'b', natural:'n', dsharp:'x', dflat:'bb' }[accKey];
+      var correct = EFFECT_OF[accKey];
+      var distractors = [OPP_EFFECT[accKey]];
+      var others = Object.values(EFFECTS).filter(function(e){ return e !== correct && distractors.indexOf(e) < 0; });
+      shuffle(others);
+      while (distractors.length < 3 && others.length) distractors.push(others.shift());
+      var choices = shuffle([correct].concat(distractors).map(function(lbl){ return { label: lbl, correct: lbl === correct }; }));
+      return {
+        type: 'effect', skill: 'effect',
+        prompt: 'What does this symbol do?',
+        staff: { letter: letter, accidental: symFor, octave: octave, clef: clef },
+        choices: choices, answer: correct
+      };
     }
 
-    // If we couldn't get 3 unique distractors, pad with random note names
-    const allNoteNames = ['A','B','C','D','E','F','G','A♯','B♭','C♯','D♭','E♭','F♯','G♯','A♭'];
-    while (distractors.length < 3) {
-      const fallback = allNoteNames[Math.floor(Math.random() * allNoteNames.length)];
-      if (!seen.has(fallback)) { seen.add(fallback); distractors.push({ letter: fallback[0], accidental: '', octave: 4, midi: 60, name: fallback, _display: fallback }); }
+    if (type === 'name') {
+      var sharpKey = Math.random() < 0.5;
+      var ltr = sharpKey ? rand(SHARP_LETTERS) : rand(FLAT_LETTERS);
+      var accSym = sharpKey ? '\u266F' : '\u266D';
+      var accChar = sharpKey ? '#' : 'b';
+      var correctName = ltr + accSym;
+      var oppName = ltr + (sharpKey ? '\u266D' : '\u266F');   // same letter, opposite accidental
+      var naturalName = ltr;                                   // unaltered
+      var pool = ALL_LETTERS.map(function(L){ return L + accSym; }).filter(function(n){ return n !== correctName; });
+      shuffle(pool);
+      var distractors = [oppName, naturalName];
+      while (distractors.length < 3 && pool.length) { var cand = pool.shift(); if (distractors.indexOf(cand) < 0) distractors.push(cand); }
+      var choices2 = shuffle([correctName].concat(distractors.slice(0,3)).map(function(lbl){ return { label: lbl, correct: lbl === correctName }; }));
+      return {
+        type: 'name', skill: 'name',
+        prompt: 'Name this note.',
+        staff: { letter: ltr, accidental: accChar, octave: octave, clef: clef },
+        choices: choices2, answer: correctName
+      };
     }
 
-    // Shuffle all 4
-    const all = [correct, ...distractors.slice(0, 3)];
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    return all;
+    // enharmonic
+    var from = rand(ENH_KEYS);
+    var correctEnh = ENH[from];
+    var distractorsEnh = [from];                               // the note itself (same spelling) is a tempting wrong answer
+    var pool2 = ENH_KEYS.filter(function(n){ return n !== correctEnh && n !== from; });
+    shuffle(pool2);
+    while (distractorsEnh.length < 3 && pool2.length) distractorsEnh.push(pool2.shift());
+    var choices3 = shuffle([correctEnh].concat(distractorsEnh.slice(0,3)).map(function(lbl){ return { label: lbl, correct: lbl === correctEnh }; }));
+    return {
+      type: 'enharmonic', skill: 'enharmonic',
+      prompt: 'Which note sounds the same as ' + from + '?',
+      staff: null,
+      choices: choices3, answer: correctEnh
+    };
   }
 
   // Game state
@@ -1494,7 +1567,7 @@
     ['start-screen','play-screen','summary-screen',
      'clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
      'exit-btn','progress-fill','streak-badge','streak-num',
-     'staff-wrap','play-note-btn','toast','confetti',
+     'staff-wrap','play-note-btn','toast','confetti','q-prompt',
      'q-num','score-num','last-dots',
      'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','drill-btn','change-btn','choices-grid',
@@ -1589,7 +1662,8 @@
       A.ensureCtx();
       [...els['diff-tiles'].children].forEach(c => c.classList.remove('on'));
       t.classList.add('on'); state.settings.difficulty = t.dataset.diff;
-      els['acc-block'].hidden = (t.dataset.diff !== 'tricky');
+      // Accidentals uses all accidentals per tier — no sharps/flats selector.
+      els['acc-block'].hidden = true;
     });
 
     els['acc-tiles'].addEventListener('click', e => {
@@ -1634,11 +1708,10 @@
   }
 
   function startRound() {
-    state.pool = buildPool(state.settings.clef, state.settings.difficulty, state.settings.accidentals);
-    state.deck = [];
+    // Accidentals generates each question from makeQuestion() — no pitch pool/deck.
     state.total = state.settings.total;
     state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
-    state.history = []; state.lastPitch = null;
+    state.history = []; state.lastQ = null;
     state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
     state.startedAt = Date.now();
 
@@ -1651,16 +1724,24 @@
   function renderChoices(choices) {
     const grid = els['choices-grid'];
     grid.innerHTML = '';
-    choices.forEach((pitch, idx) => {
+    // Word tiles (effect type) are longer text; pitch tiles are short. Tag the
+    // grid so CSS can lay them out appropriately.
+    const isWordy = choices.some(c => /\s/.test(c.label));
+    grid.classList.toggle('choices-wordy', isWordy);
+    choices.forEach((choice, idx) => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
       btn.dataset.idx = idx;
-      const dn = pitch._display || displayName(pitch);
-      // Split letter and accidental for styling
-      const letter = dn.replace(/[♯♭]/, '');
-      const acc = dn.match(/[♯♭]/) ? dn.match(/[♯♭]/)[0] : '';
-      btn.innerHTML = letter + (acc ? `<span class="choice-acc">${acc}</span>` : '');
-      btn.addEventListener('click', () => handleChoiceTap(idx, pitch, btn));
+      // Pitch labels carry ♯/♭/♮/𝄪/𝄫 — style the accidental glyph; word labels render plain.
+      if (!isWordy) {
+        const m = choice.label.match(/[♯♭♮𝄪𝄫]/);
+        const acc = m ? m[0] : '';
+        const letter = choice.label.replace(/[♯♭♮𝄪𝄫]/g, '');
+        btn.innerHTML = letter + (acc ? `<span class="choice-acc">${acc}</span>` : '');
+      } else {
+        btn.textContent = choice.label;
+      }
+      btn.addEventListener('click', () => handleChoiceTap(idx, choice, btn));
       grid.appendChild(btn);
     });
   }
@@ -1673,50 +1754,66 @@
     state.locked = false;
     hideToast();
 
-    // Shuffled deck — no immediate repeat
-    if (!state.deck || state.deck.length === 0) {
-      state.deck = [...state.pool].sort(() => Math.random() - 0.5);
+    // Generate a fresh question (avoid immediate same-type+answer repeat)
+    let q = makeQuestion(state.settings.difficulty);
+    let guard = 0;
+    while (state.lastQ && q.type === state.lastQ.type && q.answer === state.lastQ.answer && guard++ < 6) {
+      q = makeQuestion(state.settings.difficulty);
     }
-    if (state.deck[0] === state.lastPitch && state.deck.length > 1) {
-      const swapIdx = state.deck.findIndex((p, i) => i > 0 && p !== state.lastPitch);
-      if (swapIdx > 0) [state.deck[0], state.deck[swapIdx]] = [state.deck[swapIdx], state.deck[0]];
-    }
-    const pick = state.deck.shift();
-    state.lastPitch = pick;
-
-    const pitch = parsePitch(pick);
-    let clef = state.settings.clef;
-    if (clef === 'both') clef = pitch.midi >= 60 ? 'treble' : 'bass';
-    state.current = { pitch, clef };
+    state.lastQ = q;
+    state.current = q;
+    state.currentChoices = q.choices;
 
     els['q-num'].textContent = state.q;
     els['score-num'].textContent = state.score;
     updateProgress();
 
-    R.renderStaff(els['staff-wrap'], { pitch, clef });
-    R.animateNote(els['staff-wrap'], 'pop');
+    // Question prompt above the choices
+    if (els['q-prompt']) els['q-prompt'].textContent = q.prompt;
 
-    // Build and render choices
-    const choices = buildChoices(pitch, state.pool);
-    state.currentChoices = choices;
-    renderChoices(choices);
+    if (q.staff) {
+      // Build a pitch object directly: toMidi only handles single #/b, so derive
+      // midi from the NATURAL letter (valid staff position + audio reference);
+      // the accidental glyph (#/b/n/x/bb) is carried for rendering only.
+      const baseMidi = NH.music.toMidi(q.staff.letter, '', q.staff.octave);
+      const semiAdj = { '#': 1, 'b': -1, 'n': 0, 'x': 2, 'bb': -2 }[q.staff.accidental] || 0;
+      const pitch = {
+        letter: q.staff.letter,
+        accidental: q.staff.accidental,
+        octave: q.staff.octave,
+        midi: baseMidi,            // staff position uses the natural letter
+        soundMidi: baseMidi + semiAdj,
+        name: q.staff.letter + (q.staff.accidental || '')
+      };
+      state.current.pitch = pitch;
+      els['staff-wrap'].style.visibility = 'visible';
+      R.renderStaff(els['staff-wrap'], { pitch, clef: q.staff.clef });
+      R.animateNote(els['staff-wrap'], 'pop');
+      setTimeout(() => { A.ensureCtx(); A.playMidi(pitch.soundMidi); }, 320);
+    } else {
+      // enharmonic: no staff note — the prompt names the pitch
+      state.current.pitch = null;
+      els['staff-wrap'].innerHTML = '';
+      els['staff-wrap'].style.visibility = 'hidden';
+    }
 
-    setTimeout(() => { A.ensureCtx(); A.playMidi(pitch.midi); }, 320);
+    renderChoices(q.choices);
   }
 
   function updateProgress() {
     els['progress-fill'].style.width = (state.q / state.total * 100) + '%';
   }
 
-  function handleChoiceTap(idx, tappedPitch, btn) {
+  function handleChoiceTap(idx, choice, btn) {
     if (state.locked || !state.current) return;
     A.ensureCtx();
 
-    const correctMidi = state.current.pitch.midi;
-    const tappedMidi = tappedPitch.midi || NH.music.toMidi(tappedPitch.letter, tappedPitch.accidental || '', tappedPitch.octave || 4);
-    const isCorrect = midiEquals(tappedMidi, correctMidi);
+    const isCorrect = !!choice.correct;
 
-    A.playMidi(state.current.pitch.midi, 0.6);
+    // Play the note's sound where there is one (effect/name); enharmonic has no staff note.
+    if (state.current.pitch && state.current.pitch.soundMidi != null) {
+      A.playMidi(state.current.pitch.soundMidi, 0.6);
+    }
 
     if (isCorrect) {
       onCorrect(btn);
@@ -1746,11 +1843,11 @@
       burstConfetti(isPerfectFinal);
       noteBurst(isPerfectFinal);
       showToast(pickPraise(state.streak, isPerfectFinal, state.current.pitch), 'correct');
-      A.playChime(state.current.pitch.midi, state.streak);
+      A.playChime(state.current.pitch ? state.current.pitch.soundMidi : 67, state.streak);
       jiggleStreak();
     } else {
       showToast('Got it! ✓', 'reveal');
-      A.playChime(state.current.pitch.midi);
+      A.playChime(state.current.pitch ? state.current.pitch.soundMidi : 67);
     }
 
     els['score-num'].textContent = state.score;
@@ -1776,14 +1873,11 @@
     if (state.attempts >= 2) {
       // Reveal correct answer on second miss
       state.locked = true;
-      const correctIdx = state.currentChoices.findIndex(p => {
-        const m = p.midi || NH.music.toMidi(p.letter, p.accidental || '', p.octave || 4);
-        return midiEquals(m, state.current.pitch.midi);
-      });
+      const correctIdx = state.currentChoices.findIndex(c => c.correct);
       const grid = els['choices-grid'];
       const correctBtn = grid.children[correctIdx];
       if (correctBtn) correctBtn.classList.add('reveal-correct');
-      showToast("It's " + displayName(state.current.pitch), 'reveal');
+      showToast("It's " + state.current.answer, 'reveal');
       pushHistory('wrong');
       setTimeout(() => {
         hideToast();
@@ -1800,10 +1894,11 @@
 
   function pushHistory(kind) {
     state.history.push({
-      pitch: state.current.pitch.name,
-      display: displayName(state.current.pitch),
+      type: state.current.type,
+      skill: state.current.skill,
+      display: state.current.answer,   // shown in the last-answers dot tooltip
+      answer: state.current.answer,
       kind,
-      clef: state.current.clef,
     });
     renderLastDots();
   }
@@ -2232,7 +2327,7 @@
       if (h.kind !== 'correct') {
         const label = h.display;
         counts[label] = (counts[label] || 0) + 1;
-        missedIds.add(h.pitch);
+        missedIds.add(h.answer);
       }
     });
     state.drillPool = [...missedIds];
@@ -2303,7 +2398,7 @@
     try {
       for (var _i = 0; _i < state.history.length; _i++) {
         var h = state.history[_i];
-        var _k = h && h.clef != null ? String(h.clef) : 'unknown';
+        var _k = h && h.skill != null ? String(h.skill) : 'unknown';
         if (!roundSkills[_k]) roundSkills[_k] = { c: 0, t: 0 };
         roundSkills[_k].t++;
         if (h.kind === 'correct') roundSkills[_k].c++;
@@ -2350,8 +2445,8 @@
 
   function setupActions() {
     els['play-note-btn'].addEventListener('click', () => {
-      if (!state.current) return;
-      A.ensureCtx(); A.playMidi(state.current.pitch.midi);
+      if (!state.current || !state.current.pitch) return;
+      A.ensureCtx(); A.playMidi(state.current.pitch.soundMidi);
       R.animateNote(els['staff-wrap'], 'pulse');
       setTimeout(() => R.animateNote(els['staff-wrap'], null), 1000);
     });
@@ -2360,7 +2455,7 @@
       A.ensureCtx();
       const nowMuted = !A.isMuted();
       saveMutedPreference(nowMuted);
-      if (!nowMuted && state.current) setTimeout(() => A.playMidi(state.current.pitch.midi, 0.5), 80);
+      if (!nowMuted && state.current && state.current.pitch) setTimeout(() => A.playMidi(state.current.pitch.soundMidi, 0.5), 80);
     });
 
     els['exit-btn'].addEventListener('click', () => {
@@ -2375,11 +2470,11 @@
     });
 
     els['drill-btn'].addEventListener('click', () => {
-      if (state.drillPool.length === 0) return;
-      state.pool = [...state.drillPool]; state.deck = [];
-      state.total = Math.min(state.pool.length * 2, 10);
+      // Accidentals generates questions fresh, so "drill" replays a focused
+      // round at the same settings rather than re-serving specific items.
+      state.total = state.settings.total;
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
-      state.history = []; state.lastPitch = null;
+      state.history = []; state.lastQ = null;
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
       state.startedAt = Date.now();
       document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
