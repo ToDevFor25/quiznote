@@ -60,14 +60,13 @@
      RESET + BASE
      ────────────────────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: clip; }
   body {
     font-family: 'Nunito', system-ui, sans-serif;
     font-weight: 600;
     background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
-    overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
     background-image:
       radial-gradient(ellipse 600px 460px at 6% -4%,  rgba(31,184,168,0.07) 0%, transparent 60%),
