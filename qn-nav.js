@@ -32,20 +32,20 @@
 
   var CSS = [
     '.qn-nav { position: relative; display: inline-flex; align-items: center; gap: 8px;',
-    '  font-family: Fredoka, sans-serif; }',
+    '  min-width: 0; flex-shrink: 1; font-family: Fredoka, sans-serif; }',
     '.qn-nav-pill { display: inline-flex; align-items: center; gap: 6px;',
     '  padding: 4px 12px 4px 5px; background: #fff; color: #2A2A3E;',
     '  border: 2px solid #2A2A3E; border-radius: 999px; font-weight: 600;',
     '  font-size: 13px; text-decoration: none; white-space: nowrap; max-width: 150px;',
-    '  transition: background 120ms; }',
+    '  min-width: 0; flex-shrink: 1; transition: background 120ms; }',
     '.qn-nav-pill:hover { background: #d3f1ec; }',
-    '.qn-nav-pill .qn-nav-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }',
+    '.qn-nav-pill .qn-nav-name { overflow: hidden; text-overflow: ellipsis; min-width: 4.5em; }',
     '.qn-nav-dot { width: 20px; height: 20px; border-radius: 50%; flex: none;',
     '  background: #1FB8A8; color: #fff; display: inline-flex; align-items: center;',
     '  justify-content: center; font-size: 11px; font-weight: 700; }',
     '.qn-nav-guest { display: inline-flex; align-items: center; justify-content: center;',
     '  width: 18px; height: 18px; flex: none; font-size: 13px; color: #8a8472; }',
-    '.qn-nav-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px;',
+    '.qn-nav-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; flex: none;',
     '  padding: 0 12px; background: #d3f1ec; color: #0e8475; border: 2px solid #2A2A3E;',
     '  border-radius: 11px; box-shadow: 0 3px 0 #2A2A3E; font-family: Fredoka, sans-serif;',
     '  font-weight: 600; font-size: 14px; line-height: 1; cursor: pointer; white-space: nowrap;',
@@ -70,6 +70,11 @@
     '  .qn-nav-panel { min-width: 220px; }',
     '  .qn-nav-item { padding: 13px 16px; font-size: 15px; }',
     '  .qn-nav-pill { max-width: 132px; }',
+    '}',
+    '@media (max-width: 480px) {',
+    '  .qn-nav-pill { max-width: none; padding: 8px; }',
+    '  .qn-nav-pill .qn-nav-name { display: none; }',
+    '  .qn-nav-guest { width: 22px; height: 22px; }',
     '}'
   ].join('\n');
 
