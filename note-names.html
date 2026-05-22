@@ -7,8 +7,19 @@
 <title>QuizNote — Note Names</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
   :root {
     --cream: #FFFAF0;
     --cream-2: #FFF3DC;
@@ -834,6 +845,7 @@
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
 <script src="qn-nav.js" defer></script>
+<script src="qn-staff.js" defer></script>
 </head>
 <body>
 
@@ -1303,11 +1315,8 @@
       svg += `<line x1="${xOffset + 8}" y1="${y}" x2="${xOffset + width - 8}" y2="${y}" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>`;
     }
 
-    if (clef === 'treble') {
-      svg += `<text x="${xOffset + 14}" y="${bottomY + lineGap * 0.35}" font-family="serif" font-size="${lineGap * 7.2}" fill="#2A2A3E">𝄞</text>`;
-    } else {
-      svg += `<text x="${xOffset + 14}" y="${bottomY - lineGap * 0.55}" font-family="serif" font-size="${lineGap * 5.3}" fill="#2A2A3E">𝄢</text>`;
-    }
+    // Clef glyph — shared renderer (single source of truth for clef position/size)
+    svg += NH.staff.buildClef({ clef, bottomY, lineGap, xOffset });
 
     const nx = noteX != null ? noteX : (xOffset + width * 0.62);
     let ny = null;
@@ -1319,8 +1328,11 @@
         svg += `<line x1="${nx - lineGap * 1.05}" y1="${ly}" x2="${nx + lineGap * 1.05}" y2="${ly}" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round"/>`;
       });
       if (pitch.accidental) {
-        const sym = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
-        svg += `<text x="${nx - lineGap * 1.2}" y="${ny + lineGap * 0.4}" font-family="serif" font-weight="700" font-size="${lineGap * 2.0}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
+        // Bravura SMuFL accidentals: sharp E262, flat E260. Anchored at note y,
+        // shifted down by the calibrated accidental offset (1.625 staff-spaces).
+        const sym = pitch.accidental === '#' ? '\uE262' : pitch.accidental === 'b' ? '\uE260' : '';
+        const ay = ny + 1.625 * lineGap;
+        if (sym) svg += `<text x="${nx - lineGap * 1.2}" y="${ay}" font-family="Bravura Text" font-size="${lineGap * 4}" text-anchor="end" fill="#2A2A3E">${sym}</text>`;
       }
       const stemUp = d < 4;
       const stemLen = lineGap * 3.5;
