@@ -730,6 +730,11 @@
     align-items: center;
     gap: 12px;
   }
+  /* The hidden attribute must win over display:flex above; the browser
+     default [hidden]{display:none} is too weak to beat a class selector.
+     Without this, JS setting ssp.hidden=true never visually hides the
+     prompt — so it showed even for active profiles. */
+  .save-scores-prompt[hidden] { display: none; }
   .save-scores-prompt .ssp-text {
     font-family: 'Fredoka', sans-serif;
     font-weight: 600;
