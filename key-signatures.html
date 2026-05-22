@@ -1943,6 +1943,36 @@
     return out;
   }
 
+  // ── Path handoff (one-shot). See note-names for full rationale. Reads the
+  //    pre-seeded `key-signatures_settings`, applies tier/length, syncs the
+  //    start-screen .on highlights, then clears the key. (No clef in this
+  //    module.) Called after setupSettings() wires the tiles.
+  function applyPathHandoff() {
+    var raw;
+    try { raw = localStorage.getItem('key-signatures_settings'); } catch (e) { return; }
+    if (!raw) return;
+    try { localStorage.removeItem('key-signatures_settings'); } catch (e) {}
+    var s;
+    try { s = JSON.parse(raw); } catch (e) { return; }
+    if (!s || typeof s !== 'object') return;
+    function highlight(group, attr, value) {
+      var box = els[group]; if (!box || value == null) return;
+      var kids = box.children, matched = false;
+      for (var i = 0; i < kids.length; i++) {
+        var on = String(kids[i].getAttribute(attr)) === String(value);
+        kids[i].classList.toggle('on', on);
+        if (on) matched = true;
+      }
+      return matched;
+    }
+    if (s.difficulty && ['easy','medium','tricky'].indexOf(s.difficulty) !== -1) {
+      if (highlight('diff-tiles', 'data-diff', s.difficulty)) state.settings.difficulty = s.difficulty;
+    }
+    if (s.total && [5,10,20].indexOf(s.total) !== -1) {
+      if (highlight('length-tiles', 'data-len', s.total)) state.settings.total = s.total;
+    }
+  }
+
   function startGame() {
     state.pool = buildPool();
     state.deck = shuffleDeck(state.pool, state.settings.total, state.drillPool);
@@ -2390,6 +2420,7 @@
     A.setMuted(muted);
     syncMuteUI(muted);
     setupSettings();
+    applyPathHandoff();
 
     // Load PBs
     try {
