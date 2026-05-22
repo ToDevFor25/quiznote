@@ -96,6 +96,7 @@ body {
 }
 .foot a { color: var(--ink-dim); text-decoration: underline; }
 .foot a:hover { color: var(--ink); }
+.foot .sep { margin: 0 8px; text-decoration: none; }
 
 /* ── view container ──────────────────────────────────────── */
 
@@ -475,7 +476,7 @@ body {
 
   <div class="brand-bar">
     <a class="brand" href="index.html">Quiz<span class="acc">Note</span></a>
-    <a class="back-link" href="play.html">← Back to modules</a>
+    <span id="qn-nav-slot"></span>
   </div>
 
   <!-- ─────────────────────────────────────────────────────────
@@ -647,13 +648,19 @@ body {
   </section>
 
   <div class="foot">
-    <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a><br>
-    <span style="opacity:0.7;">© 2026 QuizNote</span>
+    © 2026 QuizNote
+    <span class="sep">·</span>
+    <a href="privacy.html">Privacy Policy</a>
+    <span class="sep">·</span>
+    <a href="terms.html">Terms of Service</a>
+    <span class="sep">·</span>
+    Made by musicians, for musicians
   </div>
 
 </div>
 
 <script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
 <script defer>
 (function () {
   'use strict';
@@ -704,6 +711,9 @@ body {
       setTimeout(init, 50);
       return;
     }
+
+    // Unified nav: pill + "Menu" hamburger (profile isn't one of the 3 destinations)
+    if (window.QNNav) QNNav.mount({ current: null });
 
     // Check URL hash for explicit view requests
     // (e.g., #add forces add-flow even if profiles exist)
