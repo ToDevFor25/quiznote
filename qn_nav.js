@@ -83,8 +83,8 @@
   }
 
   function getActive() {
-    return (window.QN && QN.profile && QN.profile.getActive)
-      ? QN.profile.getActive() : null;
+    return (window.QN && window.QN.profile && window.QN.profile.getActive)
+      ? window.QN.profile.getActive() : null;
   }
 
   function findSlot(opts) {
