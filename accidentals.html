@@ -1536,7 +1536,12 @@
     // enharmonic
     var from = rand(ENH_KEYS);
     var correctEnh = ENH[from];
-    var distractorsEnh = [from];                               // the note itself (same spelling) is a tempting wrong answer
+    // Distractors must be notes that genuinely DON'T sound the same as `from`.
+    // Critically, exclude both the correct partner AND `from` itself: `from`
+    // sounds identical to itself, so offering it would create a second valid
+    // answer ("Which sounds the same as E♭?" must not list E♭). We also avoid
+    // any tile that is enharmonically equal to `from` (i.e. correctEnh).
+    var distractorsEnh = [];
     var pool2 = ENH_KEYS.filter(function(n){ return n !== correctEnh && n !== from; });
     shuffle(pool2);
     while (distractorsEnh.length < 3 && pool2.length) distractorsEnh.push(pool2.shift());
