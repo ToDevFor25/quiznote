@@ -677,6 +677,7 @@
     font-weight: 700;
     font-size: 26px;
     color: var(--ink);
+    text-decoration: none;
     letter-spacing: -0.01em;
   }
   .site-header .brand-name span { color: var(--teal); }
@@ -706,7 +707,7 @@
     transform: translateY(2px);
     box-shadow: 0 1px 0 var(--ink);
   }
-  .profile-chip-slot {
+  #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
     align-items: center;
@@ -730,17 +731,6 @@
     color: var(--ink);
     line-height: 1.4;
   }
-  .site-tagline {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal-dk);
-    background: var(--teal-lt);
-    border-radius: 999px;
-    padding: 4px 12px;
-    white-space: nowrap;
-  }
-
   .site-footer {
     background: white;
     border-top: 2px solid var(--shadow-cool);
@@ -826,14 +816,15 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
+<script src="qn-staff.js" defer></script>
 <script src="qn-audio.js" defer></script>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="brand-name">Quiz<span>Note</span></div>
-  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
-  <div class="profile-chip-slot" id="profile-chip-slot"></div>
+  <a class="brand-name" href="index.html">Quiz<span>Note</span></a>
+  <div id="qn-nav-slot"></div>
 </header>
 
 <!-- ============ START SCREEN ============ -->
@@ -1313,15 +1304,8 @@
 
     // Clef glyph — Bravura SMuFL (cross-platform, replaces Unicode 𝄞/𝄢)
     // Locked y-offsets from Samsung calibration: treble +0.75, bass +2.375, accidental +1.625
-    if (clef === 'treble') {
-      const cx = 14;
-      const cy = (bottomY - 1 * lineGap) + 0.75 * lineGap;
-      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * 4}" fill="#2A2A3E">\uE050</text>`;
-    } else {
-      const cx = 14;
-      const cy = (bottomY - 3 * lineGap) + 2.375 * lineGap;
-      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * 4}" fill="#2A2A3E">\uE062</text>`;
-    }
+    // Clef glyph — shared renderer (single source of truth for clef position/size)
+    svg += NH.staff.buildClef({ clef, bottomY, lineGap, x: 14 });
 
     // Key signature
     const bStep = clefBottomStep(clef);
@@ -1674,7 +1658,7 @@
    'confetti','summary-title','summary-sub','sum-score','sum-streak','sum-stars',
    'miss-list','miss-items','again-btn','change-btn','pb-row','pb-score','pb-streak',
    'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-   'save-scores-prompt','profile-chip-slot'
+   'save-scores-prompt'
   ].forEach(id => els[id] = document.getElementById(id));
 
   // ============ State ============
@@ -2606,7 +2590,12 @@
   // ============ Boot ============
   initStartScreen();
   initWiring();
-  if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
+  // qn-nav.js is deferred, so it may not have executed when this bare
+  // inline IIFE runs. Defer the mount to DOMContentLoaded (fires after
+  // all defer scripts), then guard. Timing-safe regardless of order.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.QNNav) { QNNav.mount({ current: null }); }
+  });
 })();
 </script>
 
