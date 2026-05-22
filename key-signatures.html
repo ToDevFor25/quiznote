@@ -785,6 +785,7 @@
     font-weight: 700;
     font-size: 26px;
     color: var(--ink);
+    text-decoration: none;
     letter-spacing: -0.01em;
   }
   .site-header .brand-name span { color: var(--teal); }
@@ -814,7 +815,7 @@
     transform: translateY(2px);
     box-shadow: 0 1px 0 var(--ink);
   }
-  .profile-chip-slot {
+  #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
     align-items: center;
@@ -838,17 +839,6 @@
     color: var(--ink);
     line-height: 1.4;
   }
-  .site-tagline {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal-dk);
-    background: var(--teal-lt);
-    border-radius: 999px;
-    padding: 4px 12px;
-    white-space: nowrap;
-  }
-
   /* ============ Site Footer ============ */
   .site-footer {
     background: white;
@@ -940,14 +930,15 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
+<script src="qn-staff.js" defer></script>
 <script src="qn-audio.js" defer></script>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="brand-name">Quiz<span>Note</span></div>
-  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
-  <div class="profile-chip-slot" id="profile-chip-slot"></div>
+  <a class="brand-name" href="index.html">Quiz<span>Note</span></a>
+  <div id="qn-nav-slot"></div>
 </header>
 
 <!-- ============ START SCREEN ============ -->
@@ -1312,7 +1303,7 @@
   // from their SVG y-anchor, so each is shifted DOWN by N*lineGap from its target line.
   const SMUFL = { gClef: '\uE050', fClef: '\uE062', sharp: '\uE262', flat: '\uE260' };
   const OFFSET = {
-    trebleClef: 0.75,   // from G4 line (step 2)
+    trebleClef: 0.975,  // from G4 line (step 2)
     bassClef:   2.375,  // from F3 line (step 6)
     sharp:      1.625,  // from target line
     flat:       1.625,  // from target line
@@ -1342,19 +1333,8 @@
       svg += `<line x1="${xOffset + 8}" y1="${y}" x2="${xOffset + width - 8}" y2="${y}" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>`;
     }
 
-    // Clef glyph — Bravura, sized at 4 * staff-space
-    const clefFontSize = lineGap * 4;
-    if (clef === 'treble') {
-      const cx = xOffset + 14;
-      // Anchor at G4 line, shift down by calibrated offset
-      const cy = (bottomY - 1 * lineGap) + OFFSET.trebleClef * lineGap;
-      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${clefFontSize}" fill="#2A2A3E">${SMUFL.gClef}</text>`;
-    } else {
-      const cx = xOffset + 14;
-      // Anchor at F3 line, shift down by calibrated offset
-      const cy = (bottomY - 3 * lineGap) + OFFSET.bassClef * lineGap;
-      svg += `<text x="${cx}" y="${cy}" font-family="Bravura Text" font-size="${clefFontSize}" fill="#2A2A3E">${SMUFL.fClef}</text>`;
-    }
+    // Clef glyph — shared renderer (single source of truth for clef position/size)
+    svg += NH.staff.buildClef({ clef, bottomY, lineGap, xOffset });
 
     // Accidentals — Bravura sharps/flats
     const accStartX = xOffset + (clef === 'treble' ? 72 : 70);
@@ -1602,7 +1582,7 @@
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
-     'save-scores-prompt','profile-chip-slot',
+     'save-scores-prompt',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
   }
@@ -2416,7 +2396,7 @@
   // ===== Init =====
   document.addEventListener('DOMContentLoaded', () => {
     cacheEls();
-    if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
+    if (window.QNNav) { QNNav.mount({ current: null }); }
     const muted = loadMutedPreference();
     A.setMuted(muted);
     syncMuteUI(muted);
