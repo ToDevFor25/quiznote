@@ -329,10 +329,7 @@
   <nav>
     <a href="index.html" class="nav-brand">Quiz<span>Note</span></a>
     <div class="nav-right">
-      <a href="path.html" class="nav-progress">🎯 Today</a>
-      <a href="dashboard.html" class="nav-progress">📊 Progress</a>
-      <span class="nav-tag">PRACTICE</span>
-      <span class="profile-chip-slot" id="profile-chip-slot"></span>
+      <span id="qn-nav-slot"></span>
     </div>
   </nav>
 
@@ -703,165 +700,11 @@
 
 
 <script src="qn-profile.js" defer></script>
-<!-- ===== QuizNote profile dropdown menu =====
-     Additive enhancement layered on top of QN.ui.chip.
-     ui.chip still renders a plain <a href="profile.html"> (works with no JS).
-     This snippet intercepts the chip click and opens a small anchored
-     dropdown instead. Pages opt in by including this block AND calling
-     QNMenu.attach({ showProgress: <bool> }) after the chip is rendered.
-     Lives in the two hub pages only (play, dashboard) per scope. -->
-<style>
-  .qn-menu-wrap { position: relative; display: inline-flex; }
-  .qn-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    min-width: 200px;
-    background: #fff;
-    border: 1px solid rgba(42,42,62,0.12);
-    border-radius: 14px;
-    box-shadow: 0 8px 28px rgba(42,42,62,0.16);
-    padding: 6px;
-    z-index: 200;
-    opacity: 0;
-    transform: translateY(-6px);
-    pointer-events: none;
-    transition: opacity 140ms ease, transform 140ms ease;
-    font-family: Fredoka, sans-serif;
-  }
-  .qn-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .qn-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 12px;
-    border: none;
-    background: none;
-    border-radius: 10px;
-    font-family: Fredoka, sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    color: #2A2A3E;
-    text-decoration: none;
-    text-align: left;
-    cursor: pointer;
-    transition: background 120ms ease;
-  }
-  .qn-menu-item:hover { background: rgba(31,184,168,0.12); }
-  .qn-menu-item .qn-menu-ico { font-size: 16px; line-height: 1; flex-shrink: 0; }
-  .qn-menu-divider { height: 1px; background: rgba(42,42,62,0.10); margin: 6px 8px; }
-  .qn-menu-item.danger { color: #E0697A; }
-  .qn-menu-item.danger:hover { background: rgba(224,105,122,0.12); }
-  .qn-menu-active-name {
-    padding: 8px 12px 6px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: rgba(42,42,62,0.45);
-  }
-  /* On narrow screens, drop full-width-ish and a touch larger for taps */
-  @media (max-width: 760px) {
-    .qn-menu { min-width: 220px; }
-    .qn-menu-item { padding: 12px 14px; font-size: 16px; }
-  }
-</style>
-<script>
-  window.QNMenu = (function () {
-    function buildMenu(opts) {
-      var active = (window.QN && QN.profile && QN.profile.getActive)
-        ? QN.profile.getActive() : null;
-
-      var menu = document.createElement('div');
-      menu.className = 'qn-menu';
-      menu.setAttribute('role', 'menu');
-
-      if (active) {
-        var nameEl = document.createElement('div');
-        nameEl.className = 'qn-menu-active-name';
-        nameEl.textContent = active.nickname;
-        menu.appendChild(nameEl);
-      }
-
-      // Switch profile
-      menu.appendChild(item('👤', active ? 'Switch profile' : 'Make a profile',
-        'profile.html', false));
-
-      // Progress (omitted on the dashboard itself to avoid a no-op item)
-      if (opts.showProgress) {
-        menu.appendChild(item('📊', 'Progress', 'dashboard.html', false));
-      }
-
-      // Reset lives on profile.html (the manage-data page), not in this
-      // everyday menu — a destructive device-wide wipe shouldn't sit next
-      // to frequent actions. "Switch profile" routes there.
-      return menu;
-    }
-
-    function item(ico, text, href, danger) {
-      var a = document.createElement('a');
-      a.className = 'qn-menu-item' + (danger ? ' danger' : '');
-      a.href = href;
-      a.setAttribute('role', 'menuitem');
-      var ic = document.createElement('span');
-      ic.className = 'qn-menu-ico';
-      ic.textContent = ico;
-      var tx = document.createElement('span');
-      tx.textContent = text;
-      a.appendChild(ic);
-      a.appendChild(tx);
-      return a;
-    }
-
-    function attach(opts) {
-      opts = opts || {};
-      var slot = document.getElementById('profile-chip-slot');
-      if (!slot) return;
-      var chip = slot.querySelector('.qn-chip');
-      if (!chip) return;
-
-      // Wrap chip so the menu can anchor to it
-      var wrap = document.createElement('span');
-      wrap.className = 'qn-menu-wrap';
-      chip.parentNode.insertBefore(wrap, chip);
-      wrap.appendChild(chip);
-
-      var menu = buildMenu(opts);
-      wrap.appendChild(menu);
-
-      function close() {
-        menu.classList.remove('open');
-        document.removeEventListener('click', onDoc, true);
-        document.removeEventListener('keydown', onKey, true);
-      }
-      function open() {
-        menu.classList.add('open');
-        document.addEventListener('click', onDoc, true);
-        document.addEventListener('keydown', onKey, true);
-      }
-      function onDoc(e) { if (!wrap.contains(e.target)) close(); }
-      function onKey(e) { if (e.key === 'Escape') close(); }
-
-      chip.addEventListener('click', function (e) {
-        // Intercept the plain-link navigation; open the menu instead.
-        e.preventDefault();
-        if (menu.classList.contains('open')) close(); else open();
-      });
-    }
-
-    return { attach: attach };
-  })();
-</script>
+<script src="qn-nav.js" defer></script>
 
 <script defer>
   document.addEventListener("DOMContentLoaded", function () {
-    var slot = document.getElementById("profile-chip-slot");
-    if (window.QN && QN.ui && slot) {
-      QN.ui.chip(slot);
-      QNMenu.attach({ showProgress: true });
-    }
+    if (window.QNNav) QNNav.mount({ current: 'modules' });
   });
 </script>
 </body>
