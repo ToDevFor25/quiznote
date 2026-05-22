@@ -1534,6 +1534,45 @@
     syncMuteUI(muted);
   }
 
+  // ── Path handoff (one-shot). The Today card (path.html) pre-seeds
+  //    `<slug>_settings` before navigating here so the start screen opens on
+  //    the recommended tier/length/clef. We read it ONCE, apply it to
+  //    state.settings, sync the start-screen .on highlights to match, then
+  //    CLEAR the key so a later direct visit starts from the module's own
+  //    defaults (the handoff is "for this launch only", not a sticky pref).
+  //    Reads tier + length + clef; clef is included so the pipe is ready when
+  //    the recommender becomes clef-aware (it doesn't emit clef yet).
+  function applyPathHandoff() {
+    var raw;
+    try { raw = localStorage.getItem('note-names_settings'); } catch (e) { return; }
+    if (!raw) return;
+    try { localStorage.removeItem('note-names_settings'); } catch (e) {}  // one-shot
+    var s;
+    try { s = JSON.parse(raw); } catch (e) { return; }
+    if (!s || typeof s !== 'object') return;
+
+    function highlight(group, attr, value) {
+      var box = els[group]; if (!box || value == null) return;
+      var kids = box.children, matched = false;
+      for (var i = 0; i < kids.length; i++) {
+        var on = String(kids[i].getAttribute(attr)) === String(value);
+        kids[i].classList.toggle('on', on);
+        if (on) matched = true;
+      }
+      return matched;
+    }
+
+    if (s.difficulty && ['easy','medium','tricky'].indexOf(s.difficulty) !== -1) {
+      if (highlight('diff-tiles', 'data-diff', s.difficulty)) state.settings.difficulty = s.difficulty;
+    }
+    if (s.total && [5,10,20].indexOf(s.total) !== -1) {
+      if (highlight('length-tiles', 'data-len', s.total)) state.settings.total = s.total;
+    }
+    if (s.clef && ['treble','bass','both'].indexOf(s.clef) !== -1) {
+      if (highlight('clef-tiles', 'data-clef', s.clef)) state.settings.clef = s.clef;
+    }
+  }
+
   function setupStart() {
     const savedMuted = localStorage.getItem('pq_muted') === 'true';
     saveMutedPreference(savedMuted);
@@ -2440,6 +2479,7 @@
     cacheEls();
     if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
     setupStart();
+    applyPathHandoff();
     setupActions();
     const nudge = document.getElementById('audio-nudge');
     if (nudge) nudge.addEventListener('click', () => { A.ensureCtx(); nudge.classList.remove('show'); });
