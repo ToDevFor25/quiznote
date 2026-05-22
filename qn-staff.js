@@ -70,12 +70,14 @@
   // ─────────────────────────────────────────────────────────────
 
   const OFFSET = {
-    trebleClef: 0.75,   // from G4 line (step 2)
-    bassClef:   2.375,  // from F3 line (step 6)
-    sharp:      1.625,  // from target line
-    flat:       1.625,
-    natural:    1.625,
-    tsDigit:    1.5,    // time-signature digit visual center vs y-anchor
+    trebleClef:     0.975,  // from G4 line (step 2) — calibrated May 2026
+    bassClef:       2.375,  // from F3 line (step 6)
+    trebleClefSize: 4.2,    // font-size in lineGap units (treble runs slightly larger)
+    bassClefSize:   4,      // font-size in lineGap units
+    sharp:          1.625,  // from target line
+    flat:           1.625,
+    natural:        1.625,
+    tsDigit:        1.5,    // time-signature digit visual center vs y-anchor
   };
 
   // ─────────────────────────────────────────────────────────────
@@ -141,17 +143,18 @@
    */
   function buildClef(opts) {
     const { clef, bottomY, lineGap, xOffset = 0, color = '#2A2A3E' } = opts;
-    const fontSize = lineGap * 4;
     const x = (opts.x !== undefined) ? opts.x : xOffset + 14;
-    let y, glyph;
+    let y, glyph, fontSize;
     if (clef === 'treble') {
       // Anchor at G4 line (step 2), shift down by calibrated offset
       y = (bottomY - 1 * lineGap) + OFFSET.trebleClef * lineGap;
       glyph = SMUFL.gClef;
+      fontSize = lineGap * OFFSET.trebleClefSize;
     } else {
       // Anchor at F3 line (step 6), shift down by calibrated offset
       y = (bottomY - 3 * lineGap) + OFFSET.bassClef * lineGap;
       glyph = SMUFL.fClef;
+      fontSize = lineGap * OFFSET.bassClefSize;
     }
     return `<text x="${x}" y="${y}" font-family="Bravura Text" font-size="${fontSize}" fill="${color}">${glyph}</text>`;
   }
@@ -377,6 +380,6 @@
     buildTimeSignature,
     buildStaff,
   };
-  window.NH.staff.version = '1.0.0';
+  window.NH.staff.version = '1.1.0';
 
 })();
