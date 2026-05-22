@@ -45,10 +45,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 6px;
   }
   .site-header .brand-name {
+    flex: none;
     font-family: 'Fredoka', sans-serif;
     font-weight: 700;
     font-size: 26px;
@@ -67,7 +67,7 @@
     padding: 4px 12px;
     white-space: nowrap;
   }
-  .profile-chip-slot, #qn-nav-slot { margin-left: auto; display: inline-flex; align-items: center; }
+  #qn-nav-slot { margin-left: auto; display: inline-flex; align-items: center; }
 
   /* ---------- layout ---------- */
   .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; flex: 1 0 auto; width: 100%; }
@@ -173,15 +173,11 @@
     .summary-grid { gap: 10px; }
     .stat-card { padding: 14px 8px; }
     .stat-card .stat-value { font-size: 1.5rem; }
-    /* Header tidy on phones: brand + chip stay on the first line;
-       the tagline wraps to its own line beneath rather than crowding
-       or pushing the chip off-screen. */
+    /* Header tidy on phones: brand + nav stay on the first line; the
+       tagline (if present) wraps to its own line beneath. */
     .site-header { padding: 10px 16px; }
     .site-header .brand-name { font-size: 22px; }
     .site-tagline { order: 3; flex-basis: 100%; }
-    .profile-chip-slot { max-width: 46vw; }
-    .qn-chip { max-width: 100%; }
-    .qn-chip span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }
   [hidden] { display: none !important; }
 

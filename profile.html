@@ -43,6 +43,8 @@ body {
   background: var(--cream);
   min-height: 100vh;
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background-image:
     radial-gradient(circle at 15% 20%, rgba(31, 184, 168, 0.06) 0%, transparent 35%),
     radial-gradient(circle at 85% 80%, rgba(91, 63, 228, 0.05) 0%, transparent 40%);
@@ -52,10 +54,10 @@ body {
 
 .page {
   max-width: 520px;
+  width: 100%;
   margin: 0 auto;
   padding: 24px 20px 80px;
-  min-height: 100vh;
-  min-height: 100dvh;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -87,17 +89,19 @@ body {
 }
 .back-link:hover { color: var(--ink); background: rgba(0,0,0,0.04); }
 
-.foot {
-  margin-top: auto;
-  padding-top: 32px;
+footer {
+  background: white;
+  border-top: 2px solid #d8d6cc;
+  padding: 16px 24px;
+  text-align: center;
   font-family: 'Nunito', sans-serif;
   font-size: 13px;
-  color: var(--ink-dim);
-  text-align: center;
+  color: #8a8472;
+  flex-shrink: 0;
 }
-.foot a { color: var(--ink-dim); text-decoration: none; font-weight: 600; }
-.foot a:hover { text-decoration: underline; color: var(--ink); }
-.foot .sep { margin: 0 8px; text-decoration: none; }
+footer a { color: #8a8472; text-decoration: none; font-weight: 600; }
+footer a:hover { text-decoration: underline; color: var(--ink); }
+footer .sep { margin: 0 8px; }
 
 /* ── view container ──────────────────────────────────────── */
 
@@ -648,17 +652,18 @@ body {
     </div>
   </section>
 
-  <div class="foot">
-    © 2026 QuizNote
-    <span class="sep">·</span>
-    <a href="privacy.html">Privacy Policy</a>
-    <span class="sep">·</span>
-    <a href="terms.html">Terms of Service</a>
-    <span class="sep">·</span>
-    Made by musicians, for musicians
-  </div>
-
 </div>
+
+<footer>
+  © 2026 QuizNote
+  <span class="sep">·</span>
+  <a href="privacy.html">Privacy Policy</a>
+  <span class="sep">·</span>
+  <a href="terms.html">Terms of Service</a>
+  <span class="sep">·</span>
+  Made by musicians, for musicians
+</footer>
+
 
 <script src="qn-profile.js" defer></script>
 <script src="qn-nav.js" defer></script>
