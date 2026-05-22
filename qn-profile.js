@@ -9,22 +9,44 @@
 
    Exposes one global: window.QN
 
-   Three namespaces:
-     QN.profile  — identity (create, list, switch, update, delete)
+   Namespaces:
+     QN.account  — owner/household (one per device): identity, cohort, trial
+     QN.profile  — learner identity (create, list, switch, update, delete)
      QN.events   — round logging (log, query)
      QN.ui       — shared widgets (profile chip)
+     QN.recommend— next-step suggestion
 
    Storage model (localStorage, all values JSON-encoded):
-     qn_profiles      Array<Profile>   list of all profiles on device
+     qn_account       Account          the device's owner/household record
+     qn_profiles      Array<Profile>   list of all learner profiles (<= 5)
      qn_activeProfile string | null    id of currently active profile
      qn_events        Array<Event>     append-only round log
 
+   Account / household model (added v1.6.0):
+     - One Account per device = the future owner/payer/consent holder.
+       Up to MAX_PROFILES_PER_ACCOUNT (5) learner profiles hang beneath it.
+     - Account.authId is null until claimed by a real Apple/Google
+       identity (QN.account.linkAuth). Sign-in = identity only; it does
+       NOT start the trial or take a card. Decoupled on purpose.
+     - Account.pricingCohort stamps WHEN the account was born. Today's
+       value is CURRENT_COHORT ('beta') — the founder tag. To "go live"
+       later, change CURRENT_COHORT to 'standard' (one constant, below);
+       existing 'beta' accounts keep their tag forever. Stripe maps each
+       cohort to a price and never auto-migrates anyone.
+     - 7-day trial: QN.account.startTrial() arms the clock. It is BUILT
+       BUT NOT ARMED — nothing calls it yet. The future paywall fires it
+       at the Stripe-subscription moment (card authorized), NOT at sign-in.
+     - trialStatus() is ADVISORY / UX-ONLY. Real entitlement ("is this
+       account paid / in-trial") MUST be server-authoritative once a
+       backend exists — never gate a paid feature on this local value.
+
    Forward-compatibility notes:
-     - Profile ids are opaque 10-char random strings, NOT
-       sequential. Safe to sync to a backend later.
-     - Profiles carry syncedAt: null until claimed by a parent
-       account (post-Supabase). syncedAt: <timestamp> means the
-       profile has been pushed to the backend.
+     - All ids are opaque 10-char random strings, NOT sequential.
+       Safe to sync to a backend later.
+     - Account + Profiles carry syncedAt: null until pushed to the
+       backend. syncedAt: <timestamp> means synced.
+     - Profile.accountId links each learner to its owning account, so a
+       local -> backend migration is an attach (link), not a rebuild.
      - Event shape is final. Backend table will mirror this.
 
    Authored: May 2026. No external dependencies.
@@ -38,11 +60,30 @@
   // ─────────────────────────────────────────────────────────────
 
   var STORAGE_KEYS = {
+    ACCOUNT:        'qn_account',        // the device's owner/household record
     PROFILES:       'qn_profiles',
     ACTIVE_PROFILE: 'qn_activeProfile',
     EVENTS:         'qn_events',
     PENDING_EVENTS: 'qn_pendingEvents'  // anonymous rounds awaiting a profile
   };
+
+  // ── GO-LIVE LEVER ────────────────────────────────────────────
+  // Every account is stamped with this cohort at birth. Today's users
+  // are 'beta' (founders). The day you launch paid, change this ONE
+  // string to 'standard' and redeploy — existing 'beta' accounts keep
+  // their tag forever; only NEW accounts get the new stamp. Stripe maps
+  // each cohort to a price and never auto-migrates anyone.
+  var CURRENT_COHORT = 'beta';
+
+  // Household cap: an account owns at most this many learner profiles.
+  // create() enforces it (returns null when full). Marketing: "up to 5".
+  var MAX_PROFILES_PER_ACCOUNT = 5;
+
+  // Free-trial length, in days. The trial is BUILT BUT NOT ARMED:
+  // startTrial() exists, nothing calls it yet. The future paywall fires
+  // it at the Stripe moment, not at sign-in.
+  var TRIAL_DAYS = 7;
+  var DAY_MS = 24 * 60 * 60 * 1000;
 
   var MAX_EVENTS_PER_PROFILE = 5000;
   // Anonymous rounds held before a profile exists. Capped so a long
@@ -179,6 +220,107 @@
   // QN.profile — identity layer
   // ─────────────────────────────────────────────────────────────
 
+  // ─────────────────────────────────────────────────────────────
+  // ACCOUNT API  (owner / household — one per device)
+  // ─────────────────────────────────────────────────────────────
+  //
+  // The Account is the future owner/payer/consent-holder. Today it's a
+  // local record that exists mainly to (a) tag the founder cohort now,
+  // while we still can, and (b) give profiles an owner to hang from so a
+  // later backend migration is an attach, not a rebuild. Auth, Stripe,
+  // and the trial clock all live here but are inert until wired.
+
+  var accountAPI = {
+
+    /**
+     * Return the device's account, creating a local one on first call.
+     * Idempotent — there is always exactly one account per device.
+     */
+    get: function () {
+      var acct = readStorage(STORAGE_KEYS.ACCOUNT, null);
+      if (acct && acct.id) return acct;
+
+      var now = Date.now();
+      acct = {
+        id:            'a_' + generateId().slice(2), // opaque, 'a_' prefix
+        authId:        null,           // set by linkAuth() at Apple/Google sign-in
+        pricingCohort: CURRENT_COHORT, // 'beta' today = founder tag
+        trialStartedAt: null,          // set by startTrial() (not armed yet)
+        trialEndsAt:    null,
+        createdAt:     now,
+        syncedAt:      null            // becomes a timestamp once pushed to backend
+      };
+      writeStorage(STORAGE_KEYS.ACCOUNT, acct);
+      return acct;
+    },
+
+    /**
+     * How many more learner profiles this account may add (0..MAX).
+     */
+    seatsLeft: function () {
+      var count = readStorage(STORAGE_KEYS.PROFILES, []).length;
+      var left = MAX_PROFILES_PER_ACCOUNT - count;
+      return left > 0 ? left : 0;
+    },
+
+    /**
+     * Whether another learner profile can be created (under the cap).
+     */
+    canAddProfile: function () {
+      return this.seatsLeft() > 0;
+    },
+
+    /**
+     * Link a real auth identity (Apple/Google subject id) to this account.
+     * Identity only — does NOT start the trial or take payment.
+     * Returns the updated account.
+     */
+    linkAuth: function (authId) {
+      if (!authId || typeof authId !== 'string') return null;
+      var acct = this.get();
+      acct.authId = authId;
+      writeStorage(STORAGE_KEYS.ACCOUNT, acct);
+      return acct;
+    },
+
+    /**
+     * Arm the 7-day trial clock. BUILT BUT NOT ARMED — nothing calls this
+     * yet. The future paywall calls it at the Stripe-subscription moment
+     * (card authorized). Idempotent: won't restart a trial that already
+     * started. Returns the updated account.
+     */
+    startTrial: function () {
+      var acct = this.get();
+      if (acct.trialStartedAt) return acct; // already started; never restart
+      var now = Date.now();
+      acct.trialStartedAt = now;
+      acct.trialEndsAt    = now + TRIAL_DAYS * DAY_MS;
+      writeStorage(STORAGE_KEYS.ACCOUNT, acct);
+      return acct;
+    },
+
+    /**
+     * ADVISORY / UX-ONLY trial state. Do NOT gate paid features on this —
+     * real entitlement must be server-authoritative once a backend exists.
+     * @returns {{ state:'none'|'active'|'expired', daysLeft:number, endsAt:number|null }}
+     */
+    trialStatus: function () {
+      var acct = this.get();
+      if (!acct.trialStartedAt || !acct.trialEndsAt) {
+        return { state: 'none', daysLeft: 0, endsAt: null };
+      }
+      var remaining = acct.trialEndsAt - Date.now();
+      if (remaining <= 0) {
+        return { state: 'expired', daysLeft: 0, endsAt: acct.trialEndsAt };
+      }
+      return {
+        state: 'active',
+        daysLeft: Math.ceil(remaining / DAY_MS),
+        endsAt: acct.trialEndsAt
+      };
+    }
+  };
+
   var profileAPI = {
 
     /**
@@ -219,9 +361,18 @@
       var nickname = data.nickname.trim();
       if (nickname.length < 1 || nickname.length > 20) return null;
 
+      // Enforce the household cap (up to MAX_PROFILES_PER_ACCOUNT learners).
+      // Refusing here keeps the cap real, not advisory. Callers (profile.html)
+      // already handle a null return as "couldn't create".
+      if (!accountAPI.canAddProfile()) return null;
+
+      // Ensure the owning account exists, so every profile is linked to one.
+      var account = accountAPI.get();
+
       var now = Date.now();
       var profile = {
         id:            generateId(),
+        accountId:     account.id,  // links learner -> owning account (household)
         nickname:      nickname,
         level:         data.level || null,
         color:         (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0)
@@ -346,6 +497,7 @@
       } catch (e) {}
 
       // 1. the four known qn_* keys
+      writeStorageRaw(STORAGE_KEYS.ACCOUNT, null);
       writeStorageRaw(STORAGE_KEYS.PROFILES, null);
       writeStorageRaw(STORAGE_KEYS.ACTIVE_PROFILE, null);
       writeStorageRaw(STORAGE_KEYS.EVENTS, null);
@@ -901,6 +1053,7 @@
   // ─────────────────────────────────────────────────────────────
 
   window.QN = window.QN || {};
+  window.QN.account   = accountAPI;
   window.QN.profile   = profileAPI;
   window.QN.events    = eventsAPI;
   window.QN.ui        = uiAPI;
@@ -914,6 +1067,6 @@
     hasCorruption: function () { return _corruptionLog.length > 0; }
   };
 
-  window.QN.version = '1.5.0';  // corruption-aware readStorage (corrupt vs empty) + QN.diagnostics
+  window.QN.version = '1.6.0';  // account/household layer: cohort tag, 5-learner cap, 7-day trial (built, not armed), accountId on profiles
 
 })();
