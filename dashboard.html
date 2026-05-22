@@ -33,6 +33,8 @@
     background: var(--cream);
     color: var(--ink);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ---------- header (matches module pages) ---------- */
@@ -52,6 +54,7 @@
     font-size: 26px;
     color: var(--ink);
     letter-spacing: -0.01em;
+    text-decoration: none;
   }
   .site-header .brand-name span { color: var(--teal); }
   .site-tagline {
@@ -67,7 +70,7 @@
   .profile-chip-slot, #qn-nav-slot { margin-left: auto; display: inline-flex; align-items: center; }
 
   /* ---------- layout ---------- */
-  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; flex: 1 0 auto; width: 100%; }
   .back-link {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
@@ -199,8 +202,7 @@
 <body>
 
 <header class="site-header">
-  <div class="brand-name">Quiz<span>Note</span></div>
-  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
+  <a href="index.html" class="brand-name">Quiz<span>Note</span></a>
   <div id="qn-nav-slot"></div>
 </header>
 
