@@ -82,7 +82,7 @@
      NAV
      ────────────────────────────────────────────────────────────── */
   nav {
-    position: sticky; top: 0; z-index: 50;
+    position: sticky; top: var(--qn-welcome-h, 0px); z-index: 50;
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 32px;
     background: rgba(252, 250, 246, 0.82);
@@ -1311,8 +1311,12 @@
     .staff-stage { height: 144px; }
     .try-toast { font-size: 48px; }
   }
-  /* Welcome-back bar (returning profile-holders only; injected by script) */
+  /* Welcome-back bar (returning profile-holders only; injected by script).
+     Sticks to top above the nav; nav's top offset is set to the bar's
+     measured height via --qn-welcome-h (see injection script). Desktop is a
+     single row; under 560px it splits into greeting row + full-width CTA row. */
   #qn-welcome-bar {
+    position: sticky; top: 0; z-index: 60;
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px; background: #1FB8A8; padding: 11px 22px;
     border-bottom: 2px solid #2A2A3E; font-family: 'Fredoka', sans-serif;
@@ -1330,17 +1334,37 @@
     font-weight: 600; font-size: 14px; background: #FFB627; color: #2A2A3E;
     border: 2px solid #2A2A3E; border-radius: 11px; padding: 7px 15px;
     box-shadow: 0 3px 0 #2A2A3E; text-decoration: none; white-space: nowrap;
-    transition: transform 100ms, box-shadow 100ms;
+    transition: transform 100ms, box-shadow 100ms; text-align: center;
   }
   #qn-welcome-bar .wb-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #2A2A3E; }
   #qn-welcome-bar .wb-x {
     background: none; border: none; color: #fff; opacity: .8; font-size: 20px;
     line-height: 1; cursor: pointer; padding: 0 2px; font-family: 'Fredoka', sans-serif;
+    flex: none;
   }
   #qn-welcome-bar .wb-x:hover { opacity: 1; }
+  /* Desktop: keep the original far-right placement (after the button).
+     wb-left becomes display:contents so its children (dot, text, x) are direct
+     flex children of the bar; the x is then ordered last (far right). */
+  @media (min-width: 561px) {
+    #qn-welcome-bar { align-items: center; }
+    #qn-welcome-bar .wb-left { display: contents; }
+    #qn-welcome-bar .wb-dot { order: 0; }
+    #qn-welcome-bar .wb-text { order: 1; margin-right: auto; }
+    #qn-welcome-bar .wb-right { order: 2; }
+    #qn-welcome-bar .wb-x { order: 3; margin-left: 4px; }
+  }
   @media (max-width: 560px) {
-    #qn-welcome-bar { padding: 10px 16px; }
-    #qn-welcome-bar .wb-text { font-size: 14px; }
+    /* two rows: greeting (+dismiss) on top, CTA full-width below */
+    #qn-welcome-bar {
+      flex-direction: column; align-items: stretch; gap: 8px; padding: 9px 16px 11px;
+    }
+    #qn-welcome-bar .wb-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0;
+    }
+    #qn-welcome-bar .wb-text { font-size: 14px; white-space: normal; }
+    #qn-welcome-bar .wb-right { display: block; }
+    #qn-welcome-bar .wb-btn { display: block; }
   }
 </style>
 </head>
@@ -1362,23 +1386,44 @@
     var initial = (active.nickname || '?').trim().charAt(0).toUpperCase() || '?';
     var bar = document.createElement('div');
     bar.id = 'qn-welcome-bar';
-    var left = document.createElement('div'); left.className = 'wb-left';
+
+    var left = document.createElement('div'); left.className = 'wb-left wb-top';
     var dot = document.createElement('span'); dot.className = 'wb-dot'; dot.textContent = initial;
     var txt = document.createElement('span'); txt.className = 'wb-text';
-    txt.textContent = 'Welcome back, ' + active.nickname;
-    left.appendChild(dot); left.appendChild(txt);
+    txt.textContent = 'Welcome back, ' + active.nickname + ' \u2014 ready to pick up your path?';
+    var x = document.createElement('button'); x.className = 'wb-x';
+    x.setAttribute('aria-label', 'Dismiss'); x.textContent = '\u00d7';
+    // On mobile the \u00d7 lives on the greeting row; on desktop it trails the button.
+    // Putting it inside wb-left keeps it next to the text when the bar stacks.
+    left.appendChild(dot); left.appendChild(txt); left.appendChild(x);
+
     var right = document.createElement('div'); right.className = 'wb-right';
     var btn = document.createElement('a'); btn.className = 'wb-btn';
-    btn.href = 'path.html'; btn.textContent = 'Continue your path →';
-    var x = document.createElement('button'); x.className = 'wb-x';
-    x.setAttribute('aria-label', 'Dismiss'); x.textContent = '×';
+    btn.href = 'path.html'; btn.textContent = 'Continue your path \u2192';
+    right.appendChild(btn);
+
+    function setNavOffset() {
+      var h = bar.offsetHeight || 0;
+      document.documentElement.style.setProperty('--qn-welcome-h', h + 'px');
+    }
+    function clearNavOffset() {
+      document.documentElement.style.setProperty('--qn-welcome-h', '0px');
+    }
+
     x.onclick = function () {
       try { sessionStorage.setItem('qn_welcome_dismissed', '1'); } catch (e) {}
+      clearNavOffset();
+      window.removeEventListener('resize', setNavOffset);
       bar.parentNode && bar.parentNode.removeChild(bar);
     };
-    right.appendChild(btn); right.appendChild(x);
+
     bar.appendChild(left); bar.appendChild(right);
     mount.appendChild(bar);
+    setNavOffset();
+    window.addEventListener('resize', setNavOffset);
+    // Fredoka swaps in after first paint and can change the bar's height;
+    // re-measure once fonts are ready so the nav offset stays exact.
+    try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(setNavOffset); } catch (e) {}
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
