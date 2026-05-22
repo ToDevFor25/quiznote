@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>QuizNote — Practice music theory, one short round at a time</title>
-<meta name="description" content="Music theory practice from first notes through intermediate theory. Three skill tiers, short rounds at your pace. Free during beta, no ads, no data sold. Try a question right on the homepage." />
+<meta name="description" content="Music theory practice from first notes through intermediate theory. Three skill tiers, short rounds at your pace. No ads, no data sold. Try a question right on the homepage." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -346,7 +346,7 @@
   .try-eyebrow {
     display: inline-flex; align-items: center; gap: 9px;
     font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 13px;
+    font-size: 15px;
     color: var(--teal-dk);
     margin-bottom: 14px;
     letter-spacing: 0.02em;
@@ -1083,6 +1083,22 @@
     max-width: 580px;
     margin: 0 auto 36px;
   }
+  .demo-asterisk {
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-left: 2px;
+    vertical-align: super;
+    font-size: 0.5em;
+  }
+  .demo-note {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    max-width: 520px;
+    margin: 14px auto 0;
+    opacity: 0.85;
+  }
   .demo-card {
     max-width: 920px;
     margin: 0 auto;
@@ -1479,7 +1495,7 @@
     <div class="hero-copy">
       <div class="hero-badge">
         <span class="dot" aria-hidden="true"></span>
-        Free during beta · No ads · No data sold
+        No ads · No data sold · Learn at your pace
       </div>
 
       <h1 class="hero-title">
@@ -1502,7 +1518,7 @@
         <div class="stat-div" aria-hidden="true"></div>
         <div class="stat"><span class="stat-num">0</span><span class="stat-label">Ads</span></div>
         <div class="stat-div" aria-hidden="true"></div>
-        <div class="stat"><span class="stat-num">Free</span><span class="stat-label">During beta</span></div>
+        <div class="stat"><span class="stat-num">7</span><span class="stat-label">Modules</span></div>
       </div>
     </div>
 
@@ -1593,7 +1609,7 @@
 <!-- DEMO SECTION — A round looks like this -->
 <section class="demo" data-screen-label="02 Demo">
   <div class="demo-eyebrow">See it in action</div>
-  <h2 class="demo-title">A round <span class="accent">looks like this.</span></h2>
+  <h2 class="demo-title">A round <span class="accent">looks like this.</span><span class="demo-asterisk" aria-hidden="true">*</span></h2>
   <p class="demo-sub">Watch the notes build. Guess the scale.</p>
 
   <a class="demo-card" href="play.html" style="text-decoration:none;color:inherit;display:block;">
@@ -1632,6 +1648,7 @@
       <button class="demo-sound" id="demo-sound" type="button" onclick="event.preventDefault(); event.stopPropagation();">🔊 Sound</button>
     </div>
   </a>
+  <p class="demo-note">*Simulation only. The live module may look and behave a little differently during play.</p>
 </section>
 
 <!-- PILLARS -->
@@ -2022,7 +2039,7 @@
 <section class="final" data-screen-label="06 Final CTA">
   <div class="final-inner">
     <h2 class="final-title">Ready to play?</h2>
-    <p class="final-sub">Costs nothing during beta. No download. Open and play.</p>
+    <p class="final-sub">No download, no setup. Open and play right in your browser.</p>
     <a class="chunky-btn white" href="pianoquiz-demo.html">Test drive →</a>
     <div class="final-meta">Works on any phone · Loads in a heartbeat</div>
   </div>
