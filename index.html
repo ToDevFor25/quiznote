@@ -1387,7 +1387,17 @@
     var active = QN.profile.getActive();
     if (!active) return;  // first-timers: keep "Test drive", no bar, no menu
 
-    if (window.QNNav) QNNav.mount({ current: null });  // pill + "Menu" hamburger (shared component)
+    if (window.QNNav) {
+      QNNav.mount({ current: null });  // pill + "Menu" hamburger (shared component)
+    } else {
+      // Fallback: qn-nav.js didn't load. Don't strand a returning user on the
+      // guest "Test drive" CTA — repoint it to their path so the page still works.
+      var slot = document.getElementById('nav-actions');
+      if (slot) {
+        var a = slot.querySelector('a.nav-btn.primary') || slot.querySelector('a');
+        if (a) { a.href = 'path.html'; a.textContent = 'Continue \u2192'; }
+      }
+    }
     buildBar(active);      // skipped if dismissed this session
   }
 
