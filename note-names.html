@@ -685,6 +685,7 @@
     font-weight: 700;
     font-size: 26px;
     color: var(--ink);
+    text-decoration: none;
     letter-spacing: -0.01em;
   }
   .site-header .brand-name span { color: var(--teal); }
@@ -714,7 +715,7 @@
     transform: translateY(2px);
     box-shadow: 0 1px 0 var(--ink);
   }
-  .profile-chip-slot {
+  #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
     align-items: center;
@@ -742,17 +743,6 @@
     color: var(--ink);
     line-height: 1.4;
   }
-  .site-tagline {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal-dk);
-    background: var(--teal-lt);
-    border-radius: 999px;
-    padding: 4px 12px;
-    white-space: nowrap;
-  }
-
   /* ============ Site Footer ============ */
   .site-footer {
     background: white;
@@ -843,13 +833,13 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
 </head>
 <body>
 
 <header class="site-header">
-  <div class="brand-name">Quiz<span>Note</span></div>
-  <div class="site-tagline">No ads. No distractions. Just music fluency.</div>
-  <div class="profile-chip-slot" id="profile-chip-slot"></div>
+  <a class="brand-name" href="index.html">Quiz<span>Note</span></a>
+  <div id="qn-nav-slot"></div>
 </header>
 
 <!-- ============ START SCREEN ============ -->
@@ -1316,7 +1306,7 @@
     if (clef === 'treble') {
       svg += `<text x="${xOffset + 14}" y="${bottomY + lineGap * 0.35}" font-family="serif" font-size="${lineGap * 7.2}" fill="#2A2A3E">𝄞</text>`;
     } else {
-      svg += `<text x="${xOffset + 14}" y="${bottomY - lineGap * 1.4}" font-family="serif" font-size="${lineGap * 4.6}" fill="#2A2A3E">𝄢</text>`;
+      svg += `<text x="${xOffset + 14}" y="${bottomY - lineGap * 0.55}" font-family="serif" font-size="${lineGap * 5.3}" fill="#2A2A3E">𝄢</text>`;
     }
 
     const nx = noteX != null ? noteX : (xOffset + width * 0.62);
@@ -1510,7 +1500,7 @@
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
-     'save-scores-prompt','profile-chip-slot',
+     'save-scores-prompt',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
   }
@@ -2482,7 +2472,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     cacheEls();
-    if (window.QN && QN.ui && els['profile-chip-slot']) { QN.ui.chip(els['profile-chip-slot']); }
+    if (window.QNNav) { QNNav.mount({ current: null }); }
     setupStart();
     applyPathHandoff();
     setupActions();
