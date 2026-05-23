@@ -1,0 +1,132 @@
+/* ============================================================
+   qn-theme.css — shared QuizNote design system (CSS)
+
+   The CSS sibling to the shared JS files (qn-profile.js, qn-audio.js,
+   qn-staff.js, qn-nav.js, qn-music.js). This is the SINGLE SOURCE OF TRUTH
+   for the design tokens and the cross-module question-area styling, so a
+   look change happens HERE, once — not in 9 (eventually 24) inline copies.
+
+   Load in each module's <head>, AFTER the font <link> and BEFORE the
+   module's own inline <style> block:
+
+     <link rel="stylesheet" href="qn-theme.css">
+
+   A module that links this file MUST NOT also define these rules inline —
+   an inline copy with equal specificity but later source order would
+   silently override the shared file, defeating the point. When migrating a
+   module: add the link, then delete the duplicated :root / .staff-label /
+   .choice-btn rules from its inline CSS.
+
+   SCOPE (v1.0.0): design tokens, the canonical question prompt, and the
+   full answer-tile system. More of the shared design system migrates here
+   over time (the same incremental-adoption model qn-music.js uses).
+
+   ── Question prompt (.staff-label) ──────────────────────────────────────
+   The prompt that sits above the staff in every module. Canonical look
+   (decided May 2026, "quiet A" + fixed-height zone): quiet sentence-case,
+   centered, in a FIXED-HEIGHT band so the staff never shifts vertically
+   between a one-line and a two-line prompt. This is the genre standard for
+   notation-drill apps (content-forward: the staff is the hero, the prompt
+   is stable furniture, not a shouting headline). Folds in the old
+   per-module Time-Signatures wrap override (long prompts wrap, don't clip).
+
+   ── Answer tiles (.choice-btn) ──────────────────────────────────────────
+   The four multiple-choice buttons. Base + state variants (correct / wrong
+   / reveal-correct / active / disabled) + responsive sizing. One canonical
+   tile everywhere; long labels ("harmonic minor") wrap as a designed state
+   rather than forcing a per-module font-size override.
+
+   Authored: May 2026. No dependencies. Tokens were byte-identical across
+   all 9 modules at extraction (verified) — lifted verbatim, no reconcile.
+   ============================================================ */
+
+/* ── Design tokens ───────────────────────────────────────────────────── */
+:root {
+  --cream: #FFFAF0;
+  --cream-2: #FFF3DC;
+  --ink: #2A2A3E;
+  --ink-soft: #5a5a6e;
+  --ink-faint: #8a8472;
+  --teal: #1FB8A8;
+  --teal-dk: #0e8475;
+  --teal-lt: #d3f1ec;
+  --sun: #FFB627;
+  --sun-dk: #c98800;
+  --grape: #5B3FE4;
+  --grape-dk: #3d28a8;
+  --coral: #FF6B6B;
+  --coral-dk: #c2453f;
+  --white: #ffffff;
+  --shadow-cool: #d8d6cc;
+}
+
+/* ── Question prompt (canonical: quiet A + fixed-height zone) ─────────── */
+.staff-label {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.25;
+  color: var(--ink-soft);
+  text-transform: none;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: normal;
+  min-height: 2.5em;            /* fixed zone: ~2 lines reserved so the staff never jumps */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 92%;
+  margin: 0 auto;
+}
+
+/* ── Answer tiles ────────────────────────────────────────────────────── */
+.choice-btn {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 22px;
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 5px 0 var(--ink);
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out, background 120ms;
+  color: var(--ink);
+  line-height: 1.1;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.choice-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.choice-btn.correct {
+  background: var(--teal); color: white;
+  border-color: var(--teal-dk);
+  box-shadow: 0 5px 0 var(--teal-dk);
+}
+.choice-btn.wrong {
+  background: var(--coral); color: white;
+  border-color: var(--coral-dk);
+  box-shadow: 0 5px 0 var(--coral-dk);
+}
+.choice-btn.reveal-correct {
+  background: var(--teal-lt); color: var(--teal-dk);
+  border-color: var(--teal-dk);
+  box-shadow: 0 5px 0 var(--teal-dk);
+}
+.choice-btn:disabled { cursor: default; }
+.choice-acc {
+  font-size: 16px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.choice-btn.correct .choice-acc,
+.choice-btn.wrong .choice-acc { color: rgba(255,255,255,0.8); }
+.choice-btn.reveal-correct .choice-acc { color: var(--teal-dk); }
+
+@media (max-width: 760px) {
+  .choice-btn { font-size: 18px; padding: 12px 8px; }
+}
+@media (min-width: 1100px) {
+  .choice-btn { font-size: 26px; padding: 18px 14px; }
+}
