@@ -1772,6 +1772,7 @@
           // Keep playing: resume the timer mid-count (preserves timeLeft).
           onConfirm: () => {
             if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
+              if (els['timer-badge']) els['timer-badge'].hidden = false;
               state.timerInterval = setInterval(() => {
                 state.timeLeft--;
                 if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
