@@ -2307,41 +2307,39 @@
       });
     }
 
-    // Exit button → modal
+    // Exit button → shared confirm modal (QN.ui.confirm). Canonical arrangement
+    // is owned by qn-profile.js: Quit = ghost/left, Keep playing = green/right.
     if (els['exit-btn']) {
       els['exit-btn'].addEventListener('click', () => {
-        if (els['modal-overlay']) {
-          els['modal-overlay'].hidden = false;
-          els['modal-overlay'].classList.add('show');
-          state.timerWasRunning = !!state.timerInterval;
-          if (state.timerWasRunning) stopTimer();
-        }
-      });
-    }
-    if (els['modal-cancel']) {
-      els['modal-cancel'].addEventListener('click', () => {
-        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
-        if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
-          // Resume timer
-          state.timerInterval = setInterval(() => {
-            state.timeLeft--;
-            if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
-            if (state.timeLeft <= 5) A.playTick();
-            if (state.timeLeft <= 0) {
-              stopTimer();
-              state.timedOut = true;
-              endRound();
+        QN.ui.confirm({
+          title: 'Quit this round?',
+          body: "Your score for this round won't be saved.",
+          confirmLabel: 'Keep playing',   // solid/safe default (right)
+          cancelLabel: 'Quit round',      // ghost/destructive (left)
+          onOpen: () => {
+            state.timerWasRunning = !!state.timerInterval;
+            if (state.timerWasRunning) stopTimer();
+          },
+          onConfirm: () => {
+            if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
+              state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+                if (state.timeLeft <= 5) A.playTick();
+                if (state.timeLeft <= 0) {
+                  stopTimer();
+                  state.timedOut = true;
+                  endRound();
+                }
+              }, 1000);
             }
-          }, 1000);
-        }
-      });
-    }
-    if (els['modal-confirm']) {
-      els['modal-confirm'].addEventListener('click', () => {
-        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
-        state.endedRound = true;
-        stopTimer();
-        showScreen('start');
+          },
+          onCancel: () => {
+            state.endedRound = true;
+            stopTimer();
+            showScreen('start');
+          }
+        });
       });
     }
 
