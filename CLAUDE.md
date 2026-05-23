@@ -45,11 +45,14 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **14 live modules (as of May 2026 curriculum review):** note-names, piano-quiz,
+- **18 live modules (Phase 1 complete, May 2026):** note-names, piano-quiz,
   note-values, time-signatures, accidentals, key-signatures, scales, scale-degrees,
-  scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals.
-  Roster target is **27 modules** across 3 levels — see QUIZNOTE_PROJECT_DOC.md §5
-  for the complete map with build status, selectors, and tier details.
+  scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals,
+  **ledger-lines, dotted-notes, ear-rhythm, piano-keyboard** (the last four are
+  Phase 1 builds). Roster target is **27 modules** across 3 levels — see
+  QUIZNOTE_PROJECT_DOC.md §5 for the complete map with build status, selectors,
+  and tier details. Note: §5 is stale and still describes the older 24-module
+  framing — reconcile in the queued tier-reconciliation session.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -142,14 +145,38 @@ standard features inherited.
 
 **Steps:**
 1. Draft the spec
-2. Present to Jonathan for review
-3. Wait for explicit approval ("go")
+2. Present to Jonathan for review (skip if operating in autonomous mode —
+   see "Module builds are autonomous" below)
+3. Wait for explicit approval ("go") — same caveat
 4. Then build
 
 This rule exists because of the May 2026 Triads incident — building started
 before the renderer constraint was identified, wasting time and nearly
 overwriting working files. A spec review catches these problems before code
 is written.
+
+---
+
+## Module builds are autonomous
+
+When building new modules via clone-and-swap, do **NOT** ask questions or pause
+for approval on any Tier 1 or Tier 2 decisions. Make the call, note what you
+decided in the commit message, and keep building.
+
+**The only exceptions are genuine Tier 3 blockers:**
+1. Renderer can't handle the content (e.g., 3-note triad on a 2-note interval
+   renderer — flag as a renderer-extension session).
+2. Shared file change required (qn-staff.js, qn-audio.js, qn-profile.js, etc.).
+3. Music theory accuracy question with no clear answer.
+
+If it's not one of those three, decide and build. Pool sizes, distractor
+strategies, tier descriptions, choice label formatting, tile colors, namespace
+prefixes, file names, audio tempo defaults — all Tier 1/2. Commit and push to
+Dev without pausing.
+
+This rule was added mid-session May 2026 after Jonathan explicitly directed
+"build all 3 modules without me" for Phase 1. It supersedes the spec-first
+"present and wait" step when operating autonomously.
 
 ---
 
@@ -244,15 +271,30 @@ For any future CSS work:
   showConfirm retired.
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
-- **14 live modules.** 27-module roster target per QUIZNOTE_PROJECT_DOC.md §5.
-- **Next priority: Phase 1 (Level 1 gaps).** See §5 for sequenced build phases.
-  Start with spec, then build. Ledger Lines, Dotted Notes & Ties, Ear: Rhythm,
-  Piano & Keyboard are the Phase 1 targets.
+- **Phase 1 of the curriculum redesign: COMPLETE (May 2026).** Ledger Lines,
+  Dotted Notes & Ties, Ear: Rhythm, Piano & Keyboard all shipped. **18 live
+  modules** total. 27-module roster target.
+- **play.html redesigned (May 2026):** three collapsible level sections
+  (Foundations / Reading / Theory) with progress chips. FOUC-prevention via
+  `body.tier-no-anim` + 2×rAF (documented in BUILD_LOG.md). All-expanded by
+  default per the catalog-UI genre standard.
+- **index.html "What's Inside" replaced (May 2026):** vertical-spine concept
+  view, not module tiles. Decoupled from per-module tiering. Class names
+  prefixed `wi-` to avoid collisions.
+- **Next priority: Tier reconciliation session (Tier 3, queued).** Before
+  Phase 2, resolve the Intervals (Theory→Reading) and Ear:Intervals /
+  Ear:Scales tier fork across all four surfaces. See BUILD_LOG.md.
+- **Phase 2 after reconciliation:** Scales pentatonic + selector, Key
+  Signatures minor + selector, Chromatic Scale, the four minor-keys
+  expansions (Primary Chords, Scale Degrees, Roman Numerals, Ear:Scales),
+  Intervals clef selector verify.
 - **Chord renderer session:** queued as Phase 3. Do not attempt chord modules
   before qn-staff.js extension.
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
   (QA first), time-signatures prompt-layout conversion + scales tile
   reconciliation (needs visual harness per §8).
+- **Stale doc flagged:** QUIZNOTE_PROJECT_DOC.md §5 still describes the older
+  24-module roster — needs reconciliation alongside the tier session.
 - See BUILD_LOG.md for complete "Still open / next" list.
 
 ---

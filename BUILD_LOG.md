@@ -1,5 +1,229 @@
 ---
 
+### Phase 1 build + landing redesign — May 2026
+
+**Session type:** Build (4 modules) + 2 landing-page restructures
+(play.html collapsible sections, index.html vertical-spine "What's Inside").
+
+**Net result:** 14 → 18 live modules. Phase 1 of the May 2026 curriculum
+redesign is **complete**. Landing page no longer leaks the module roster
+(decoupled from per-module tiering, so it survives the queued tier
+reconciliation untouched).
+
+**Commits in order:**
+- `df8dbe2` Dev-only branch rule added to CLAUDE.md (start of session)
+- `645921b` Ear module tiles visually distinct (preliminary cleanup)
+- `8ef34cc` Index marketing copy (supplementary positioning)
+- `22fdfbf` CLAUDE.md + BUILD_LOG.md refreshed for 27-module agenda
+- `b6756ae` **Ledger Lines** (Phase 1 #1)
+- `72a9a5d` Ledger Lines pool fix (see "Catches" below)
+- `ecb3d53` play.html collapsible level-sections redesign
+- `48bd2b8` **Dotted Notes & Ties** (Phase 1 #2)
+- `55b3071` **Ear: Rhythm** (Phase 1 #3)
+- `a17e52f` **Piano & Keyboard** (Phase 1 #4 — Phase 1 complete)
+- `b6798de` Index "What's Inside" → vertical-spine concept view
+- `44385cd` / `4ce0ecc` Hero stats stacked, then made 3-stat row with "Lots of fun"
+- `2ea59eb` Pillars locked to 2×2 desktop / 1-col mobile
+- `ea87643` Hero stats reordered (0 Ads / 3 Skill tiers / Lots of fun)
+
+**Per-module decisions worth keeping:**
+
+*Ledger Lines (b6756ae + 72a9a5d):*
+- Strict on-ledger-or-flanked pool: only pitches with visible ledger lines
+  drawn for them. Excluded the "bare floating space note" right outside the
+  staff (D4/G5 treble, F2/B3 bass) — those return `[]` from the cloned
+  renderer's `ledgers(d)` function and would render as bare notes with no
+  ledger visible, defeating the module's premise. Note Names already
+  covers those notes.
+- Tier axis = how far from the staff edge (1st/2nd/3rd/4th ledger).
+- Tricky ceiling capped at 4th ledger by design — covers school-band /
+  orchestral / choral reading. Going to 5th-6th ledger (flute/piccolo
+  high register) is deliberately out-of-scope per the
+  beginner-through-intermediate audience rule.
+- Pool counts per clef: Easy 6, Medium 10, Tricky 14.
+
+*Dotted Notes & Ties (48bd2b8):*
+- Dots rendered via Bravura augmentation-dot glyph (U+E1E7) appended to
+  the note char with thin-space gap. Tied pairs use two adjacent glyphs
+  + a CSS-drawn semicircle (border + border-radius) for the arc.
+- Choice labels = beat values with Unicode vulgar fractions
+  ("1½ beats", "¾ beat") — cleaner than "1.5 beats".
+- **buildChoices must guarantee unique beat values across the 4
+  buttons.** Without this guard, two pool items that equal the same
+  number of beats (e.g., dotted-half = tied-half-quarter = 3 beats)
+  could both end up as choices, giving two buttons with identical labels.
+  Distractor priority: ±0.5 beat neighbors → undotted equivalent →
+  remaining unique tier values.
+- Convention locked: quarter note = 1 beat, simple meter only.
+
+*Ear: Rhythm (55b3071):*
+- Tempo locked at 60 BPM (1 second per beat). Chosen because it makes
+  durations cognitively easy to count and gives shorter values enough
+  perceptual length to distinguish.
+- Audio cue = 2 metronome ticks (lead-in tempo anchor) + sustained
+  A4 piano tone for `beats × 1000ms`. Replays via "▶ Hear it again".
+- Notes-only in v1 — rests deferred. Hearing silence-of-N-beats is
+  meaningfully different (count continuing ticks during the rest) and
+  adds UX complication for limited pedagogical lift.
+- Tiers thin by design: Easy 3 / Medium 4 / Tricky 5 items.
+  Distractor strategy = nearest duration first.
+- **Known v1 limitation:** Web Audio scheduled oscillators can't be
+  cancelled mid-play. A whole-note cue (4s) may briefly bleed into the
+  next question if the learner answers very quickly. Acceptable
+  trade-off; revisit if QA flags it.
+
+*Piano & Keyboard (a17e52f):*
+- Cloned from **note-names.html, NOT piano-quiz.html** — cleaner reuse
+  of note-names' 4-button letter MC and pitch pools verbatim, without
+  having to gut piano-quiz's keyboard-as-answer game logic. The
+  keyboard SVG is a new, isolated renderer added to NH.render.
+- Renderer spans C3..C6 inclusive (22 white + 15 black, viewBox-scaled).
+  Target key filled grape, "?" cue inside, each C labeled for octave
+  orientation.
+- Clef selector **hidden** via `display:none` (irrelevant on a
+  keyboard). `state.settings.clef` stays default 'treble' so the
+  inherited buildPool math works untouched — no game-loop edit.
+- Accidentals selector still surfaces on Tricky (inherited from
+  note-names). Functional; may want piano-context wording later.
+- `recolorNote` made shape-agnostic: tries `#note-anim ellipse` (staff
+  modules), falls through to `#note-anim .pk-target` (keyboard).
+  Pure additive — note-names and other ellipse-based modules unaffected.
+
+**Landing page restructures:**
+
+*play.html — collapsible level sections (ecb3d53):*
+- Three sections (Foundations / Reading / Theory) with progress chips
+  ("X/N completed") and a caret toggle. State persisted to
+  `qn_play_sections_open`. Default = all expanded (industry standard
+  for "browse the catalog" UIs: Coursera, edX, Khan Academy, Notion,
+  VSCode all default-expanded for what's-available lists).
+- **FOUC-prevention pattern (worth keeping):** `body.tier-no-anim` class
+  added during init suppresses the height transition. Saved state is
+  applied to `aria-expanded` while transitions are off, then a 2×
+  `requestAnimationFrame` removes the class. Without this, restoring
+  saved state on page load triggers the collapse animation —
+  user sees "everything opens, then snaps closed."
+- Mobile (<560px) header reflows via flex `order` reshuffle: Row 1 =
+  caret + name (left) + chip (right), Row 2 = meta, Row 3 = desc.
+
+*index.html — vertical-spine "What's Inside" (b6798de):*
+- Tile grid of every live module replaced with a 3-row vertical-spine
+  timeline using **concept pills, not module names**. Decoupled from
+  per-module tiering, so the section is immune to the queued module-
+  tier reconciliation (Intervals / Ear:Intervals / Ear:Scales fork).
+- All spine classes prefixed `wi-` to avoid collisions with existing
+  `.row` (inside `.hero-title`), `.s1/.s2/.s3` (used by `.step.s1`),
+  `.tier-name` / `.tier-desc` (from the old tier-section CSS, now
+  orphaned but harmless), `.tag` (defensive).
+- Module-count hero stat removed entirely — the number drifted across
+  sources (file said 17, CLAUDE.md said 14, actual was 18) because
+  nothing wired it to stay accurate.
+- Hero stats now 3 stats inline: `0 Ads / 3 Skill tiers / Lots of fun`,
+  wrapping on mobile. Colors via existing `.stat:nth-child` (grape /
+  teal / sun).
+- Pillars locked to 2×2 desktop / 1-col mobile (was 3-on-top + 1
+  orphan with the old `auto-fit minmax(260px, 1fr)`).
+
+**Catches worth remembering:**
+
+- **Ledger Lines first pool was wrong (72a9a5d).** Original pool
+  included D4 / G5 (treble) and F2 / B3 (bass) — the "space just
+  outside the staff" notes. Inherited renderer's `ledgers(d)` returns
+  `[]` for those (no ledger drawn), so they rendered as bare floating
+  notes. User caught it: "It has a lot of notes that are not on
+  ledger lines." Fix: strict on-ledger-or-flanked pool. **Lesson:**
+  when cloning a module that uses a complex renderer function, audit
+  what the renderer actually does for each pool entry — don't assume
+  semantic-sounding tier descriptions match the rendered output.
+- **play.html collapsible: opens then snaps closed.** Initial cause
+  diagnosed correctly as localStorage saved-state firing a CSS
+  transition during page load. Fix is the `body.tier-no-anim` +
+  2×rAF pattern documented above.
+- **Module builds are autonomous (rule added mid-session).** Tier 1
+  and Tier 2 decisions on clone-and-swap module builds proceed
+  without asking. Only Tier 3 blockers (renderer can't handle the
+  content / shared file change required / music-theory ambiguity
+  with no clear answer) stop the build. This is now in CLAUDE.md.
+- **Downloads folder is permission-blocked.** Reading attached files
+  from `~/Downloads` returns `EPERM` on this Claude Code process.
+  Workaround: user copies into the repo or pastes contents.
+  Lesson: in agentic instructions that reference attached files, give
+  the user the `cp` command upfront so they're not surprised.
+
+---
+
+**Still open / next (updated):**
+
+COMPLETED this session:
+- ✅ Phase 1 builds (all four: Ledger Lines, Dotted Notes & Ties,
+  Ear: Rhythm, Piano & Keyboard)
+- ✅ play.html collapsible level-section redesign
+- ✅ index.html marketing copy + "What's Inside" vertical-spine
+- ✅ Hero pillars 2×2 layout
+- ✅ Hero stats reordered + "Lots of fun" added
+- ✅ Autonomous-build rule added to CLAUDE.md
+
+STILL OPEN (ordered by priority):
+
+**Queued Tier-3 session (do BEFORE Phase 2):**
+- Module tier reconciliation across surfaces. Audited drift as of
+  2026-05-23:
+  - **Intervals** — play.html: Theory. path.html: Reading.
+    Decision: Reading. Fix needed in play.html. qn-profile.js
+    recommender PATH: **unaudited — read first.**
+  - **Ear: Intervals + Ear: Scales** — both in Theory across
+    surfaces. Two competing philosophies:
+    (a) cluster by modality — all ear training together in Theory
+        (lesson/exam structure); vs
+    (b) distribute by topic — each ear module sits with its visual
+        partner (spec pairing rule): Ear:Intervals→Reading,
+        Ear:Scales→Reading. **Unresolved fork — decide deliberately,
+        not by recency.** Current state matches (a).
+  - Scale Degrees / Scale Modes: Reading on all surfaces. No drift.
+- Session deliverables: resolve the ear-module fork; apply moves
+  atomically across all four surfaces (index, play, path
+  MODULES/PATH/SHORT_PREFIX, qn-profile.js PATH); recompute soft
+  unlock thresholds; update curriculum spec.
+
+**Phase 2 — Level 2 gaps (after reconciliation):**
+1. Expand Scales: pentatonic + scale type selector
+2. Expand Key Signatures: minor keys + selector
+3. Build Chromatic Scale
+4. Expand Ear: Scales: pentatonic + selector
+5. Expand Primary Chords: minor keys + selector
+6. Expand Scale Degrees: minor keys + selector
+7. Expand Roman Numerals: minor keys + selector
+8. Verify + expand if needed: Intervals (clef selector)
+
+**Phase 3:** chord renderer engineering session (qn-staff.js 3-note
+extension + playChord in qn-audio.js).
+
+**Phase 4:** 8 Level 3 chord modules.
+
+**Doc updates flagged but not done:**
+- **QUIZNOTE_PROJECT_DOC.md §5 is stale.** Listed roster is 24 modules
+  with old taxonomy; the May 2026 curriculum redesign moved to a
+  27-module roster that lives only in BUILD_LOG.md + CLAUDE.md.
+  Add the four new live modules (Ledger Lines, Dotted Notes & Ties,
+  Ear: Rhythm, Piano & Keyboard) to §5 with their tier assignments,
+  and reconcile against the 27-roster framing. **Tier 2 — its own
+  pass.** Not done here because the right time is alongside the tier
+  reconciliation session above.
+- Theory tier landing tagline now reads "Chords and ear training…"
+  (was "Intervals and ear training…") on index.html, because
+  Intervals belongs to Reading. Curriculum spec needs the same
+  edit when it's reconciled.
+- Orphan CSS in index.html: `.tier-section`, `.tier-header`,
+  `.tier-meta`, `.tier-desc`, the old `.ltile-*` and `.bg-*` rules
+  for the deleted tile grid. Harmless but unused — sweep in a
+  cleanup pass.
+
+**Deferred (still need visual harness per §8):**
+- time-signatures `accStartX:72` pin (QA first)
+- time-signatures prompt-layout conversion + scales tile reconciliation
+
+---
+
 ### Curriculum architecture redesign — May 2026
 
 **Session type:** Planning + audit (no new module builds this session)
