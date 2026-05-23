@@ -200,23 +200,24 @@ extension + playChord in qn-audio.js).
 
 **Phase 4:** 8 Level 3 chord modules.
 
-**Doc updates flagged but not done:**
-- **QUIZNOTE_PROJECT_DOC.md §5 is stale.** Listed roster is 24 modules
-  with old taxonomy; the May 2026 curriculum redesign moved to a
-  27-module roster that lives only in BUILD_LOG.md + CLAUDE.md.
-  Add the four new live modules (Ledger Lines, Dotted Notes & Ties,
-  Ear: Rhythm, Piano & Keyboard) to §5 with their tier assignments,
-  and reconcile against the 27-roster framing. **Tier 2 — its own
-  pass.** Not done here because the right time is alongside the tier
-  reconciliation session above.
-- Theory tier landing tagline now reads "Chords and ear training…"
-  (was "Intervals and ear training…") on index.html, because
-  Intervals belongs to Reading. Curriculum spec needs the same
-  edit when it's reconciled.
+**Doc updates done (this session, follow-up commits):**
+- ✅ Tier reconciliation across all four surfaces (Intervals → Reading;
+  Ear: Intervals + Ear: Scales → Reading per Option B). play.html
+  tiles moved, path.html MODULES + PATH updated, qn-profile.js PATH
+  re-ordered, CLAUDE.md status updated.
+- ✅ QUIZNOTE_PROJECT_DOC.md §5 + §12 reconciled to the 27-module
+  roster. Four Phase 1 modules added with full entries. Tier
+  reconciliation locked in. Dropped-from-roster decisions documented
+  (Rhythm Reading folded into Time Signatures Tricky tier; Circle of
+  Fifths cut; Stretch tier retired). §12 rewritten as four-phase
+  plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4
+  chord cluster).
+
+**Still flagged for a cleanup pass:**
 - Orphan CSS in index.html: `.tier-section`, `.tier-header`,
   `.tier-meta`, `.tier-desc`, the old `.ltile-*` and `.bg-*` rules
-  for the deleted tile grid. Harmless but unused — sweep in a
-  cleanup pass.
+  for the deleted tile grid. Harmless but unused — sweep when next
+  touching that file.
 
 **Deferred (still need visual harness per §8):**
 - time-signatures `accStartX:72` pin (QA first)

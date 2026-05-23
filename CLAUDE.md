@@ -49,10 +49,10 @@ anything. This is the handshake — it catches stale docs before they cause dama
   note-values, time-signatures, accidentals, key-signatures, scales, scale-degrees,
   scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals,
   **ledger-lines, dotted-notes, ear-rhythm, piano-keyboard** (the last four are
-  Phase 1 builds). Roster target is **27 modules** across 3 levels — see
-  QUIZNOTE_PROJECT_DOC.md §5 for the complete map with build status, selectors,
-  and tier details. Note: §5 is stale and still describes the older 24-module
-  framing — reconcile in the queued tier-reconciliation session.
+  Phase 1 builds). Roster target is **27 modules** across 3 levels (9 Foundations
+  + 8 Reading + 10 Theory) — see QUIZNOTE_PROJECT_DOC.md §5 for the complete map
+  with build status, selectors, tier reconciliation notes, and §12 for the
+  four-phase build plan.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -297,8 +297,6 @@ For any future CSS work:
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
   (QA first), time-signatures prompt-layout conversion + scales tile
   reconciliation (needs visual harness per §8).
-- **Stale doc flagged:** QUIZNOTE_PROJECT_DOC.md §5 still describes the older
-  24-module roster — needs reconciliation alongside the tier session.
 - See BUILD_LOG.md for complete "Still open / next" list.
 
 ---
