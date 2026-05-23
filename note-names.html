@@ -278,25 +278,6 @@
 
   /* ============ SUMMARY SCREEN ============ */
 
-  .miss-list {
-    margin-top: 22px; text-align: left;
-    background: white; border: 2.5px solid var(--ink); border-radius: 18px;
-    box-shadow: 0 5px 0 var(--ink);
-    padding: 14px 18px;
-  }
-  .miss-list h3 {
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 17px; color: var(--ink);
-    margin-bottom: 8px;
-  }
-  .miss-list ul {
-    list-style: none; padding: 0; margin: 0;
-    font-family: 'Nunito', sans-serif; font-weight: 600;
-    font-size: 14px; color: var(--ink-soft);
-    line-height: 1.6;
-  }
-  .miss-list li::before { content: "• "; color: var(--coral); font-weight: 800; }
-  .miss-empty { font-family: 'Nunito',sans-serif; font-weight: 600; font-size:14px; color: var(--teal-dk); }
 
 
 
@@ -345,44 +326,8 @@
     display: flex; align-items: center; justify-content: center; gap: 6px;
     flex-wrap: wrap;
   }
-  .pb-row[hidden] { display: none; }
-  .pb-label { color: var(--ink-faint); font-weight: 600; }
-  .pb-sep { color: var(--ink-faint); }
-  .pb-new { color: var(--teal-dk); font-weight: 800; }
 
   /* ============ Modal ============ */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(42, 42, 62, 0.5);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-    padding: 20px;
-    animation: modalFade 200ms ease-out;
-  }
-  .modal-overlay[hidden] { display: none; }
-  .modal-card {
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 22px;
-    box-shadow: 0 8px 0 var(--ink);
-    padding: 28px 28px 24px;
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-    animation: modalPop 320ms cubic-bezier(.4,1.6,.6,1);
-  }
-  .modal-card h2 {
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 28px; color: var(--ink);
-    line-height: 1.1;
-  }
-  .modal-card p {
-    font-family: 'Nunito', sans-serif; font-weight: 500;
-    font-size: 15px; color: var(--ink-soft);
-    margin: 8px 0 22px;
-    line-height: 1.4;
-  }
-  .modal-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes modalPop {
     0% { transform: scale(0.7) translateY(20px); opacity: 0; }
