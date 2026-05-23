@@ -327,6 +327,7 @@
   //    the module filenames (slug + '.html').
   var MODULES = {
     'note-names':      { name: 'Note Names',      tier: 'foundations', sub: 'name notes on the staff' },
+    'ledger-lines':    { name: 'Ledger Lines',    tier: 'foundations', sub: 'notes above and below' },
     'piano-quiz':      { name: 'Piano Quiz',       tier: 'foundations', sub: 'find the note on keys' },
     'note-values':     { name: 'Note Values',      tier: 'foundations', sub: 'how long each note lasts' },
     'time-signatures': { name: 'Time Signatures',  tier: 'foundations', sub: 'read the meter' },
@@ -344,7 +345,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'primary-chords', 'roman-numerals', 'ear-scales'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'primary-chords', 'roman-numerals', 'ear-scales'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -372,6 +373,7 @@
   //    ignored. Writing both is cheap and removes guesswork.
   var SHORT_PREFIX = {
     'note-names':      'nn_',
+    'ledger-lines':    'll_',
     'piano-quiz':      'pq_',
     'note-values':     'nv_',
     'time-signatures': 'ts_',

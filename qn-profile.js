@@ -1019,7 +1019,7 @@
 
   // v1 linear path: live modules only, in the roster's pedagogical order.
   var PATH = [
-    'note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz',
+    'note-names', 'ledger-lines', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz',
     'key-signatures', 'scales', 'scale-degrees', 'scale-modes',
     'intervals', 'ear-intervals',
     'primary-chords', 'roman-numerals', 'ear-scales'
