@@ -330,8 +330,10 @@
     'piano-quiz':      { name: 'Piano Quiz',       tier: 'foundations', sub: 'find the note on keys' },
     'note-values':     { name: 'Note Values',      tier: 'foundations', sub: 'how long each note lasts' },
     'time-signatures': { name: 'Time Signatures',  tier: 'foundations', sub: 'read the meter' },
+    'accidentals':     { name: 'Accidentals',      tier: 'foundations', sub: 'sharp, flat, natural' },
     'key-signatures':  { name: 'Key Signatures',   tier: 'reading',     sub: 'count the sharps & flats' },
     'scales':          { name: 'Scales',           tier: 'reading',     sub: 'major & minor' },
+    'scale-degrees':   { name: 'Scale Degrees',    tier: 'reading',     sub: 'every note has a job' },
     'scale-modes':     { name: 'Scale Modes',      tier: 'reading',     sub: 'same notes, different home' },
     'intervals':       { name: 'Intervals',        tier: 'reading',     sub: 'name the gap' },
     'ear-intervals':   { name: 'Ear: Intervals',   tier: 'theory',      sub: 'hear and name' }
@@ -339,7 +341,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'note-values', 'key-signatures', 'time-signatures', 'piano-quiz', 'scales', 'scale-modes', 'intervals', 'ear-intervals'];
+  var PATH = ['note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -372,9 +374,11 @@
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
     'scales':          'sc_',
+    'scale-degrees':   'sd_',
     'scale-modes':     'sm_',
     'intervals':       'iv_',
-    'ear-intervals':   'ei_'
+    'ear-intervals':   'ei_',
+    'accidentals':     'ac_'
   };
 
   function $(id) { return document.getElementById(id); }
