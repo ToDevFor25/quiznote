@@ -281,10 +281,14 @@ For any future CSS work:
 - **index.html "What's Inside" replaced (May 2026):** vertical-spine concept
   view, not module tiles. Decoupled from per-module tiering. Class names
   prefixed `wi-` to avoid collisions.
-- **Next priority: Tier reconciliation session (Tier 3, queued).** Before
-  Phase 2, resolve the Intervals (Theory→Reading) and Ear:Intervals /
-  Ear:Scales tier fork across all four surfaces. See BUILD_LOG.md.
-- **Phase 2 after reconciliation:** Scales pentatonic + selector, Key
+- **Tier reconciliation: DONE (May 2026).** Intervals moved Theory→Reading
+  on play.html (matching path.html which already had it correct). Ear:
+  Intervals and Ear: Scales both moved Theory→Reading per the "ear modules
+  sit with their visual partner" pedagogy (Option B). Theory now contains
+  only harmony modules (Primary Chords, Roman Numerals) and the future chord
+  cluster. All four surfaces (play.html, path.html MODULES + PATH,
+  qn-profile.js PATH, index.html spine taglines) consistent.
+- **Next priority: Phase 2 (Level 2 gaps).** Scales pentatonic + selector, Key
   Signatures minor + selector, Chromatic Scale, the four minor-keys
   expansions (Primary Chords, Scale Degrees, Roman Numerals, Ear:Scales),
   Intervals clef selector verify.

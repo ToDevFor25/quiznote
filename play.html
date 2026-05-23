@@ -775,7 +775,7 @@
         <span class="tier-name">Reading</span>
         <span class="tier-meta">Building fluency · Levels 2–4</span>
         <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
-        <span class="tier-desc">Keys and scales. For anyone fluent on the staff.</span>
+        <span class="tier-desc">Keys, scales, intervals, and ear training. For anyone fluent on the staff.</span>
       </button>
       <div class="tier-body" id="tb-reading">
        <div class="tier-body-inner">
@@ -913,40 +913,6 @@
           </div>
         </a>
 
-        <!-- More to come -->
-        <div class="ltile more-soon">
-          <div class="ltile-art" style="background:#f0ebff;">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
-                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
-                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
-              </g>
-              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">More to come</div>
-            <div class="ltile-blurb">New modules in the works.</div>
-          </div>
-        </div>
-      </div>
-     </div>
-    </div>
-    </div>
-
-    <!-- THEORY -->
-    <div class="tier-section theory">
-      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-theory">
-        <span class="tier-caret" aria-hidden="true">▸</span>
-        <span class="tier-name">Theory</span>
-        <span class="tier-meta">Fluent reader · Levels 4–6</span>
-        <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
-        <span class="tier-desc">Intervals and ear training. Intermediate theory — the app's ceiling.</span>
-      </button>
-      <div class="tier-body" id="tb-theory">
-       <div class="tier-body-inner">
-      <div class="tile-grid">
         <!-- Intervals : two stacked notes + bracket + answer chips -->
         <a class="ltile" href="intervals.html">
           <div class="ltile-art bg-slate">
@@ -1007,6 +973,70 @@
           </div>
         </a>
 
+        <!-- Ear: Scales : speaker + ascending staircase notes -->
+        <a class="ltile" href="ear-scales.html">
+          <div class="ltile-art bg-grape">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <!-- small speaker at bottom-left -->
+              <path d="M10 60 L22 60 L36 48 L36 84 L22 72 L10 72 Z"
+                    fill="#FFB627" stroke="#2A2A3E" stroke-width="2" stroke-linejoin="round"/>
+              <!-- sound wave from speaker -->
+              <path d="M42 58 Q50 66 42 74" stroke="#1FB8A8" stroke-width="2.2" fill="none" stroke-linecap="round" class="anim-wave" style="animation-delay: 0ms; transform-origin: 42px 66px"/>
+              <!-- ascending scale notes (staircase) -->
+              <g font-family="Bravura Text" text-anchor="middle">
+                <text x="56"  y="86" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="72"  y="74" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 120ms">&#xE1D5;</text>
+                <text x="88"  y="62" font-size="18" fill="#FFB627" class="anim-pulse" style="animation-delay: 240ms">&#xE1D5;</text>
+                <text x="104" y="50" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
+                <text x="120" y="38" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 480ms">&#xE1D5;</text>
+              </g>
+              <!-- subtle ascending guide -->
+              <path d="M56 80 L72 68 L88 56 L104 44 L120 32" stroke="white" stroke-width="1.6" fill="none" stroke-dasharray="3 4" opacity="0.25"/>
+              <!-- ? chip at top-right -->
+              <rect x="128" y="20" width="28" height="24" rx="7" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="142" y="38" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Scales</div>
+            <div class="ltile-blurb">Hear a scale. Name the type.</div>
+          </div>
+        </a>
+
+        <!-- More to come -->
+        <div class="ltile more-soon">
+          <div class="ltile-art" style="background:#f0ebff;">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
+                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
+                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
+              </g>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">More to come</div>
+            <div class="ltile-blurb">New modules in the works.</div>
+          </div>
+        </div>
+      </div>
+     </div>
+    </div>
+    </div>
+
+    <!-- THEORY -->
+    <div class="tier-section theory">
+      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-theory">
+        <span class="tier-caret" aria-hidden="true">▸</span>
+        <span class="tier-name">Theory</span>
+        <span class="tier-meta">Fluent reader · Levels 4–6</span>
+        <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
+        <span class="tier-desc">Chords and harmony. Intermediate theory — the app's ceiling.</span>
+      </button>
+      <div class="tier-body" id="tb-theory">
+       <div class="tier-body-inner">
+      <div class="tile-grid">
         <!-- Primary Chords : key sig + I/IV/V labels -->
         <a class="ltile" href="primary-chords.html">
           <div class="ltile-art bg-teal">
@@ -1068,36 +1098,6 @@
           <div class="ltile-body">
             <div class="ltile-name">Roman Numerals</div>
             <div class="ltile-blurb">Every chord has a job. Learn the system.</div>
-          </div>
-        </a>
-
-        <!-- Ear: Scales : speaker + ascending staircase notes -->
-        <a class="ltile" href="ear-scales.html">
-          <div class="ltile-art bg-grape">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- small speaker at bottom-left -->
-              <path d="M10 60 L22 60 L36 48 L36 84 L22 72 L10 72 Z"
-                    fill="#FFB627" stroke="#2A2A3E" stroke-width="2" stroke-linejoin="round"/>
-              <!-- sound wave from speaker -->
-              <path d="M42 58 Q50 66 42 74" stroke="#1FB8A8" stroke-width="2.2" fill="none" stroke-linecap="round" class="anim-wave" style="animation-delay: 0ms; transform-origin: 42px 66px"/>
-              <!-- ascending scale notes (staircase) -->
-              <g font-family="Bravura Text" text-anchor="middle">
-                <text x="56"  y="86" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="72"  y="74" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 120ms">&#xE1D5;</text>
-                <text x="88"  y="62" font-size="18" fill="#FFB627" class="anim-pulse" style="animation-delay: 240ms">&#xE1D5;</text>
-                <text x="104" y="50" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
-                <text x="120" y="38" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 480ms">&#xE1D5;</text>
-              </g>
-              <!-- subtle ascending guide -->
-              <path d="M56 80 L72 68 L88 56 L104 44 L120 32" stroke="white" stroke-width="1.6" fill="none" stroke-dasharray="3 4" opacity="0.25"/>
-              <!-- ? chip at top-right -->
-              <rect x="128" y="20" width="28" height="24" rx="7" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="142" y="38" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">?</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Ear: Scales</div>
-            <div class="ltile-blurb">Hear a scale. Name the type.</div>
           </div>
         </a>
 
