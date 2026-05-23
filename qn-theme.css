@@ -469,3 +469,29 @@ animation: modalFade 200ms ease-out;
   box-shadow: 0 5px 0 var(--ink);
   padding: 14px 18px;
 }
+
+/* ── Feedback toasts (correct / retry / reveal) ──────────────────────────
+   The in-play feedback text. Shared base + per-kind size/color. Option-2
+   positioning (May 2026): the big "correct" praise pops high over the staff;
+   the smaller retry/reveal sit lower so corrective text reads clean and
+   doesn't fight the notation. PROVING ON scale-degrees FIRST — the other 8
+   modules still carry their own inline .toast (which overrides this via
+   source order) until this positioning is QA'd and rolled out per-module.
+   scales is a separate feedback model (40px correct, .toast.wrong, no
+   reveal/retry) and stays inline regardless. */
+.toast {
+  position: absolute; left: 50%; top: 38px;
+  transform: translateX(-50%) translateY(-10px) scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  text-align: center;
+  z-index: 5;
+  transition: transform 240ms cubic-bezier(.4,1.8,.5,1), opacity 180ms;
+  white-space: nowrap;
+  max-width: 92%;
+}
+/* Option-2 per-kind vertical placement: praise over the staff, guidance lower. */
+.toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); top: 46%; }
+.toast.retry   { color: var(--sun-dk); font-size: 30px; top: 64%; }
+.toast.reveal  { color: var(--grape); font-size: 26px; top: 64%; }
