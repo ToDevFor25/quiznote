@@ -1364,6 +1364,19 @@
     if (els['timer-badge']) els['timer-badge'].hidden = true;
   }
 
+  function showStartTimerModal() {
+    const secs = state.settings.timer.seconds, n = state.settings.total;
+    QN.ui.confirm({
+      title: 'Ready, set…',
+      body: secs <= 30 ? "You'll have " + secs + ' seconds to identify ' + n + ' time signatures.' : 'Take your time — ' + secs + ' seconds for ' + n + ' time signatures.',
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startGame(),
+      onCancel: () => {},
+    });
+  }
+
+
   // ===== Encouraging line per tier =====
   function encouragingLine(score, total) {
     if (typeof M.encouragingLine === 'function') return M.encouragingLine(score, total);
@@ -1877,7 +1890,8 @@
       els['start-btn'].addEventListener('click', () => {
         try { A.ensureCtx(); } catch(e) {}
         state.drillPool = [];
-        startGame();
+        if (state.settings.timer.enabled) showStartTimerModal();
+        else startGame();
       });
     }
 

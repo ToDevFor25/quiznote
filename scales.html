@@ -1373,11 +1373,24 @@
       A.setMuted(wantMuted);
       updateMuteBtn();
       A.ensureCtx();
-      startRound();
+      if (state.settings.timer.enabled) showStartTimerModal();
+      else startRound();
     });
   }
 
   // ============ Round lifecycle ============
+  function showStartTimerModal() {
+    const secs = state.settings.timer.seconds, n = state.settings.total;
+    QN.ui.confirm({
+      title: 'Ready, set…',
+      body: secs <= 30 ? "You'll have " + secs + ' seconds to identify ' + n + ' scales.' : 'Take your time — ' + secs + ' seconds for ' + n + ' scales.',
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startRound(),
+      onCancel: () => {},
+    });
+  }
+
   function startRound() {
     const pool = POOLS[state.settings.difficulty] || POOLS.medium;
     state.queue = sampleQueue(pool, state.settings.total);
@@ -2170,6 +2183,7 @@
         body: "Your score for this round won't be saved.",
         confirmLabel: 'Keep playing',   // solid/safe default (right)
         cancelLabel: 'Quit round',      // ghost/destructive (left)
+        onOpen: () => A.cancelSequence(),
         onCancel: () => {
           clearInterval(state.timerInterval);
           A.cancelSequence();
