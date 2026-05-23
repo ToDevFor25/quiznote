@@ -22,12 +22,15 @@ in path order, plus the parallel Tier-3 monetization/legal track. (See project d
 Scale Degrees, Scales, Intervals, Accidentals.
 
 **Shared files:**
-- `qn-profile.js` **v1.7.0** — identity, events, recommender, account/household + 7-day trial
+- `qn-profile.js` **v1.8.0** — identity, events, recommender, account/household + 7-day trial
   schema (`startTrial` built-but-not-armed; `trialStatus()` advisory-only; `CURRENT_COHORT='beta'`
   is the go-live lever), plus `QN.ui` shared widgets (`chip`, and `confirm` — the shared quit/confirm
-  modal component). API ladder: 1.0 base → 1.1 hold-and-backfill → 1.2 skills tallies →
-  1.3 recommender → 1.4 resetDevice → 1.4.1 guest-prompt fix → 1.5.0 corruption-aware reads +
-  `QN.diagnostics` → 1.6.0 account/household → 1.7.0 QN.ui.confirm.
+  modal component), plus the `schemaVersion` migration hook (single global stamp at `qn_schemaVersion`,
+  `migrations[]` table, `runMigrations()` at init; today's data IS v1 so 0→1 is a no-op stamp — the
+  HOOK is the value, future breaking-shape changes plug in via new `migrations[N]`). API ladder:
+  1.0 base → 1.1 hold-and-backfill → 1.2 skills tallies → 1.3 recommender → 1.4 resetDevice →
+  1.4.1 guest-prompt fix → 1.5.0 corruption-aware reads + `QN.diagnostics` → 1.6.0 account/household
+  → 1.7.0 QN.ui.confirm → 1.8.0 schemaVersion migration hook.
 - `qn-audio.js` — shared audio engine (`NH.audio`); three module patterns (pure / additions / overrides).
 - `qn-staff.js` **v1.2.0** — staff engraving (`NH.staff`): clef (`buildClef`), staff lines, key sigs,
   time-sig **vector-path** digits (not font glyphs), play-staff accidental glyphs (`buildNoteAccidental`).
@@ -37,17 +40,22 @@ Scale Degrees, Scales, Intervals, Accidentals.
 - `qn-music.js` **v1.0.0** — superset pitch helpers (`NH.music`: parsePitch/toMidi/diatonicStep/
   displayName/midiEquals, handles `##`/`bb`). **Option A rollout:** NEW modules use it; the 8 existing
   modules keep inline copies until edited for another reason.
-- `qn-theme.css` **v1.0.0 (~497 lines)** — the shared CSS file. Design tokens + question prompt +
-  answer tiles, plus four extracted clusters: summary, start screen, play-screen chassis, and modal. Also
-  now holds the shared feedback-toast (Option-2 placement) — but only scale-degrees is wired to it so far
-  (other 8 keep inline toast, pending rollout). All 9 modules link it. Inline CSS per module down ~41%
-  (note-names 765→450). **2 clusters of the ~6 remain** inline: buttons/`.btn` (~81 lines), cards (~72).
+- `qn-theme.css` **v1.0.0 (~620 lines)** — the shared CSS file. Design tokens + question prompt +
+  answer tiles, plus **all six extracted clusters**: summary, start screen, play-screen chassis,
+  modal, **chunky buttons (incl. `.btn:disabled` lifted from scales as superset)**, and **page chrome
+  (cards / screens / brand block / site-header / site-footer)**. Holds the shared feedback-toast
+  (Option-2 placement) — **rolled out to 8 of 9 modules** (scales excluded by design: different
+  feedback model, 40px correct, `.toast.wrong`, no retry/reveal). All 9 modules link the file.
+  **Module-specific holdouts left inline (NOT lifted):** piano-quiz's `.brand .brand-logo`; scales'
+  `body.playing .site-footer { display: none }`; time-signatures' `.staff-label` (absolute-positioned,
+  needs a separate layout conversion); scales' `.choice-btn` desktop 24px (pending tile reconciliation
+  for long "harmonic minor" labels); every module's `@media .btn` responsive shrink. Inline CSS per
+  module down hard from the pre-extraction baseline.
 
 **Known deferred infra (documented so it isn't forgotten):**
-- **No `schemaVersion` stamp** on stored data yet. `QN.version` versions the *code*, not the *data*.
-  Additive changes are safe; the first **non-additive** change needs a `schemaVersion` field +
-  migrate-on-read step added FIRST. Retrofitting versioning after unversioned data is in the wild is
-  the painful path — pull this forward before any breaking data change (esp. before backend sync).
+- `schemaVersion` migration hook **installed** (qn-profile.js v1.8.0; 0→1 is a no-op stamp). The
+  next breaking shape change bumps `SCHEMA_VERSION` and adds a `migrations[N]` entry. Additive
+  changes (new optional fields) still don't need a version bump.
 - **Notehead rendering** not yet in `qn-staff.js` — blocks retiring Note Names/Piano Quiz per-module
   note positioning. Sampled-piano audio (Tier 2) not built.
 - **Monetization/legal track** (sequenced): promise-copy pass → Apple/Google sign-in (`linkAuth`) →
@@ -286,8 +294,8 @@ correctly by role), superseding an interim label-swap. Other modules use note-na
 Original 1089-line log → this cleaned ~234-line active file + `BUILD_LOG_ARCHIVE.md` (708 lines, full
 saga narratives preserved verbatim). Resolved sagas (nav 3-parter, Vercel deploy, digit-drift) collapsed
 to their durable lesson + pointer; recent builds kept full; foundational sections consolidated. Every
-critical term verified present across active+archive. **Note:** the project's `BUILD_LOG.md` is still the
-ORIGINAL until the cleaned version is deployed back — replace it with this file.
+critical term verified present across active+archive. (Both files now under version control as of
+the May 2026 finishing session — see below.)
 
 ### Deploy set
 `qn-theme.css` (new) · `qn-profile.js` (v1.7.0) · all 9 modules (note-names, piano-quiz, note-values,
@@ -396,17 +404,139 @@ try. **Pending rollout:** strip inline toast from the other 8 so they inherit th
 QA per module (card heights differ); scales keeps its own model.
 
 ### Still open / next (sequenced)
-1. **Roll out the shared toast** to the other 8 modules (strip their inline `.toast`+variants so they
-   inherit the qn-theme.css Option-2 version; QA each — card heights differ). scales keeps its own
-   `.toast.correct`(40)/`.toast.wrong` model. The shared rules are proven on scale-degrees.
-2. Extract remaining CSS clusters (same method): buttons (~81, `.btn/.ghost` — still inline in all 9),
-   cards (~72, `.card/.screen/.brand/.site-*`). ~150 lines total. (Summary + start-screen + play-chassis
-   + modal DONE — 4 of ~6 clusters.)
-3. Roll `QN.ui.confirm` to the other 7 modules + retire note-names' `showConfirm` (two architectures:
-   hardcoded-only like key-sigs/scales, and showConfirm-engine modules; scales is the outlier). Pairs
-   with the (now-done) modal CSS cluster.
-4. Consider making time-signatures pin `accStartX: 72` if the +18px key-sig shift crowds its numerals
-   (one-line use of the new `buildStaff` override) — QA first to see if it even needs it.
-5. time-signatures prompt-layout conversion + scales tile reconciliation (the 2 qn-theme.css holdouts).
-6. `schemaVersion` migration hook — pull forward before backend work (highest-leverage deferred infra).
-7. Deploy the cleaned BUILD_LOG.md + BUILD_LOG_ARCHIVE.md back to the repo.
+Items 1, 2, 3, 6, 7 closed in the May 2026 finishing session (see entry below). Remaining:
+1. ✅ ~~Roll out the shared toast~~ — done (`c2d65ac`).
+2. ✅ ~~Extract remaining CSS clusters (buttons + page chrome)~~ — done (`5173432`, `e92a028`);
+   all 6 of 6 clusters now in `qn-theme.css`.
+3. ✅ ~~Roll `QN.ui.confirm` to the other 7 modules + retire `showConfirm`~~ — done (`c951bde`);
+   9-of-9 architecturally.
+4. ⏸ Consider making time-signatures pin `accStartX: 72` if the +18px key-sig shift crowds its
+   numerals (one-line use of the new `buildStaff` override) — **QA-driven, not done.**
+5. ⏸ time-signatures prompt-layout conversion + scales tile reconciliation (the 2 qn-theme.css
+   holdouts) — **needs visual calibration via a slider harness per project doc §8.**
+6. ✅ ~~`schemaVersion` migration hook~~ — installed (`517b0be`, qn-profile.js v1.8.0).
+7. ✅ ~~Deploy cleaned BUILD_LOG.md + BUILD_LOG_ARCHIVE.md~~ — both under version control
+   (`ba2609f`, `dc9f7fc`); also `CLAUDE.md` + `QUIZNOTE_PROJECT_DOC.md` (`3c9b6f6`).
+
+---
+
+## May 2026 — Finishing session (toast rollout · final CSS clusters · QN.ui.confirm rollout · timer-badge fix · start-timer to all · scales audio · schemaVersion · docs deploy)
+
+Closed 5 of the 7 "Still open / next" items in one session. Total impact: **−827 net code lines**
+across 11 commits, plus 1716 doc lines now under version control. Two items (4 and 5) explicitly
+left for visual QA / slider-harness work per project doc §8.
+
+### Shared toast rolled out to the other 7 (`c2d65ac`)
+Stripped the inline `.toast` / `.toast.correct` / `.toast.retry` / `.toast.reveal` from note-names,
+piano-quiz, note-values, time-signatures, key-signatures, intervals, accidentals — they now
+inherit the qn-theme.css Option-2 rules. scale-degrees was already on shared. **scales kept its
+inline rules** (different feedback model: 40px correct, `.toast.wrong`, no retry/reveal).
+Pre-flight Python check confirmed byte-identity of the inline blocks across all 7; no `@media`
+overrides, no `.toast.wrong` outside scales, no toast keyframes affected. Braces balanced post-strip.
+**Calibration moment:** mid-rollout, "Got it!" was reported appearing in the retry zone in
+note-names; investigation showed it's wired with `kind: 'reveal'` (after a retry-success) so it
+takes the `.toast.reveal` placement, which is intentional — the small/low style is the calmer
+"you got there on the second try" signal vs the big/high "Bravo!" for clean first try. Left alone.
+
+### Buttons cluster extracted (`5173432`)
+10 byte-identical `.btn` / `.ghost` rules across all 9 modules + the `.btn:disabled` rule that was
+only in scales (lifted as the **superset** so the cluster is complete — risk near-zero since no
+module currently puts a `disabled` attribute on a `.btn`). Every module's `@media (max-width:760px)
+.btn { font-size: 14px; padding: 8px 12px; }` responsive shrink stays inline per convention.
+piano-quiz also keeps `.btn.hint-btn` inline (module-specific). −206 net lines.
+
+### Page-chrome cluster extracted (`e92a028`) — final CSS cluster
+Four non-contiguous sub-blocks lifted in one logical unit: cards (`.card` + variants), screen
+system, brand block (`.brand` + descendants), `.site-header` + `.site-footer`. 16 byte-identical
+rules across all 9, modulo cosmetic-only whitespace in piano-quiz's `.brand` body (multi-line
+vs single-line; functionally identical) and a missing comment header on scales' footer block.
+**Module-specific holdouts left inline:** piano-quiz's `.brand .brand-logo` (only piano-quiz has
+the start-screen brand-logo element); scales' `body.playing .site-footer { display: none }` (only
+scales hides the footer in play view). −466 net lines. With this, **all 6 documented clusters are
+in qn-theme.css** — the shared-CSS architecture milestone is done.
+
+### QN.ui.confirm rolled out to the other 7 (`c951bde`)
+All 9 modules now use the shared `QN.ui.confirm` component for the quit dialog (and start-timer
+dialog where applicable) — architecturally consistent, not just visually.
+- **5 showConfirm-engine modules** (note-names, piano-quiz, scale-degrees, intervals, accidentals):
+  migrated both call sites (quit + start-timer) to `QN.ui.confirm` with `onOpen: pauseTimer` /
+  `onConfirm: resumeTimer` / `onCancel: { stopTimer; showScreen('start') }`. Per-module
+  `function showConfirm` definitions removed. The byte-identical showConfirm function across 4 of 5
+  (and the cosmetically-different piano-quiz variant) made the batch tractable. Quit call sites
+  were byte-identical across all 4 non-note-names; start-timer body text byte-identical for 3 of
+  4 (piano-quiz uses a 3-branch ternary with "read" instead of "name" — handled separately).
+- **2 hardcoded-modal modules** (key-signatures, scales): swapped the modal button ids in markup
+  so ghost-left = `modal-cancel` and solid-right = `modal-confirm` — **restoring the
+  QN.ui.confirm convention.** The prior "modal arrangement fix" in the cleanup session had swapped
+  the ghost class + DOM order but kept the OLD ids, leaving ghost-left as `modal-confirm` —
+  invisible until now because the inline handlers were id-keyed. Migrating to QN.ui.confirm (which
+  writes labels by id) made the id-swap necessary. Replaced 3 direct event listeners (exit-btn,
+  modal-cancel, modal-confirm) with one QN.ui.confirm call. key-signatures' timer pause/resume
+  inlined in onOpen + onConfirm (no pauseTimer/resumeTimer helpers there); scales' onCancel
+  preserves clearInterval + A.cancelSequence + show('start-screen').
+
+### Timer-badge stays hidden after pause/resume — latent bug fix (`dc77a2c`)
+QA caught: in key-signatures (and reproducibly in note-values and time-signatures), the timer
+badge disappears from the top-right after the quit modal is dismissed with "Keep playing", but
+the timer continues counting invisibly and ends the round at zero. **Root cause:** `stopTimer()`
+in those 3 modules does TWO things — `clearInterval` AND `els['timer-badge'].hidden = true`.
+The quit-dialog flow calls `stopTimer()` in `onOpen` (to pause), then re-creates the interval in
+`onConfirm` — but never unhides the badge. **Fix:** one line in each of the 3 modules,
+`els['timer-badge'].hidden = false` before re-creating the interval in onConfirm. **Pre-existing
+bug** — was already present in note-values and time-signatures from when they migrated to
+QN.ui.confirm in the prior session; replicated faithfully in key-signatures' migration this
+session. The 5 showConfirm-migrated modules don't hit this because they use
+`pauseTimer`/`resumeTimer` helpers that don't touch badge visibility.
+
+### Start-timer "Ready, set…" modal rolled out to the missing 4 (`edd2fe7`) + scales audio
+Was previously in 5 of 9 modules. Added to note-values, time-signatures, key-signatures, scales.
+Each gets a `function showStartTimerModal()` invoked from the start-btn handler when
+`state.settings.timer.enabled`; otherwise the existing `startGame()` (or `startRound()` in scales)
+fires directly. Body text uses module-accurate "identify N note values / time signatures /
+key signatures / scales" rather than the generic "name N notes" the 5 original modules share —
+those originals are pre-existing copy-paste and arguably want a tightening pass.
+**Scales audio fix (same commit):** added `A.cancelSequence()` to scales' quit-modal `onOpen` so
+the currently-playing scale stops the moment ✕ is pressed (was pre-existing behavior: audio
+continued through the modal). Audio also stops on Quit (was already wired in onCancel).
+
+### schemaVersion migration hook installed (`517b0be`, qn-profile.js v1.8.0)
+The deferred infra called out as "highest-leverage." Today's stored data IS v1, so the 0→1
+migration is a no-op stamp — **the hook is what's being installed**, not a data transformation.
+Single global stamp at `qn_schemaVersion` (absent ⇒ 0). `migrations[N]` is keyed by FROM version
+and must be idempotent. `runMigrations()` is called once at module init before any consumer
+reads; it writes the new version ONLY after each step completes, so a thrown migration halts the
+chain with the previous version intact. `window.QN.schemaVersion` exposed for diagnostics.
+Future breaking shape changes (rename / retype / restructure of stored records) bump
+`SCHEMA_VERSION` and add a `migrations[N]` entry; additive changes (new optional fields, as the
+skills tally was) still don't need a version bump. Bumped `QN.version` 1.7.0 → 1.8.0.
+
+### Documentation under version control (`ba2609f` · `dc9f7fc` · `3c9b6f6`)
+The 4 working docs that had lived only on the local machine are now committed:
+`BUILD_LOG.md` (cleaned 234-line active file), `BUILD_LOG_ARCHIVE.md` (708 lines of preserved
+saga narratives — the user added the file mid-session after the original cleanup had moved its
+contents but not the file itself), `CLAUDE.md` (per-project working guide), and
+`QUIZNOTE_PROJECT_DOC.md` (source-of-truth doc). With docs single-device-only being the project's
+biggest continuity risk per its own framing, this closes that gap.
+
+### Working-rule moments worth keeping
+- **Calibrated authority for mechanical multi-file refactors.** Mid-toast-rollout, the user
+  explicitly directed: "auto-accept file edits and batch them — only pause for git commits
+  and pushes." This was saved as a memory and is now the operating mode for this class of
+  work: pre-flight byte-identity check across all targets (still mandatory, per §8); STOP
+  and flag if any module diverges (still mandatory, per §8); but DON'T pause between
+  modules for QA when the pattern is already validated. Pre-existing rule of
+  "one-change-verify-then-next" is now scoped to **risky or judgment-heavy** changes;
+  mechanical strips are calibrated up to "batch and structurally verify." Saved at
+  `~/.claude/projects/-Users-jonathandezwaan-Quiznote/memory/feedback_mechanical_refactor_pace.md`.
+- **A naive `@media` stripper that matches the word "@media" inside a CSS comment is wrong.**
+  Bit the structural-verify script for the buttons cluster — the breadcrumb comment that
+  replaced the lifted block contained the literal text "responsive @media .btn override stays
+  inline below", which caused the verifier's `@media[^{]*\{` regex to false-match and consume
+  the next real `{`. Fix: strip CSS comments (`/\*.*?\*/`) before running @media-aware regexes.
+  Same lesson as project doc §8's "audit by the rendered result, not just the source" — the
+  source can lie about the rendered (or parsed) truth.
+
+### Doc updates folded in
+This entry; the "Current state snapshot" qn-profile.js + qn-theme.css blocks; "Known deferred
+infra" (schemaVersion now installed, not deferred); the "Still open / next" status; the obsolete
+"deploy this file back to the repo" note removed. `QUIZNOTE_PROJECT_DOC.md` updates in parallel.
