@@ -50,40 +50,14 @@
   /* .btn cluster (incl. :disabled) → qn-theme.css */
 
 
-  /* ---- Cards ---- */
-  .card {
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 20px;
-    box-shadow: 0 6px 0 var(--ink);
-  }
-  .card.sun-card { background: var(--sun); }
-  .card.teal-card { background: var(--teal); color: white; }
-
-  /* ---- Screen system ---- */
-  .screen { display: none !important; flex: 1; pointer-events: none; }
-  .screen.active { display: flex !important; flex-direction: column; pointer-events: auto; }
+  /* .card / .screen → qn-theme.css */
 
   /* ============ START SCREEN ============ */
   #start-screen {
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
-  .brand { text-align: center; margin-bottom: 22px; }
-  .brand .logo-mark {
-    display: inline-flex; align-items: center; gap: 12px;
-    justify-content: center;
-  }
-  .brand h1 {
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 56px; line-height: 1; color: var(--ink);
-    letter-spacing: -0.01em;
-  }
-  .brand .tagline {
-    font-family: 'Fredoka', sans-serif; font-weight: 500;
-    font-size: 17px; color: var(--ink-soft);
-    margin-top: 8px;
-  }
+  /* .brand* → qn-theme.css */
 
 
 
@@ -344,26 +318,7 @@
     100% { transform: scale(1) translateY(0); opacity: 1; }
   }
 
-  /* ============ Site Header ============ */
-  .site-header {
-    background: white;
-    border-bottom: 2.5px solid var(--ink);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .site-header .brand-name {
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
-    font-size: 26px;
-    color: var(--ink);
-    text-decoration: none;
-    letter-spacing: -0.01em;
-  }
-  .site-header .brand-name span { color: var(--teal); }
+  /* .site-header* → qn-theme.css */
   #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
@@ -388,22 +343,7 @@
     color: var(--ink);
     line-height: 1.4;
   }
-  .site-footer {
-    background: white;
-    border-top: 2px solid var(--shadow-cool);
-    padding: 14px 20px;
-    text-align: center;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    color: var(--ink-faint);
-  }
-  .site-footer a {
-    color: var(--ink-soft);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .site-footer a:hover { text-decoration: underline; }
-  .site-footer .sep { margin: 0 8px; }
+  /* .site-footer* → qn-theme.css (body.playing .site-footer stays inline below) */
 
   /* ============ Mute button ============ */
   .mute-btn {
