@@ -832,6 +832,9 @@
     animation: modalFade 200ms ease-out;
   }
   .modal-overlay[hidden] { display: none; }
+  /* .show is toggled by the quit button; it must override [hidden] (which would
+     otherwise keep the overlay display:none even after the class is added). */
+  .modal-overlay.show { display: flex; }
   .modal-card {
     background: white;
     border: 2.5px solid var(--ink);
@@ -2236,6 +2239,7 @@
     if (els['exit-btn']) {
       els['exit-btn'].addEventListener('click', () => {
         if (els['modal-overlay']) {
+          els['modal-overlay'].hidden = false;
           els['modal-overlay'].classList.add('show');
           state.timerWasRunning = !!state.timerInterval;
           if (state.timerWasRunning) stopTimer();
@@ -2244,7 +2248,7 @@
     }
     if (els['modal-cancel']) {
       els['modal-cancel'].addEventListener('click', () => {
-        if (els['modal-overlay']) els['modal-overlay'].classList.remove('show');
+        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
         if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
           // Resume timer
           state.timerInterval = setInterval(() => {
@@ -2262,7 +2266,7 @@
     }
     if (els['modal-confirm']) {
       els['modal-confirm'].addEventListener('click', () => {
-        if (els['modal-overlay']) els['modal-overlay'].classList.remove('show');
+        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
         state.endedRound = true;
         stopTimer();
         showScreen('start');
