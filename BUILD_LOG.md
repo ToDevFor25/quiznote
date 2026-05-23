@@ -1,3 +1,155 @@
+---
+
+### Curriculum architecture redesign — May 2026
+
+**Session type:** Planning + audit (no new module builds this session)
+
+**What we did:**
+Conducted a full curriculum review comparing the 14 existing modules against
+standard beginner-to-intermediate music theory pedagogy (Alfred's / Hal Leonard /
+Music Theory in Practice sequence). Audited all 14 module files directly to
+establish verified current state. Designed the complete 27-module curriculum map
+with selectors, tiers, and build phases.
+
+**Key findings from file audit:**
+
+*Already more complete than expected:*
+- scales.html: natural minor, harmonic minor, melodic minor all present ✓
+  (docs said major only — docs were wrong)
+- note-values.html: rests already included in pools ✓
+- time-signatures.html: compound meter (6/8, 9/8, 12/8) already in Tricky ✓
+- piano-quiz.html and note-names.html: both have treble/bass/both clef selector ✓
+- intervals.html: quality (major/minor/perfect) IS tested — QUALITY_TABLE present ✓
+- scale-modes.html: all 7 modes (Ionian through Locrian) present ✓
+- ear-scales.html: all four diatonic scale types present ✓
+
+*Confirmed gaps:*
+- key-signatures.html: major keys only — no minor keys ✓ (gap confirmed)
+- scale-degrees.html: major keys only — no minor keys ✓ (gap confirmed)
+- roman-numerals.html: major keys only — no minor keys ✓ (gap confirmed)
+- primary-chords.html: major keys only — no minor keys ✓ (gap confirmed)
+- scales.html: no pentatonic, no scale type selector
+- ear-scales.html: no pentatonic, no scale type selector
+- intervals.html: no clef selector (likely treble only — verify)
+- No Piano & Keyboard module (keyboard→name direction, opposite of PianoQuiz)
+- No Ledger Lines dedicated module
+- No Dotted Notes & Ties module
+- No Ear: Rhythm module
+- No Chromatic Scale module
+
+**Key decisions made:**
+
+*Selector pattern (locked):*
+Modules with multiple related subtypes use a start-screen selector rather than
+spawning separate modules. This applies to: Note Names (existing), Piano Quiz
+(existing), Key Signatures (target), Scales (target), Intervals (target),
+Scale Degrees (target), Primary Chords (target), Roman Numerals (target),
+Ear: Scales (target). Building a separate module file for a subtype is Tier 3.
+
+*27-module roster (locked):*
+9 Foundations, 8 Reading, 10 Theory. See QUIZNOTE_PROJECT_DOC.md §5 for the
+complete map with files, slugs, selectors, tiers, and music theory accuracy notes.
+
+*No hard locks (locked):*
+All 27 modules always accessible to all users. Unlock thresholds (5/9 and 5/8)
+affect Path view visual state and recommendation highlighting only. Tapping a
+visually-locked module always works with a soft banner.
+
+*Scale Modes sequencing (flagged):*
+Currently appears early in Reading. Should be resequenced to later in Reading,
+after minor scales modules exist, because Aeolian = natural minor (student needs
+that context). Resequence when minor scales are built.
+
+*Ear: Scales sequencing (flagged):*
+Currently in Theory tier. Should be in Reading, paired with Scales module.
+Move when Reading is reorganized.
+
+*Chord renderer gate (locked):*
+8 Level 3 modules require 3-note staff renderer extension to qn-staff.js
+(currently v1.2.0, renders single notes and intervals only). One dedicated
+engineering session unlocks all 8. Do not attempt chord modules before this.
+
+*Play page redesign (queued):*
+play.html to be redesigned as collapsible level sections (Foundations / Reading /
+Theory) with progress indicators. Keep existing tier labels and colors. Each
+section shows X of N complete, collapsed/expanded by current level. All modules
+always accessible.
+
+*index.html marketing update (queued):*
+Surgical updates to position QuizNote as industry-standard supplementary
+practice for all learners up to intermediate. Specific copy changes documented
+below in index.html instructions.
+
+**Build phases:**
+
+Phase 1 — Level 1 gaps (next up, spec first):
+- Ledger Lines (clone from note-names)
+- Dotted Notes & Ties (clone from note-values)
+- Ear: Rhythm (audio-only clone from note-values)
+- Piano & Keyboard (clone from piano-quiz)
+
+Phase 2 — Level 2 gaps (after Phase 1):
+- Expand Scales: pentatonic + scale type selector
+- Expand Key Signatures: minor keys + selector
+- Chromatic Scale (clone from scales)
+- Expand Ear: Scales: pentatonic + selector
+- Expand Primary Chords: minor keys + selector
+- Expand Scale Degrees: minor keys + selector
+- Expand Roman Numerals: minor keys + selector
+- Expand Intervals: clef selector (verify first)
+
+Phase 3 — Chord renderer engineering session
+
+Phase 4 — 8 Level 3 chord modules
+
+---
+
+**Still open / next (updated):**
+
+COMPLETED this architecture session:
+- ✅ Full curriculum audit (all 14 module files read directly)
+- ✅ 27-module roster designed and documented in §5
+- ✅ Selector pattern established as standing rule
+- ✅ Spec-first rule established as standing rule
+- ✅ Audience constraint added to CLAUDE.md
+- ✅ File-verification rule added to CLAUDE.md
+- ✅ No-hard-locks decision locked
+
+STILL OPEN (ordered by priority):
+
+Phase 1 — Level 1 gaps (start here):
+1. Spec + build: Ledger Lines
+2. Spec + build: Dotted Notes & Ties
+3. Spec + build: Ear: Rhythm
+4. Spec + build: Piano & Keyboard
+
+Phase 2 — Level 2 gaps:
+5. Spec + expand: Scales (pentatonic + selector)
+6. Spec + expand: Key Signatures (minor + selector)
+7. Spec + build: Chromatic Scale
+8. Spec + expand: Ear: Scales (pentatonic + selector)
+9. Spec + expand: Primary Chords (minor + selector)
+10. Spec + expand: Scale Degrees (minor + selector)
+11. Spec + expand: Roman Numerals (minor + selector)
+12. Verify + expand if needed: Intervals (clef selector)
+
+Phase 3:
+13. Engineering session: chord renderer (qn-staff.js 3-note extension + playChord)
+
+Phase 4:
+14–21. Build 8 Level 3 chord modules (spec first for each)
+
+Deferred (needs visual harness):
+- time-signatures accStartX:72 pin (QA first)
+- time-signatures prompt-layout conversion + scales tile reconciliation
+
+Infrastructure (future):
+- play.html collapsible redesign
+- index.html marketing copy update
+- path.html resequencing (after minor scales built)
+- Ear: Scales moved to Reading tier (after reorganization)
+
+
 # QuizNote build log
 
 > **How this file is organized (read me first).**
