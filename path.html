@@ -330,6 +330,7 @@
     'ledger-lines':    { name: 'Ledger Lines',    tier: 'foundations', sub: 'notes above and below' },
     'piano-quiz':      { name: 'Piano Quiz',       tier: 'foundations', sub: 'find the note on keys' },
     'note-values':     { name: 'Note Values',      tier: 'foundations', sub: 'how long each note lasts' },
+    'dotted-notes':    { name: 'Dotted Notes & Ties', tier: 'foundations', sub: 'dots and ties extend duration' },
     'time-signatures': { name: 'Time Signatures',  tier: 'foundations', sub: 'read the meter' },
     'accidentals':     { name: 'Accidentals',      tier: 'foundations', sub: 'sharp, flat, natural' },
     'key-signatures':  { name: 'Key Signatures',   tier: 'reading',     sub: 'count the sharps & flats' },
@@ -345,7 +346,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'primary-chords', 'roman-numerals', 'ear-scales'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'primary-chords', 'roman-numerals', 'ear-scales'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -376,6 +377,7 @@
     'ledger-lines':    'll_',
     'piano-quiz':      'pq_',
     'note-values':     'nv_',
+    'dotted-notes':    'dn_',
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
     'scales':          'sc_',
