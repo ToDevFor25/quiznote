@@ -131,6 +131,29 @@
   }
 
   /**
+   * A single accidental glyph next to a note on the play staff (NOT a key
+   * signature — see buildAccidentals for that). Shared so the glyph map,
+   * calibrated +offset, font-size and styling live in one place; callers pass
+   * the x and the note's y (they differ per module: one note, two notes, etc.).
+   *
+   * @param {object} opts
+   * @param {'#'|'b'|'n'|'x'|'bb'} opts.accidental
+   * @param {number} opts.x      - right edge of the glyph (text-anchor="end")
+   * @param {number} opts.noteY  - the note's y; glyph is shifted down by the calibrated offset
+   * @param {number} opts.lineGap
+   * @param {string} [opts.color='#2A2A3E']
+   * @returns {string} SVG fragment ('' if no/unknown accidental)
+   */
+  const NOTE_ACC_GLYPH = { '#': SMUFL.sharp, 'b': SMUFL.flat, 'n': SMUFL.natural, 'x': '\uE263', '##': '\uE263', 'bb': '\uE264' };
+  function buildNoteAccidental(opts) {
+    const { accidental, x, noteY, lineGap, color = '#2A2A3E' } = opts;
+    const sym = NOTE_ACC_GLYPH[accidental];
+    if (!sym) return '';
+    const y = noteY + OFFSET.sharp * lineGap;   // sharp/flat/natural all share 1.625
+    return `<text x="${x}" y="${y}" font-family="Bravura Text" font-size="${lineGap * 4}" text-anchor="end" fill="${color}">${sym}</text>`;
+  }
+
+  /**
    * A clef glyph.
    * @param {object} opts
    * @param {'treble'|'bass'} opts.clef
@@ -377,9 +400,10 @@
     buildStaffLines,
     buildClef,
     buildAccidentals,
+    buildNoteAccidental,
     buildTimeSignature,
     buildStaff,
   };
-  window.NH.staff.version = '1.1.0';
+  window.NH.staff.version = '1.2.0';
 
 })();
