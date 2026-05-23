@@ -164,22 +164,7 @@
   }
   .kb-card svg { width: 100%; display: block; }
 
-  /* Feedback toasts — perched at the top of the staff card */
-  .toast {
-    position: absolute; left: 50%; top: 38px;
-    transform: translateX(-50%) translateY(-10px) scale(0.6);
-    opacity: 0;
-    pointer-events: none;
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    text-align: center;
-    z-index: 5;
-    transition: transform 240ms cubic-bezier(.4,1.8,.5,1), opacity 180ms;
-    white-space: nowrap;
-    max-width: 92%;
-  }
-  .toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); }
-  .toast.retry { color: var(--sun-dk); font-size: 30px; }
-  .toast.reveal { color: var(--grape); font-size: 26px; }
+  /* .toast + variants → qn-theme.css (Option-2 placement: praise 46%, retry/reveal 64%) */
 
   /* Confetti + note-burst layer */
   .fx-layer {
