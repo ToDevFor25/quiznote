@@ -708,7 +708,9 @@
   }
   .pillars-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    /* 2x2 on desktop/tablet; collapses to 1 column on narrow widths via the
+       max-width:560px media block below. */
+    grid-template-columns: repeat(2, 1fr);
     gap: 22px;
   }
   .pillar {
@@ -1393,6 +1395,7 @@
     .stat-num { font-size: 1.4rem; }
     .pillars, .tiers, .how, .instruments, .final { padding-left: 22px; padding-right: 22px; }
     .pillars { padding-top: 70px; padding-bottom: 64px; }
+    .pillars-grid { grid-template-columns: 1fr; gap: 16px; }
     .tiers   { padding-top: 72px; padding-bottom: 72px; }
     .how     { padding-top: 68px; padding-bottom: 60px; }
     .instruments { padding-top: 60px; padding-bottom: 60px; }
