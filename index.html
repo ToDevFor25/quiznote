@@ -291,12 +291,13 @@
   /* Inline stats below the CTAs */
   .hero-stats {
     margin-top: 42px;
-    display: inline-flex;
-    align-items: center;
-    gap: 30px;
-    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
   }
-  .stat { display: inline-flex; flex-direction: column; gap: 3px; }
+  .stat { display: inline-flex; flex-direction: row; align-items: baseline; gap: 10px; }
+  .stat-div { display: none; } /* dividers were row-style; stacked layout drops them */
   .stat-num {
     font-family: 'Fredoka', sans-serif; font-weight: 700;
     font-size: 1.7rem; line-height: 1;
