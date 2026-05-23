@@ -49,8 +49,9 @@ anything. This is the handshake — it catches stale docs before they cause dama
   key-signatures, scale-degrees, scales, scale-modes, intervals, ear-intervals,
   accidentals. Roster target is 24 (see project doc §5).
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
-  preview. Merge Dev → main for production. Always work on Dev. Never commit
-  straight to main.
+  preview. Merge Dev → main for production. **Always commit and push to Dev.
+  Never create a new branch. Never push to anything other than Dev.** If
+  you're ever about to push to a non-Dev branch, stop and ask first.
 - **`scales` is the perennial structural outlier.** Predates several shared
   patterns, diverges in nearly every cross-file change. Audit it separately;
   never assume it matches the others.
