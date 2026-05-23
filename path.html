@@ -337,6 +337,7 @@
     'accidentals':     { name: 'Accidentals',      tier: 'foundations', sub: 'sharp, flat, natural' },
     'key-signatures':  { name: 'Key Signatures',   tier: 'reading',     sub: 'count the sharps & flats' },
     'scales':          { name: 'Scales',           tier: 'reading',     sub: 'major & minor' },
+    'chromatic-scale': { name: 'Chromatic Scale',  tier: 'reading',     sub: 'half steps all the way' },
     'scale-degrees':   { name: 'Scale Degrees',    tier: 'reading',     sub: 'every note has a job' },
     'scale-modes':     { name: 'Scale Modes',      tier: 'reading',     sub: 'same notes, different home' },
     'intervals':       { name: 'Intervals',        tier: 'reading',     sub: 'name the gap' },
@@ -348,7 +349,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -385,6 +386,7 @@
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
     'scales':          'sc_',
+    'chromatic-scale': 'ch_',
     'scale-degrees':   'sd_',
     'scale-modes':     'sm_',
     'intervals':       'iv_',
