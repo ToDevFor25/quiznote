@@ -815,6 +815,111 @@
       link.appendChild(dot);
       link.appendChild(label);
       containerEl.appendChild(link);
+    },
+
+    /**
+     * Shared confirm/quit modal (component — replaces per-module modal
+     * markup + handlers). Renders a two-button dialog with the CANONICAL
+     * arrangement locked in one place:
+     *   - Quit / destructive action  = ghost button, LEFT
+     *   - Keep / safe default action = solid green button, RIGHT
+     * so the prominent easy tap is always the safe one. Change the
+     * arrangement HERE and every module inherits it.
+     *
+     * General enough for any confirm (quit round, start timer, etc.) —
+     * not quit-specific. Reuses an existing #modal-overlay if the module
+     * still has one in its HTML; otherwise builds + appends its own, so a
+     * module can delete its modal markup entirely.
+     *
+     * @param {Object} opts
+     *   title         {string}            heading
+     *   body          {string}            sub-text
+     *   confirmLabel  {string}            solid/primary button text (the SAFE default, e.g. "Keep playing")
+     *   cancelLabel   {string}            ghost button text (the destructive action, e.g. "Quit round")
+     *   onConfirm     {function}          run when the primary (safe) button is tapped
+     *   onCancel      {function}          run when the ghost (destructive) button is tapped
+     *   dismissIsConfirm {boolean}        if true, backdrop/Escape = confirm (safe); default true
+     *   onOpen        {function}          optional hook fired when shown (e.g. pause timer)
+     *   onClose       {function}          optional hook fired when hidden (resume===arg)
+     *
+     * NOTE on semantics: the SOLID button is the "safe"/affirmative default
+     * (confirmLabel/onConfirm). The GHOST button is the destructive action
+     * (cancelLabel/onCancel). For a quit dialog: confirmLabel "Keep playing"
+     * (onConfirm = resume), cancelLabel "Quit round" (onCancel = quit).
+     */
+    confirm: function (opts) {
+      opts = opts || {};
+      var ov = document.getElementById('qn-confirm-overlay') ||
+               document.getElementById('modal-overlay');
+      var built = false;
+      if (!ov) {
+        // Build a fresh overlay (module deleted its inline modal markup).
+        ov = document.createElement('div');
+        ov.id = 'qn-confirm-overlay';
+        ov.className = 'modal-overlay';
+        ov.hidden = true;
+        ov.innerHTML =
+          '<div class="modal-card">' +
+            '<h2 class="qn-confirm-title"></h2>' +
+            '<p class="qn-confirm-body"></p>' +
+            '<div class="modal-actions">' +
+              '<button class="btn ghost qn-confirm-cancel" type="button"></button>' +
+              '<button class="btn qn-confirm-ok" type="button"></button>' +
+            '</div>' +
+          '</div>';
+        document.body.appendChild(ov);
+        built = true;
+      }
+
+      // Resolve the parts whether built fresh or reusing inline markup.
+      var titleEl  = ov.querySelector('.qn-confirm-title')  || ov.querySelector('#modal-title');
+      var bodyEl   = ov.querySelector('.qn-confirm-body')   || ov.querySelector('#modal-body');
+      var okEl     = ov.querySelector('.qn-confirm-ok')     || ov.querySelector('#modal-confirm');
+      var cancelEl = ov.querySelector('.qn-confirm-cancel') || ov.querySelector('#modal-cancel');
+
+      // Enforce canonical arrangement: ghost(cancel)=LEFT, solid(ok)=RIGHT.
+      // Reorder the buttons in the DOM so order is consistent regardless of
+      // how a reused inline modal had them written.
+      if (okEl && cancelEl && okEl.parentNode) {
+        var row = okEl.parentNode;
+        row.appendChild(cancelEl); // cancel first => left
+        row.appendChild(okEl);     // ok last => right
+        cancelEl.className = 'btn ghost' + (cancelEl.classList.contains('qn-confirm-cancel') ? ' qn-confirm-cancel' : '');
+        okEl.className = 'btn' + (okEl.classList.contains('qn-confirm-ok') ? ' qn-confirm-ok' : '');
+      }
+
+      if (titleEl)  titleEl.textContent  = opts.title || '';
+      if (bodyEl)   bodyEl.textContent   = opts.body || '';
+      if (okEl)     okEl.textContent     = opts.confirmLabel || 'OK';
+      if (cancelEl) cancelEl.textContent = opts.cancelLabel || 'Cancel';
+
+      var dismissIsConfirm = opts.dismissIsConfirm !== false; // default true
+
+      function show() {
+        ov.hidden = false;
+        ov.classList.add('show');
+        if (opts.onOpen) opts.onOpen();
+      }
+      function hide(wasConfirm) {
+        ov.classList.remove('show');
+        ov.hidden = true;
+        okEl    && okEl.removeEventListener('click', okHandler);
+        cancelEl&& cancelEl.removeEventListener('click', cancelHandler);
+        ov.removeEventListener('click', backdropHandler);
+        document.removeEventListener('keydown', keyHandler);
+        if (opts.onClose) opts.onClose(wasConfirm);
+      }
+      function okHandler()     { hide(true);  if (opts.onConfirm) opts.onConfirm(); }
+      function cancelHandler() { hide(false); if (opts.onCancel)  opts.onCancel(); }
+      function backdropHandler(e) { if (e.target === ov) { if (dismissIsConfirm) okHandler(); else cancelHandler(); } }
+      function keyHandler(e)   { if (e.key === 'Escape') { if (dismissIsConfirm) okHandler(); else cancelHandler(); } }
+
+      okEl     && okEl.addEventListener('click', okHandler);
+      cancelEl && cancelEl.addEventListener('click', cancelHandler);
+      ov.addEventListener('click', backdropHandler);
+      document.addEventListener('keydown', keyHandler);
+
+      show();
     }
   };
 
@@ -1067,6 +1172,6 @@
     hasCorruption: function () { return _corruptionLog.length > 0; }
   };
 
-  window.QN.version = '1.6.0';  // account/household layer: cohort tag, 5-learner cap, 7-day trial (built, not armed), accountId on profiles
+  window.QN.version = '1.7.0';  // + QN.ui.confirm shared modal component (canonical quit/confirm dialog)
 
 })();
