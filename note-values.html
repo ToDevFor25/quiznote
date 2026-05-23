@@ -101,6 +101,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Shared design system (tokens + question prompt + answer tiles). Source of truth: edit qn-theme.css, not the inline copies below. -->
+<link rel="stylesheet" href="qn-theme.css">
 <style>
   /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
   @font-face {
@@ -111,24 +113,7 @@
     src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
          url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
   }
-  :root {
-    --cream: #FFFAF0;
-    --cream-2: #FFF3DC;
-    --ink: #2A2A3E;
-    --ink-soft: #5a5a6e;
-    --ink-faint: #8a8472;
-    --teal: #1FB8A8;
-    --teal-dk: #0e8475;
-    --teal-lt: #d3f1ec;
-    --sun: #FFB627;
-    --sun-dk: #c98800;
-    --grape: #5B3FE4;
-    --grape-dk: #3d28a8;
-    --coral: #FF6B6B;
-    --coral-dk: #c2453f;
-    --white: #ffffff;
-    --shadow-cool: #d8d6cc;
-  }
+  /* design tokens, .staff-label, .choice-btn -> qn-theme.css */
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
@@ -338,11 +323,7 @@
     position: relative;
     overflow: hidden;
   }
-  .staff-label {
-    font-family: 'Fredoka', sans-serif; font-weight: 500;
-    font-size: 13px; color: var(--ink-soft);
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
+  /* .staff-label -> qn-theme.css */
   .staff-svg-wrap {
     flex: 1;
     display: flex; align-items: center; justify-content: center;
@@ -487,49 +468,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
-  .choice-btn {
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 22px;
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 16px;
-    box-shadow: 0 5px 0 var(--ink);
-    padding: 14px 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 80ms ease-out, box-shadow 80ms ease-out, background 120ms;
-    color: var(--ink);
-    line-height: 1.1;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .choice-btn:active:not(:disabled) {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 var(--ink);
-  }
-  .choice-btn.correct {
-    background: var(--teal); color: white;
-    border-color: var(--teal-dk);
-    box-shadow: 0 5px 0 var(--teal-dk);
-  }
-  .choice-btn.wrong {
-    background: var(--coral); color: white;
-    border-color: var(--coral-dk);
-    box-shadow: 0 5px 0 var(--coral-dk);
-  }
-  .choice-btn.reveal-correct {
-    background: var(--teal-lt); color: var(--teal-dk);
-    border-color: var(--teal-dk);
-    box-shadow: 0 5px 0 var(--teal-dk);
-  }
-  .choice-btn:disabled { cursor: default; }
-  .choice-acc {
-    font-size: 16px;
-    color: var(--ink-soft);
-    font-weight: 600;
-  }
-  .choice-btn.correct .choice-acc,
-  .choice-btn.wrong .choice-acc { color: rgba(255,255,255,0.8); }
-  .choice-btn.reveal-correct .choice-acc { color: var(--teal-dk); }
+  /* .choice-btn + .choice-acc -> qn-theme.css */
 
   /* Feedback toasts */
   .toast {
@@ -1008,7 +947,6 @@
     .staff-card { padding: 10px 10px 8px; gap: 6px; }
     .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
     .staff-actions { gap: 6px; }
-    .choice-btn { font-size: 18px; padding: 12px 8px; }
     .choices-grid { gap: 8px; }
   }
 
@@ -1018,7 +956,6 @@
     .staff-svg-wrap { min-height: 200px; }
     .staff-svg-wrap svg { max-height: 260px; }
     .stat-value { font-size: 38px; }
-    .choice-btn { font-size: 26px; padding: 18px 14px; }
   }
 </style>
 
@@ -1125,7 +1062,7 @@
 
   <div class="play-body">
     <div class="card staff-card">
-      <div class="staff-label">What is this?</div>
+      <div class="staff-label">What note value is this?</div>
       <div class="staff-svg-wrap" id="staff-wrap"></div>
       <div class="toast" id="toast"></div>
     </div>
@@ -1212,8 +1149,8 @@
     <h2 id="modal-title">Quit this round?</h2>
     <p id="modal-body">Your score for this round won't be saved.</p>
     <div class="modal-actions">
-      <button class="btn ghost" id="modal-cancel">Quit round</button>
-      <button class="btn" id="modal-confirm">Keep playing</button>
+      <button class="btn ghost" id="modal-cancel">Keep playing</button>
+      <button class="btn" id="modal-confirm">Quit round</button>
     </div>
   </div>
 </div>
@@ -2238,38 +2175,40 @@
     // Exit button → modal
     if (els['exit-btn']) {
       els['exit-btn'].addEventListener('click', () => {
-        if (els['modal-overlay']) {
-          els['modal-overlay'].hidden = false;
-          els['modal-overlay'].classList.add('show');
-          state.timerWasRunning = !!state.timerInterval;
-          if (state.timerWasRunning) stopTimer();
-        }
-      });
-    }
-    if (els['modal-cancel']) {
-      els['modal-cancel'].addEventListener('click', () => {
-        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
-        if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
-          // Resume timer
-          state.timerInterval = setInterval(() => {
-            state.timeLeft--;
-            if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
-            if (state.timeLeft <= 5) A.playTick();
-            if (state.timeLeft <= 0) {
-              stopTimer();
-              state.timedOut = true;
-              endRound();
+        // Shared confirm modal (QN.ui.confirm). Canonical arrangement is
+        // owned by qn-profile.js: Quit = ghost/left, Keep playing = green/right.
+        QN.ui.confirm({
+          title: 'Quit this round?',
+          body: "Your score for this round won't be saved.",
+          confirmLabel: 'Keep playing',   // solid/safe default (right)
+          cancelLabel: 'Quit round',      // ghost/destructive (left)
+          // Pause the timer while the dialog is open.
+          onOpen: () => {
+            state.timerWasRunning = !!state.timerInterval;
+            if (state.timerWasRunning) stopTimer();
+          },
+          // Keep playing: resume the timer mid-count (preserves timeLeft).
+          onConfirm: () => {
+            if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
+              state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+                if (state.timeLeft <= 5) A.playTick();
+                if (state.timeLeft <= 0) {
+                  stopTimer();
+                  state.timedOut = true;
+                  endRound();
+                }
+              }, 1000);
             }
-          }, 1000);
-        }
-      });
-    }
-    if (els['modal-confirm']) {
-      els['modal-confirm'].addEventListener('click', () => {
-        if (els['modal-overlay']) { els['modal-overlay'].classList.remove('show'); els['modal-overlay'].hidden = true; }
-        state.endedRound = true;
-        stopTimer();
-        showScreen('start');
+          },
+          // Quit round: end and return to start.
+          onCancel: () => {
+            state.endedRound = true;
+            stopTimer();
+            showScreen('start');
+          }
+        });
       });
     }
 

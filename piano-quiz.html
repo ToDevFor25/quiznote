@@ -11,6 +11,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Shared design system (tokens + question prompt + answer tiles). Source of truth: edit qn-theme.css, not the inline copies below. -->
+<link rel="stylesheet" href="qn-theme.css">
 <style>
   /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
   @font-face {
@@ -21,24 +23,7 @@
     src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
          url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
   }
-  :root {
-    --cream: #FFFAF0;
-    --cream-2: #FFF3DC;
-    --ink: #2A2A3E;
-    --ink-soft: #5a5a6e;
-    --ink-faint: #8a8472;
-    --teal: #1FB8A8;
-    --teal-dk: #0e8475;
-    --teal-lt: #d3f1ec;
-    --sun: #FFB627;
-    --sun-dk: #c98800;
-    --grape: #5B3FE4;
-    --grape-dk: #3d28a8;
-    --coral: #FF6B6B;
-    --coral-dk: #c2453f;
-    --white: #ffffff;
-    --shadow-cool: #d8d6cc;
-  }
+  /* design tokens, .staff-label -> qn-theme.css */
   * { box-sizing: border-box; }
   html, body {
     margin: 0; padding: 0;
@@ -255,11 +240,7 @@
     position: relative;
     overflow: hidden;
   }
-  .staff-label {
-    font-family: 'Fredoka', sans-serif; font-weight: 500;
-    font-size: 13px; color: var(--ink-soft);
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
+  /* .staff-label -> qn-theme.css */
   .staff-svg-wrap {
     flex: 1;
     display: flex; align-items: center; justify-content: center;
