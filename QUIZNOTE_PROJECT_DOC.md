@@ -1,6 +1,6 @@
 # QuizNote — Project Doc (v2)
 
-_Last revised: May 2026 roster-expansion session — Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
+_Last revised: May 2026 — **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
 
 ---
 
@@ -161,62 +161,81 @@ localStorage is the right beta persistence layer, but it has known sharp edges. 
 
 ## 5. Module roster
 
-Organized by the three user-facing tiers the live site uses — **Foundations / Reading / Theory**, framed as Levels 1–6. (This supersedes the older "Beginner core / Intermediate depth / Stretch" naming, which described the same thing in dev-internal language. The site's names are now canonical because they're what learners see on `play.html`, `index.html`, and the path.) "Stretch" survives only as a *flag* on individual modules meaning "later, contingent on demand," not as its own tier.
+Organized by the three user-facing tiers — **Foundations / Reading / Theory**, framed as Levels 1–6. The names that ship on `play.html` and `index.html` are canonical; the older "Beginner core / Intermediate depth / Stretch" framing is retired.
 
-Roster is 24 modules. It is not locked — new modules can be proposed any time they serve the comprehensive-Western-tonal-theory mission — but 24 is the considered complete set for beginner-through-intermediate Western tonal theory. Growing past this pushes toward the advanced-theorist / music-school audience that § 2 puts out of scope; resist it without a deliberate scope decision.
+Roster is **27 modules** — 9 Foundations + 8 Reading + 10 Theory. This is the considered complete set for beginner-through-intermediate Western tonal theory. Growing past 27 pushes toward the advanced-theorist / music-school audience that §2 excludes; resist it without a deliberate scope decision. (Earlier framings of "24 modules" are superseded by the May 2026 curriculum redesign.)
 
-Status legend: **live** = shipped; **planned** = on the build queue; **stretch** = later, demand-contingent.
+Status legend: **Live** = shipped; **Planned** = on the build queue.
 
-### Foundations · Levels 1–2 (reading notes and rhythm)
+**Tier reconciliation locked May 2026** (Option B): Intervals and ear modules sit with their visual partners, not clustered together. Reading owns visual Intervals + Ear:Intervals together, visual Scales + Ear:Scales together. Theory holds harmony only — chord modules and the future chord ear training.
 
-1. **Note Names** — staff note identification. *Live.* Difficulty axis can expand to ledger-line range (Easy = within staff, Medium = one ledger line, Tricky = full practical range).
-2. **Piano Quiz** — find the note on the keyboard. *Live.* Will eventually share a renderer with a future keyboard-geography idea.
-3. **Note Values** — rhythmic duration identification. *Live.* Dotted notes, ties, and rests fold in as tiers/sub-skills here rather than as separate modules.
-4. **Time Signatures** — identify the meter, count beats per bar. *Live.* First net-new module from the template + spec system; question shown in context on a staff; five question types; position-scoped answer highlighting.
-5. **Accidentals** — sharps, flats, naturals, double-sharps/flats, enharmonic equivalents. *Planned.* Foundations gap: Key Signatures currently assumes accidentals it never teaches.
-6. **Rhythm Reading** — read/identify a notated rhythm in a bar (tuplets, syncopation, compound feel as harder tiers). *Planned (added May 2026 roster session).* Fills the gap between Note Values (single durations) and Time Signatures (meter).
+### Foundations · Levels 1–2 (reading notes and rhythm) — 9 modules, all Live
 
-### Reading · Levels 3–4 (the staff feels like home)
+1. **Note Names** — staff note identification. *Live.* Treble / bass / both clef selector.
+2. **Ledger Lines** — pitches outside the staff. *Live (May 2026, Phase 1).* Cloned from note-names; pool strictly notes with visible ledger lines drawn (excludes the "bare space outside the staff" notes Note Names already covers — D4 / G5 treble, F2 / B3 bass). Tier axis = how far past the staff edge (Easy 1st-2nd / Medium +3rd / Tricky +4th ledger). Tricky ceiling capped at 4th ledger by design — covers school repertoire; flute/piccolo high register out of scope per §2. Pool counts per clef: 6 / 10 / 14.
+3. **Piano Quiz** — see the staff note, find it on the keys. *Live.* Treble / bass / both selector.
+4. **Piano & Keyboard** — see the highlighted key, name the note. *Live (May 2026, Phase 1).* The reverse direction of Piano Quiz. Cloned from note-names (not piano-quiz — cleaner reuse of the 4-button letter MC) with a new C3..C6 inline SVG keyboard renderer added to `NH.render`. Distinct learning channel from Note Names (keyboard geography vs staff). Clef selector hidden — irrelevant on a piano.
+5. **Note Values** — rhythmic duration identification (single notes/rests). *Live.* Whole / half / quarter / eighth / sixteenth + rest equivalents.
+6. **Dotted Notes & Ties** — duration arithmetic with dots and ties. *Live (May 2026, Phase 1).* Cloned from note-values; pool mixes regular, dotted, and tied combinations. Renderer = Bravura augmentation dot (U+E1E7) appended to note glyph for dotted; two adjacent glyphs + CSS-drawn semicircle for tied pairs. Choice format = beat values with Unicode vulgar fractions ("1½ beats", "¾ beat"). buildChoices guarantees unique beat values across the 4 buttons (avoids the dotted-half = tied-half-quarter label collision). Convention: quarter = 1 beat, simple meter only.
+7. **Ear: Rhythm** — hear a single duration, identify the notation. *Live (May 2026, Phase 1).* Cloned from note-values with the visual hidden behind a 🎧 placeholder + "▶ Hear it again" button. Audio cue = 2 metronome ticks (lead-in tempo anchor at 60 BPM) + sustained A4 piano tone for `beats × 1000ms`. Notes-only in v1; rests deferred (silence-of-N-beats is a meaningfully different UX). Tiers thin by design: Easy 3, Medium 4, Tricky 5.
+8. **Time Signatures** — identify the meter, count beats per bar. *Live.* Five question types (`label` / `top` / `bottom` / `whichBeats` / `whichUnit`); position-scoped answer highlighting. Easy 2/4·3/4·4/4, Medium +6/8·3/8·2/2, Tricky +9/8·12/8·5/4·7/8. Tuplets / syncopation / compound feel fold in as Tricky-tier complexity here.
+9. **Accidentals** — sharps, flats, naturals, double-sharps/flats, enharmonic equivalents. *Live.* Staff + four-button MC, sibling to Note Names.
 
-7. **Key Signatures** — identify the key from sharps/flats on the staff. *Live.* Relative/parallel keys fold in here. Distractor strategy: one same-count opposite-type mirror (D=2# paired with Bb=2b).
-8. **Scale Degrees** — tonic, supertonic, dominant, etc.; degree names and numbers in a key. *Live (May 2026).* Major keys only in v1 (minor deferred to a harder tier). Reads a real staff with a key signature; three question types (number / name / whichDegree); tiers reuse Key Signatures' 5/9/15 key sets. First module to combine a key-sig row + a queried note on one staff. The practical scale-function skill that sits between Key Signatures and Scales.
-9. **Scales** — identify and spell major and minor scales. *Live.*
-10. **Intervals (sight)** — identify intervals by sight. *Live.* Inversion and compound intervals fold in as harder tiers. (Ear-based intervals is a separate Theory module.)
-11. **Circle of Fifths** — the key-relationships wheel; sharps/flats count, relative minors, key adjacency. *Planned (added May 2026 roster session).* Highest-value of the gap candidates: ties keys/scales/accidentals into one mental model and is a natural showcase for the SVG-first, polish-as-moat approach (an interactive wheel).
-12. **Scale Modes** — Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian. *Live (May 2026).* Cloned from `scales.html` as a pure data swap: renderer/audio/game loop untouched; the scale-data block (MAJOR/NATURAL/HARMONIC/MELODIC catalogs) was replaced with a parent-major + mode-rotation generator. Tiers: Easy = 7 white-key modes (C parent), Medium = +G/F parents (21 modes), Tricky = +D/A/Bb/Eb parents (49 modes). Octave-normalized so every generated mode renders in the same staff range as its parent. Distractors are sibling modes (same parent, different tonic — the "D Dorian vs A Aeolian" confusion) and parallel modes (same tonic, different rotation). Sub-skill axis = mode name. Promoted out of the original Stretch slot once the clone-and-swap proved trivial off scales.
-13. **Transposition** — rewrite a passage in a new key. *Stretch.*
+### Reading · Levels 3–4 (the staff feels like home) — 8 modules
 
-### Theory · Levels 5–6 (harmony and the ear)
+10. **Key Signatures** — identify the key from sharps/flats on the staff. *Live.* Major keys in v1. Easy 5 / Medium 9 / Tricky 15 keys. Distractor: one same-count opposite-type mirror (D=2♯ paired with B♭=2♭). *Phase 2 expansion: + minor keys + major/minor/both selector.*
+11. **Scales** — identify and spell major + natural/harmonic/melodic minor scales. *Live.* Sub-skill axis = mode. *Phase 2 expansion: + pentatonic + scale-type selector.*
+12. **Scale Degrees** — degree numbers and names in a key. *Live (May 2026).* Major keys in v1. Three question types (number / name / whichDegree); tiers reuse Key Signatures' 5/9/15 key sets. First module to combine a key-sig row + a queried note on one staff. *Phase 2 expansion: + minor keys + selector.*
+13. **Scale Modes** — Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian. *Live (May 2026).* Cloned from scales.html as a pure data swap (parent-major + mode-rotation generator). Octave-normalized so every mode renders in the same staff range as its parent. Distractors are sibling modes (same parent, different tonic — the "D Dorian vs A Aeolian" confusion) and parallel modes (same tonic, different rotation).
+14. **Intervals (sight)** — identify intervals by sight. *Live.* Inversion and compound intervals fold in as harder tiers. **Tier locked May 2026: Reading** (sight-reading the staff), not Theory. *Phase 2 expansion: clef selector verify.*
+15. **Ear: Intervals** — hear two notes, identify the interval. *Live (May 2026).* Cloned from intervals.html with the rendered staff hidden behind a 🎧 placeholder; audio + question logic byte-identical to sight Intervals. **Tier locked May 2026: Reading** (pairs with visual Intervals, not clustered with other ear modules in Theory).
+16. **Ear: Scales** — hear a scale, identify the type. *Live.* All four diatonic scale types. **Tier locked May 2026: Reading** (pairs with visual Scales). *Phase 2 expansion: + pentatonic + selector.*
+17. **Chromatic Scale** — identify and spell the chromatic scale; sharp vs flat spelling. *Planned (Phase 2).* Cloned from scales.
 
-14. **Primary Chords (I–IV–V)** — the three main chords in a key; the *early, practical* harmony skill. *Planned (added May 2026 roster session).* Distinct from Roman-numeral analysis: this is "here are your I, IV, V," taught early; analysis is the later, formal skill. Filling this fixes the timing gap where harmony otherwise jumped straight to analysis.
-15. **Triads** — major, minor, diminished, augmented chord qualities by sight. *Planned.* Chord inversions / figured-bass fold in here as a harder tier rather than a separate module.
-16. **Seventh Chords** — dominant 7, major 7, minor 7, half-diminished, fully diminished. *Planned.*
-17. **Roman Numerals** — diatonic chord function (I, ii, iii, IV, V, vi, vii°). *Planned.* Chord-progression identification folds in here as a harder tier (progressions are sequences of these functions).
-18. **Cadences** — authentic, plagal, half, deceptive. *Planned.*
-19. **Ear: Intervals** — hear two notes, identify the interval. *Live (May 2026).* Cloned from `intervals.html` with the renderer / audio engine / question + choice generators left byte-identical. The behavior swap is one CSS rule: the rendered staff SVG is hidden inside `.staff-svg-wrap` and a pulsing 🎧 pseudo-element takes its place, so the audio IS the question. Sub-skill axis matches sight Intervals (interval shorthand: M3, P5, …) — dashboard's raw-key fallback labels them without needing entries in `SKILL_LABELS`.
-20. **Ear: Chord Quality** — hear a chord, identify quality. *Planned.*
-21. **Melodic Dictation** — hear a short melody, identify the notes. *Stretch.*
-22. **Rhythmic Dictation** — hear a rhythm, identify the notation. *Stretch.*
-23. **Score Reading** — multi-staff identification. *Stretch.*
+### Theory · Levels 5–6 (harmony) — 10 modules
 
-(The count reaches 24 once Chord Inversions and Chord Progressions are counted as their own tiers-within-modules above. If either is later promoted to a standalone tile, it takes the 24th/25th slot. Tracking them as folded-in keeps the tile count honest.)
+After the May 2026 tier reconciliation, Theory is cleanly "harmony" — chord modules and chord ear training. The other ear-training modules (rhythm / intervals / scales) live in their respective visual tiers with their partners.
+
+18. **Primary Chords (I–IV–V)** — the three main chords in a key. *Live.* The *early, practical* harmony skill — distinct from Roman-numeral analysis. Major keys in v1. *Phase 2 expansion: + minor keys + selector.* **Accuracy note:** in minor keys, the V chord is MAJOR (raised leading tone from harmonic minor) — see §9.
+19. **Roman Numerals** — diatonic chord function (I, ii, iii, IV, V, vi, vii°). *Live.* Major keys in v1. *Phase 2 expansion: + minor keys + selector.*
+20. **Triads** — major, minor, diminished, augmented chord qualities by sight. *Planned (Phase 4).* Requires the chord renderer extension (Phase 3).
+21. **Triad Inversions** — root position, 1st inversion, 2nd inversion. *Planned (Phase 4).* Promoted to a standalone module in the May 2026 redesign (was originally folded into Triads).
+22. **Seventh Chords** — dominant 7, major 7, minor 7, half-diminished, fully diminished. *Planned (Phase 4).*
+23. **Chord Progressions** — identify common progressions (I–V–vi–IV, ii–V–I, etc.). *Planned (Phase 4).* Promoted to a standalone module in the May 2026 redesign (was originally folded into Roman Numerals).
+24. **Cadences** — authentic, plagal, half, deceptive. *Planned (Phase 4).*
+25. **Ear: Chord Quality** — hear a chord, identify quality. *Planned (Phase 4).* The only ear module that stays in Theory after the May 2026 reconciliation, because its visual partner (Triads / Seventh Chords) is in Theory.
+26. **Ear: Cadences** — hear a cadence, identify the type. *Planned (Phase 4).*
+27. **Ear: Chord Progressions** — hear a chord progression, identify it. *Planned (Phase 4).*
 
 ### Folded-in, not standalone
 
-Real topics that live as tiers or sub-skills inside an existing module, not as their own tiles: dotted notes / ties / rests (→ Note Values), interval inversion / compound intervals (→ Intervals), relative & parallel keys (→ Key Signatures), chord inversions / figured bass (→ Triads), chord progressions (→ Roman Numerals), ledger lines & octave registers (→ Note Names).
+Topics that live as tiers or sub-skills inside an existing module:
+- Relative & parallel keys → Key Signatures
+- Interval inversion / compound intervals → Intervals
+- Compound meter (6/8, 9/8, 12/8), tuplets, syncopation → Time Signatures (Tricky tier)
+- Rests of each duration → Note Values (mixed into the pool by category)
+
+Two topics that **were** folded-in but are now standalone (May 2026 redesign):
+- Ledger lines & octave registers → now **Ledger Lines** (Foundations #2)
+- Dotted notes / ties → now **Dotted Notes & Ties** (Foundations #6)
+
+### Dropped from earlier roster framings (May 2026 redesign)
+
+- **Rhythm Reading** (was Foundations #6 in the 24-roster) — folded into Time Signatures' Tricky tier (compound meter, tuplets, syncopation already there) rather than its own tile.
+- **Circle of Fifths** (was Reading #11 in the 24-roster) — cut from the 27 to keep the roster tight. The same content surfaces through Key Signatures + relative keys + ear-of-the-app polish elsewhere. Re-add only if user demand surfaces — explicit scope decision.
+- **Transposition** (was Reading #13 in the 24-roster) — Stretch, dropped from the 27.
+- **Melodic Dictation, Rhythmic Dictation, Score Reading** (was Theory #21–23) — Stretch, dropped from the 27. Voice-input dictation is its own engineering track and out of scope per §2.
 
 ### Deliberately out of scope (the boundary, written down)
 
 Not omissions — decisions. Revisit only with an explicit scope change:
 
-- **Sight-singing, scale-degree singing, melodic/rhythmic dictation *by voice*** — need microphone input + pitch detection; a separate engineering track. (The dictation modules above are *notation-recognition*, not voice.)
-- **Counterpoint, phrase/form analysis (binary, sonata), orchestration, composition, music history** — the advanced-theorist / music-school audience § 2 excludes.
+- **Sight-singing, scale-degree singing, melodic/rhythmic dictation *by voice*** — need microphone input + pitch detection; a separate engineering track.
+- **Counterpoint, phrase/form analysis (binary, sonata), orchestration, composition, music history** — the advanced-theorist / music-school audience §2 excludes.
 - **Jazz/extended/altered harmony, modal-jazz, world-music systems, microtonal & non-Western notation** — out of the Western-tonal-theory mission.
 - **Clefs beyond treble/bass (alto, tenor)** — niche for the target audience; revisit only if demand appears.
 
 This list exists so the recurring "is the roster too light?" question has a written answer: the roster isn't light, it's *bounded*. Everything not on it is either folded into a module above or deliberately beyond the line.
-
-Roster is no longer locked. New modules can be proposed at any time, as long as they serve the comprehensive-Western-tonal-theory mission.
 
 ## 6. Cross-cutting systems
 
@@ -358,7 +377,9 @@ Unchanged from v1.
 
 ## 12. Build order
 
-The infrastructure phase is **complete**. The template, the three shared script files (`qn-profile.js`, `qn-audio.js`, `qn-staff.js`), the unified nav (`qn-nav.js`), the profile/account layer, the dashboard, and the weak-spot tagging are all shipped. The work now is **building out the 24-module roster** (§ 5), in path order, plus the parallel Tier-3 monetization/legal track.
+The infrastructure phase is **complete**. The template, the four shared script files (`qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`) plus `qn-music.js`, the shared CSS (`qn-theme.css`), the profile/account layer, the dashboard, the weak-spot tagging (phase 1) and recommender (phase 2) are all shipped. The work now is **completing the 27-module roster** (§5), in path order, plus the parallel Tier-3 monetization/legal track.
+
+Current state: **18 of 27 modules live** (Phase 1 complete, May 2026). Remaining work is grouped into three sequenced phases.
 
 ### Infrastructure — done (May 2026)
 
@@ -371,18 +392,41 @@ The infrastructure phase is **complete**. The template, the three shared script 
 - ~~Unified nav `qn-nav.js` across all 12 surfaces~~ ✓ — pill-shrink/readable-floor/avatar-fallback truncation; one line on every page; footers standardized; all 7 modules retired their old `QN.ui.chip` header onto `QNNav`.
 - ~~Account/household layer + 7-day trial schema~~ ✓ (`qn-profile.js` v1.6.0) — account = up to 5 learners; founder `pricingCohort='beta'` tag; `startTrial()` **built but not armed**; `trialStatus()` advisory-only (real entitlement is server-side). Go-live lever = the `CURRENT_COHORT` constant.
 
-### Module build sequence (path order — § 5 numbering)
+### Phase plan (May 2026 redesign)
 
-Each module is its own focused session, produced via template + `qn-staff.js` + spec, meeting the § 11 "done" bar (tiers, question types, distractor strategy, sub-skill tagging, theory accuracy). Build in path order so the learning path fills front-to-back:
+Phases are sequenced; each unblocks the next. Inside a phase, modules can be built in any order. Every new build follows the spec-first + clone-and-swap pattern (CLAUDE.md). Module builds are autonomous on Tier 1/2 decisions — only Tier 3 blockers stop the build (CLAUDE.md "Module builds are autonomous").
 
-1. **Accidentals** (§5 #5) — *active build.* Foundations gap; Key Signatures assumes accidentals it never teaches, so this unblocks the most downstream content. Staff + four-button MC, sibling to Note Names.
-2. **Rhythm Reading** (§5 #6) — Foundations; bridges Note Values → Time Signatures.
-3. **Scale Degrees** (§5 #8) — Reading; sits between Key Signatures and Scales. ✓ **Done (May 2026).**
-4. **Circle of Fifths** (§5 #11) — Reading; highest-value gap candidate, interactive SVG wheel (polish-as-moat showcase).
-5. **Primary Chords (I–IV–V)** (§5 #14) — Theory; the early practical-harmony skill.
-6. **Triads → Seventh Chords → Roman Numerals → Cadences** (§5 #15–18) — the harmony core.
-7. **Ear: Intervals** (§5 #19) ✓ **Done (May 2026).** Tier-1 (synth) audio was sufficient — multi-timbre Tier-3 audio is now only needed for **Ear: Chord Quality** (§5 #20), the remaining ear-training piece.
-8. **Stretch tier** (§5 #13,21,22,23) — Transposition, Melodic/Rhythmic Dictation, Score Reading — demand-contingent. *(Scale Modes [§5 #12] was promoted out of Stretch in May 2026 — see #12 in the roster.)*
+**Phase 1 — Foundations Level-1 gaps. ✓ DONE (May 2026, this session).** Live count 14 → 18.
+- Ledger Lines (clone from note-names; strict on-ledger pool) — §5 #2
+- Dotted Notes & Ties (clone from note-values; Bravura aug-dot + CSS-tie-arc renderer; beat-value MC choices) — §5 #6
+- Ear: Rhythm (clone from note-values; 🎧 audio cue at locked 60 BPM tempo) — §5 #7
+- Piano & Keyboard (clone from note-names with a new C3..C6 keyboard SVG renderer in `NH.render`) — §5 #4
+
+**Phase 2 — Reading Level-2 gaps + Level-2 expansions. Next up.**
+- Build: **Chromatic Scale** (§5 #17) — new module, clone from scales.
+- Expand: Scales — pentatonic + scale-type selector (major/natural/harmonic/melodic/pentatonic) (§5 #11)
+- Expand: Key Signatures — minor keys + major/minor/both selector (§5 #10)
+- Expand: Ear: Scales — pentatonic + selector (§5 #16)
+- Expand: Primary Chords — minor keys + selector (§5 #18). Accuracy: V is MAJOR in minor (raised leading tone).
+- Expand: Scale Degrees — minor keys + selector (§5 #12)
+- Expand: Roman Numerals — minor keys + selector (§5 #19)
+- Verify + expand if needed: Intervals — clef selector (§5 #14)
+
+End-of-Phase-2 state: **19 modules live** (18 + Chromatic Scale).
+
+**Phase 3 — Chord renderer engineering session.** Gates all of Phase 4. Extend `qn-staff.js` with 3-note (root-position triad) and 4-note (seventh chord) rendering: stacked noteheads + shared stem geometry, proper accidental placement for the upper chord tones. Add `playChord(rootMidi, thirdMidi, fifthMidi[, seventhMidi])` helper to `qn-audio.js` — block chord with light arpeggiation, modelled on `playInterval`. Its own dedicated session per the "shared file change = Tier 3, separate session" rule.
+
+**Phase 4 — Theory chord cluster (8 modules).** Cleanly clone-and-swap once Phase 3 lands.
+- Triads (§5 #20)
+- Triad Inversions (§5 #21)
+- Seventh Chords (§5 #22)
+- Chord Progressions (§5 #23)
+- Cadences (§5 #24)
+- Ear: Chord Quality (§5 #25)
+- Ear: Cadences (§5 #26)
+- Ear: Chord Progressions (§5 #27)
+
+End-of-Phase-4 state: **27 modules live** — the full roster.
 
 ### Parallel tracks (not blockers)
 

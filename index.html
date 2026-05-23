@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QuizNote — Practice music theory, one short round at a time</title>
-<meta name="description" content="Music theory practice from first notes through intermediate theory. Three skill tiers, short rounds at your pace. No ads, no data sold. Try a question right on the homepage." />
+<title>QuizNote — Music theory practice that follows how it's taught</title>
+<meta name="description" content="Supplementary music theory practice from first notes through intermediate — built to match how teachers actually teach it. Short rounds, no ads, no data sold. Try a real question now." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -708,7 +708,9 @@
   }
   .pillars-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    /* 2x2 on desktop/tablet; collapses to 1 column on narrow widths via the
+       max-width:560px media block below. */
+    grid-template-columns: repeat(2, 1fr);
     gap: 22px;
   }
   .pillar {
@@ -733,6 +735,8 @@
   .pillar.p1 .pillar-icon { background: var(--teal-lt); }
   .pillar.p2 .pillar-icon { background: var(--coral-lt); }
   .pillar.p3 .pillar-icon { background: var(--sun-lt); }
+  .pillar.p4 .pillar-icon { background: #ede8ff; }
+  .pillar.p4 .pillar-icon svg { stroke: #3d28a8; }
   .pillar-icon svg { width: 24px; height: 24px; stroke: var(--ink); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
   .pillar-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.22rem; letter-spacing: -0.005em; }
   .pillar-text  { font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.97rem; color: var(--ink-soft); line-height: 1.6; }
@@ -744,6 +748,82 @@
     padding: 100px 28px;
     background: linear-gradient(180deg, #fcfaf6 0%, #fffaee 100%);
     position: relative;
+  }
+  /* ── "What's Inside" vertical spine timeline ──────────────────
+     Concept-pill view, not a module roster. Three rows centered on a
+     gradient spine (sun → teal → grape). Class names prefixed `wi-`
+     to avoid collision with the global .row / .tier-name / .tag /
+     .s1-3 already used elsewhere on this page. */
+  .wi-track { position: relative; margin: 60px auto 0; max-width: 880px; }
+  .wi-spine {
+    position: absolute; top: 32px; bottom: 32px; left: 50%;
+    width: 5px; transform: translateX(-50%);
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--sun) 0%, var(--teal) 50%, var(--grape) 100%);
+    z-index: 0;
+  }
+  .wi-row {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 72px 1fr;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+  .wi-row:last-child { margin-bottom: 0; }
+  .wi-node {
+    grid-column: 2; justify-self: center;
+    width: 60px; height: 60px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.35rem;
+    color: #fff;
+    border: 4px solid var(--paper);
+    box-shadow: 0 6px 16px -4px rgba(42, 42, 62, 0.25);
+  }
+  .wi-row.wi-s1 .wi-node { background: linear-gradient(140deg, #ffd66e, var(--sun)); color: var(--ink); }
+  .wi-row.wi-s2 .wi-node { background: linear-gradient(140deg, #2dd4c2, var(--teal)); }
+  .wi-row.wi-s3 .wi-node { background: linear-gradient(140deg, #7d63ff, var(--grape)); }
+  .wi-ident { grid-column: 1; text-align: right; padding-right: 34px; }
+  .wi-tier-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.5rem; letter-spacing: -0.01em; }
+  .wi-row.wi-s1 .wi-tier-name { color: var(--sun-dk); }
+  .wi-row.wi-s2 .wi-tier-name { color: var(--teal-dk); }
+  .wi-row.wi-s3 .wi-tier-name { color: var(--grape-dk); }
+  .wi-tier-desc {
+    font-family: 'Nunito', sans-serif; font-weight: 600;
+    font-size: 0.98rem; color: var(--ink-soft);
+    margin-top: 6px; line-height: 1.45;
+  }
+  .wi-concepts {
+    grid-column: 3;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding-left: 34px;
+  }
+  .wi-tag {
+    font-family: 'Fredoka', sans-serif; font-weight: 500;
+    font-size: 0.85rem;
+    padding: 7px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .wi-row.wi-s1 .wi-tag { background: var(--sun-lt);   color: var(--sun-dk); }
+  .wi-row.wi-s2 .wi-tag { background: var(--teal-lt);  color: var(--teal-dk); }
+  .wi-row.wi-s3 .wi-tag { background: var(--grape-lt); color: var(--grape-dk); }
+  .wi-explore {
+    display: block; text-align: center;
+    margin-top: 56px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.05rem;
+    color: var(--teal-dk); text-decoration: none;
+  }
+  .wi-explore:hover { text-decoration: underline; }
+  @media (max-width: 680px) {
+    .wi-spine { left: 30px; }
+    .wi-row {
+      grid-template-columns: 60px 1fr;
+      gap: 0 18px;
+      margin-bottom: 34px;
+    }
+    .wi-node { grid-column: 1; }
+    .wi-ident { grid-column: 2; text-align: left; padding-right: 0; }
+    .wi-concepts { grid-column: 2; padding-left: 0; margin-top: 12px; justify-content: flex-start; }
   }
   .tier-section { margin-bottom: 60px; }
   .tier-section:last-child { margin-bottom: 0; }
@@ -1315,6 +1395,7 @@
     .stat-num { font-size: 1.4rem; }
     .pillars, .tiers, .how, .instruments, .final { padding-left: 22px; padding-right: 22px; }
     .pillars { padding-top: 70px; padding-bottom: 64px; }
+    .pillars-grid { grid-template-columns: 1fr; gap: 16px; }
     .tiers   { padding-top: 72px; padding-bottom: 72px; }
     .how     { padding-top: 68px; padding-bottom: 60px; }
     .instruments { padding-top: 60px; padding-bottom: 60px; }
@@ -1495,17 +1576,17 @@
     <div class="hero-copy">
       <div class="hero-badge">
         <span class="dot" aria-hidden="true"></span>
-        No ads · No data sold · Learn at your pace
+        Follows standard music curriculum · No ads · No data sold
       </div>
 
       <h1 class="hero-title">
-        <span class="row">Practice music</span>
-        <span class="row">theory in</span>
-        <span class="row"><span class="accent">short rounds.</span></span>
+        <span class="row">Music theory</span>
+        <span class="row">practice that</span>
+        <span class="row"><span class="accent">actually sticks.</span></span>
       </h1>
 
       <p class="hero-sub">
-        Tiny rounds that build real reading fluency. Three skill tiers from first notes through intermediate theory — built for anyone learning music.
+        Short rounds that follow the same sequence your teacher uses — from first notes through intermediate theory. Supplementary practice that reinforces what you're already learning, for all ages.
       </p>
 
       <div class="hero-cta-row">
@@ -1514,11 +1595,11 @@
       </div>
 
       <div class="hero-stats" aria-label="At a glance">
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Skill tiers</span></div>
-        <div class="stat-div" aria-hidden="true"></div>
         <div class="stat"><span class="stat-num">0</span><span class="stat-label">Ads</span></div>
         <div class="stat-div" aria-hidden="true"></div>
-        <div class="stat"><span class="stat-num">11</span><span class="stat-label">Modules</span></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Skill tiers</span></div>
+        <div class="stat-div" aria-hidden="true"></div>
+        <div class="stat"><span class="stat-num">Lots</span><span class="stat-label">of fun</span></div>
       </div>
     </div>
 
@@ -1655,8 +1736,8 @@
 <section class="pillars" data-screen-label="02 Why QuizNote">
   <div class="wrap">
     <div class="section-eyebrow">Why QuizNote</div>
-    <h2 class="section-title">Tiny rounds, nothing else.</h2>
-    <p class="section-sub">No ads. No filler. No selling your data. Just the practice.</p>
+    <h2 class="section-title">Built for learners, not engagement.</h2>
+    <p class="section-sub">No ads. No filler. No selling your data. Just the practice your teacher assigned, done right.</p>
 
     <div class="pillars-grid">
       <div class="pillar p1">
@@ -1680,6 +1761,13 @@
         <div class="pillar-title">No filler</div>
         <p class="pillar-text">Every module drills exactly one skill. One focused round is enough. Then you're done.</p>
       </div>
+      <div class="pillar p4">
+        <div class="pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="pillar-title">Curriculum-aligned</div>
+        <p class="pillar-text">Modules follow similar sequences as standard method books — Foundations, Reading, then Theory. Build fluency in what you're learning.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1688,460 +1776,54 @@
 <section class="tiers" id="whats-inside" data-screen-label="03 What's inside">
   <div class="wrap">
     <div class="section-eyebrow">What's inside</div>
-    <h2 class="section-title">Modules that grow with you.</h2>
-    <p class="section-sub">Organized into three skill tiers, from your first quarter note up through intermediate theory. Start anywhere.</p>
+    <h2 class="section-title">Three levels. One clear path.</h2>
+    <p class="section-sub">Start where you are. Each level builds on the last — from reading the staff to understanding harmony.</p>
 
-    <!-- FOUNDATIONS -->
-    <div class="tier-section foundations">
-      <div class="tier-header">
-        <div class="tier-name">Foundations</div>
-        <div class="tier-meta">First notes · Levels 1–2</div>
-        <div class="tier-desc">Reading notes and rhythm. Where every musician starts.</div>
-      </div>
-      <div class="tile-grid">
+    <div class="wi-track">
+      <div class="wi-spine"></div>
 
-        <!-- PianoQuiz : staff note → arrow → mini piano with one key lit -->
-        <a class="ltile" href="piano-quiz.html">
-          <div class="ltile-art bg-teal">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- Staff lines y=22, 30, 38, 46, 54 (canonical, matches Reading tiles) -->
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-                <line x1="6"  y1="54" x2="154" y2="54"/>
-              </g>
-              <!-- Treble clef: canonical y=52 at font-size 32 -->
-              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <!-- E note on bottom line (y=54) - stem up - centered above lit E key (3rd white, center x=56) -->
-              <g class="anim-pulse">
-                <line x1="60" y1="53" x2="60" y2="34" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
-                <ellipse cx="56" cy="54" rx="5" ry="3.6" transform="rotate(-20 56 54)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
-              </g>
-              <!-- Arrow down pointing at center of lit E key (x=56) -->
-              <path d="M56 62 L56 72 M52 68 L56 72 L60 68" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-              <!-- Piano: 8 white keys C-C, w=16 starting at x=16. E (3rd) is lit teal. -->
-              <g stroke="#2A2A3E" stroke-width="1.5">
-                <rect x="16"  y="74" width="16" height="34" fill="white"/>
-                <rect x="32"  y="74" width="16" height="34" fill="white"/>
-                <rect x="48"  y="74" width="16" height="34" fill="#1FB8A8" class="anim-blink"/>
-                <rect x="64"  y="74" width="16" height="34" fill="white"/>
-                <rect x="80"  y="74" width="16" height="34" fill="white"/>
-                <rect x="96"  y="74" width="16" height="34" fill="white"/>
-                <rect x="112" y="74" width="16" height="34" fill="white"/>
-                <rect x="128" y="74" width="16" height="34" fill="white"/>
-              </g>
-              <!-- Black keys between C-D, D-E, F-G, G-A, A-B -->
-              <g fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1.2">
-                <rect x="27"  y="74" width="10" height="20"/>
-                <rect x="43"  y="74" width="10" height="20"/>
-                <rect x="75"  y="74" width="10" height="20"/>
-                <rect x="91"  y="74" width="10" height="20"/>
-                <rect x="107" y="74" width="10" height="20"/>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">PianoQuiz</div>
-            <div class="ltile-blurb">See a note. Tap the key.</div>
-          </div>
-        </a>
-
-        <!-- Note Names : staff note + 4 letter chips with right one teal -->
-        <a class="ltile" href="note-names.html">
-          <div class="ltile-art bg-coral">
-            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-              <!-- Staff lines y=22, 30, 38, 46, 54 -->
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="30" y1="22" x2="170" y2="22"/>
-                <line x1="30" y1="30" x2="170" y2="30"/>
-                <line x1="30" y1="38" x2="170" y2="38"/>
-                <line x1="30" y1="46" x2="170" y2="46"/>
-                <line x1="30" y1="54" x2="170" y2="54"/>
-              </g>
-              <!-- Treble clef -->
-              <text x="30" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <!-- B note on middle line (y=38) - stem down -->
-              <g>
-                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
-                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
-              </g>
-              <!-- 4 letter chips -->
-              <g>
-                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
-                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
-                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
-                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
-                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Note Names</div>
-            <div class="ltile-blurb">A note appears. Pick its letter.</div>
-          </div>
-        </a>
-
-        <!-- Note Values : 4 note glyphs over proportional duration bars -->
-        <a class="ltile" href="note-values.html">
-          <div class="ltile-art bg-sun">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g font-family="Bravura Text" font-size="36" fill="#2A2A3E" text-anchor="middle">
-                <text x="22"  y="48">&#xE1D2;</text>
-                <text x="62"  y="48">&#xE1D3;</text>
-                <text x="102" y="48">&#xE1D5;</text>
-                <text x="142" y="48">&#xE1D7;</text>
-              </g>
-              <g stroke="#2A2A3E" stroke-width="1.6">
-                <rect x="6"   y="66" width="32" height="12" fill="#FF6B6B" class="anim-bar" style="animation-delay: 0ms"/>
-                <rect x="52"  y="66" width="20" height="12" fill="#FFB627" class="anim-bar" style="animation-delay: 120ms"/>
-                <rect x="96"  y="66" width="12" height="12" fill="#1FB8A8" class="anim-bar" style="animation-delay: 240ms"/>
-                <rect x="139" y="66" width="6"  height="12" fill="#5B3FE4" class="anim-bar" style="animation-delay: 360ms"/>
-              </g>
-              <g font-family="Fredoka" font-weight="600" font-size="12" fill="#5a5a6e" text-anchor="middle">
-                <text x="22"  y="94">4</text>
-                <text x="62"  y="94">2</text>
-                <text x="102" y="94">1</text>
-                <text x="142" y="94">½</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Note Values</div>
-            <div class="ltile-blurb">How long does each note last?</div>
-          </div>
-        </a>
-
-        <a class="ltile" href="time-signatures.html">
-          <div class="ltile-art bg-green">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-                <line x1="6"  y1="54" x2="154" y2="54"/>
-              </g>
-              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <g font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="22" fill="#2A2A3E" text-anchor="middle">
-                <text x="58" y="38" class="anim-pulse" style="animation-delay: 0ms">4</text>
-                <text x="58" y="54" class="anim-pulse" style="animation-delay: 200ms">4</text>
-              </g>
-              <rect x="78" y="76" width="74" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="115" y="93" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">meter?</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Time Signatures</div>
-            <div class="ltile-blurb">See the meter. Name it.</div>
-          </div>
-        </a>
-
-        <a class="ltile" href="accidentals.html">
-          <div class="ltile-art bg-grape">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- Staff lines -->
-              <g stroke="#2A2A3E" stroke-width="1.3" opacity="0.85">
-                <line x1="16" y1="20" x2="144" y2="20"/>
-                <line x1="16" y1="28" x2="144" y2="28"/>
-                <line x1="16" y1="36" x2="144" y2="36"/>
-                <line x1="16" y1="44" x2="144" y2="44"/>
-                <line x1="16" y1="52" x2="144" y2="52"/>
-              </g>
-              <!-- Sharp before a notehead on the middle line -->
-              <text x="62" y="42" font-family="serif" font-weight="700" font-size="26" fill="#2A2A3E" text-anchor="end">&#x266F;</text>
-              <ellipse cx="80" cy="36" rx="5.5" ry="3.9" transform="rotate(-20 80 36)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
-              <line x1="85" y1="36" x2="85" y2="16" stroke="#2A2A3E" stroke-width="1.5" stroke-linecap="round"/>
-              <!-- Accidental chips -->
-              <g font-family="serif" font-weight="700" font-size="18" text-anchor="middle">
-                <rect x="18"  y="68" width="26" height="26" rx="6" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8" class="anim-bar" style="animation-delay: 0ms"/>
-                <text x="31"  y="87" fill="white">&#x266F;</text>
-                <rect x="50"  y="68" width="26" height="26" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.8"/>
-                <text x="63"  y="87" fill="#2A2A3E">&#x266D;</text>
-                <rect x="82"  y="68" width="26" height="26" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.8"/>
-                <text x="95"  y="87" fill="#2A2A3E">&#x266E;</text>
-                <rect x="114" y="68" width="26" height="26" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.8"/>
-                <text x="127" y="88" fill="#2A2A3E" font-size="16">&#x1D12A;</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Accidentals</div>
-            <div class="ltile-blurb">Sharp, flat, natural — know the signs.</div>
-          </div>
-        </a>
-
-        <!-- Foundations: More to come -->
-        <div class="ltile more-soon">
-          <div class="ltile-art" style="background:#fff7d9;">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
-                <text x="40" y="56" fill="#c98800" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="80" y="66" fill="#FFB627" class="more-glyph" style="animation-delay: 700ms">&#xE1D7;</text>
-                <text x="120" y="54" fill="#c98800" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
-              </g>
-              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">More to come</div>
-            <div class="ltile-blurb">New modules in the works.</div>
-          </div>
+      <div class="wi-row wi-s1">
+        <div class="wi-ident">
+          <div class="wi-tier-name">Foundations</div>
+          <div class="wi-tier-desc">Reading notes and rhythm. Where every musician starts.</div>
         </div>
-
+        <div class="wi-node">1</div>
+        <div class="wi-concepts">
+          <span class="wi-tag">Reading the staff</span>
+          <span class="wi-tag">Rhythm &amp; meter</span>
+          <span class="wi-tag">Sharps &amp; flats</span>
+        </div>
       </div>
+
+      <div class="wi-row wi-s2">
+        <div class="wi-ident">
+          <div class="wi-tier-name">Reading</div>
+          <div class="wi-tier-desc">Keys and scales. For anyone fluent on the staff.</div>
+        </div>
+        <div class="wi-node">2</div>
+        <div class="wi-concepts">
+          <span class="wi-tag">Key signatures</span>
+          <span class="wi-tag">Scales &amp; modes</span>
+          <span class="wi-tag">Ear training</span>
+        </div>
+      </div>
+
+      <div class="wi-row wi-s3">
+        <div class="wi-ident">
+          <div class="wi-tier-name">Theory</div>
+          <div class="wi-tier-desc">Chords and ear training. Intermediate theory — the app's ceiling.</div>
+        </div>
+        <div class="wi-node">3</div>
+        <div class="wi-concepts">
+          <span class="wi-tag">Chords &amp; harmony</span>
+          <span class="wi-tag">Roman numerals</span>
+          <span class="wi-tag">Ear training</span>
+        </div>
+      </div>
+
     </div>
 
-    <!-- READING -->
-    <div class="tier-section reading">
-      <div class="tier-header">
-        <div class="tier-name">Reading</div>
-        <div class="tier-meta">Building fluency · Levels 2–4</div>
-        <div class="tier-desc">Keys and scales. For anyone fluent on the staff.</div>
-      </div>
-      <div class="tile-grid">
-
-        <!-- Key Signatures : staff with 3 sharps + "A major?" chip -->
-        <a class="ltile" href="key-signatures.html">
-          <div class="ltile-art bg-grape">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-                <line x1="6"  y1="54" x2="154" y2="54"/>
-              </g>
-              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <!-- 3 sharps for A major: F# top line, C# 3rd space, G# above staff -->
-              <text x="60" y="30" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 0ms">&#xE262;</text>
-              <text x="76" y="42" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 140ms">&#xE262;</text>
-              <text x="92" y="26" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 280ms">&#xE262;</text>
-              <rect x="32" y="76" width="96" height="26" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="14" fill="white" text-anchor="middle">A major?</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Key Signatures</div>
-            <div class="ltile-blurb">Count the sharps. Name the key.</div>
-          </div>
-        </a>
-
-        <!-- Scales : 8 notes climbing diagonally -->
-        <a class="ltile" href="scales.html">
-          <div class="ltile-art bg-green">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-                <line x1="6"  y1="54" x2="154" y2="54"/>
-              </g>
-              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
-                <text x="40"  y="64" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="54"  y="58" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 90ms">&#xE1D5;</text>
-                <text x="68"  y="52" fill="#FFB627" class="anim-pulse" style="animation-delay: 180ms">&#xE1D5;</text>
-                <text x="82"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 270ms">&#xE1D5;</text>
-                <text x="96"  y="40" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
-                <text x="110" y="34" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 450ms">&#xE1D5;</text>
-                <text x="124" y="28" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 540ms">&#xE1D5;</text>
-                <text x="138" y="22" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 630ms">&#xE1D5;</text>
-              </g>
-              <rect x="36" y="78" width="88" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="80" y="95" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">C major?</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Scales</div>
-            <div class="ltile-blurb">Spot the major. Spot the minor.</div>
-          </div>
-        </a>
-
-        <a class="ltile" href="scale-degrees.html">
-          <div class="ltile-art bg-teal">
-            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="24" y1="22" x2="176" y2="22"/>
-                <line x1="24" y1="30" x2="176" y2="30"/>
-                <line x1="24" y1="38" x2="176" y2="38"/>
-                <line x1="24" y1="46" x2="176" y2="46"/>
-                <line x1="24" y1="54" x2="176" y2="54"/>
-              </g>
-              <g font-family="serif" font-weight="700" font-size="20" fill="#2A2A3E" text-anchor="middle">
-                <text x="40" y="32">&#x266F;</text>
-                <text x="52" y="42">&#x266F;</text>
-              </g>
-              <ellipse cx="110" cy="42" rx="6.5" ry="4.4" transform="rotate(-20 110 42)" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
-              <line x1="115" y1="42" x2="115" y2="20" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
-              <g font-family="Fredoka" font-weight="700" font-size="20" text-anchor="middle">
-                <rect x="36"  y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="51"  y="104" fill="#2A2A3E">1</text>
-                <rect x="85"  y="82" width="30" height="30" rx="7" fill="#0e8475" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
-                <text x="100" y="104" fill="white">3</text>
-                <rect x="134" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="149" y="104" fill="#2A2A3E">5</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Scale Degrees</div>
-            <div class="ltile-blurb">Every note has a job in its key.</div>
-          </div>
-        </a>
-
-        <!-- Scale Modes -->
-        <a class="ltile" href="scale-modes.html">
-          <div class="ltile-art bg-grape">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-                <line x1="6"  y1="54" x2="154" y2="54"/>
-              </g>
-              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
-                <text x="40"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="56"  y="42" fill="#5B3FE4">&#xE1D5;</text>
-                <text x="72"  y="38" fill="#5B3FE4">&#xE1D5;</text>
-                <text x="88"  y="34" fill="#5B3FE4">&#xE1D5;</text>
-                <text x="104" y="30" fill="#5B3FE4">&#xE1D5;</text>
-                <text x="120" y="26" fill="#5B3FE4">&#xE1D5;</text>
-                <text x="136" y="22" fill="#5B3FE4">&#xE1D5;</text>
-              </g>
-              <g font-family="Fredoka" font-weight="600" font-size="11" text-anchor="middle">
-                <rect x="14"  y="78" width="44" height="22" rx="7" fill="#FFB627" stroke="#2A2A3E" stroke-width="2" class="anim-pulse" style="animation-delay: 0ms"/>
-                <text x="36"  y="93" fill="#2A2A3E">Dorian</text>
-                <rect x="62"  y="78" width="50" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="87"  y="93" fill="#2A2A3E">Lydian?</text>
-                <rect x="116" y="78" width="42" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="137" y="93" fill="#2A2A3E">Mix.?</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Scale Modes</div>
-            <div class="ltile-blurb">Same notes, different home.</div>
-          </div>
-        </a>
-
-        <!-- Reading: More to come -->
-        <div class="ltile more-soon">
-          <div class="ltile-art" style="background:#e8f6f3;">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
-                <text x="40" y="54" fill="#0e8475" class="more-glyph" style="animation-delay: 0ms">&#xE262;</text>
-                <text x="80" y="68" fill="#1FB8A8" class="more-glyph" style="animation-delay: 700ms">&#xE260;</text>
-                <text x="120" y="56" fill="#0e8475" class="more-glyph" style="animation-delay: 1400ms">&#x266A;</text>
-              </g>
-              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">More to come</div>
-            <div class="ltile-blurb">New modules in the works.</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- THEORY -->
-    <div class="tier-section theory">
-      <div class="tier-header">
-        <div class="tier-name">Theory</div>
-        <div class="tier-meta">Fluent reader · Levels 4–6</div>
-        <div class="tier-desc">Intervals and ear training. Intermediate theory — the upper reach for now.</div>
-      </div>
-      <div class="tile-grid">
-
-        <!-- Intervals : two stacked notes + bracket + answer chips -->
-        <a class="ltile" href="intervals.html">
-          <div class="ltile-art bg-slate">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="6"  y1="14" x2="154" y2="14"/>
-                <line x1="6"  y1="22" x2="154" y2="22"/>
-                <line x1="6"  y1="30" x2="154" y2="30"/>
-                <line x1="6"  y1="38" x2="154" y2="38"/>
-                <line x1="6"  y1="46" x2="154" y2="46"/>
-              </g>
-              <text x="6"  y="44" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
-              <text x="80" y="48" font-family="Bravura Text" font-size="22" fill="#FF6B6B" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-              <text x="80" y="32" font-family="Bravura Text" font-size="22" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 150ms">&#xE1D5;</text>
-              <path d="M100 22 L108 22 L108 46 L100 46" stroke="#2A2A3E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-              <text x="120" y="40" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">5th?</text>
-              <g>
-                <rect x="10"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="26"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">3rd</text>
-                <rect x="46"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="62"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">4th</text>
-                <rect x="82"  y="74" width="32" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="98"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="white" text-anchor="middle">5th</text>
-                <rect x="118" y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="134" y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">6th</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Intervals</div>
-            <div class="ltile-blurb">Two notes. How far apart?</div>
-          </div>
-        </a>
-
-        <!-- Ear: Intervals : speaker + sound waves + headphones question -->
-        <a class="ltile" href="ear-intervals.html">
-          <div class="ltile-art bg-pink">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- chunky speaker silhouette -->
-              <path d="M42 44 L60 44 L80 28 L80 84 L60 68 L42 68 Z"
-                    fill="#FFB627" stroke="#2A2A3E" stroke-width="2.4" stroke-linejoin="round"/>
-              <!-- sound waves: emanating outward from speaker face (left-to-right) -->
-              <g stroke="#1FB8A8" stroke-width="2.6" fill="none" stroke-linecap="round">
-                <path d="M88 38 Q108 56 88 74" class="anim-wave" style="animation-delay: 0ms; transform-origin: 88px 56px"/>
-                <path d="M100 28 Q128 56 100 84" class="anim-wave" style="animation-delay: 400ms; transform-origin: 100px 56px"/>
-              </g>
-              <!-- question chip -->
-              <rect x="118" y="44" width="34" height="34" rx="9" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2.4"/>
-              <text x="135" y="68" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">?</text>
-              <!-- little decorative notes -->
-              <text x="22" y="38" font-family="Bravura Text" font-size="18" fill="#5B3FE4" opacity="0.7">&#xE1D5;</text>
-              <text x="26" y="86" font-family="Bravura Text" font-size="16" fill="#FF6B6B" opacity="0.7">&#xE1D7;</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Ear: Intervals</div>
-            <div class="ltile-blurb">Hear an interval. Name it.</div>
-          </div>
-        </a>
-
-        <!-- Theory: More to come -->
-        <div class="ltile more-soon">
-          <div class="ltile-art" style="background:#f0ebff;">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <g font-family="Bravura Text" font-size="30" text-anchor="middle">
-                <text x="40" y="56" fill="#3d28a8" class="more-glyph" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="80" y="66" fill="#5B3FE4" class="more-glyph" style="animation-delay: 700ms">&#x266C;</text>
-                <text x="120" y="54" fill="#3d28a8" class="more-glyph" style="animation-delay: 1400ms">&#x266B;</text>
-              </g>
-              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="12" fill="#8a8472" text-anchor="middle">…and more</text>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">More to come</div>
-            <div class="ltile-blurb">New modules in the works.</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
+    <a class="wi-explore" href="play.html">Explore all modules&nbsp;&nbsp;&rarr;</a>
   </div>
 </section>
 
@@ -2154,7 +1836,7 @@
 
     <div class="steps">
       <div class="step s1"><div class="step-num">1</div><div class="step-title">Pick a module</div><p class="step-text">From any tier. Beginner all the way through intermediate.</p></div>
-      <div class="step s2"><div class="step-num">2</div><div class="step-title">Choose your setup</div><p class="step-text">Clef, difficulty, round length. Adjust anytime.</p></div>
+      <div class="step s2"><div class="step-num">2</div><div class="step-title">Choose your setup</div><p class="step-text">Pick your focus — clef, scale type, key type, difficulty. Each module adapts to where you are.</p></div>
       <div class="step s3"><div class="step-num">3</div><div class="step-title">Play a round</div><p class="step-text">Quick rounds. Done. Try another.</p></div>
     </div>
   </div>
@@ -2166,8 +1848,8 @@
 <!-- FINAL CTA -->
 <section class="final" data-screen-label="06 Final CTA">
   <div class="final-inner">
-    <h2 class="final-title">Ready to play?</h2>
-    <p class="final-sub">No download, no setup. Open and play right in your browser.</p>
+    <h2 class="final-title">Start where your lesson left off.</h2>
+    <p class="final-sub">No download, no account needed. Open and practice right now — any device, any browser.</p>
     <a class="chunky-btn white" href="pianoquiz-demo.html">Test drive →</a>
     <div class="final-meta">Works on any smartphone · Loads in a heartbeat</div>
   </div>
@@ -2184,7 +1866,7 @@
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
     </div>
-    <div class="foot-copy">© 2026 QuizNote · <a href="https://quiznote.online">quiznote.online</a> · Made by musicians, for musicians</div>
+    <div class="foot-copy">© 2026 QuizNote · <a href="https://quiznote.online">quiznote.online</a> · Made by musicians, for students of all ages</div>
   </div>
 </footer>
 

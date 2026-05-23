@@ -275,14 +275,21 @@
   // automatically without editing this file.
   var MODULE_META = {
     'note-names':      { name: 'Note Names',      color: 'coral' },
+    'ledger-lines':    { name: 'Ledger Lines',    color: 'slate' },
     'note-values':     { name: 'Note Values',     color: 'sun'   },
+    'dotted-notes':    { name: 'Dotted Notes & Ties', color: 'pink'  },
+    'ear-rhythm':      { name: 'Ear: Rhythm',         color: 'coral' },
     'key-signatures':  { name: 'Key Signatures',  color: 'grape' },
     'time-signatures': { name: 'Time Signatures', color: 'teal'  },
     'piano-quiz':      { name: 'Piano Quiz',       color: 'teal'  },
+    'piano-keyboard':  { name: 'Piano & Keyboard', color: 'teal'  },
     'scales':          { name: 'Scales',           color: 'grape' },
     'scale-modes':     { name: 'Scale Modes',      color: 'grape' },
     'intervals':       { name: 'Intervals',        color: 'coral' },
-    'ear-intervals':   { name: 'Ear: Intervals',   color: 'coral' }
+    'ear-intervals':   { name: 'Ear: Intervals',   color: 'coral' },
+    'primary-chords':  { name: 'Primary Chords',  color: 'teal'  },
+    'roman-numerals':  { name: 'Roman Numerals',   color: 'grape' },
+    'ear-scales':      { name: 'Ear: Scales',      color: 'coral' }
   };
   var COLOR_HEX = {
     teal: '#1FB8A8', sun: '#FFB627', grape: '#5B3FE4', coral: '#FF6B6B', ink: '#2A2A3E'
@@ -324,6 +331,12 @@
     'scale-degrees/number':       'Degree numbers',
     'scale-degrees/name':         'Degree names',
     'scale-degrees/whichDegree':  'Finding a degree',
+    'primary-chords/function':    'Numeral → chord',
+    'primary-chords/numeral':     'Chord → numeral',
+    'primary-chords/name':        'Function name → chord',
+    'roman-numerals/numeral-to-chord': 'Numeral → chord',
+    'roman-numerals/chord-to-numeral': 'Chord → numeral',
+    'roman-numerals/quality':          'Chord quality',
     // Note Values (note-value keys) and Key Signatures (key names) and
     // Intervals (interval shorthand like M3/P5) are self-readable via the
     // raw-key fallback in skillLabel(), so they need no explicit entries.

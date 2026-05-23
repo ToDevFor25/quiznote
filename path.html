@@ -327,8 +327,12 @@
   //    the module filenames (slug + '.html').
   var MODULES = {
     'note-names':      { name: 'Note Names',      tier: 'foundations', sub: 'name notes on the staff' },
+    'ledger-lines':    { name: 'Ledger Lines',    tier: 'foundations', sub: 'notes above and below' },
     'piano-quiz':      { name: 'Piano Quiz',       tier: 'foundations', sub: 'find the note on keys' },
+    'piano-keyboard':  { name: 'Piano & Keyboard', tier: 'foundations', sub: 'see the key, name the note' },
     'note-values':     { name: 'Note Values',      tier: 'foundations', sub: 'how long each note lasts' },
+    'dotted-notes':    { name: 'Dotted Notes & Ties', tier: 'foundations', sub: 'dots and ties extend duration' },
+    'ear-rhythm':      { name: 'Ear: Rhythm',       tier: 'foundations', sub: 'hear and name the duration' },
     'time-signatures': { name: 'Time Signatures',  tier: 'foundations', sub: 'read the meter' },
     'accidentals':     { name: 'Accidentals',      tier: 'foundations', sub: 'sharp, flat, natural' },
     'key-signatures':  { name: 'Key Signatures',   tier: 'reading',     sub: 'count the sharps & flats' },
@@ -336,12 +340,15 @@
     'scale-degrees':   { name: 'Scale Degrees',    tier: 'reading',     sub: 'every note has a job' },
     'scale-modes':     { name: 'Scale Modes',      tier: 'reading',     sub: 'same notes, different home' },
     'intervals':       { name: 'Intervals',        tier: 'reading',     sub: 'name the gap' },
-    'ear-intervals':   { name: 'Ear: Intervals',   tier: 'theory',      sub: 'hear and name' }
+    'ear-intervals':   { name: 'Ear: Intervals',   tier: 'reading',     sub: 'hear and name' },
+    'primary-chords':  { name: 'Primary Chords',  tier: 'theory',      sub: 'I, IV, V in every key' },
+    'roman-numerals':  { name: 'Roman Numerals',   tier: 'theory',      sub: 'every chord has a job' },
+    'ear-scales':      { name: 'Ear: Scales',      tier: 'reading',     sub: 'hear the scale type' }
   };
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -369,8 +376,12 @@
   //    ignored. Writing both is cheap and removes guesswork.
   var SHORT_PREFIX = {
     'note-names':      'nn_',
+    'ledger-lines':    'll_',
     'piano-quiz':      'pq_',
+    'piano-keyboard':  'pk_',
     'note-values':     'nv_',
+    'dotted-notes':    'dn_',
+    'ear-rhythm':      'er_',
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
     'scales':          'sc_',
@@ -378,7 +389,10 @@
     'scale-modes':     'sm_',
     'intervals':       'iv_',
     'ear-intervals':   'ei_',
-    'accidentals':     'ac_'
+    'accidentals':     'ac_',
+    'primary-chords':  'pc_',
+    'roman-numerals':  'rn_',
+    'ear-scales':      'es_'
   };
 
   function $(id) { return document.getElementById(id); }

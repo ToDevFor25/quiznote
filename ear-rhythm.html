@@ -1,0 +1,1919 @@
+<!doctype html>
+<!--
+  ============================================================
+  QuizNote — Module Template (v1)
+  ============================================================
+
+  This file is the canonical scaffold every new QuizNote module
+  is built from. The shared 80% (CSS, HTML structure, audio,
+  profile chip, game loop) is here. The module-specific 20%
+  is filled in via placeholders (handlebars-style {{NAME}})
+  and one global object: window.QNM.
+
+  HOW TO USE THIS TEMPLATE:
+
+  1. Copy this file to <module-name>.html.
+
+  2. Replace every {{PLACEHOLDER}} in the file:
+
+     Ear: Rhythm         e.g. "Ear: Rhythm"
+     See the symbol. Name it. Fast.       e.g. "See the symbol. Name it. Fast."
+     Easy      e.g. "Easy"
+     whole, half<br/>quarter        e.g. "whole, half<br/>quarter"
+     Medium    e.g. "Medium"
+     + eighth<br/>notes & rests      e.g. "+ eighth<br/>notes & rests"
+     Tricky    e.g. "Tricky"
+     + sixteenth<br/>notes & rests      e.g. "+ sixteenth<br/>notes & rests"
+     What is this?  e.g. "What is this?"
+     You named those symbols.  e.g. "You named those symbols."
+     Notes to practice next time e.g. "Notes to practice next time"
+     Drill missed notes   e.g. "Drill missed notes"
+     {{MODULE_CSS}}           the module's render-area CSS
+     {{MODULE_FX_LAYERS}}     any module-specific FX DOM nodes (or empty)
+     {{MODULE_NAMESPACE}}     e.g. "ER" (replace in renderer comments)
+
+  3. Replace the MODULE-SPECIFIC RENDERER + FX ENGINE script
+     block (marked clearly below) with your module's renderer.
+     The renderer must set window.QNM = { ... } following the
+     contract below before the game-loop script runs.
+
+  4. window.QNM API contract:
+
+     {
+       // ─── Identity ────────────────────────────────────
+       slug:      'ear-rhythm',  // localStorage prefix + events log
+       namespace: 'ER',           // JS namespace global
+
+       // ─── Question generation ──────────────────────────
+       buildPool(tier),
+         // returns array of question keys for this tier
+
+       buildChoices(correctKey, pool, tier),
+         // returns array of 4 choice keys (one correct)
+
+       labelFor(key),
+         // display label for a question key
+
+       // ─── Rendering ────────────────────────────────────
+       render: {
+         renderQuestion(container, key),
+           // draw the question in the play-screen wrap
+         animateQuestionIn(container, key),
+           // optional: pop-in animation
+         recolorAfterAnswer(container, correct),
+           // optional: e.g. turn the symbol red on wrong;
+           // correct === null means reset to default
+       },
+
+       // ─── Effects (optional, default to no-op) ────────
+       explode(correct, x, y, streak),
+         // optional: celebration FX on correct answer
+
+       // ─── Summary copy ─────────────────────────────────
+       encouragingLine(score, total),
+         // dynamic encouragement for the summary screen
+     }
+
+  5. Verify before pushing:
+       - View in browser; start screen looks right
+       - Tier and length tiles toggle "on" correctly
+       - Start round, answer a question, hear the sound
+       - Streak chime fires on correct answers
+       - Round end → summary screen with stars and copy
+       - All four post-round actions work (again, drill, settings, all modules)
+
+  Architecture notes:
+    - qn-profile.js   provides window.QN (profile + events + chip)
+    - qn-audio.js     provides window.NH.audio (engine)
+    - This template   provides window.QN_FX (fanfare) + game loop
+    - The module      provides window.QNM (everything else)
+
+  ============================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATQAAAE5CAYAAAAeH9xBAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAABNKADAAQAAAABAAABOQAAAACBIUz2AABAAElEQVR4nO19CZgkV3Xm...">
+<title>QuizNote — Ear: Rhythm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Shared design system (tokens + question prompt + answer tiles). Source of truth: edit qn-theme.css, not the inline copies below. -->
+<link rel="stylesheet" href="qn-theme.css">
+<style>
+  /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  /* design tokens, .staff-label, .choice-btn -> qn-theme.css */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+      radial-gradient(circle at 90% 80%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+  }
+  button, .pressable { font-family: inherit; cursor: pointer; }
+  h1, h2, h3, h4 { margin: 0; }
+
+  /* .btn cluster → qn-theme.css (responsive @media .btn override stays inline below) */
+
+
+  /* .card / .screen → qn-theme.css */
+
+  /* ============ START SCREEN ============ */
+  #start-screen {
+    align-items: center; justify-content: center;
+    padding: 24px 20px 40px;
+  }
+  /* .brand* → qn-theme.css */
+
+
+
+
+  /* ============ PLAY SCREEN ============ */
+  #play-screen { padding: 10px 12px 8px; gap: 8px; position: relative; }
+
+  @media (max-width: 760px) {
+    #play-screen.active {
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
+      padding: 8px 10px 6px;
+      gap: 6px;
+    }
+  }
+
+
+
+  .staff-card {
+    padding: 14px 14px 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* .staff-label -> qn-theme.css */
+  .staff-svg-wrap {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 180px;
+  }
+  /* ============================================================
+     MODULE-SPECIFIC CSS
+     ============================================================
+     Each module fills this with its own render-area styles
+     (e.g. .er-symbol for Ear: Rhythm, .ks-stage for Key Signatures,
+     piano keyboard styles for Piano Quiz). Also: FX particle styles,
+     streak banner, shake animation — whatever's bespoke to this
+     module's visual feedback.
+
+     Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
+     Animations: @keyframes {{moduleSlug}}Pop, etc.
+     ============================================================ */
+  /* Bravura Text symbol display */
+  .er-symbol {
+    font-family: 'Bravura Text', serif;
+    font-size: 140px;
+    line-height: 1.4;
+    color: var(--ink);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 200ms cubic-bezier(.5,1.6,.6,1);
+  }
+  .er-symbol.pop {
+    animation: erPop 240ms cubic-bezier(.5,1.6,.6,1);
+  }
+  @keyframes erPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  /* Ear: Rhythm — audio question placeholder (no notation shown). */
+  .er-symbol .er-listen-emoji {
+    font-size: 96px;
+    line-height: 1;
+    animation: erPulse 1800ms ease-in-out infinite;
+    margin-bottom: 16px;
+  }
+  @keyframes erPulse {
+    0%, 100% { transform: scale(1); opacity: 0.92; }
+    50%      { transform: scale(1.08); opacity: 1; }
+  }
+  .er-symbol .er-listen-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--teal-dk);
+    background: var(--teal-lt);
+    border: 2px solid var(--teal);
+    border-radius: 999px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: transform 120ms, box-shadow 120ms;
+  }
+  .er-symbol .er-listen-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -4px rgba(31,184,168,0.4);
+  }
+  .er-symbol .er-listen-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Explosion FX layer — full-screen overlay (Ear: Rhythm exploding symbols) */
+  .er-fx-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  .er-fx-particle {
+    position: absolute;
+    will-change: transform, opacity;
+    transform-origin: center;
+    font-family: 'Bravura Text', serif;
+    line-height: 1;
+    color: var(--ink);
+    user-select: none;
+  }
+  /* Streak banner */
+  .er-streak-banner {
+    position: fixed;
+    top: 28%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    color: var(--sun-dk);
+    background: white;
+    border: 4px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--ink);
+    padding: 14px 30px;
+    z-index: 1100;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .er-streak-banner.show {
+    animation: nvStreakPop 1.3s cubic-bezier(.5, 1.5, .5, 1) forwards;
+  }
+  @keyframes nvStreakPop {
+    0%   { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+    20%  { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    35%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    78%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  }
+  body.er-shake { animation: nvShake 0.4s ease-in-out; }
+  @keyframes nvShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 2px); }
+    40% { transform: translate(6px, -2px); }
+    60% { transform: translate(-4px, -2px); }
+    80% { transform: translate(4px, 2px); }
+  }
+
+
+  .staff-svg-wrap svg {
+    width: 100%; height: 100%;
+    max-height: 200px;
+  }
+  .staff-actions {
+    display: flex; gap: 10px; justify-content: center;
+  }
+
+  .last-dot.retry { background: var(--sun); }
+
+  /* ---- Choice buttons area ---- */
+  .choices-card {
+    padding: 12px 12px 10px;
+    background: #fff8e6;
+    flex-shrink: 0;
+    border-radius: 20px;
+  }
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  /* .choice-btn + .choice-acc -> qn-theme.css */
+
+  /* .toast + variants → qn-theme.css (Option-2 placement: praise 46%, retry/reveal 64%) */
+
+  /* Confetti + note-burst layer */
+  .fx-layer {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;
+    z-index: 4;
+    left: 0; top: 0;
+  }
+  .fx-layer i {
+    position: absolute; width: 10px; height: 14px;
+    top: 0; left: 0;
+    margin: -7px 0 0 -5px;
+    border-radius: 2px;
+    opacity: 0;
+  }
+  @keyframes confetti-fly {
+    0% { opacity: 0; transform: translate(0,0) rotate(0deg) scale(0.6); }
+    8% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--dr)) scale(1); }
+  }
+  .fx-layer.go i { animation: confetti-fly 1100ms ease-out forwards; }
+
+  .fx-layer .note-burst {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: 'Fredoka', serif;
+    font-size: 38px;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.08);
+    transform-origin: center;
+  }
+  @keyframes noteFloat {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(0) scale(0.4); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) rotate(var(--br)) scale(1.2); }
+  }
+  .fx-layer .note-burst.go { animation: noteFloat 1100ms ease-out forwards; }
+
+  /* Note animations */
+  @keyframes notePop {
+    0% { transform: translateY(-30px) scale(0.4); opacity: 0; }
+    60% { transform: translateY(6px) scale(1.15); opacity: 1; }
+    80% { transform: translateY(-2px) scale(0.95); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .note-pop { animation: notePop 480ms cubic-bezier(.4,1.6,.6,1); transform-origin: 50% 50%; transform-box: fill-box; }
+  @keyframes noteShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px) rotate(-3deg); }
+    40% { transform: translateX(5px) rotate(3deg); }
+    60% { transform: translateX(-4px) rotate(-2deg); }
+    80% { transform: translateX(4px) rotate(2deg); }
+  }
+  .note-shake { animation: noteShake 380ms; transform-box: fill-box; transform-origin: 50% 50%; }
+  @keyframes notePulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.18); }
+  }
+  .note-pulse { animation: notePulse 900ms ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+
+  /* Streak jiggle */
+  @keyframes jiggle {
+    0%,100% { transform: scale(1) rotate(0); }
+    25% { transform: scale(1.18) rotate(-5deg); }
+    50% { transform: scale(1.1) rotate(4deg); }
+    75% { transform: scale(1.14) rotate(-2deg); }
+  }
+  .jiggle { animation: jiggle 420ms ease-out; }
+
+  /* ============ Summary Fanfare ============ */
+  @keyframes summaryPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+    80%  { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes scoreShimmer {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.08); color: var(--sun-dk); }
+  }
+  @keyframes fanfareFloat {
+    0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-120px) scale(1.2); }
+  }
+  #sum-score.score-shimmer { display: inline-block; animation: scoreShimmer 400ms ease-in-out 2; }
+  .fanfare-note {
+    position: fixed; font-size: 32px; pointer-events: none; z-index: 300;
+    opacity: 0; animation: fanfareFloat 1.4s ease-out forwards;
+  }
+
+  /* ============ SUMMARY SCREEN ============ */
+
+
+
+
+  /* ============ Accidentals filter ============ */
+  .acc-block { text-align: center; }
+  .acc-block[hidden] { display: none; }
+  .acc-label {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px; color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .acc-row {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .acc-pill {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 16px;
+    background: white;
+    border: 2.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 0 3px 0 var(--ink);
+    padding: 6px 16px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: transform 80ms, box-shadow 80ms;
+    white-space: nowrap;
+  }
+  .acc-pill:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .acc-pill.on { background: var(--grape); color: white; box-shadow: 0 3px 0 var(--grape-dk, #3d1fa3); }
+
+  /* ============ Timer ============ */
+  #timer-block { text-align: center; }
+
+  /* Play-screen timer badge */
+  @keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.09); }
+  }
+
+  /* Personal best row */
+  .pb-row {
+    margin-top: 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* ============ Modal ============ */
+  /* .show is toggled by the quit button; it must override [hidden] (which would
+     otherwise keep the overlay display:none even after the class is added). */
+  .modal-overlay.show { display: flex; }
+  @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalPop {
+    0% { transform: scale(0.7) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  /* .site-header* → qn-theme.css */
+  #qn-nav-slot {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+  }
+  .save-scores-prompt {
+    background: var(--teal-lt);
+    border: 2px solid var(--teal);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin: 4px 0 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .save-scores-prompt[hidden] { display: none; }
+  .save-scores-prompt .ssp-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  /* .site-footer* → qn-theme.css */
+
+  /* ============ Mute button ============ */
+  .mute-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 20px;
+    width: 46px; height: 46px;
+    border: 2.5px solid var(--ink); background: white;
+    color: var(--ink);
+    border-radius: 13px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Audio nudge */
+  .audio-nudge {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+    padding: 10px 20px; border-radius: 999px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms;
+    z-index: 200;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .audio-nudge.show { opacity: 1; pointer-events: auto; }
+
+  /* Hide header/footer during gameplay */
+  #play-screen.active ~ .site-footer,
+  body.playing .site-header,
+  body.playing .site-footer { display: none; }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 760px) {
+    .play-body { grid-template-columns: 1fr; gap: 8px; }
+    .stats-col { flex-direction: row; gap: 8px; }
+    .stats-col .last-dots-card { display: none; }
+    .stat-value { font-size: 28px; }
+    .topbar { gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: 10px; font-size: 16px; }
+    .streak-badge { font-size: 15px; padding: 4px 8px; min-width: 50px; }
+    .timer-badge { font-size: 16px; padding: 4px 8px; min-width: 64px; }
+    .brand h1 { font-size: 44px; }
+    .summary-title { font-size: 40px; }
+    .tile-emoji { font-size: 30px; }
+    .tile-title { font-size: 17px; }
+    .staff-svg-wrap { min-height: 100px; }
+    .staff-svg-wrap svg { max-height: 160px; }
+    .staff-card { padding: 10px 10px 8px; gap: 6px; }
+    .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
+    .staff-actions { gap: 6px; }
+    .choices-grid { gap: 8px; }
+  }
+
+  @media (min-width: 1100px) {
+    #play-screen { padding: 22px 32px 24px; gap: 14px; }
+    .play-body { gap: 20px; }
+    .staff-svg-wrap { min-height: 200px; }
+    .staff-svg-wrap svg { max-height: 260px; }
+    .stat-value { font-size: 38px; }
+  }
+</style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
+<script src="qn-audio.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand-name" href="index.html">Quiz<span>Note</span></a>
+  <div id="qn-nav-slot"></div>
+</header>
+
+<!-- ============ START SCREEN ============ -->
+<section class="screen active" id="start-screen">
+  <div class="start-wrap">
+    <a href="play.html" class="start-back-link">← All modules</a>
+    <div class="brand">
+      <div class="logo-mark">
+        <div>
+          <h1>Ear: Rhythm</h1>
+          <div class="tagline">Hear the duration. Pick the notation.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="tile-row" id="diff-tiles">
+        <button class="tile" data-diff="easy">
+          <div class="tile-emoji">🐢</div>
+          <div class="tile-title">Easy</div>
+          <div class="tile-sub">whole, half<br/>quarter</div>
+        </button>
+        <button class="tile on" data-diff="medium">
+          <div class="tile-emoji">🐰</div>
+          <div class="tile-title">Medium</div>
+          <div class="tile-sub">+ eighth<br/>notes</div>
+        </button>
+        <button class="tile" data-diff="tricky">
+          <div class="tile-emoji">🐆</div>
+          <div class="tile-title">Tricky</div>
+          <div class="tile-sub">+ sixteenth<br/>notes</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="tile-row" id="length-tiles">
+        <button class="tile" data-len="5">
+          <div class="tile-emoji">⚡</div>
+          <div class="tile-title">Quick</div>
+          <div class="tile-sub">5 questions</div>
+        </button>
+        <button class="tile on" data-len="10">
+          <div class="tile-emoji">🎯</div>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">10 questions</div>
+        </button>
+        <button class="tile" data-len="20">
+          <div class="tile-emoji">🏋️</div>
+          <div class="tile-title">Long</div>
+          <div class="tile-sub">20 questions</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block" id="timer-block">
+      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
+        <span class="t-icon">⏱</span>
+        <span class="t-label">Add a timer</span>
+        <span class="t-state" id="timer-toggle-state">off</span>
+      </button>
+      <div class="timer-pills" id="timer-pills" hidden>
+        <button class="tpill" data-secs="30">30s</button>
+        <button class="tpill" data-secs="45">45s</button>
+        <button class="tpill on" data-secs="60">60s</button>
+      </div>
+    </div>
+
+    <div class="start-cta">
+      <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
+        🔇 Start muted
+      </label>
+      <button class="btn sun huge" id="start-btn">Start Game →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAY SCREEN ============ -->
+<section class="screen" id="play-screen">
+  <div class="topbar">
+    <a href="play.html" class="icon-btn" title="Back to modules" style="text-decoration:none;">🏠</a>
+    <button class="icon-btn" id="exit-btn" title="Quit round">✕</button>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="timer-badge" id="timer-badge" hidden><span class="t-icon">⏱</span><span id="timer-num">60</span>s</div>
+    <div class="streak-badge" id="streak-badge">🔥 <span class="num" id="streak-num">0</span></div>
+    <button class="mute-btn" id="mute-btn" title="Toggle sound">🔊</button>
+  </div>
+
+  <div class="play-body">
+    <div class="card staff-card">
+      <div class="staff-label">What note value is this?</div>
+      <div class="staff-svg-wrap" id="staff-wrap"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="stats-col">
+      <div class="card stat-card">
+        <div class="stat-label">Question</div>
+        <div class="stat-value"><span id="q-num">1</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value"><span id="score-num">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card last-dots-card">
+        <div class="stat-label">Last answers</div>
+        <div class="last-dots" id="last-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-choice buttons replacing keyboard -->
+  <div class="card choices-card">
+    <div class="choices-grid" id="choices-grid">
+      <!-- buttons injected by JS -->
+    </div>
+  </div>
+
+  <div class="fx-layer" id="confetti"></div>
+  <div class="er-fx-layer" id="er-fx-layer"></div>
+  <div class="er-streak-banner" id="er-streak-banner"></div>
+</section>
+
+<!-- ============ SUMMARY SCREEN ============ -->
+<section class="screen" id="summary-screen">
+  <div class="summary-wrap">
+    <div class="summary-title">Round done! 🎉</div>
+    <div class="summary-sub" id="summary-sub">You named those symbols.</div>
+    <div class="summary-speed" id="summary-speed" hidden></div>
+
+    <div class="summary-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Best streak</div>
+        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Stars</div>
+        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
+      </div>
+    </div>
+
+    <div class="miss-list" id="miss-list">
+      <h3>Notes to practice next time</h3>
+      <ul id="miss-items"></ul>
+    </div>
+
+    <div class="save-scores-prompt" id="save-scores-prompt" hidden>
+      <div class="ssp-text">💾 Save your scores? Add a name to track your progress.</div>
+      <a href="profile.html" class="btn teal big" style="text-decoration:none;">Add a name →</a>
+    </div>
+
+    <div class="summary-actions">
+      <button class="btn sun big" id="again-btn">↻ Play again</button>
+      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
+      <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
+      <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
+    </div>
+
+    <div class="pb-row" id="pb-row" hidden>
+      <span class="pb-label">Personal best:</span>
+      <span id="pb-score"></span>
+      <span class="pb-sep">·</span>
+      <span id="pb-streak"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2 id="modal-title">Quit this round?</h2>
+    <p id="modal-body">Your score for this round won't be saved.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Keep playing</button>
+      <button class="btn" id="modal-confirm">Quit round</button>
+    </div>
+  </div>
+</div>
+
+<div class="audio-nudge" id="audio-nudge">🔇 Tap here to enable sound</div>
+
+<footer class="site-footer">
+  © 2026 QuizNote <span class="sep">·</span>
+  <a href="privacy.html" target="_blank">Privacy Policy</a>
+  <span class="sep">·</span>
+  <a href="terms.html" target="_blank">Terms of Service</a>
+  <span class="sep">·</span>
+  Made by musicians, for musicians
+</footer>
+
+<script>
+// ============ QuizNote Ear: Rhythm — Music Helpers ============
+// NH.music namespace (letter/step parsing, MIDI conversion).
+// NH.audio is provided externally by qn-audio.js.
+(function () {
+  const NH = window.NH = window.NH || {};
+  const LETTER_STEP = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+  const STEP_LETTER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const LETTER_SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+  function diatonicStep(letter, octave) { return octave * 7 + LETTER_STEP[letter]; }
+  function toMidi(letter, accidental, octave) {
+    const acc = accidental === '#' ? 1 : accidental === 'b' ? -1 : 0;
+    return 12 * (octave + 1) + LETTER_SEMI[letter] + acc;
+  }
+  function parsePitch(s) {
+    const m = /^([A-G])([#b]?)(-?\d+)$/.exec(s);
+    if (!m) throw new Error('bad pitch ' + s);
+    const letter = m[1], accidental = m[2], octave = parseInt(m[3], 10);
+    return { letter, accidental, octave, midi: toMidi(letter, accidental, octave), name: s };
+  }
+  function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+  function displayName(pitch) {
+    const acc = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
+    return pitch.letter + acc;
+  }
+  function midiEquals(a, b) { return a === b; }
+  NH.music = { LETTER_STEP, STEP_LETTER, LETTER_SEMI, diatonicStep, toMidi, parsePitch, midiToFreq, displayName, midiEquals };
+
+  // NH.audio is provided by qn-audio.js (loaded above with defer).
+  // Exposes: ensureCtx, setMuted, isMuted, playMidi, playBoop,
+  //          playTick, playChime, playFanfare, midiToFreq.
+})();
+</script>
+
+
+
+<script>
+// ============ QuizNote Ear: Rhythm — Symbol Renderer + Explosion Engine ============
+(function () {
+  const ER = window.ER = window.ER || {};
+
+  // Note values for Ear: Rhythm. Notes-only in v1 (rests deferred \u2014 silence-
+  // duration UX adds little at this level). beats = duration in quarter-beats
+  // at the locked 60 BPM tempo (1 quarter = 1 second of audio).
+  const SYMBOLS = {
+    'whole-note':     { label: 'Whole note',     char: '\uE1D2', beats: 4    },
+    'half-note':      { label: 'Half note',      char: '\uE1D3', beats: 2    },
+    'quarter-note':   { label: 'Quarter note',   char: '\uE1D5', beats: 1    },
+    'eighth-note':    { label: 'Eighth note',    char: '\uE1D7', beats: 0.5  },
+    'sixteenth-note': { label: 'Sixteenth note', char: '\uE1D9', beats: 0.25 },
+  };
+
+  const TEMPO_BPM = 60;
+  const QUERY_PITCH_MIDI = 69; // A4
+  // Track latest play timer so we can cancel on round teardown.
+  let _playTimers = [];
+  function cancelPlay() {
+    _playTimers.forEach(function (t) { clearTimeout(t); });
+    _playTimers = [];
+  }
+
+  // Plays 2 lead-in metronome ticks at the locked tempo, then sustains a
+  // pitched tone (A4) for the note's duration. Total cue = ~2 ticks + dur.
+  function playRhythm(key) {
+    const sym = SYMBOLS[key];
+    if (!sym || !window.NH || !NH.audio) return;
+    cancelPlay();
+    const beatMs = 60000 / TEMPO_BPM; // 1000ms at 60 BPM
+    _playTimers.push(setTimeout(function () { NH.audio.playTick(); }, 0));
+    _playTimers.push(setTimeout(function () { NH.audio.playTick(); }, beatMs));
+    _playTimers.push(setTimeout(function () {
+      NH.audio.playMidi(QUERY_PITCH_MIDI, (sym.beats * beatMs) / 1000);
+    }, beatMs * 2));
+  }
+
+  function renderSymbol(container, key) {
+    const sym = SYMBOLS[key];
+    if (!sym) return;
+    container.innerHTML =
+      '<div class="er-symbol">' +
+        '<div class="er-listen-emoji">\uD83C\uDFA7</div>' +
+        '<button type="button" class="er-listen-btn" id="er-listen-btn">\u25B6 Hear it again</button>' +
+      '</div>';
+    const btn = container.querySelector('#er-listen-btn');
+    if (btn) btn.addEventListener('click', function () { playRhythm(key); });
+    // Auto-play the cue when the question renders.
+    playRhythm(key);
+  }
+
+  function animateSymbol(container, kind) {
+    const el = container.querySelector('.er-symbol');
+    if (!el) return;
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    if (kind === 'pop') el.classList.add('pop');
+  }
+
+  function recolorSymbol(container, color) {
+    const el = container.querySelector('.er-listen-emoji');
+    if (el) el.style.color = color;
+  }
+
+  // ============ EXPLOSION ENGINE ============
+  function explode(symbolKey, originX, originY, streak) {
+    const fx = document.getElementById('er-fx-layer');
+    if (!fx) return;
+    const sym = SYMBOLS[symbolKey];
+    if (!sym) return;
+
+    let count, sizeRange, distance, includeStreakChars;
+    if (streak >= 10) {
+      count = 30; sizeRange = [50, 100]; distance = 500; includeStreakChars = true;
+    } else if (streak >= 5) {
+      count = 20; sizeRange = [45, 80]; distance = 380; includeStreakChars = true;
+    } else if (streak >= 3) {
+      count = 14; sizeRange = [40, 70]; distance = 280; includeStreakChars = false;
+    } else {
+      count = 8; sizeRange = [35, 60]; distance = 220; includeStreakChars = false;
+    }
+
+    for (let i = 0; i < count; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'er-fx-particle';
+      const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
+      particle.style.fontSize = size + 'px';
+      if (includeStreakChars && Math.random() < 0.15) {
+        particle.textContent = '🔥';
+      } else {
+        particle.textContent = sym.char;
+      }
+      particle.style.left = originX + 'px';
+      particle.style.top = originY + 'px';
+      particle.style.transform = 'translate(-50%, -50%)';
+      fx.appendChild(particle);
+
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const speed = distance * (0.5 + Math.random() * 0.5);
+      const dx = Math.cos(angle) * speed;
+      const dy = Math.sin(angle) * speed - 60;
+      const rotation = (Math.random() - 0.5) * 720;
+      const duration = 800 + Math.random() * 500;
+
+      particle.animate([
+        { transform: 'translate(-50%, -50%) rotate(0deg) scale(0.3)', opacity: 1 },
+        { transform: 'translate(calc(-50% + ' + (dx * 0.4) + 'px), calc(-50% + ' + (dy * 0.4 - 40) + 'px)) rotate(' + (rotation * 0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.2 },
+        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 200) + 'px)) rotate(' + rotation + 'deg) scale(0.8)', opacity: 0 }
+      ], { duration: duration, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' });
+
+      setTimeout(() => particle.remove(), duration + 100);
+    }
+
+    if (streak >= 3) {
+      const banner = document.getElementById('er-streak-banner');
+      if (banner) {
+        if (streak >= 10)      banner.textContent = '🔥 ' + streak + ' ON FIRE!';
+        else if (streak >= 5)  banner.textContent = '🔥 ' + streak + ' IN A ROW!';
+        else                   banner.textContent = streak + ' IN A ROW!';
+        banner.classList.remove('show');
+        void banner.offsetWidth;
+        banner.classList.add('show');
+      }
+    }
+
+    if (streak >= 10) {
+      document.body.classList.remove('er-shake');
+      void document.body.offsetWidth;
+      document.body.classList.add('er-shake');
+      setTimeout(() => document.body.classList.remove('er-shake'), 400);
+    }
+  }
+
+  ER.SYMBOLS = SYMBOLS;
+  ER.playRhythm = playRhythm;
+  ER.cancelPlay = cancelPlay;
+  ER.render = { renderSymbol, animateSymbol, recolorSymbol };
+  ER.fx = { explode };
+})();
+
+  // ============ QNM contract adapter ============
+  // Expose Ear: Rhythm' API to the generic game loop via window.QNM.
+  // The game loop calls QNM.* and never references ER.* directly.
+
+  // Tier pools: progressive duration range. Notes-only (no rests in v1).
+  const POOLS = {
+    easy:   ['whole-note', 'half-note', 'quarter-note'],
+    medium: ['whole-note', 'half-note', 'quarter-note', 'eighth-note'],
+    tricky: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'sixteenth-note'],
+  };
+
+  // Distractors: prefer adjacent durations (shorter + longer neighbor).
+  // Pools are small (3-5 items) so we always get the full tier as candidates
+  // and trim to 3 — but ordering biases toward immediate neighbors first
+  // so the choice set highlights the discrimination skill the tier teaches.
+  function buildChoices(correctKey, pool, difficulty) {
+    const SYMBOLS = window.ER.SYMBOLS;
+    const correctBeats = SYMBOLS[correctKey].beats;
+    function dist(k) { return Math.abs(SYMBOLS[k].beats - correctBeats); }
+    const candidates = pool.filter(function (k) { return k !== correctKey; });
+    candidates.sort(function (a, b) { return dist(a) - dist(b); });
+    const distractors = candidates.slice(0, 3);
+    // If tier pool < 4, fill from the global SYMBOLS map.
+    if (distractors.length < 3) {
+      const allKeys = Object.keys(SYMBOLS);
+      for (let i = 0; i < allKeys.length && distractors.length < 3; i++) {
+        if (allKeys[i] !== correctKey && distractors.indexOf(allKeys[i]) === -1) {
+          distractors.push(allKeys[i]);
+        }
+      }
+    }
+    const all = [correctKey].concat(distractors);
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    return all;
+  }
+
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['GOLDEN EARS! Perfect rhythm round 🎯','Flawless — every duration caught! 🌟','Your ears are dialed in! 🎶']);
+    if (pct >= 0.8) return pick(["Strong ears — almost perfect!","So close to flawless! ⭐","Great listening!"]);
+    if (pct >= 0.5) return pick(["Nice round! Those durations are clicking 🎶","Good work — your ear is sharpening!","Solid round! Keep listening 🎵"]);
+    return pick(["Ears take practice — keep going 🌱","Every round trains the ear 🎵","Music takes time — listen again, you'll get it!"]);
+  }
+
+  window.QNM = {
+    slug:      'ear-rhythm',
+    namespace: 'ER',
+
+    buildPool: function (tier) { return POOLS[tier].slice(); },
+    buildChoices: buildChoices,
+    labelFor: function (key) {
+      const sym = window.ER.SYMBOLS[key];
+      return sym ? sym.label : key;
+    },
+
+    render: {
+      renderQuestion: function (container, key) {
+        window.ER.render.renderSymbol(container, key);
+      },
+      animateQuestionIn: function (container, key) {
+        window.ER.render.animateSymbol(container, 'pop');
+      },
+      recolorAfterAnswer: function (container, correct) {
+        const color = correct === true  ? 'var(--teal)'
+                    : correct === false ? 'var(--coral)'
+                    : '';
+        window.ER.render.recolorSymbol(container, color);
+        if (correct === true) {
+          window.ER.render.animateSymbol(container, 'pop');
+        }
+      },
+    },
+
+    explode: function (correct, x, y, streak) {
+      window.ER.fx.explode(correct, x, y, streak);
+    },
+
+    encouragingLine: encouragingLine,
+  };
+</script>
+
+<script>
+// ============ QuizNote Ear: Rhythm — Game Loop ============
+(function () {
+  // NH.audio comes from qn-audio.js (deferred). It may not exist
+  // at script-parse time, but it will exist by the time any handler
+  // runs. Resolve lazily on every access via this proxy.
+  const A = new Proxy({}, {
+    get(_t, prop) { return window.NH && window.NH.audio ? window.NH.audio[prop] : undefined; }
+  });
+  // ─── Module contract ──────────────────────────────────────
+  // window.QNM is defined by the module-specific renderer script
+  // above. It provides identity, question generation, rendering,
+  // optional FX, and summary copy. See template header for the
+  // full contract. The game loop below is fully generic — it
+  // never references a specific module's data shape.
+  const M = window.QNM;
+  if (!M) {
+    console.error('[QN] window.QNM is not defined — module renderer script must set window.QNM before this script runs.');
+    return;
+  }
+  // Convenience local for readability at call sites.
+  const R = M.render;
+
+  const state = {
+    settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
+    pool: [], deck: [], drillPool: [],
+    q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
+    history: [], current: null, locked: false,
+    timeLeft: 0, timerInterval: null, timedOut: false,
+    startedAt: 0, timerWasRunning: false, endedRound: false,
+    currentChoices: [],
+  };
+
+  const $ = id => document.getElementById(id);
+  const els = {};
+
+  function cacheEls() {
+    ['start-screen','play-screen','summary-screen',
+     'diff-tiles','length-tiles','start-btn',
+     'exit-btn','progress-fill','streak-badge','streak-num',
+     'staff-wrap','toast','confetti',
+     'q-num','score-num','last-dots',
+     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'again-btn','drill-btn','change-btn','choices-grid',
+     'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+     'pb-row','pb-score','pb-streak',
+     'save-scores-prompt',
+     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
+     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
+  }
+
+  function showScreen(name) {
+    if (name !== 'play') stopTimer();
+    ['start','play','summary'].forEach(s => {
+      const el = document.getElementById(s + '-screen');
+      if (el) el.classList.toggle('active', s === name);
+    });
+    document.body.classList.toggle('playing', name === 'play');
+    window.scrollTo(0, 0);
+  }
+
+  function syncMuteUI(muted) {
+    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
+    if (els['mute-btn']) {
+      els['mute-btn'].textContent = muted ? '🔇' : '🔊';
+      els['mute-btn'].classList.toggle('muted', muted);
+      els['mute-btn'].setAttribute('aria-pressed', String(muted));
+    }
+  }
+
+  function saveMutedPreference(muted) {
+    localStorage.setItem(M.slug + '_muted', String(muted));
+    A.setMuted(muted);
+    syncMuteUI(muted);
+  }
+
+  function loadMutedPreference() {
+    return localStorage.getItem(M.slug + '_muted') === 'true';
+  }
+
+  // ===== Round Setup =====
+  function buildPool() {
+    return M.buildPool(state.settings.difficulty);
+  }
+
+  function shuffleDeck(pool, total, drillPool) {
+    const out = [];
+    const source = (drillPool && drillPool.length) ? drillPool : pool;
+    if (!source.length) return out;
+    let prev = null;
+    for (let i = 0; i < total; i++) {
+      let pick, tries = 0;
+      do {
+        pick = source[Math.floor(Math.random() * source.length)];
+        tries++;
+      } while (pick === prev && source.length > 1 && tries < 6);
+      out.push(pick);
+      prev = pick;
+    }
+    return out;
+  }
+
+  function startGame() {
+    state.pool = buildPool();
+    state.deck = shuffleDeck(state.pool, state.settings.total, state.drillPool);
+    state.q = 0;
+    state.score = 0;
+    state.streak = 0;
+    state.bestStreak = 0;
+    state.history = [];
+    state.locked = false;
+    state.timedOut = false;
+    state.endedRound = false;
+    state.total = state.settings.total;
+    state.startedAt = Date.now();
+
+    renderLastDots();
+    updateStreakBadge();
+    updateProgressAndStats();
+    showScreen('play');
+    if (state.settings.timer.enabled) startTimer();
+    nextQuestion();
+  }
+
+  function nextQuestion() {
+    if (state.q >= state.total) { endRound(); return; }
+    const key = state.deck[state.q];
+    state.current = { key: key };
+    state.locked = false;
+    state.currentChoices = M.buildChoices(key, state.pool, state.settings.difficulty);
+
+    R.renderQuestion(els['staff-wrap'], key);
+    if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], key);
+    renderChoices();
+    A.playTick();
+  }
+
+  function renderChoices() {
+    const grid = els['choices-grid'];
+    grid.innerHTML = '';
+    state.currentChoices.forEach(key => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = M.labelFor(key);
+      btn.dataset.key = key;
+      btn.addEventListener('click', () => handleAnswer(key, btn));
+      grid.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(pickedKey, buttonEl) {
+    if (state.locked) return;
+    state.locked = true;
+    const correct = state.current.key;
+    const isCorrect = (pickedKey === correct);
+
+    if (isCorrect) {
+      state.score++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      state.history.push({ key: correct, correct: true });
+      buttonEl.classList.add('correct');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], true);
+      if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], correct);
+      A.playChime(60, state.streak);
+
+      // Explosion at the staff symbol location
+      const stage = els['staff-wrap'];
+      const r = stage.getBoundingClientRect();
+      if (M.explode) M.explode(correct, r.left + r.width / 2, r.top + r.height / 2, state.streak);
+    } else {
+      state.streak = 0;
+      state.history.push({ key: correct, correct: false, picked: pickedKey });
+      buttonEl.classList.add('wrong');
+      // Highlight correct answer
+      const correctBtn = [...els['choices-grid'].children].find(b => b.dataset.key === correct);
+      if (correctBtn) correctBtn.classList.add('correct');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], false);
+      A.playBoop();
+    }
+
+    updateStreakBadge();
+    updateProgressAndStats();
+    renderLastDots();
+
+    setTimeout(() => {
+      state.q++;
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
+      nextQuestion();
+    }, isCorrect ? 700 : 1200);
+  }
+
+  function updateStreakBadge() {
+    if (els['streak-num']) els['streak-num'].textContent = state.streak;
+    if (els['streak-badge']) els['streak-badge'].classList.toggle('hot', state.streak >= 3);
+  }
+
+  function updateProgressAndStats() {
+    if (els['q-num']) els['q-num'].textContent = Math.min(state.q + 1, state.total);
+    if (els['score-num']) els['score-num'].textContent = state.score;
+    // Update " / N" labels everywhere
+    document.querySelectorAll('.of').forEach(of => {
+      // Don't change labels we shouldn't
+    });
+    const pct = state.total ? (state.q / state.total) * 100 : 0;
+    if (els['progress-fill']) els['progress-fill'].style.width = pct + '%';
+
+    // Update the "/ 10" displays in stat cards if total differs
+    const qOf = document.querySelector('#play-screen .stat-card:nth-of-type(1) .of');
+    if (qOf) qOf.textContent = ' / ' + state.total;
+    const scoreOf = document.querySelector('#play-screen .stat-card.sun-card .of');
+    if (scoreOf) scoreOf.textContent = ' / ' + state.total;
+  }
+
+  function renderLastDots() {
+    const wrap = els['last-dots'];
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const last5 = state.history.slice(-5);
+    last5.forEach(h => {
+      const d = document.createElement('div');
+      d.className = 'last-dot ' + (h.correct ? 'correct' : 'wrong');
+      wrap.appendChild(d);
+    });
+  }
+
+  // ===== Timer =====
+  function startTimer() {
+    if (!state.settings.timer.enabled) return;
+    state.timeLeft = state.settings.timer.seconds;
+    if (els['timer-badge']) els['timer-badge'].hidden = false;
+    if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+    state.timerInterval = setInterval(() => {
+      state.timeLeft--;
+      if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+      if (state.timeLeft <= 5) A.playTick();
+      if (state.timeLeft <= 0) {
+        stopTimer();
+        state.timedOut = true;
+        endRound();
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (state.timerInterval) clearInterval(state.timerInterval);
+    state.timerInterval = null;
+    if (els['timer-badge']) els['timer-badge'].hidden = true;
+  }
+
+  function showStartTimerModal() {
+    const secs = state.settings.timer.seconds, n = state.settings.total;
+    QN.ui.confirm({
+      title: 'Ready, set…',
+      body: secs <= 30 ? "You'll have " + secs + ' seconds to identify ' + n + ' note values.' : 'Take your time — ' + secs + ' seconds for ' + n + ' note values.',
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startGame(),
+      onCancel: () => {},
+    });
+  }
+
+
+  // ===== Encouraging line per tier =====
+  function encouragingLine(score, total) {
+    if (typeof M.encouragingLine === 'function') return M.encouragingLine(score, total);
+    // Fallback if module didn't supply one
+    const pct = score / total;
+    if (pct >= 1)   return 'Perfect round!';
+    if (pct >= 0.8) return 'Great round!';
+    if (pct >= 0.5) return 'Solid round!';
+    return 'Keep practicing!';
+  }
+
+  // ===== Shared Fanfare FX (ported from piano-quiz) =====
+  // Shared design across all modules. Module-specific fanfare music plays underneath via A.playFanfare(tier).
+  // Tiers: 'perfect' (full show), 'great' (3 fireworks), 'good' (1 firework), anything else (no fx).
+  const QN_FX = (() => {
+    const FW_COLORS = ['#FFB627','#FF6B6B','#1FB8A8','#5B3FE4','#34d4c2','#FF8FB1','#FFD700','#00E5FF'];
+    // SMuFL music glyphs + Unicode fallbacks + emoji for the finale explosion
+    const NOTE_GLYPHS = ['\uE1D5','\uE1D7','\uE1D9','\uE1F2','\u266A','\u266B','\u266C','\u2669'];
+    const NOTE_EMOJI = ['🎵','🎶','⭐','✨'];
+    const NOTE_COLORS = ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2','#FFD700','#FF8FB1'];
+
+    function getLayer() {
+      let layer = document.getElementById('qn-fx-layer');
+      if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'qn-fx-layer';
+        layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1000;overflow:hidden;';
+        document.body.appendChild(layer);
+      }
+      return layer;
+    }
+
+    function getBadge() {
+      let badge = document.getElementById('qn-celeb-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'qn-celeb-badge';
+        badge.style.cssText = [
+          'position:fixed','left:50%','top:28%',
+          'transform:translate(-50%,-50%) scale(0.3)',
+          "font-family:'Fredoka',sans-serif",'font-weight:700',
+          'font-size:clamp(1.6rem,5vw,2.8rem)',
+          'color:#c98800','background:white',
+          'border:4px solid #2A2A3E','border-radius:22px',
+          'box-shadow:0 8px 0 #2A2A3E','padding:14px 30px',
+          'z-index:1100','opacity:0','pointer-events:none','white-space:nowrap'
+        ].join(';');
+        document.body.appendChild(badge);
+      }
+      return badge;
+    }
+
+    function ensureKeyframes() {
+      if (document.getElementById('qn-celeb-keyframes')) return;
+      const s = document.createElement('style');
+      s.id = 'qn-celeb-keyframes';
+      s.textContent = `
+        @keyframes qnBadgePop {
+          0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+          12%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+          22%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          80%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0; }
+        }
+        #qn-celeb-badge.show { animation: qnBadgePop 2.5s cubic-bezier(.5,1.5,.5,1) forwards; }
+      `;
+      document.head.appendChild(s);
+    }
+
+    function showBadge(text) {
+      ensureKeyframes();
+      const b = getBadge();
+      b.textContent = text;
+      b.classList.remove('show');
+      void b.offsetWidth;
+      b.classList.add('show');
+    }
+
+    function launchFirework(targetX, targetY, color, delay, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const startX = targetX + (Math.random() - 0.5) * 40;
+      const startY = window.innerHeight + 20;
+
+      setTimeout(() => {
+        const trail = document.createElement('div');
+        trail.style.cssText = 'position:absolute;width:5px;height:5px;border-radius:50%;background:' + color + ';box-shadow:0 0 12px ' + color + ';';
+        trail.style.left = startX + 'px';
+        trail.style.top = startY + 'px';
+        layer.appendChild(trail);
+        trail.animate(
+          [{ transform: 'translate(0,0)', opacity: 1 },
+           { transform: 'translate(' + (targetX - startX) + 'px,' + (targetY - startY) + 'px)', opacity: 0.5 }],
+          { duration: 450, easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)', fill: 'forwards' }
+        );
+        setTimeout(() => { trail.remove(); burst(targetX, targetY, color, scale); }, 450);
+      }, delay);
+    }
+
+    function burst(x, y, color, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const sparkCount = Math.floor(40 * scale);
+      const baseDist = 160 * scale;
+      for (let i = 0; i < sparkCount; i++) {
+        const spark = document.createElement('div');
+        const size = (5 + Math.random() * 5) * Math.min(scale, 1.4);
+        spark.style.cssText = 'position:absolute;border-radius:50%;width:' + size + 'px;height:' + size + 'px;background:' + color + ';box-shadow:0 0 8px ' + color + ';';
+        spark.style.left = x + 'px';
+        spark.style.top = y + 'px';
+        layer.appendChild(spark);
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.3;
+        const speed = baseDist * (0.6 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        const dur = 900 + Math.random() * 500;
+        spark.animate(
+          [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.5) + 'px), calc(-50% + ' + (dy*0.5) + 'px)) scale(1)', opacity: 1, offset: 0.4 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 100) + 'px)) scale(0.3)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.15, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => spark.remove(), dur + 50);
+      }
+    }
+
+    function noteExplosion(x, y, count) {
+      const layer = getLayer();
+      const baseDist = 380;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const size = 38 + Math.random() * 40;
+        const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)];
+        p.style.cssText = "position:absolute;font-family:'Bravura Text',serif;line-height:1;user-select:none;text-shadow:0 0 8px " + color + ';color:' + color + ';font-size:' + size + 'px;';
+        p.textContent = (Math.random() < 0.7)
+          ? NOTE_GLYPHS[Math.floor(Math.random() * NOTE_GLYPHS.length)]
+          : NOTE_EMOJI[Math.floor(Math.random() * NOTE_EMOJI.length)];
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.transform = 'translate(-50%,-50%)';
+        layer.appendChild(p);
+        const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const speed = baseDist * (0.5 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 40;
+        const rot = (Math.random() - 0.5) * 720;
+        const dur = 1400 + Math.random() * 600;
+        p.animate(
+          [{ transform: 'translate(-50%,-50%) rotate(0deg) scale(0.7)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.4) + 'px), calc(-50% + ' + (dy*0.4 - 40) + 'px)) rotate(' + (rot*0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.25 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 240) + 'px)) rotate(' + rot + 'deg) scale(0.7)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => p.remove(), dur + 50);
+      }
+    }
+
+    // ===== Audio helpers (built into the FX system; reach into module's AudioContext via NH.audio.ensureCtx) =====
+    function getAudioCtx() {
+      try { return NH.audio.ensureCtx(); } catch (e) { return null; }
+    }
+
+    function boomSound(t, freq, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      freq = freq || 80; vol = vol || 0.55;
+      const dest = ac.destination;
+      const osc = ac.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * 2.5, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.3);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+      osc.connect(g); g.connect(dest);
+      osc.start(t); osc.stop(t + 0.5);
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * 0.35, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = Math.random() * 2 - 1;
+      const noise = ac.createBufferSource(); noise.buffer = nbuf;
+      const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 1800;
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(vol * 0.5, t + 0.008);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      noise.connect(nf); nf.connect(ng); ng.connect(dest);
+      noise.start(t); noise.stop(t + 0.35);
+    }
+
+    function crowdCheer(t, dur, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      dur = dur || 2.5; vol = vol || 0.4;
+      const dest = ac.destination;
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = (Math.random() * 2 - 1) * 0.5;
+      const voices = [{f:700,q:8,g:1.0},{f:1200,q:6,g:0.7},{f:2400,q:4,g:0.4}];
+      voices.forEach(v => {
+        const noise = ac.createBufferSource(); noise.buffer = nbuf;
+        const filter = ac.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = v.f; filter.Q.value = v.q;
+        const gain = ac.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(vol * v.g, t + 0.25);
+        gain.gain.setValueAtTime(vol * v.g, t + dur * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        noise.connect(filter); filter.connect(gain); gain.connect(dest);
+        noise.start(t); noise.stop(t + dur + 0.05);
+      });
+      const whoopCount = Math.floor(dur * 2);
+      for (let i = 0; i < whoopCount; i++) {
+        const wt = t + Math.random() * (dur - 0.2);
+        const wbuf = ac.createBuffer(1, ac.sampleRate * 0.18, ac.sampleRate);
+        const wd = wbuf.getChannelData(0);
+        for (let j = 0; j < wd.length; j++) wd[j] = (Math.random() * 2 - 1) * 0.6;
+        const w = ac.createBufferSource(); w.buffer = wbuf;
+        const wf = ac.createBiquadFilter();
+        wf.type = 'bandpass'; wf.Q.value = 4;
+        wf.frequency.setValueAtTime(800 + Math.random() * 400, wt);
+        wf.frequency.exponentialRampToValueAtTime(1800 + Math.random() * 600, wt + 0.15);
+        const wg = ac.createGain();
+        wg.gain.setValueAtTime(0.0001, wt);
+        wg.gain.exponentialRampToValueAtTime(vol * 0.6, wt + 0.04);
+        wg.gain.exponentialRampToValueAtTime(0.0001, wt + 0.16);
+        w.connect(wf); wf.connect(wg); wg.connect(dest);
+        w.start(wt); w.stop(wt + 0.2);
+      }
+    }
+
+    // ===== Tiered celebration entry point =====
+    function fire(tier) {
+      const ac = getAudioCtx();
+      const now = ac ? ac.currentTime : 0;
+      const w = window.innerWidth, h = window.innerHeight;
+
+      if (tier === 'perfect') {
+        showBadge('PERFECT! 🎆');
+        const launches = [
+          { x: w*0.25, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.4 },
+          { x: w*0.70, y: h*0.25, color: FW_COLORS[1], delay: 250,  scale: 1.4 },
+          { x: w*0.45, y: h*0.20, color: FW_COLORS[2], delay: 550,  scale: 1.5 },
+          { x: w*0.18, y: h*0.32, color: FW_COLORS[3], delay: 900,  scale: 1.3 },
+          { x: w*0.78, y: h*0.28, color: FW_COLORS[4], delay: 1300, scale: 1.3 },
+          { x: w*0.50, y: h*0.18, color: FW_COLORS[6], delay: 1800, scale: 1.7 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0,0.25,0.55,0.90,1.30,1.80].forEach((t,i) => {
+            const isFinale = i === 5;
+            boomSound(now + t + 0.45, isFinale ? 60 : (70 + i*8), isFinale ? 0.55 : 0.38);
+          });
+          crowdCheer(now + 0.1, 3.2, 0.4);
+        }
+        // Finale 100-note explosion synced to finale burst (1800ms launch + 450ms = 2250ms)
+        setTimeout(() => noteExplosion(w / 2, h * 0.35, 100), 2250);
+      } else if (tier === 'great') {
+        showBadge('GREAT! ✨');
+        const launches = [
+          { x: w*0.30, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.2 },
+          { x: w*0.70, y: h*0.28, color: FW_COLORS[2], delay: 500,  scale: 1.2 },
+          { x: w*0.50, y: h*0.22, color: FW_COLORS[1], delay: 1100, scale: 1.3 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0, 0.5, 1.1].forEach((t,i) => boomSound(now + t + 0.45, 75 + i*5, 0.36));
+          crowdCheer(now + 0.1, 2.0, 0.3);
+        }
+      } else if (tier === 'good') {
+        showBadge('NICE! 🎵');
+        launchFirework(w*0.5, h*0.30, FW_COLORS[0], 200, 1.0);
+        if (ac) {
+          boomSound(now + 0.65, 80, 0.32);
+          crowdCheer(now + 0.2, 1.2, 0.22);
+        }
+      } else {
+        // 'okay' / 'practice' — polite badge only, no fx
+        showBadge('Good try!');
+      }
+    }
+
+    return { fire };
+  })();
+
+  // ===== End of Round =====
+  function endRound() {
+    if (state.endedRound) return;
+    state.endedRound = true;
+    stopTimer();
+    const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
+    showScreen('summary');
+
+    // Tier
+    const pct = state.total > 0 ? state.score / state.total : 0;
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.6 ? 'good' : 'practice';
+
+    // Score + streak + stars
+    if (els['sum-score']) els['sum-score'].textContent = state.score;
+    const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
+    if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
+    if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
+    if (els['sum-stars']) {
+      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
+      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
+      els['sum-stars'].textContent = starStr.trim();
+    }
+
+    // Subtitle
+    if (els['summary-sub']) {
+      els['summary-sub'].textContent = state.timedOut
+        ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
+        : encouragingLine(state.score, state.total);
+    }
+
+    // Speed chip
+    const speed = els['summary-speed'];
+    if (speed) {
+      speed.classList.remove('timed-out');
+      if (state.settings.timer.enabled) {
+        speed.hidden = false;
+        if (state.timedOut) {
+          speed.classList.add('timed-out');
+          speed.textContent = '⏱ Time up at ' + state.history.length + '/' + state.total;
+        } else {
+          const allotted = state.settings.timer.seconds;
+          const left = Math.max(0, allotted - elapsed);
+          const emoji = left >= 10 ? '🚀' : left > 0 ? '✨' : '⏱';
+          speed.textContent = emoji + ' Finished in ' + elapsed + 's' + (left > 0 ? ' (' + left + 's to spare)' : ' — right at the buzzer');
+        }
+      } else {
+        speed.hidden = false;
+        speed.textContent = '⏱ ' + elapsed + 's · ' + (elapsed / state.total).toFixed(1) + 's per symbol';
+      }
+    }
+
+    // Miss list + drill pool
+    const counts = {};
+    const missedKeys = new Set();
+    state.history.forEach(h => {
+      if (!h.correct) {
+        const label = M.labelFor(h.key) || h.key;
+        counts[label] = (counts[label] || 0) + 1;
+        missedKeys.add(h.key);
+      }
+    });
+    state.drillPool = [...missedKeys];
+    if (els['drill-btn']) els['drill-btn'].hidden = (state.drillPool.length === 0);
+
+    if (els['miss-items']) {
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      if (sorted.length === 0) {
+        els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no symbols to practice. ⭐</li>';
+      } else {
+        els['miss-items'].innerHTML = sorted.map(([name, n]) =>
+          '<li>' + name + ' — ' + (n === 1 ? 'needed a retry' : 'tripped you up ' + n + ' times') + '</li>'
+        ).join('');
+      }
+    }
+
+    // Personal best (per-difficulty key, preserves ear-rhythm convention)
+    let pb = { score: 0, pct: 0, streak: 0 };
+    const pbKey = M.slug + '_pb_' + state.settings.difficulty;
+    try {
+      pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
+    } catch(e) {}
+    const thisPct = state.total > 0 ? state.score / state.total : 0;
+    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
+    const newStreakPB = state.bestStreak > pb.streak;
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newStreakPB) pb.streak = state.bestStreak;
+    try { localStorage.setItem(pbKey, JSON.stringify(pb)); } catch(e) {}
+    const pbRow = els['pb-row'];
+    if (pbRow) {
+      if (pb.score > 0 || pb.streak > 0) {
+        pbRow.hidden = false;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
+        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+      } else {
+        pbRow.hidden = true;
+      }
+    }
+
+    // Tier-colored title + sub
+    const titleMap = {
+      perfect: 'RHYTHM MASTER! 🎯',
+      great:   'Amazing Round! ⭐',
+      good:    'Nice Playing! 🎶',
+      practice:'Keep Practising! 🌱'
+    };
+    const titleEl = document.querySelector('.summary-title');
+    if (titleEl) {
+      titleEl.textContent = titleMap[tier];
+      titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      // Force reflow so pop animation restarts cleanly on replay
+      void titleEl.offsetWidth;
+      titleEl.classList.add('tier-' + tier);
+    }
+    const subEl = els['summary-sub'];
+    if (subEl) {
+      subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      subEl.classList.add('tier-' + tier);
+    }
+
+    // Score shimmer on perfect
+    if (tier === 'perfect') {
+      setTimeout(() => {
+        const scoreEl = document.getElementById('sum-score');
+        if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
+      }, 300);
+    }
+
+    // Log this round, or HOLD it if no profile yet (back-filled on create)
+    var roundOutcome = 'logged';
+    // Per-sub-skill tallies from this round's history (keyed by key).
+    // Derived from history so it can't drift from the score. Additive.
+    var roundSkills = {};
+    try {
+      for (var _i = 0; _i < state.history.length; _i++) {
+        var h = state.history[_i];
+        var _k = h && h.key != null ? String(h.key) : 'unknown';
+        if (!roundSkills[_k]) roundSkills[_k] = { c: 0, t: 0 };
+        roundSkills[_k].t++;
+        if (h.correct === true) roundSkills[_k].c++;
+      }
+    } catch (e) { roundSkills = null; }
+
+    if (window.QN && QN.events) {
+      roundOutcome = QN.events.logOrHold({
+        module:     (M && M.slug) || 'ear-rhythm',
+        tier:       state.settings.difficulty,
+        length:     state.total,
+        correct:    state.score,
+        total:      state.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled,
+        skills:     roundSkills
+      });
+    }
+
+    // If the round was held (no profile), invite the player to save it.
+    var ssp = els['save-scores-prompt'];
+    if (ssp) ssp.hidden = !(roundOutcome === 'held' && window.QN && QN.events && QN.events.pendingCount() > 0);
+
+    // Music + shared fireworks/crowd/note-explosion celebration. 700ms delay
+    // lets the summary content animate in first, then the celebration lands.
+    setTimeout(() => {
+      A.playFanfare(tier);
+      QN_FX.fire(tier);
+    }, 700);
+  }
+
+  // ===== Wire up settings =====
+  function setupSettings() {
+    // Difficulty tiles
+    if (els['diff-tiles']) {
+      els['diff-tiles'].addEventListener('click', e => {
+        const t = e.target.closest('.tile');
+        if (!t) return;
+        [...els['diff-tiles'].children].forEach(c => c.classList.remove('on'));
+        t.classList.add('on');
+        state.settings.difficulty = t.dataset.diff;
+      });
+    }
+
+    // Question count tiles
+    if (els['length-tiles']) {
+      els['length-tiles'].addEventListener('click', e => {
+        const t = e.target.closest('.tile');
+        if (!t) return;
+        [...els['length-tiles'].children].forEach(c => c.classList.remove('on'));
+        t.classList.add('on');
+        state.settings.total = parseInt(t.dataset.len, 10);
+      });
+    }
+
+    // Timer toggle
+    if (els['timer-toggle']) {
+      els['timer-toggle'].addEventListener('click', () => {
+        state.settings.timer.enabled = !state.settings.timer.enabled;
+        if (els['timer-toggle-state']) els['timer-toggle-state'].textContent = state.settings.timer.enabled ? 'on' : 'off';
+        if (els['timer-pills']) els['timer-pills'].hidden = !state.settings.timer.enabled;
+      });
+    }
+    // Timer pill selections
+    if (els['timer-pills']) {
+      els['timer-pills'].addEventListener('click', e => {
+        const p = e.target.closest('.tpill');
+        if (!p) return;
+        [...els['timer-pills'].children].forEach(c => c.classList.remove('on'));
+        p.classList.add('on');
+        state.settings.timer.seconds = parseInt(p.dataset.secs, 10);
+      });
+    }
+
+    // Start muted toggle
+    if (els['start-muted-toggle']) {
+      els['start-muted-toggle'].addEventListener('change', e => {
+        saveMutedPreference(e.target.checked);
+      });
+    }
+
+    // Start button
+    if (els['start-btn']) {
+      els['start-btn'].addEventListener('click', () => {
+        try { A.ensureCtx(); } catch(e) {}
+        state.drillPool = [];
+        if (state.settings.timer.enabled) showStartTimerModal();
+        else startGame();
+      });
+    }
+
+    // Mute button on play screen
+    if (els['mute-btn']) {
+      els['mute-btn'].addEventListener('click', () => {
+        try { A.ensureCtx(); } catch(e) {}
+        saveMutedPreference(!A.isMuted());
+      });
+    }
+
+    // Exit button → modal
+    if (els['exit-btn']) {
+      els['exit-btn'].addEventListener('click', () => {
+        // Shared confirm modal (QN.ui.confirm). Canonical arrangement is
+        // owned by qn-profile.js: Quit = ghost/left, Keep playing = green/right.
+        QN.ui.confirm({
+          title: 'Quit this round?',
+          body: "Your score for this round won't be saved.",
+          confirmLabel: 'Keep playing',   // solid/safe default (right)
+          cancelLabel: 'Quit round',      // ghost/destructive (left)
+          // Pause the timer while the dialog is open.
+          onOpen: () => {
+            state.timerWasRunning = !!state.timerInterval;
+            if (state.timerWasRunning) stopTimer();
+          },
+          // Keep playing: resume the timer mid-count (preserves timeLeft).
+          onConfirm: () => {
+            if (state.timerWasRunning && state.settings.timer.enabled && !state.endedRound) {
+              if (els['timer-badge']) els['timer-badge'].hidden = false;
+              state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                if (els['timer-num']) els['timer-num'].textContent = state.timeLeft;
+                if (state.timeLeft <= 5) A.playTick();
+                if (state.timeLeft <= 0) {
+                  stopTimer();
+                  state.timedOut = true;
+                  endRound();
+                }
+              }, 1000);
+            }
+          },
+          // Quit round: end and return to start.
+          onCancel: () => {
+            state.endedRound = true;
+            stopTimer();
+            showScreen('start');
+          }
+        });
+      });
+    }
+
+    // Summary screen buttons
+    if (els['again-btn']) {
+      els['again-btn'].addEventListener('click', () => {
+        state.drillPool = [];
+        startGame();
+      });
+    }
+    if (els['drill-btn']) {
+      els['drill-btn'].addEventListener('click', () => {
+        startGame();
+      });
+    }
+    if (els['change-btn']) {
+      els['change-btn'].addEventListener('click', () => {
+        state.drillPool = [];
+        showScreen('start');
+      });
+    }
+  }
+
+  // ===== Init =====
+  document.addEventListener('DOMContentLoaded', () => {
+    cacheEls();
+    if (window.QNNav) { QNNav.mount({ current: null }); }
+    const muted = loadMutedPreference();
+    A.setMuted(muted);
+    syncMuteUI(muted);
+    setupSettings();
+    // Load PBs
+    try {
+      const pbKey = M.slug + '_pb_' + state.settings.difficulty;
+      const pb = JSON.parse(localStorage.getItem(pbKey) || '{}');
+      if (els['pb-score']) els['pb-score'].textContent = pb.score || 0;
+      if (els['pb-streak']) els['pb-streak'].textContent = pb.streak || 0;
+    } catch(e) {}
+
+    // Audio nudge for browsers requiring user gesture
+    const nudge = document.getElementById('audio-nudge');
+    if (nudge) nudge.addEventListener('click', () => { A.ensureCtx(); nudge.classList.remove('show'); });
+  });
+})();
+</script>
+
+
+</body>
+</html>
