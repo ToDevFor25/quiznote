@@ -64,7 +64,8 @@
     PROFILES:       'qn_profiles',
     ACTIVE_PROFILE: 'qn_activeProfile',
     EVENTS:         'qn_events',
-    PENDING_EVENTS: 'qn_pendingEvents'  // anonymous rounds awaiting a profile
+    PENDING_EVENTS: 'qn_pendingEvents', // anonymous rounds awaiting a profile
+    SCHEMA_VERSION: 'qn_schemaVersion'  // single global stamp; absent ⇒ treat as 0
   };
 
   // ── GO-LIVE LEVER ────────────────────────────────────────────
@@ -89,6 +90,16 @@
   // Anonymous rounds held before a profile exists. Capped so a long
   // anonymous session can't grow storage without bound; oldest dropped.
   var MAX_PENDING_EVENTS = 50;
+
+  // Current local-storage schema version. The hook (not the data) is
+  // what's being installed here: today's shape IS v1, so the 0→1
+  // migration is a no-op stamp. Future BREAKING shape changes
+  // (rename/retype/restructure) bump this constant and add a
+  // migrations[N] entry; additive changes (new optional fields) do
+  // NOT need a version bump. Retrofitting versioning after unversioned
+  // data is in the wild is the painful path — installing the hook
+  // now keeps that door open. See project doc §4 storage playbook.
+  var SCHEMA_VERSION = 1;
 
   // Color palette IDs match the design system tokens in each
   // module's CSS. Keep this list in sync with the onboarding
@@ -188,6 +199,53 @@
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Schema migrations
+  //
+  // Single global version stamp at qn_schemaVersion. Absent ⇒ 0.
+  // migrations[N] runs the N→N+1 transformation. Each must be
+  // idempotent — safe to re-run if interrupted mid-way. The version
+  // is written ONLY after a step completes, so a failed migration
+  // halts the chain and leaves the previous version intact.
+  //
+  // Today's data IS v1, so 0→1 is a no-op stamp. Future breaking
+  // changes add migrations[1], migrations[2], etc., and bump
+  // SCHEMA_VERSION above.
+  // ─────────────────────────────────────────────────────────────
+
+  function readSchemaVersion() {
+    var raw = readStorageRaw(STORAGE_KEYS.SCHEMA_VERSION);
+    if (raw == null) return 0;
+    var v = Number(raw);
+    return isFinite(v) && v >= 0 ? Math.floor(v) : 0;
+  }
+
+  function writeSchemaVersion(v) {
+    writeStorageRaw(STORAGE_KEYS.SCHEMA_VERSION, String(v));
+  }
+
+  var migrations = {
+    // 0 → 1: current shape IS v1. Stamp it; no data transformation.
+    0: function () { /* no-op */ }
+  };
+
+  function runMigrations() {
+    var current = readSchemaVersion();
+    while (current < SCHEMA_VERSION) {
+      var step = migrations[current];
+      if (typeof step === 'function') {
+        try {
+          step();
+        } catch (e) {
+          console.error('[QN] schema migration ' + current + ' → ' + (current + 1) + ' failed:', e);
+          return; // halt chain; leave previous version intact
+        }
+      }
+      current += 1;
+      writeSchemaVersion(current);
     }
   }
 
@@ -1172,6 +1230,12 @@
     hasCorruption: function () { return _corruptionLog.length > 0; }
   };
 
-  window.QN.version = '1.7.0';  // + QN.ui.confirm shared modal component (canonical quit/confirm dialog)
+  // Run schema migrations once at module init, before any consumer
+  // reads the storage. Today this is a no-op stamp; the hook is what
+  // matters — future breaking-shape changes plug in via migrations[].
+  runMigrations();
+  window.QN.schemaVersion = SCHEMA_VERSION;
+
+  window.QN.version = '1.8.0';  // + schemaVersion migration hook (no-op stamp; future breaking shape changes plug into migrations[])
 
 })();
