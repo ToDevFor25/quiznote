@@ -336,12 +336,15 @@
     'scale-degrees':   { name: 'Scale Degrees',    tier: 'reading',     sub: 'every note has a job' },
     'scale-modes':     { name: 'Scale Modes',      tier: 'reading',     sub: 'same notes, different home' },
     'intervals':       { name: 'Intervals',        tier: 'reading',     sub: 'name the gap' },
-    'ear-intervals':   { name: 'Ear: Intervals',   tier: 'theory',      sub: 'hear and name' }
+    'ear-intervals':   { name: 'Ear: Intervals',   tier: 'theory',      sub: 'hear and name' },
+    'primary-chords':  { name: 'Primary Chords',  tier: 'theory',      sub: 'I, IV, V in every key' },
+    'roman-numerals':  { name: 'Roman Numerals',   tier: 'theory',      sub: 'every chord has a job' },
+    'ear-scales':      { name: 'Ear: Scales',      tier: 'theory',      sub: 'hear the scale type' }
   };
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals'];
+  var PATH = ['note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz', 'key-signatures', 'scales', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'primary-chords', 'roman-numerals', 'ear-scales'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -378,7 +381,10 @@
     'scale-modes':     'sm_',
     'intervals':       'iv_',
     'ear-intervals':   'ei_',
-    'accidentals':     'ac_'
+    'accidentals':     'ac_',
+    'primary-chords':  'pc_',
+    'roman-numerals':  'rn_',
+    'ear-scales':      'es_'
   };
 
   function $(id) { return document.getElementById(id); }

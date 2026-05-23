@@ -1021,7 +1021,8 @@
   var PATH = [
     'note-names', 'note-values', 'time-signatures', 'accidentals', 'piano-quiz',
     'key-signatures', 'scales', 'scale-degrees', 'scale-modes',
-    'intervals', 'ear-intervals'
+    'intervals', 'ear-intervals',
+    'primary-chords', 'roman-numerals', 'ear-scales'
   ];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
