@@ -197,7 +197,6 @@
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
-  .start-wrap { width: 100%; max-width: 720px; }
   .brand { text-align: center; margin-bottom: 22px; }
   .brand .logo-mark {
     display: inline-flex; align-items: center; gap: 12px;
@@ -214,50 +213,8 @@
     margin-top: 8px;
   }
 
-  .q-block { margin-top: 22px; }
-  .q-label {
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 18px; color: var(--ink);
-    margin-bottom: 10px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .q-label .num {
-    width: 28px; height: 28px;
-    background: var(--ink); color: white;
-    border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 700;
-  }
 
-  .tile-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-  }
-  .tile {
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 18px;
-    box-shadow: 0 5px 0 var(--ink);
-    padding: 14px 10px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 80ms, box-shadow 80ms;
-    font-family: 'Fredoka', sans-serif; font-weight: 500;
-  }
-  .tile:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
-  .tile.on { background: var(--teal); color: white; box-shadow: 0 5px 0 var(--teal-dk); }
-  .tile.on svg .clef { fill: white; }
-  .tile.on svg .staff-line { stroke: white; }
-  .tile-title { font-size: 20px; font-weight: 700; line-height: 1.1; }
-  .tile-emoji { font-size: 38px; line-height: 1; margin-bottom: 4px; }
-  .tile-sub {
-    font-family: 'Nunito', sans-serif; font-weight: 600;
-    font-size: 12px; color: var(--ink-soft);
-    margin-top: 4px; line-height: 1.3;
-  }
-  .tile.on .tile-sub { color: rgba(255,255,255,0.9); }
-  .tile-clef { height: 54px; margin-bottom: 4px; }
 
-  .start-cta { text-align: center; margin-top: 28px; }
 
   /* ============ PLAY SCREEN ============ */
   #play-screen { padding: 10px 12px 8px; gap: 8px; position: relative; }
@@ -675,67 +632,8 @@
 
   /* ============ Timer ============ */
   #timer-block { text-align: center; }
-  .timer-toggle {
-    display: inline-flex; align-items: center; gap: 10px;
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 999px;
-    box-shadow: 0 4px 0 var(--ink);
-    padding: 10px 16px;
-    cursor: pointer;
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 17px; color: var(--ink);
-    transition: transform 80ms, box-shadow 80ms;
-  }
-  .timer-toggle:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
-  .timer-toggle.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
-  .timer-toggle .t-icon { font-size: 20px; line-height: 1; }
-  .timer-toggle .t-state {
-    font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 600;
-    background: rgba(0,0,0,0.08);
-    padding: 3px 9px; border-radius: 999px;
-    color: var(--ink-soft);
-  }
-  .timer-toggle.on .t-state { background: rgba(255,255,255,0.25); color: white; }
-  .timer-pills {
-    display: flex; gap: 10px; justify-content: center;
-    margin-top: 14px; flex-wrap: wrap;
-  }
-  .timer-pills[hidden] { display: none; }
-  .tpill {
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 18px;
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 14px;
-    box-shadow: 0 4px 0 var(--ink);
-    padding: 8px 18px;
-    cursor: pointer;
-    color: var(--ink);
-    transition: transform 80ms, box-shadow 80ms;
-  }
-  .tpill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
-  .tpill.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
 
   /* Play-screen timer badge */
-  .timer-badge {
-    display: flex; align-items: center; gap: 4px;
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 20px; color: var(--ink);
-    background: var(--teal-lt); border: 2.5px solid var(--teal-dk);
-    border-radius: 14px; padding: 6px 12px;
-    box-shadow: 0 4px 0 var(--teal-dk);
-    min-width: 82px; justify-content: center;
-    line-height: 1;
-  }
-  .timer-badge[hidden] { display: none; }
-  .timer-badge .t-icon { font-size: 16px; margin-right: 2px; }
-  .timer-badge.urgent {
-    background: var(--coral); color: white;
-    border-color: var(--coral-dk);
-    box-shadow: 0 4px 0 var(--coral-dk);
-    animation: timerPulse 700ms ease-in-out infinite;
-  }
   @keyframes timerPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.09); }
@@ -816,32 +714,6 @@
     letter-spacing: -0.01em;
   }
   .site-header .brand-name span { color: var(--teal); }
-  .start-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--ink);
-    text-decoration: none;
-    background: white;
-    border: 2px solid var(--ink);
-    border-radius: 12px;
-    padding: 7px 14px 7px 12px;
-    box-shadow: 0 3px 0 var(--ink);
-    transition: transform 120ms ease-out, box-shadow 120ms ease-out;
-    margin-bottom: 18px;
-    align-self: flex-start;
-  }
-  .start-back-link:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 0 var(--ink);
-  }
-  .start-back-link:active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 var(--ink);
-  }
   #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
