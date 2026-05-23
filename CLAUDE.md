@@ -45,9 +45,9 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **9 live modules:** note-names, piano-quiz, note-values, time-signatures,
-  key-signatures, scale-degrees, scales, intervals, accidentals. Roster target
-  is 24 (see project doc §5).
+- **11 live modules:** note-names, piano-quiz, note-values, time-signatures,
+  key-signatures, scale-degrees, scales, scale-modes, intervals, ear-intervals,
+  accidentals. Roster target is 24 (see project doc §5).
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. Always work on Dev. Never commit
   straight to main.
@@ -124,14 +124,37 @@ overrides the shared file. An in-progress rollout can keep some modules inline
 
 ## Current in-progress state (read this carefully)
 
-- **Toast rollout: COMPLETE.** All 9 modules now use the shared Option-2 toast
-  (praise `top:46%`, retry/reveal `top:64%`) from `qn-theme.css`. `scales` keeps
-  its own inline rules (different feedback model: 40px correct, `.toast.wrong`,
-  no retry/reveal). Confirmed working on Dev.
-- **CSS clusters remaining:** buttons (~81 lines, `.btn/.ghost`) and
-  cards/structure (~72 lines). See BUILD_LOG "Still open / next" for full
-  sequenced list.
-- See BUILD_LOG for complete current state before starting any work.
+- **Infrastructure phase: complete.** Shared CSS, shared JS layer, dashboard,
+  recommender, account/household, schemaVersion migration hook — all shipped.
+  The work now is **building out the 24-module roster** in path order.
+- **Last shipped (May 2026 roster-expansion session):** Scale Modes (§5 #12,
+  Reading) and Ear: Intervals (§5 #19, Theory). Both via clone-and-swap —
+  Scale Modes off scales.html (pure data swap to a mode-rotation generator),
+  Ear: Intervals off intervals.html (one CSS rule hides the staff and shows
+  a 🎧 placeholder; audio + question logic byte-identical to sight Intervals).
+  9 → 11 live.
+- **Clone-and-swap discipline (locked rule, project doc §8).** Clone-and-swap
+  is a pure-data swap. If the source module's renderer or audio engine can't
+  represent the new module's shape, that's a *renderer-extension session*,
+  NOT a clone-and-swap. Audit the source's renderer before starting; if it
+  can't draw what the new module needs, stop and either extend the renderer
+  as its own session or pick a different source. The May 2026 Triads attempt
+  off intervals.html — 2-note renderer asked to draw a 3-note triad — is the
+  founding example.
+- **Next session (queued): chord cluster.** Triads / Seventh Chords / Primary
+  Chords (§5 #14–16). Starts with a **3-note staff renderer extension** (and
+  a `playChord` audio helper modelled on `playInterval`), then the three
+  modules become clean clone-and-swaps off whichever lands as the chord base.
+- **Index ↔ play ↔ path parity.** When adding a new module, ALL THREE
+  surfaces get updated in the same operation: `index.html` (landing-page
+  tile + the module-count stat), `play.html` (Practice tile), AND
+  `path.html` MODULES/PATH/SHORT_PREFIX + `qn-profile.js` recommender
+  PATH (so the spine actually shows it). Pre-existing drift was repaired
+  this session — index was missing Time Signatures + Scale Degrees;
+  path/recommender were missing Accidentals + Scale Degrees. Both kinds
+  of drift came from a "new module → add tile to play.html only" habit;
+  the fix is to treat the four-surface update as a single atomic step.
+- See BUILD_LOG for the full "Still open / next" list.
 
 ---
 

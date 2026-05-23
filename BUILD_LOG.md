@@ -18,8 +18,9 @@ unified nav across all surfaces, account/household layer, dashboard, weak-spot t
 and recommender (phase 2) are all shipped. The work now is **building out the 24-module roster**
 in path order, plus the parallel Tier-3 monetization/legal track. (See project doc §12.)
 
-**Live modules (9):** Note Names, Piano Quiz, Note Values, Time Signatures, Key Signatures,
-Scale Degrees, Scales, Intervals, Accidentals.
+**Live modules (11):** Note Names, Piano Quiz, Note Values, Time Signatures, Key Signatures,
+Scale Degrees, Scales, **Scale Modes** (NEW May 2026), Intervals, **Ear: Intervals** (NEW May
+2026), Accidentals.
 
 **Shared files:**
 - `qn-profile.js` **v1.8.0** — identity, events, recommender, account/household + 7-day trial
@@ -540,3 +541,61 @@ biggest continuity risk per its own framing, this closes that gap.
 This entry; the "Current state snapshot" qn-profile.js + qn-theme.css blocks; "Known deferred
 infra" (schemaVersion now installed, not deferred); the "Still open / next" status; the obsolete
 "deploy this file back to the repo" note removed. `QUIZNOTE_PROJECT_DOC.md` updates in parallel.
+
+---
+
+## May 2026 — Roster expansion: Scale Modes + Ear: Intervals (9 → 11 live)
+
+Goal: get from 9 to 12 modules in one session, focusing on Reading / Theory tiers. Landed at **11 live** (9 → 11), with the third candidate (Triads) deliberately deferred to its own focused session after a hard course-correction.
+
+### Picks (Tier-2 reasoning at session start)
+First pick was **Triads / Seventh Chords / Primary Chords** off `intervals.html`, reasoning the chord arc would lift Theory tier from 0 → 3 live. **Wrong call.** Intervals' renderer is hardcoded for 2 notes (lower/upper) and its audio engine for 2 midi numbers; 3-note chord rendering is fundamentally outside its scope. A clone-and-swap that adds a parallel `buildStaffWithTriad` / `playTriad` alongside the originals is *net-new code in a cloned shell* — not clone-and-swap. Caught and reversed mid-session; the chord cluster is now queued as its own session starting with a 3-note staff renderer extension. (New §8 rule captures the lesson — see project doc.)
+
+Re-picked: **Scale Modes (§5 #12)** + **Ear: Intervals (§5 #19)**. Both are genuine pure clone-and-swap candidates:
+- Modes ride scales.html's existing scale-run renderer untouched.
+- Ear: Intervals reuses intervals.html's renderer + audio + question/choice logic untouched, with one CSS rule hiding the visual.
+
+Third clean candidate didn't exist in Reading/Theory without modifying a renderer or promoting a folded-in topic (Tier 3). 11 (not 12) was the honest landing.
+
+### Scale Modes — what got built
+- Cloned `scales.html` → `scale-modes.html` (file renamed mid-build per user direction; original "Modes" name → "Scale Modes" for clarity on the play page).
+- Replaced the static scale-data block (MAJOR_SCALES / NATURAL_MINOR_SCALES / HARMONIC_MINOR_SCALES / MELODIC_MINOR_SCALES + raised-7th/raised-6th maps + POOLS) with a `makeMode(parent, modeKey)` generator that rotates a parent major's notes to start on the chosen scale degree.
+- 7 mode rotations: Ionian (deg 1), Dorian (2), Phrygian (3), Lydian (4), Mixolydian (5), Aeolian (6), Locrian (7).
+- 7 parent majors curated: C (0 acc), G (1#), F (1b), D (2#), A (3#), Bb (2b), Eb (3b).
+- Tier pools: Easy = 7 white-key modes (C parent), Medium = +G/F parents (21 modes), Tricky = + D/A/Bb/Eb parents (49 modes).
+- **Octave normalization (load-bearing detail):** the naive rotation pushes higher-degree modes into octave 5–6 (e.g. F# Locrian rotated off G major comes out as F#5–F#6), which would render way above the staff. `makeMode` shifts the whole scale down an octave whenever the tonic's MIDI lands above B4. After normalization every generated mode renders in the same staff range as its parent.
+- Distractor logic adapted (per the makeChoices rewrite): tempting distractors are **sibling modes** (same parent major / same key sig, different tonic — the "D Dorian vs A Aeolian" confusion) and **parallel modes** (same tonic, different rotation — "D Dorian vs D Mixolydian"). Replaces scales.html's relative-major-vs-relative-minor logic which doesn't apply to modes.
+- `needsExplicitAccidental` simplified to `return false` always — every diatonic mode lives inside its parent major's key sig with no raised notes (unlike harmonic/melodic minor, which is what the original branching handled).
+- Sub-skill tag = mode name (`ionian`/`dorian`/...); 7 entries added to `dashboard.html` `SKILL_LABELS`.
+- localStorage namespace `sm_`, module event key `'scale-modes'`.
+- Sanity check rewritten for mode interval patterns. Console-verifies all 49 generated modes match their expected interval sequence, span exactly 12 semitones, and have matching first/last note letters.
+
+### Ear: Intervals — what got built
+- Cloned `intervals.html` → `ear-intervals.html`. Renderer / audio engine (`playInterval`) / question generator (`buildIntervalQuestion`) / choice generator (`buildIntervalChoices`) / game loop all byte-identical to sight Intervals.
+- One behavior change: a CSS rule on `.staff-svg-wrap` hides the rendered SVG (`svg { display: none; }`) and shows a pulsing 🎧 pseudo-element in its place via `::before`. The renderer still runs and writes the SVG to the DOM; it's just invisible. Audio plays normally, the existing "▶ Hear it again" button reuses the same `playInterval` call. The audio IS the question.
+- Identity-only edits otherwise: title, h1, tagline, staff-label ("What interval did you hear?"), summary-sub, miss-list h3, `iv_muted` → `ei_muted`, `iv_pb` → `ei_pb`, `intervals_settings` → `ear_intervals_settings`, module event key `'intervals'` → `'ear-intervals'`. (`iv_pb` was caught in a residual sweep — without that rename Ear: Intervals would have shared personal-best data with sight Intervals.)
+- Tier-3 multi-timbre audio (the originally-feared blocker) wasn't needed at all — Tier-1 synth audio suffices for monophonic interval ear training. The Tier-3 plan remains live but is now only on the path for **Ear: Chord Quality** (§5 #20).
+
+### Hub wiring (one batched pass)
+- `play.html`: Scale Modes tile added in Reading (positioned after Scale Degrees); Ear Training `soon` placeholder converted to live Ear: Intervals tile.
+- `index.html`: same two additions, plus reconciled with `play.html`'s roster by adding the previously-missing **Time Signatures** + **Scale Degrees** tiles (pre-existing landing-page drift surfaced by the user during this session — index had been showing 8 cards while play.html showed 10). Landing stat bumped 8 → 11. Final layout matches `play.html`: 5 Foundations / 4 Reading / 2 Theory.
+- `dashboard.html`: `'scale-modes'` and `'ear-intervals'` added to `MODULE_META`; 7 mode-rotation entries added to `SKILL_LABELS`. ear-intervals' M3/P5/etc keys read via the raw-key fallback (matches sight Intervals' policy).
+- `path.html`: both modules added to `MODULES`, `PATH`, and `SHORT_PREFIX` (`sm_`, `ei_`).
+- `qn-profile.js`: recommender `PATH` extended with `scale-modes` (after scales) and `ear-intervals` (after intervals). The recommender now walks 9 live modules in the linear path order (the 2 newly added join the existing 7 — note-names, note-values, key-signatures, time-signatures, piano-quiz, scales, intervals — plus accidentals + scale-degrees which were already live but not yet in the recommender PATH; that pre-existing gap is unchanged this session).
+
+### Working-rule moments worth keeping
+- **Clone-and-swap discipline.** When the source module's renderer or audio engine can't represent the new module's shape, that is a renderer-extension session, NOT a clone-and-swap. Caught mid-Triads-attempt and reversed. New §8 rule written. Rule of thumb: before starting a clone, audit whether the source's existing renderer can already draw what the new module needs. If it can't, stop and either extend the renderer as its own session or pick a different source.
+- **Tile-count drift between `index.html` and `play.html`.** Surfaced when the user counted 9 tiles on index while the new stat said 11. Root cause: index.html had been a strict subset of play.html for some time (Time Signatures + Scale Degrees missing). Now reconciled. Going forward, when a new module is added, BOTH pages get the tile — they should be kept in sync as one operation, not two.
+
+### Deploy set
+2 new files (`scale-modes.html`, `ear-intervals.html`) + 5 modifications (`play.html`, `index.html`, `dashboard.html`, `path.html`, `qn-profile.js`). Single commit `dd78214` to Dev. Vercel preview built on push.
+
+### Still open / next (sequenced)
+1. **Chord cluster session — Triads, Seventh Chords, Primary Chords (§5 #14–16).** Owned as a dedicated session. Starts with **a 3-note staff renderer extension** (likely a new `buildStaffWithChord` in `qn-staff.js` or as a forward-looking helper, with stacked-note + shared-stem geometry that handles root-position triads as the simplest case, then 7ths as a 4-note extension). Audio: `playChord(rootMidi, thirdMidi, fifthMidi[, seventhMidi])` — a block chord with light arpeggiation, modelled on `playInterval`. Once renderer + audio exist, Triads + 7ths + Primary Chords become clean pure clone-and-swaps from a future "chord base" module.
+2. **Circle of Fifths (§5 #11).** Net-new interactive SVG wheel — its own focused session. Doesn't reuse any existing renderer (no live module renders a wheel), but doesn't modify one either. Polish-as-moat showcase per §5.
+3. Visual QA on the Vercel Dev preview for the 2 new modules + the index reconciliation. Round-play smoke test of Scale Modes (Easy / Medium / Tricky), Ear: Intervals (Easy / Medium / Tricky, all three clef modes). Confirm the dashboard surfaces the new sub-skill labels correctly after a round.
+4. (Carried from finishing session, unchanged) Time-signatures `accStartX: 72` pin and the 2 `qn-theme.css` holdouts (time-sigs prompt-layout + scales tile) — both still need a slider harness per §8.
+5. (Carried) Sampled-piano audio (Tier 2); notehead rendering in `qn-staff.js` (still blocks retiring Note Names / Piano Quiz per-module note positioning). Multi-timbre audio (Tier 3) is now ONLY needed for **Ear: Chord Quality** (§5 #20) — Ear: Intervals shipped on synth audio.
+
+### Doc updates folded in
+This entry. Project doc: `Last revised` header bumped; §5 #12 Modes renamed "Scale Modes" + status → Live; §5 #19 Ear: Intervals status → Live; §12 build order updated (Ear: Intervals marked done; Scale Modes promoted out of Stretch); new §8 rule for clone-and-swap discipline. `BUILD_LOG.md` Current State snapshot: 9 → 11 modules.
