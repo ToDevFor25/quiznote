@@ -15,19 +15,19 @@ Identify pitches that sit on or between ledger lines — above and below the sta
 - **Deep ledger range:** notes 4+ ledger lines from the staff, for fluency at the top/bottom of the reading register.
 
 ## Tiers (Easy / Medium / Tricky — app convention)
-Difficulty axis = **how far past the staff edge**, not how many notes. The pool stays small and focused; harder tiers reach further out.
+Pool contains **only pitches with visible ledger lines drawn for them** — both notes ON a ledger and notes in the space between two ledgers (where ledger lines flank the notehead). Excludes the "bare floating space note" immediately outside the staff (D4 / G5 treble, F2 / B3 bass) — those get zero ledgers drawn and Note Names already covers them in its Medium tier. Difficulty axis = **how far from the staff edge** (which ledger).
 
-- **Easy:** one ledger line out. Heavy emphasis on Middle C and its immediate neighbors.
-  - Treble: `D4`, `C4` (Middle C — most-asked), `B3` (below); `A5`, `B5` (above).
-  - Bass: `B3`, `C4` (Middle C), `D4` (above); `F2`, `E2` (below).
-- **Medium:** + two ledger lines out.
-  - Treble: + `A3`, `G3` (below); + `C6`, `D6` (above).
-  - Bass: + `D2`, `C2` (below); + `E4`, `F4` (above).
-- **Tricky:** + three or more ledger lines out (the deep range).
-  - Treble: + `F3`, `E3` (below); + `E6`, `F6`, `G6` (above).
-  - Bass: + `B1`, `A1` (below); + `G4`, `A4`, `B4` (above).
+- **Easy:** 1st-2nd ledger range above + below (on-ledger notes + the space between).
+  - Treble: `C4` (Middle C, on 1st below), `B3` (between 1st-2nd below), `A3` (on 2nd below); `A5` (on 1st above), `B5` (between 1st-2nd above), `C6` (on 2nd above).
+  - Bass: `E2` (on 1st below), `D2` (between 1st-2nd below), `C2` (on 2nd below); `C4` (Middle C, on 1st above), `D4` (between 1st-2nd above), `E4` (on 2nd above).
+- **Medium:** + 3rd-ledger range.
+  - Treble: + `G3` (between 2nd-3rd), `F3` (on 3rd) below; + `D6` (between), `E6` (on 3rd) above.
+  - Bass: + `B1` (between), `A1` (on 3rd) below; + `F4` (between), `G4` (on 3rd) above.
+- **Tricky:** + 4th-ledger range.
+  - Treble: + `E3` (between 3rd-4th), `D3` (on 4th) below; + `F6` (between), `G6` (on 4th) above.
+  - Bass: + `G1` (between), `F1` (on 4th) below; + `A4` (between), `B4` (on 4th) above.
 
-In-staff notes are **deliberately excluded** at every tier — this is the whole differentiator from Note Names. The pool is a finite curated list (not a generator).
+Tricky stays at 4th ledger by design — covers practical school-band / orchestral / choral reading. Extends-into-flute-high-register (5th-6th ledger) is deliberately out of scope per the beginner-through-intermediate audience constraint. Pool counts per clef: Easy 6 · Medium 10 · Tricky 14. Both-clef mode doubles the pool for added variety. In-staff notes are deliberately excluded at every tier — this is the differentiator from Note Names. The pool is a finite curated list (not a generator).
 
 ## Question type (single)
 **Identify the pitch.** A staff is drawn with the chosen clef, the queried note placed at the correct ledger-line position with all required ledger lines rendered. Four pitch-name tiles. Correct = the note's letter name.

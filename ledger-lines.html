@@ -903,19 +903,34 @@
   const R = NH.render;
   const A = NH.audio;
 
-  // Ledger-line pools — pitches OUTSIDE the staff only, by distance.
-  // Treble staff lines span E4 (bottom) to F5 (top). Bass G2 (bottom) to A3 (top).
-  // Easy = 1 ledger out · Medium = + 2 ledgers out · Tricky = + 3+ ledgers out.
+  // Ledger-line pools — pitches with VISIBLE LEDGER LINES drawn for them.
+  // Includes notes on a ledger AND notes in the space between two ledgers
+  // (where 2 ledger lines flank the notehead). Excludes bare-space notes
+  // immediately outside the staff (D4/G5 treble, F2/B3 bass) — those get
+  // zero ledgers drawn and Note Names already covers them.
+  // Treble: below = C4(on 1st), B3(between 1st-2nd), A3(on 2nd),
+  //                 G3(between 2nd-3rd), F3(on 3rd), E3(between 3rd-4th),
+  //                 D3(on 4th);
+  //         above = A5(on 1st), B5(between 1st-2nd), C6(on 2nd),
+  //                 D6(between 2nd-3rd), E6(on 3rd), F6(between 3rd-4th),
+  //                 G6(on 4th).
+  // Bass:   below = E2(on 1st), D2(between 1st-2nd), C2(on 2nd),
+  //                 B1(between 2nd-3rd), A1(on 3rd), G1(between 3rd-4th),
+  //                 F1(on 4th);
+  //         above = C4(on 1st), D4(between 1st-2nd), E4(on 2nd),
+  //                 F4(between 2nd-3rd), G4(on 3rd), A4(between 3rd-4th),
+  //                 B4(on 4th).
+  // Easy = 1st-2nd ledger range · Medium = + 3rd · Tricky = + 4th.
   const RANGES = {
     treble: {
-      easy:   ['B3','C4','D4','A5','B5'],
-      medium: ['B3','C4','D4','A5','B5','G3','A3','C6','D6'],
-      tricky: ['B3','C4','D4','A5','B5','G3','A3','C6','D6','E3','F3','E6','F6','G6'],
+      easy:   ['C4','B3','A3','A5','B5','C6'],
+      medium: ['C4','B3','A3','A5','B5','C6','G3','F3','D6','E6'],
+      tricky: ['C4','B3','A3','A5','B5','C6','G3','F3','D6','E6','E3','D3','F6','G6'],
     },
     bass: {
-      easy:   ['E2','F2','B3','C4','D4'],
-      medium: ['E2','F2','B3','C4','D4','C2','D2','E4','F4'],
-      tricky: ['E2','F2','B3','C4','D4','C2','D2','E4','F4','A1','B1','G4','A4','B4'],
+      easy:   ['E2','D2','C2','C4','D4','E4'],
+      medium: ['E2','D2','C2','C4','D4','E4','B1','A1','F4','G4'],
+      tricky: ['E2','D2','C2','C4','D4','E4','B1','A1','F4','G4','G1','F1','A4','B4'],
     },
   };
 
