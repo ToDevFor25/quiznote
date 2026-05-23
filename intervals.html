@@ -45,70 +45,17 @@
   button, .pressable { font-family: inherit; cursor: pointer; }
   h1, h2, h3, h4 { margin: 0; }
 
-  /* ---- Chunky button system ---- */
-  .btn {
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    border: none; border-radius: 16px;
-    padding: 12px 24px; font-size: 18px;
-    color: white; background: var(--teal);
-    box-shadow: 0 5px 0 var(--teal-dk);
-    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
-    position: relative;
-    line-height: 1.1;
-    white-space: nowrap;
-  }
-  .btn:active, .btn.is-pressed {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 var(--teal-dk);
-  }
-  .btn.sun { background: var(--sun); color: var(--ink); box-shadow: 0 5px 0 var(--sun-dk); }
-  .btn.sun:active { box-shadow: 0 1px 0 var(--sun-dk); }
-  .btn.grape { background: var(--grape); box-shadow: 0 5px 0 var(--grape-dk); }
-  .btn.grape:active { box-shadow: 0 1px 0 var(--grape-dk); }
-  .btn.ghost {
-    background: white; color: var(--ink);
-    border: 2px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
-    padding: 10px 22px;
-  }
-  .btn.ghost:active { box-shadow: 0 1px 0 var(--ink); }
-  .btn.big { font-size: 22px; padding: 14px 32px; border-radius: 18px; }
-  .btn.huge { font-size: 26px; padding: 16px 40px; border-radius: 20px; }
+  /* .btn cluster → qn-theme.css (responsive @media .btn override stays inline below) */
 
 
-  /* ---- Cards ---- */
-  .card {
-    background: white;
-    border: 2.5px solid var(--ink);
-    border-radius: 20px;
-    box-shadow: 0 6px 0 var(--ink);
-  }
-  .card.sun-card { background: var(--sun); }
-  .card.teal-card { background: var(--teal); color: white; }
-
-  /* ---- Screen system ---- */
-  .screen { display: none !important; flex: 1; pointer-events: none; }
-  .screen.active { display: flex !important; flex-direction: column; pointer-events: auto; }
+  /* .card / .screen → qn-theme.css */
 
   /* ============ START SCREEN ============ */
   #start-screen {
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
-  .brand { text-align: center; margin-bottom: 22px; }
-  .brand .logo-mark {
-    display: inline-flex; align-items: center; gap: 12px;
-    justify-content: center;
-  }
-  .brand h1 {
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 56px; line-height: 1; color: var(--ink);
-    letter-spacing: -0.01em;
-  }
-  .brand .tagline {
-    font-family: 'Fredoka', sans-serif; font-weight: 500;
-    font-size: 17px; color: var(--ink-soft);
-    margin-top: 8px;
-  }
+  /* .brand* → qn-theme.css */
   .audience-line {
     text-align: center;
     font-family: 'Nunito', sans-serif;
@@ -174,22 +121,7 @@
   }
   /* .choice-btn + .choice-acc -> qn-theme.css */
 
-  /* Feedback toasts */
-  .toast {
-    position: absolute; left: 50%; top: 38px;
-    transform: translateX(-50%) translateY(-10px) scale(0.6);
-    opacity: 0;
-    pointer-events: none;
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    text-align: center;
-    z-index: 5;
-    transition: transform 240ms cubic-bezier(.4,1.8,.5,1), opacity 180ms;
-    white-space: nowrap;
-    max-width: 92%;
-  }
-  .toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); }
-  .toast.retry { color: var(--sun-dk); font-size: 30px; }
-  .toast.reveal { color: var(--grape); font-size: 26px; }
+  /* .toast + variants → qn-theme.css (Option-2 placement: praise 46%, retry/reveal 64%) */
 
   /* Confetti + note-burst layer */
   .fx-layer {
@@ -350,26 +282,7 @@
     100% { transform: scale(1) translateY(0); opacity: 1; }
   }
 
-  /* ============ Site Header ============ */
-  .site-header {
-    background: white;
-    border-bottom: 2.5px solid var(--ink);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .site-header .brand-name {
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
-    font-size: 26px;
-    color: var(--ink);
-    text-decoration: none;
-    letter-spacing: -0.01em;
-  }
-  .site-header .brand-name span { color: var(--teal); }
+  /* .site-header* → qn-theme.css */
   #qn-nav-slot {
     margin-left: auto;
     display: inline-flex;
@@ -394,23 +307,7 @@
     color: var(--ink);
     line-height: 1.4;
   }
-  /* ============ Site Footer ============ */
-  .site-footer {
-    background: white;
-    border-top: 2px solid var(--shadow-cool);
-    padding: 14px 20px;
-    text-align: center;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    color: var(--ink-faint);
-  }
-  .site-footer a {
-    color: var(--ink-soft);
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .site-footer a:hover { text-decoration: underline; }
-  .site-footer .sep { margin: 0 8px; }
+  /* .site-footer* → qn-theme.css */
 
   /* ============ Mute button ============ */
   .mute-btn {
@@ -1975,13 +1872,16 @@
     });
 
     els['exit-btn'].addEventListener('click', () => {
-      showConfirm({
+      // Shared confirm modal (QN.ui.confirm). Canonical arrangement is owned by
+      // qn-profile.js: Quit = ghost/left, Keep playing = green/right.
+      QN.ui.confirm({
         title: 'Quit this round?',
         body: "Your score for this round won't be saved.",
-        primaryLabel: 'Keep playing',
-        secondaryLabel: 'Quit round',
-        onPrimary: () => {},
-        onSecondary: () => { stopTimer(); showScreen('start'); }
+        confirmLabel: 'Keep playing',   // solid/safe default (right)
+        cancelLabel: 'Quit round',      // ghost/destructive (left)
+        onOpen: () => pauseTimer(),
+        onConfirm: () => resumeTimer(),
+        onCancel: () => { stopTimer(); showScreen('start'); }
       });
     });
 
@@ -2028,42 +1928,17 @@
     setTimeout(() => endRound(), 900);
   }
 
-  function showConfirm(opts) {
-    pauseTimer();
-    els['modal-overlay'].hidden = false;
-    els['modal-title'].textContent = opts.title;
-    els['modal-body'].textContent = opts.body;
-    els['modal-confirm'].textContent = opts.primaryLabel;
-    els['modal-cancel'].textContent = opts.secondaryLabel || 'Cancel';
-
-    const close = (resume) => {
-      els['modal-overlay'].hidden = true;
-      els['modal-cancel'].removeEventListener('click', onSecondary);
-      els['modal-confirm'].removeEventListener('click', onPrimary);
-      els['modal-overlay'].removeEventListener('click', onBackdrop);
-      document.removeEventListener('keydown', onKey);
-      if (resume) resumeTimer();
-    };
-    const onPrimary = () => { close(true); opts.onPrimary && opts.onPrimary(); };
-    const onSecondary = () => { close(false); opts.onSecondary && opts.onSecondary(); };
-    const onBackdrop = e => { if (e.target === els['modal-overlay']) close(true); };
-    const onKey = e => { if (e.key === 'Escape') close(true); };
-
-    els['modal-cancel'].addEventListener('click', onSecondary);
-    els['modal-confirm'].addEventListener('click', onPrimary);
-    els['modal-overlay'].addEventListener('click', onBackdrop);
-    document.addEventListener('keydown', onKey);
-  }
+  // showConfirm() retired — migrated to QN.ui.confirm (qn-profile.js v1.7.0)
 
   function showStartTimerModal() {
     const secs = state.settings.timer.seconds, n = state.settings.total;
-    showConfirm({
+    QN.ui.confirm({
       title: 'Ready, set…',
       body: secs <= 30 ? "You'll have " + secs + ' seconds to name ' + n + ' notes.' : 'Take your time — ' + secs + ' seconds for ' + n + ' notes.',
-      primaryLabel: 'Start timer ▶',
-      secondaryLabel: 'Go back',
-      onPrimary: () => startRound(),
-      onSecondary: () => {},
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startRound(),
+      onCancel: () => {},
     });
   }
 

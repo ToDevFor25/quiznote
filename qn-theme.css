@@ -495,3 +495,126 @@ animation: modalFade 200ms ease-out;
 .toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); top: 46%; }
 .toast.retry   { color: var(--sun-dk); font-size: 30px; top: 64%; }
 .toast.reveal  { color: var(--grape); font-size: 26px; top: 64%; }
+
+
+/* ============================================================
+   CHUNKY BUTTON SYSTEM
+   Lifted from all 9 modules (byte-identical across the set; the
+   .btn:disabled rule was present only in scales — lifted as the
+   superset so the cluster is complete and the disabled state is
+   available app-wide). The responsive @media .btn shrink stays
+   inline in each module per the extraction convention.
+   ============================================================ */
+.btn {
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  border: none; border-radius: 16px;
+  padding: 12px 24px; font-size: 18px;
+  color: white; background: var(--teal);
+  box-shadow: 0 5px 0 var(--teal-dk);
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+  position: relative;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.btn:active, .btn.is-pressed {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--teal-dk);
+}
+.btn.sun { background: var(--sun); color: var(--ink); box-shadow: 0 5px 0 var(--sun-dk); }
+.btn.sun:active { box-shadow: 0 1px 0 var(--sun-dk); }
+.btn.grape { background: var(--grape); box-shadow: 0 5px 0 var(--grape-dk); }
+.btn.grape:active { box-shadow: 0 1px 0 var(--grape-dk); }
+.btn.ghost {
+  background: white; color: var(--ink);
+  border: 2px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+  padding: 10px 22px;
+}
+.btn.ghost:active { box-shadow: 0 1px 0 var(--ink); }
+.btn.big { font-size: 22px; padding: 14px 32px; border-radius: 18px; }
+.btn.huge { font-size: 26px; padding: 16px 40px; border-radius: 20px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+
+/* ============================================================
+   PAGE CHROME — cards, screen system, brand block, site
+   header + footer. Lifted from all 9 modules (byte-identical
+   across the set, modulo cosmetic whitespace in piano-quiz's
+   .brand body and a missing comment header in scales' footer
+   — both fully equivalent rule-for-rule).
+
+   Module-specific holdouts left inline (NOT lifted):
+   - piano-quiz: .brand .brand-logo (only piano-quiz has the
+     brand-logo element on its start screen).
+   - scales: body.playing .site-footer { display: none; }
+     (only scales hides the footer in play view).
+   ============================================================ */
+
+/* Cards */
+.card {
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 0 6px 0 var(--ink);
+}
+.card.sun-card { background: var(--sun); }
+.card.teal-card { background: var(--teal); color: white; }
+
+/* Screen system */
+.screen { display: none !important; flex: 1; pointer-events: none; }
+.screen.active { display: flex !important; flex-direction: column; pointer-events: auto; }
+
+/* Start-screen brand block */
+.brand { text-align: center; margin-bottom: 22px; }
+.brand .logo-mark {
+  display: inline-flex; align-items: center; gap: 12px;
+  justify-content: center;
+}
+.brand h1 {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 56px; line-height: 1; color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.brand .tagline {
+  font-family: 'Fredoka', sans-serif; font-weight: 500;
+  font-size: 17px; color: var(--ink-soft);
+  margin-top: 8px;
+}
+
+/* Site header */
+.site-header {
+  background: white;
+  border-bottom: 2.5px solid var(--ink);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.site-header .brand-name {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.site-header .brand-name span { color: var(--teal); }
+
+/* Site footer */
+.site-footer {
+  background: white;
+  border-top: 2px solid var(--shadow-cool);
+  padding: 14px 20px;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+.site-footer a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-weight: 600;
+}
+.site-footer a:hover { text-decoration: underline; }
+.site-footer .sep { margin: 0 8px; }
