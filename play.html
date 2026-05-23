@@ -296,6 +296,73 @@
     footer a:hover { text-decoration: underline; }
     footer .sep { margin: 0 8px; }
 
+    /* ---- Collapsible level sections ---- */
+    .tier-toggle {
+      all: unset;
+      width: 100%;
+      display: flex; align-items: baseline; gap: 16px;
+      margin-bottom: 20px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--line-strong);
+      border-radius: 0;
+      flex-wrap: wrap;
+      cursor: pointer;
+      transition: background 160ms;
+    }
+    .tier-toggle:hover { background: rgba(255,255,255,0.5); }
+    .tier-toggle:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .tier-caret {
+      display: inline-block;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--ink-soft);
+      transition: transform 220ms ease-out;
+      margin-right: -8px;
+      line-height: 1;
+      transform: rotate(0deg);
+    }
+    .tier-toggle[aria-expanded="true"] .tier-caret { transform: rotate(90deg); }
+    .tier-progress {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .tier-section.foundations .tier-progress { background: var(--sun-lt);   color: var(--sun-dk); }
+    .tier-section.reading     .tier-progress { background: var(--teal-lt);  color: var(--teal-dk); }
+    .tier-section.theory      .tier-progress { background: var(--grape-lt); color: var(--grape-dk); }
+
+    .tier-body {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 360ms cubic-bezier(.4, 0, .2, 1);
+    }
+    .tier-toggle[aria-expanded="false"] + .tier-body { grid-template-rows: 0fr; }
+    .tier-body-inner {
+      overflow: hidden;
+      min-height: 0;
+    }
+    /* Suppress transition during initial state restore from localStorage —
+       prevents the "opens then snaps closed" flash on page load. */
+    body.tier-no-anim .tier-body,
+    body.tier-no-anim .tier-caret { transition: none !important; }
+    .tier-toggle .tier-desc {
+      width: 100%; flex-basis: 100%;
+      margin-top: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tier-body { transition: none; }
+      .tier-caret { transition: none; }
+    }
+
     /* ---- Responsive ---- */
     @media (max-width: 560px) {
       main { padding: 28px 16px 48px; }
@@ -304,6 +371,27 @@
       .ltile-name { font-size: 0.98rem; }
       .ltile-body { padding: 12px 10px 14px; }
       .tier-name { font-size: 1.3rem; }
+      .tier-progress { font-size: 11px; padding: 3px 10px; }
+      /* Compact mobile header layout:
+         Row 1 = caret + name (left) ... chip (right)
+         Row 2 = meta
+         Row 3 = desc */
+      .tier-toggle { gap: 10px; padding: 12px 4px; }
+      .tier-meta {
+        order: 3;
+        margin-right: 0;
+        flex-basis: 100%;
+        margin-top: 2px;
+      }
+      .tier-progress {
+        order: 2;
+        margin-left: auto;
+      }
+      .tier-desc {
+        order: 4;
+        font-size: 0.88rem;
+        margin-top: 2px;
+      }
 
       /* Nav declutters on phones: keep brand + profile chip only.
          The PRACTICE tag is redundant (the page title says it) and
@@ -333,11 +421,15 @@
 
     <!-- FOUNDATIONS -->
     <div class="tier-section foundations">
-      <div class="tier-header">
-        <div class="tier-name">Foundations</div>
-        <div class="tier-meta">First notes · Levels 1–2</div>
-        <div class="tier-desc">Reading notes and rhythm. Where every musician starts.</div>
-      </div>
+      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-foundations">
+        <span class="tier-caret" aria-hidden="true">▸</span>
+        <span class="tier-name">Foundations</span>
+        <span class="tier-meta">First notes · Levels 1–2</span>
+        <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
+        <span class="tier-desc">Reading notes and rhythm. Where every musician starts.</span>
+      </button>
+      <div class="tier-body" id="tb-foundations">
+       <div class="tier-body-inner">
       <div class="tile-grid">
         <!-- PianoQuiz : staff note → arrow → mini piano with one key lit -->
         <a class="ltile" href="piano-quiz.html">
@@ -576,15 +668,21 @@
           </div>
         </div>
       </div>
+     </div>
+    </div>
     </div>
 
     <!-- READING -->
     <div class="tier-section reading">
-      <div class="tier-header">
-        <div class="tier-name">Reading</div>
-        <div class="tier-meta">Building fluency · Levels 2–4</div>
-        <div class="tier-desc">Keys and scales. For anyone fluent on the staff.</div>
-      </div>
+      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-reading">
+        <span class="tier-caret" aria-hidden="true">▸</span>
+        <span class="tier-name">Reading</span>
+        <span class="tier-meta">Building fluency · Levels 2–4</span>
+        <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
+        <span class="tier-desc">Keys and scales. For anyone fluent on the staff.</span>
+      </button>
+      <div class="tier-body" id="tb-reading">
+       <div class="tier-body-inner">
       <div class="tile-grid">
         <!-- Key Signatures : staff with 3 sharps + "A major?" chip -->
         <a class="ltile" href="key-signatures.html">
@@ -737,15 +835,21 @@
           </div>
         </div>
       </div>
+     </div>
+    </div>
     </div>
 
     <!-- THEORY -->
     <div class="tier-section theory">
-      <div class="tier-header">
-        <div class="tier-name">Theory</div>
-        <div class="tier-meta">Fluent reader · Levels 4–6</div>
-        <div class="tier-desc">Intervals and ear training. Intermediate theory — the app's ceiling.</div>
-      </div>
+      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-theory">
+        <span class="tier-caret" aria-hidden="true">▸</span>
+        <span class="tier-name">Theory</span>
+        <span class="tier-meta">Fluent reader · Levels 4–6</span>
+        <span class="tier-progress"><span class="tp-complete">0</span><span class="tp-total">/0</span> completed</span>
+        <span class="tier-desc">Intervals and ear training. Intermediate theory — the app's ceiling.</span>
+      </button>
+      <div class="tier-body" id="tb-theory">
+       <div class="tier-body-inner">
       <div class="tile-grid">
         <!-- Intervals : two stacked notes + bracket + answer chips -->
         <a class="ltile" href="intervals.html">
@@ -919,6 +1023,8 @@
           </div>
         </div>
       </div>
+     </div>
+    </div>
     </div>
   </main>
 
@@ -939,6 +1045,90 @@
 <script defer>
   document.addEventListener("DOMContentLoaded", function () {
     if (window.QNNav) QNNav.mount({ current: 'modules' });
+
+    // ── Collapsible level sections ──────────────────────────────────
+    // Default = all expanded (matches genre convention for "library /
+    // browse" UIs: Coursera, edX, Notion, VSCode). Per-section state
+    // persists in localStorage and overrides the default on reload.
+    var STORAGE_KEY = 'qn_play_sections_open';
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) {}
+
+    // Suppress transitions during initial state restore so the
+    // restored state doesn't animate from the HTML default.
+    document.body.classList.add('tier-no-anim');
+    document.querySelectorAll('.tier-toggle').forEach(function (btn) {
+      var id = btn.getAttribute('aria-controls');
+      if (saved[id] === true)  btn.setAttribute('aria-expanded', 'true');
+      if (saved[id] === false) btn.setAttribute('aria-expanded', 'false');
+      btn.addEventListener('click', function () {
+        var open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        saved[id] = !open;
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); } catch (e) {}
+      });
+    });
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        document.body.classList.remove('tier-no-anim');
+      });
+    });
+
+    // ── Progress chips ──────────────────────────────────────────────
+    // Per-section "X/N completed" derived from qn_events. Cleared rule
+    // matches the recommender + path.html spine: every tier has ≥ 2
+    // rounds AND ≥ 85% accuracy. Denominator = live tiles in section
+    // (anchors with href, excluding .soon and .more-soon placeholders).
+    var TIER_ORDER = ['easy', 'medium', 'tricky'];
+    var MIN_ROUNDS = 2;
+    var MIN_ACC = 0.85;
+
+    function isCleared(slug, events) {
+      var tierRounds = {}, tierAcc = {};
+      for (var i = 0; i < events.length; i++) {
+        var ev = events[i];
+        if (ev.module !== slug) continue;
+        var t = ev.tier || 'easy';
+        tierRounds[t] = (tierRounds[t] || 0) + 1;
+        if (ev.total > 0) {
+          if (!tierAcc[t]) tierAcc[t] = { c: 0, n: 0 };
+          tierAcc[t].c += ev.correct;
+          tierAcc[t].n += ev.total;
+        }
+      }
+      for (var k = 0; k < TIER_ORDER.length; k++) {
+        var tr = TIER_ORDER[k];
+        if ((tierRounds[tr] || 0) < MIN_ROUNDS) return false;
+        var acc = tierAcc[tr] ? tierAcc[tr].c / tierAcc[tr].n : 0;
+        if (acc < MIN_ACC) return false;
+      }
+      return true;
+    }
+
+    var events = [];
+    try {
+      if (window.QN && QN.profile && QN.events) {
+        var active = QN.profile.active && QN.profile.active();
+        if (active && active.id) {
+          events = QN.events.query(active.id) || [];
+        }
+      }
+    } catch (e) {}
+
+    document.querySelectorAll('.tier-section').forEach(function (section) {
+      var liveTiles = section.querySelectorAll('a.ltile[href]');
+      var total = 0, complete = 0;
+      liveTiles.forEach(function (a) {
+        if (a.classList.contains('soon') || a.classList.contains('more-soon')) return;
+        total++;
+        var slug = (a.getAttribute('href') || '').replace(/\.html$/, '');
+        if (slug && isCleared(slug, events)) complete++;
+      });
+      var num = section.querySelector('.tp-complete');
+      var denom = section.querySelector('.tp-total');
+      if (num)   num.textContent = String(complete);
+      if (denom) denom.textContent = '/' + total;
+    });
   });
 </script>
 </body>
