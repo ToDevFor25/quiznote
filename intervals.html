@@ -1872,13 +1872,16 @@
     });
 
     els['exit-btn'].addEventListener('click', () => {
-      showConfirm({
+      // Shared confirm modal (QN.ui.confirm). Canonical arrangement is owned by
+      // qn-profile.js: Quit = ghost/left, Keep playing = green/right.
+      QN.ui.confirm({
         title: 'Quit this round?',
         body: "Your score for this round won't be saved.",
-        primaryLabel: 'Keep playing',
-        secondaryLabel: 'Quit round',
-        onPrimary: () => {},
-        onSecondary: () => { stopTimer(); showScreen('start'); }
+        confirmLabel: 'Keep playing',   // solid/safe default (right)
+        cancelLabel: 'Quit round',      // ghost/destructive (left)
+        onOpen: () => pauseTimer(),
+        onConfirm: () => resumeTimer(),
+        onCancel: () => { stopTimer(); showScreen('start'); }
       });
     });
 
@@ -1925,42 +1928,17 @@
     setTimeout(() => endRound(), 900);
   }
 
-  function showConfirm(opts) {
-    pauseTimer();
-    els['modal-overlay'].hidden = false;
-    els['modal-title'].textContent = opts.title;
-    els['modal-body'].textContent = opts.body;
-    els['modal-confirm'].textContent = opts.primaryLabel;
-    els['modal-cancel'].textContent = opts.secondaryLabel || 'Cancel';
-
-    const close = (resume) => {
-      els['modal-overlay'].hidden = true;
-      els['modal-cancel'].removeEventListener('click', onSecondary);
-      els['modal-confirm'].removeEventListener('click', onPrimary);
-      els['modal-overlay'].removeEventListener('click', onBackdrop);
-      document.removeEventListener('keydown', onKey);
-      if (resume) resumeTimer();
-    };
-    const onPrimary = () => { close(true); opts.onPrimary && opts.onPrimary(); };
-    const onSecondary = () => { close(false); opts.onSecondary && opts.onSecondary(); };
-    const onBackdrop = e => { if (e.target === els['modal-overlay']) close(true); };
-    const onKey = e => { if (e.key === 'Escape') close(true); };
-
-    els['modal-cancel'].addEventListener('click', onSecondary);
-    els['modal-confirm'].addEventListener('click', onPrimary);
-    els['modal-overlay'].addEventListener('click', onBackdrop);
-    document.addEventListener('keydown', onKey);
-  }
+  // showConfirm() retired — migrated to QN.ui.confirm (qn-profile.js v1.7.0)
 
   function showStartTimerModal() {
     const secs = state.settings.timer.seconds, n = state.settings.total;
-    showConfirm({
+    QN.ui.confirm({
       title: 'Ready, set…',
       body: secs <= 30 ? "You'll have " + secs + ' seconds to name ' + n + ' notes.' : 'Take your time — ' + secs + ' seconds for ' + n + ' notes.',
-      primaryLabel: 'Start timer ▶',
-      secondaryLabel: 'Go back',
-      onPrimary: () => startRound(),
-      onSecondary: () => {},
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startRound(),
+      onCancel: () => {},
     });
   }
 

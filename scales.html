@@ -597,8 +597,8 @@
     <h2 id="modal-title">Quit this round?</h2>
     <p id="modal-body">Your score for this round won't be saved.</p>
     <div class="modal-actions">
-      <button class="btn ghost" id="modal-confirm">Quit round</button>
-      <button class="btn" id="modal-cancel">Keep playing</button>
+      <button class="btn ghost" id="modal-cancel">Quit round</button>
+      <button class="btn" id="modal-confirm">Keep playing</button>
     </div>
   </div>
 </div>
@@ -2163,16 +2163,19 @@
       playCurrentScale(true);
     });
     els['exit-btn'].addEventListener('click', () => {
-      els['modal-overlay'].hidden = false;
-    });
-    els['modal-cancel'].addEventListener('click', () => {
-      els['modal-overlay'].hidden = true;
-    });
-    els['modal-confirm'].addEventListener('click', () => {
-      els['modal-overlay'].hidden = true;
-      clearInterval(state.timerInterval);
-      A.cancelSequence();
-      show('start-screen');
+      // Shared confirm modal (QN.ui.confirm). Canonical arrangement is owned by
+      // qn-profile.js: Quit = ghost/left, Keep playing = green/right.
+      QN.ui.confirm({
+        title: 'Quit this round?',
+        body: "Your score for this round won't be saved.",
+        confirmLabel: 'Keep playing',   // solid/safe default (right)
+        cancelLabel: 'Quit round',      // ghost/destructive (left)
+        onCancel: () => {
+          clearInterval(state.timerInterval);
+          A.cancelSequence();
+          show('start-screen');
+        }
+      });
     });
     els['again-btn'].addEventListener('click', () => startRound());
     els['change-btn'].addEventListener('click', () => show('start-screen'));
