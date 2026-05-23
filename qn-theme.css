@@ -130,3 +130,368 @@
 @media (min-width: 1100px) {
   .choice-btn { font-size: 26px; padding: 18px 14px; }
 }
+
+/* ── Summary screen ──────────────────────────────────────────────────────
+   The post-round screen, shared across all modules. Extracted May 2026
+   (summary cluster). Canonical/fuller versions lifted — scales gains the
+   tier-perfect/great title animation it was missing (it was the subset).
+   NOTE: @keyframes summaryPop stays defined inline in each module (scales
+   uses it elsewhere too), and .summary-speed styling is inert in modules
+   without that element (e.g. scales) — harmless, future-proofs them. */
+#summary-screen {
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.summary-wrap { width: 100%; max-width: 640px; text-align: center; }
+.summary-title {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 52px; line-height: 1;
+  color: var(--ink);
+}
+.summary-title.tier-perfect { animation: summaryPop 600ms cubic-bezier(.4,1.6,.5,1) both; color: var(--teal); }
+.summary-title.tier-great   { animation: summaryPop 500ms cubic-bezier(.4,1.6,.5,1) both; color: var(--grape); }
+.summary-title.tier-good    { animation: summaryPop 450ms cubic-bezier(.4,1.4,.5,1) both; color: var(--ink); }
+.summary-title.tier-practice{ animation: summaryPop 400ms cubic-bezier(.4,1.2,.5,1) both; color: var(--ink); }
+.summary-sub {
+  font-family: 'Fredoka', sans-serif; font-weight: 500;
+  font-size: 17px; color: var(--ink-soft);
+  margin-top: 6px;
+}
+.summary-sub.tier-perfect { color: var(--teal-dk); font-size: 19px; font-weight: 600; }
+.summary-sub.tier-great   { color: var(--grape-dk); }
+.summary-sub.tier-good    { color: var(--ink-soft); }
+.summary-sub.tier-practice{ color: var(--ink-soft); }
+.summary-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  margin-top: 22px;
+}
+.summary-grid .stat-value { font-size: 44px; }
+.summary-grid .stars { color: var(--sun-dk); font-size: 36px; letter-spacing: 4px; }
+.summary-actions {
+  display: flex; gap: 12px; justify-content: center; margin-top: 24px;
+  flex-wrap: wrap;
+}
+.summary-speed {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: white;
+  border: 2px solid var(--ink); border-radius: 999px;
+  padding: 7px 18px;
+  box-shadow: 0 3px 0 var(--ink);
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 15px; color: var(--ink);
+}
+.summary-speed.timed-out { background: var(--coral); color: white; box-shadow: 0 3px 0 var(--coral-dk); }
+.summary-speed[hidden] { display: none; }
+
+/* ── Start screen + timer controls + tiles ──────────────────────────────
+   Difficulty-tier tiles, timer toggle/pills, the start CTA, back link, and
+   question-block labels. Shared across all 9 modules (extracted May 2026,
+   start-screen cluster). All 34 rules were byte-identical across modules;
+   the 3 clef-tile rules (.tile-clef, .tile.on svg .clef/.staff-line) are
+   inert in modules without a tile clef (e.g. scales) — harmless. */
+.start-wrap { width: 100%; max-width: 720px; }
+.q-block { margin-top: 22px; }
+.q-label {
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 18px; color: var(--ink);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.q-label .num {
+  width: 28px; height: 28px;
+  background: var(--ink); color: white;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+}
+.tile-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.tile {
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink);
+  padding: 14px 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 80ms, box-shadow 80ms;
+  font-family: 'Fredoka', sans-serif; font-weight: 500;
+}
+.tile:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.tile.on { background: var(--teal); color: white; box-shadow: 0 5px 0 var(--teal-dk); }
+.tile.on svg .clef { fill: white; }
+.tile.on svg .staff-line { stroke: white; }
+.tile-title { font-size: 20px; font-weight: 700; line-height: 1.1; }
+.tile-emoji { font-size: 38px; line-height: 1; margin-bottom: 4px; }
+.tile-sub {
+  font-family: 'Nunito', sans-serif; font-weight: 600;
+  font-size: 12px; color: var(--ink-soft);
+  margin-top: 4px; line-height: 1.3;
+}
+.tile.on .tile-sub { color: rgba(255,255,255,0.9); }
+.tile-clef { height: 54px; margin-bottom: 4px; }
+.start-cta { text-align: center; margin-top: 28px; }
+.timer-toggle {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--ink);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 17px; color: var(--ink);
+  transition: transform 80ms, box-shadow 80ms;
+}
+.timer-toggle:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+.timer-toggle.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
+.timer-toggle .t-icon { font-size: 20px; line-height: 1; }
+.timer-toggle .t-state {
+  font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 600;
+  background: rgba(0,0,0,0.08);
+  padding: 3px 9px; border-radius: 999px;
+  color: var(--ink-soft);
+}
+.timer-toggle.on .t-state { background: rgba(255,255,255,0.25); color: white; }
+.timer-pills {
+  display: flex; gap: 10px; justify-content: center;
+  margin-top: 14px; flex-wrap: wrap;
+}
+.timer-pills[hidden] { display: none; }
+.tpill {
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 18px;
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--ink);
+  padding: 8px 18px;
+  cursor: pointer;
+  color: var(--ink);
+  transition: transform 80ms, box-shadow 80ms;
+}
+.tpill:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+.tpill.on { background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-dk); }
+.timer-badge[hidden] { display: none; }
+.timer-badge .t-icon { font-size: 16px; margin-right: 2px; }
+.timer-badge.urgent {
+  background: var(--coral); color: white;
+  border-color: var(--coral-dk);
+  box-shadow: 0 4px 0 var(--coral-dk);
+  animation: timerPulse 700ms ease-in-out infinite;
+}
+.start-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 7px 14px 7px 12px;
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+  margin-bottom: 18px;
+  align-self: flex-start;
+}
+.start-back-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--ink);
+}
+.start-back-link:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.timer-badge { font-size: 16px; padding: 4px 8px; min-width: 64px; }
+
+/* ── Play screen chassis ─────────────────────────────────────────────────
+   In-play furniture shared across all 9 modules: stat cards (question/score/
+   last-answers), progress bar, streak badge, topbar, icon + mute buttons,
+   last-answer dots, and the correct-toast cycle/show states. Extracted
+   May 2026 (play-chassis cluster). Only byte-identical-across-all-9 rules
+   moved; module-specific staff-card/staff-actions sizing, the base
+   .toast.correct (scales runs 40px), and retry-mechanic toast/dot rules
+   stay inline. JS still toggles these classes at runtime — only styling moved. */
+.icon-btn {
+  width: 46px; height: 46px;
+  border: 2px solid var(--ink); background: white;
+  color: var(--ink); font-size: 20px;
+  border-radius: 13px;
+  box-shadow: 0 4px 0 var(--ink);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+}
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.progress-track {
+  flex: 1; height: 22px;
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 0 rgba(0,0,0,0.04);
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(180deg, #34d4c2, var(--teal));
+  border-right: 2.5px solid var(--teal-dk);
+  border-radius: 8px 0 0 8px;
+  transition: width 280ms cubic-bezier(.5,1.6,.6,1);
+  position: relative;
+}
+.progress-fill::after {
+  content: ""; position: absolute;
+  top: 3px; left: 8px; right: 8px; height: 5px;
+  background: rgba(255,255,255,0.55);
+  border-radius: 4px;
+}
+.streak-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 20px; color: var(--sun-dk);
+  background: white; border: 2.5px solid var(--ink);
+  border-radius: 14px; padding: 6px 12px;
+  box-shadow: 0 4px 0 var(--ink);
+  min-width: 62px; justify-content: center;
+}
+.streak-badge .num { color: var(--ink); }
+.play-body {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+.stats-col {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.stat-card { padding: 10px 12px; border-radius: 16px; }
+.stat-label {
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.stat-card.sun-card .stat-label { color: #7a4f00; }
+.stat-card.teal-card .stat-label { color: rgba(255,255,255,0.85); }
+.stat-value {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 34px; line-height: 1.05;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.stat-card.teal-card .stat-value { color: white; }
+.stat-value .of { color: var(--ink-faint); font-size: 22px; font-weight: 600; }
+.stat-card.sun-card .stat-value .of { color: #7a4f00; }
+.last-dots { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.last-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--ink); background: white;
+}
+.last-dot.correct { background: var(--teal); }
+.last-dot.wrong { background: var(--coral); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1) rotate(-3deg); }
+.toast.correct.cycle-1 { color: var(--grape); text-shadow: 3px 3px 0 rgba(91,63,228,0.18); }
+.toast.correct.cycle-2 { color: var(--sun-dk); text-shadow: 3px 3px 0 rgba(255,182,39,0.25); }
+.mute-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.mute-btn.muted { background: var(--cream-2); color: var(--ink-faint); }
+.stats-col .stat-card { flex: 1; }
+.stats-col .last-dots-card { display: none; }
+
+/* ── Quit/confirm modal + miss-list + personal-best rows ─────────────────
+   The modal backdrop + card + actions, the post-round "missed" list children,
+   and personal-best row bits. Shared across all 9 (extracted May 2026, modal
+   cluster). LEFT INLINE: .modal-overlay.show (only the 2 component-migrated
+   modules have it, overrides [hidden]); .miss-list base container (only scales
+   styles it); @keyframes modalFade (referenced by .modal-overlay, kept local
+   in each module — resolves against the shared rule fine). */
+.modal-overlay {
+position: fixed; inset: 0;
+background: rgba(42, 42, 62, 0.5);
+display: flex; align-items: center; justify-content: center;
+z-index: 100;
+padding: 20px;
+animation: modalFade 200ms ease-out;
+}
+.modal-overlay[hidden] { display: none; }
+.modal-card {
+  background: white;
+  border: 2.5px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 0 8px 0 var(--ink);
+  padding: 28px 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  animation: modalPop 320ms cubic-bezier(.4,1.6,.6,1);
+}
+.modal-card h2 {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 28px; color: var(--ink);
+  line-height: 1.1;
+}
+.modal-card p {
+  font-family: 'Nunito', sans-serif; font-weight: 500;
+  font-size: 15px; color: var(--ink-soft);
+  margin: 8px 0 22px;
+  line-height: 1.4;
+}
+.modal-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.miss-list h3 {
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 17px; color: var(--ink);
+  margin-bottom: 8px;
+}
+.miss-list ul {
+  list-style: none; padding: 0; margin: 0;
+  font-family: 'Nunito', sans-serif; font-weight: 600;
+  font-size: 14px; color: var(--ink-soft);
+  line-height: 1.6;
+}
+.miss-list li::before { content: "• "; color: var(--coral); font-weight: 800; }
+.miss-empty { font-family: 'Nunito',sans-serif; font-weight: 600; font-size:14px; color: var(--teal-dk); }
+.pb-label { color: var(--ink-faint); font-weight: 600; }
+.pb-new { color: var(--teal-dk); font-weight: 800; }
+.pb-sep { color: var(--ink-faint); }
+.pb-row[hidden] { display: none; }
+.miss-list {
+  margin-top: 22px; text-align: left;
+  background: white; border: 2.5px solid var(--ink); border-radius: 18px;
+  box-shadow: 0 5px 0 var(--ink);
+  padding: 14px 18px;
+}
+
+/* ── Feedback toasts (correct / retry / reveal) ──────────────────────────
+   The in-play feedback text. Shared base + per-kind size/color. Option-2
+   positioning (May 2026): the big "correct" praise pops high over the staff;
+   the smaller retry/reveal sit lower so corrective text reads clean and
+   doesn't fight the notation. PROVING ON scale-degrees FIRST — the other 8
+   modules still carry their own inline .toast (which overrides this via
+   source order) until this positioning is QA'd and rolled out per-module.
+   scales is a separate feedback model (40px correct, .toast.wrong, no
+   reveal/retry) and stays inline regardless. */
+.toast {
+  position: absolute; left: 50%; top: 38px;
+  transform: translateX(-50%) translateY(-10px) scale(0.6);
+  opacity: 0;
+  pointer-events: none;
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  text-align: center;
+  z-index: 5;
+  transition: transform 240ms cubic-bezier(.4,1.8,.5,1), opacity 180ms;
+  white-space: nowrap;
+  max-width: 92%;
+}
+/* Option-2 per-kind vertical placement: praise over the staff, guidance lower. */
+.toast.correct { color: var(--teal); font-size: 44px; text-shadow: 3px 3px 0 rgba(31,184,168,0.18); top: 46%; }
+.toast.retry   { color: var(--sun-dk); font-size: 30px; top: 64%; }
+.toast.reveal  { color: var(--grape); font-size: 26px; top: 64%; }
