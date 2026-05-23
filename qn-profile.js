@@ -1020,7 +1020,8 @@
   // v1 linear path: live modules only, in the roster's pedagogical order.
   var PATH = [
     'note-names', 'note-values', 'key-signatures',
-    'time-signatures', 'piano-quiz', 'scales', 'intervals'
+    'time-signatures', 'piano-quiz', 'scales', 'scale-modes',
+    'intervals', 'ear-intervals'
   ];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
