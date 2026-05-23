@@ -145,10 +145,15 @@ overrides the shared file. An in-progress rollout can keep some modules inline
   Chords (§5 #14–16). Starts with a **3-note staff renderer extension** (and
   a `playChord` audio helper modelled on `playInterval`), then the three
   modules become clean clone-and-swaps off whichever lands as the chord base.
-- **Index ↔ play tile parity.** When adding a new module, both `index.html`
-  and `play.html` get the tile in the same operation. Pre-existing drift
-  (index missing Time Signatures + Scale Degrees) was repaired this session;
-  going forward this should be a single-step add.
+- **Index ↔ play ↔ path parity.** When adding a new module, ALL THREE
+  surfaces get updated in the same operation: `index.html` (landing-page
+  tile + the module-count stat), `play.html` (Practice tile), AND
+  `path.html` MODULES/PATH/SHORT_PREFIX + `qn-profile.js` recommender
+  PATH (so the spine actually shows it). Pre-existing drift was repaired
+  this session — index was missing Time Signatures + Scale Degrees;
+  path/recommender were missing Accidentals + Scale Degrees. Both kinds
+  of drift came from a "new module → add tile to play.html only" habit;
+  the fix is to treat the four-surface update as a single atomic step.
 - See BUILD_LOG for the full "Still open / next" list.
 
 ---
