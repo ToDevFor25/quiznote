@@ -130,3 +130,56 @@
 @media (min-width: 1100px) {
   .choice-btn { font-size: 26px; padding: 18px 14px; }
 }
+
+/* ── Summary screen ──────────────────────────────────────────────────────
+   The post-round screen, shared across all modules. Extracted May 2026
+   (summary cluster). Canonical/fuller versions lifted — scales gains the
+   tier-perfect/great title animation it was missing (it was the subset).
+   NOTE: @keyframes summaryPop stays defined inline in each module (scales
+   uses it elsewhere too), and .summary-speed styling is inert in modules
+   without that element (e.g. scales) — harmless, future-proofs them. */
+#summary-screen {
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.summary-wrap { width: 100%; max-width: 640px; text-align: center; }
+.summary-title {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 52px; line-height: 1;
+  color: var(--ink);
+}
+.summary-title.tier-perfect { animation: summaryPop 600ms cubic-bezier(.4,1.6,.5,1) both; color: var(--teal); }
+.summary-title.tier-great   { animation: summaryPop 500ms cubic-bezier(.4,1.6,.5,1) both; color: var(--grape); }
+.summary-title.tier-good    { animation: summaryPop 450ms cubic-bezier(.4,1.4,.5,1) both; color: var(--ink); }
+.summary-title.tier-practice{ animation: summaryPop 400ms cubic-bezier(.4,1.2,.5,1) both; color: var(--ink); }
+.summary-sub {
+  font-family: 'Fredoka', sans-serif; font-weight: 500;
+  font-size: 17px; color: var(--ink-soft);
+  margin-top: 6px;
+}
+.summary-sub.tier-perfect { color: var(--teal-dk); font-size: 19px; font-weight: 600; }
+.summary-sub.tier-great   { color: var(--grape-dk); }
+.summary-sub.tier-good    { color: var(--ink-soft); }
+.summary-sub.tier-practice{ color: var(--ink-soft); }
+.summary-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  margin-top: 22px;
+}
+.summary-grid .stat-value { font-size: 44px; }
+.summary-grid .stars { color: var(--sun-dk); font-size: 36px; letter-spacing: 4px; }
+.summary-actions {
+  display: flex; gap: 12px; justify-content: center; margin-top: 24px;
+  flex-wrap: wrap;
+}
+.summary-speed {
+  margin-top: 14px;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: white;
+  border: 2px solid var(--ink); border-radius: 999px;
+  padding: 7px 18px;
+  box-shadow: 0 3px 0 var(--ink);
+  font-family: 'Fredoka', sans-serif; font-weight: 600;
+  font-size: 15px; color: var(--ink);
+}
+.summary-speed.timed-out { background: var(--coral); color: white; box-shadow: 0 3px 0 var(--coral-dk); }
+.summary-speed[hidden] { display: none; }
