@@ -957,9 +957,13 @@
 
     // Optional key signature row (sharps or flats) drawn just after the clef.
     // keySig = { type:'sharp'|'flat', count:N }. Shared NH.staff.buildAccidentals.
+    // Key-sig accidentals must start clear of the clef glyph. The clef width
+    // scales with lineGap (font-size = lineGap * 4.2), so the clearance must too —
+    // a fixed pixel value (was xOffset+44) overlapped the clef at lineGap 14.
+    // 4.5 * lineGap matches the known-good key-signatures module (72 at lineGap 16).
+    const ksStartX = xOffset + lineGap * 4.5;
     let keySigWidth = 0;
     if (keySig && keySig.count > 0) {
-      const ksStartX = xOffset + 44;
       svg += NH.staff.buildAccidentals({ clef, type: keySig.type, count: keySig.count, bottomY, lineGap, startX: ksStartX });
       keySigWidth = keySig.count * (lineGap * 1.05) + lineGap * 0.6;
     }
@@ -967,7 +971,7 @@
     // Note x: default ~62% width, but if a key sig is present nudge right so the
     // note clears the accidental row.
     const defaultNoteX = xOffset + width * 0.62;
-    const nx = noteX != null ? noteX : Math.max(defaultNoteX, xOffset + 44 + keySigWidth + lineGap * 1.5);
+    const nx = noteX != null ? noteX : Math.max(defaultNoteX, ksStartX + keySigWidth + lineGap * 1.5);
     let ny = null;
     if (pitch) {
       const d = diatonicStep(pitch.letter, pitch.octave) - bStep;

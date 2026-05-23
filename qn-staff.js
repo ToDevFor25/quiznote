@@ -199,7 +199,11 @@
     const { clef, type, count, bottomY, lineGap, color = '#2A2A3E', className } = opts;
     if (!count || count === 0) return '';
     const halfStep = lineGap / 2;
-    const startX = (opts.startX !== undefined) ? opts.startX : (clef === 'treble' ? 72 : 70);
+    // Default startX scales with lineGap because the clef glyph's width does
+    // (font-size = lineGap * ~4.2). A fixed value overlapped the clef at small
+    // lineGap. 4.5/4.4 reproduce the prior 72/70 at lineGap 16 (key-signatures),
+    // and clear the clef at any size. Callers can still pass an explicit startX.
+    const startX = (opts.startX !== undefined) ? opts.startX : (clef === 'treble' ? lineGap * 4.5 : lineGap * 4.4);
     const spacing = lineGap * 1.05;
     const fontSize = lineGap * 4;
     const sym = (type === 'sharp') ? SMUFL.sharp : SMUFL.flat;
@@ -364,8 +368,11 @@
     // Clef
     svg += buildClef({ clef, bottomY, lineGap, xOffset, color });
 
-    // Key signature (if any)
-    const accStartX = xOffset + (clef === 'treble' ? 72 : 70);
+    // Key signature (if any). Clef-clearance scales with lineGap (see buildAccidentals).
+    // Callers may override via opts.accStartX (e.g. to pin a pre-existing layout).
+    const accStartX = (opts.accStartX !== undefined)
+      ? opts.accStartX
+      : xOffset + (clef === 'treble' ? lineGap * 4.5 : lineGap * 4.4);
     let accEndX = accStartX;
     if (keySig && keySig.count > 0 && keySig.type) {
       svg += buildAccidentals({
