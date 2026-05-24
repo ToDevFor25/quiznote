@@ -343,6 +343,59 @@
   }
 
   // ─────────────────────────────────────────────────────────────
+  // CHORD — block chord with light arpeggiation
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Play a block chord (3-4 simultaneous notes) with a slight
+   * arpeggiation for clarity. Modeled on the playFanfare chord
+   * voicing (triangle oscillators through masterGain).
+   *
+   * @param {number[]} midiArray  Array of MIDI note numbers (bottom to top)
+   * @param {object}   [opts]
+   * @param {number}   [opts.arpeggiate=0.04] Seconds between note onsets
+   * @param {number}   [opts.duration=1.2]    Total sustain in seconds
+   */
+  function playChord(midiArray, opts) {
+    opts = opts || {};
+    var arpeggiate = opts.arpeggiate !== undefined ? opts.arpeggiate : 0.04;
+    var duration = opts.duration !== undefined ? opts.duration : 1.2;
+    var ac = ensureCtx();
+    if (!ac || muted) return;
+    var now = ac.currentTime;
+    var perNoteGain = 0.18 / Math.max(1, midiArray.length / 3);
+
+    midiArray.forEach(function (midi, i) {
+      var f = midiToFreq(midi);
+      var t = now + i * arpeggiate;
+
+      var osc = ac.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      var g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(perNoteGain, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + duration + 0.05);
+
+      var click = ac.createOscillator();
+      click.type = 'square';
+      click.frequency.value = f * 2;
+      var cg = ac.createGain();
+      cg.gain.setValueAtTime(0.0001, t);
+      cg.gain.exponentialRampToValueAtTime(0.08, t + 0.004);
+      cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+      click.connect(cg);
+      cg.connect(masterGain);
+      click.start(t);
+      click.stop(t + 0.05);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // EXPOSE GLOBAL NAMESPACE
   // ─────────────────────────────────────────────────────────────
 
@@ -353,12 +406,13 @@
     isMuted:      isMuted,
     getMasterGain: getMasterGain,
     playMidi:     playMidi,
+    playChord:    playChord,
     playBoop:     playBoop,
     playTick:     playTick,
     playChime:    playChime,
     playFanfare:  playFanfare,
     midiToFreq:   midiToFreq
   };
-  window.NH.audio.version = '1.0.0';
+  window.NH.audio.version = '1.1.0';
 
 })();
