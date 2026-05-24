@@ -342,14 +342,22 @@
     'scale-modes':     { name: 'Scale Modes',      tier: 'reading',     sub: 'same notes, different home' },
     'intervals':       { name: 'Intervals',        tier: 'reading',     sub: 'name the gap' },
     'ear-intervals':   { name: 'Ear: Intervals',   tier: 'reading',     sub: 'hear and name' },
-    'primary-chords':  { name: 'Primary Chords',  tier: 'theory',      sub: 'I, IV, V in every key' },
-    'roman-numerals':  { name: 'Roman Numerals',   tier: 'theory',      sub: 'every chord has a job' },
-    'ear-scales':      { name: 'Ear: Scales',      tier: 'reading',     sub: 'hear the scale type' }
+    'primary-chords':     { name: 'Primary Chords',     tier: 'theory',  sub: 'I, IV, V in every key' },
+    'roman-numerals':     { name: 'Roman Numerals',     tier: 'theory',  sub: 'every chord has a job' },
+    'ear-scales':         { name: 'Ear: Scales',        tier: 'reading', sub: 'hear the scale type' },
+    'triads':             { name: 'Triads',             tier: 'theory',  sub: 'name the chord quality' },
+    'triad-inversions':   { name: 'Triad Inversions',   tier: 'theory',  sub: 'root, 1st, or 2nd?' },
+    'seventh-chords':     { name: 'Seventh Chords',     tier: 'theory',  sub: 'four notes, five flavours' },
+    'chord-progressions': { name: 'Chord Progressions', tier: 'theory',  sub: 'name the sequence' },
+    'cadences':           { name: 'Cadences',           tier: 'theory',  sub: 'how phrases end' },
+    'ear-chords':         { name: 'Ear: Chord Quality', tier: 'theory',  sub: 'hear and name the chord' },
+    'ear-cadences':       { name: 'Ear: Cadences',      tier: 'theory',  sub: 'hear the ending' },
+    'ear-progressions':   { name: 'Ear: Progressions',  tier: 'theory',  sub: 'hear the pattern' }
   };
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -394,7 +402,15 @@
     'accidentals':     'ac_',
     'primary-chords':  'pc_',
     'roman-numerals':  'rn_',
-    'ear-scales':      'es_'
+    'ear-scales':         'es_',
+    'triads':             'tr_',
+    'triad-inversions':   'ti_',
+    'seventh-chords':     's7_',
+    'chord-progressions': 'cp_',
+    'cadences':           'cd_',
+    'ear-chords':         'ec_',
+    'ear-cadences':       'ecd_',
+    'ear-progressions':   'ep_'
   };
 
   function $(id) { return document.getElementById(id); }
