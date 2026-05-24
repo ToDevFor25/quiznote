@@ -57,6 +57,9 @@
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
+  .type-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
   /* .brand* → qn-theme.css */
 
 
@@ -435,7 +438,19 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="q-label"><span class="num">1</span> Which scales?</div>
+      <div class="type-pills" id="type-tiles">
+        <button class="tpill on" data-type="all">All types</button>
+        <button class="tpill" data-type="major">Major</button>
+        <button class="tpill" data-type="minor-natural">Natural</button>
+        <button class="tpill" data-type="minor-harmonic">Harmonic</button>
+        <button class="tpill" data-type="minor-melodic">Melodic</button>
+        <button class="tpill" data-type="pentatonic">Pentatonic</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How tricky?</div>
       <div class="tile-row" id="diff-tiles">
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
@@ -445,7 +460,7 @@
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">all majors<br/>+ natural minor</div>
+          <div class="tile-sub">all majors, minor<br/>+ pentatonic</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
@@ -456,7 +471,7 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="q-label"><span class="num">3</span> How many questions?</div>
       <div class="tile-row" id="length-tiles">
         <button class="tile" data-len="5">
           <div class="tile-emoji">⚡</div>
@@ -1177,6 +1192,28 @@
   const HARMONIC_MINOR_SCALES = NATURAL_MINOR_SCALES.map(makeHarmonicMinor).filter(Boolean);
   const MELODIC_MINOR_SCALES = NATURAL_MINOR_SCALES.map(makeMelodicMinor).filter(Boolean);
 
+  // Pentatonic scales: derived from existing scale data.
+  // Major pentatonic = degrees 1,2,3,5,6 of major (intervals: 2-2-3-2-3)
+  // Minor pentatonic = degrees 1,♭3,4,5,♭7 of natural minor (intervals: 3-2-2-3-2)
+  function makeMajorPentatonic(majorScale) {
+    const n = majorScale.notes;
+    return {
+      name: majorScale.tonic + ' Major Pentatonic',
+      tonic: majorScale.tonic, ks: majorScale.ks, mode: 'pentatonic-major',
+      notes: [n[0], n[1], n[2], n[4], n[5], n[7]]
+    };
+  }
+  function makeMinorPentatonic(natMinorScale) {
+    const n = natMinorScale.notes;
+    return {
+      name: natMinorScale.tonic + ' Minor Pentatonic',
+      tonic: natMinorScale.tonic, ks: natMinorScale.ks, mode: 'pentatonic-minor',
+      notes: [n[0], n[2], n[3], n[4], n[6], n[7]]
+    };
+  }
+  const MAJOR_PENTATONIC_SCALES = MAJOR_SCALES.map(makeMajorPentatonic);
+  const MINOR_PENTATONIC_SCALES = NATURAL_MINOR_SCALES.map(makeMinorPentatonic);
+
   // ============ Sanity check ============
   // Runs once on script load. Verifies every scale matches its mode's interval
   // pattern, has 8 notes, starts and ends on the correct tonic letter, and spans
@@ -1184,23 +1221,26 @@
   // immediately rather than as a wrong pitch in a single quiz round.
   (function sanityCheck() {
     const PATTERNS = {
-      'major':           [2,2,1,2,2,2,1],
-      'minor-natural':   [2,1,2,2,1,2,2],
-      'minor-harmonic':  [2,1,2,2,1,3,1],
-      'minor-melodic':   [2,1,2,2,2,2,1], // ascending only
+      'major':             [2,2,1,2,2,2,1],
+      'minor-natural':     [2,1,2,2,1,2,2],
+      'minor-harmonic':    [2,1,2,2,1,3,1],
+      'minor-melodic':     [2,1,2,2,2,2,1],
+      'pentatonic-major':  [2,2,3,2,3],
+      'pentatonic-minor':  [3,2,2,3,2],
     };
     const TONIC_LETTER = {
       'C':'C','D':'D','E':'E','F':'F','G':'G','A':'A','B':'B',
       'C#':'C','D#':'D','F#':'F','G#':'G','A#':'A',
       'Cb':'C','Db':'D','Eb':'E','Fb':'F','Gb':'G','Ab':'A','Bb':'B',
     };
-    const ALL = [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...HARMONIC_MINOR_SCALES, ...MELODIC_MINOR_SCALES];
+    const ALL = [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...HARMONIC_MINOR_SCALES, ...MELODIC_MINOR_SCALES, ...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
     let errors = 0;
     ALL.forEach(scale => {
       const pattern = PATTERNS[scale.mode];
       if (!pattern) { console.error(`[SCALES] Unknown mode: ${scale.mode} on ${scale.name}`); errors++; return; }
-      if (scale.notes.length !== 8) {
-        console.error(`[SCALES] ${scale.name}: expected 8 notes, got ${scale.notes.length}`);
+      const expectedNotes = pattern.length + 1;
+      if (scale.notes.length !== expectedNotes) {
+        console.error(`[SCALES] ${scale.name}: expected ${expectedNotes} notes, got ${scale.notes.length}`);
         errors++; return;
       }
       let pitches;
@@ -1211,15 +1251,16 @@
         console.error(`[SCALES] ${scale.name}: first note letter '${pitches[0].letter}' doesn't match tonic letter '${expectedLetter}'`);
         errors++;
       }
-      if (pitches[7].letter !== expectedLetter) {
-        console.error(`[SCALES] ${scale.name}: last note letter '${pitches[7].letter}' doesn't match tonic letter '${expectedLetter}'`);
+      const lastIdx = pitches.length - 1;
+      if (pitches[lastIdx].letter !== expectedLetter) {
+        console.error(`[SCALES] ${scale.name}: last note letter '${pitches[lastIdx].letter}' doesn't match tonic letter '${expectedLetter}'`);
         errors++;
       }
-      if (pitches[7].midi - pitches[0].midi !== 12) {
-        console.error(`[SCALES] ${scale.name}: octave span wrong — got ${pitches[7].midi - pitches[0].midi} semitones, expected 12. Notes: ${scale.notes.join(' ')}`);
+      if (pitches[lastIdx].midi - pitches[0].midi !== 12) {
+        console.error(`[SCALES] ${scale.name}: octave span wrong — got ${pitches[lastIdx].midi - pitches[0].midi} semitones, expected 12. Notes: ${scale.notes.join(' ')}`);
         errors++;
       }
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < pattern.length; i++) {
         const actual = pitches[i+1].midi - pitches[i].midi;
         if (actual !== pattern[i]) {
           console.error(`[SCALES] ${scale.name}: interval ${i+1}→${i+2} is ${actual} semitones, expected ${pattern[i]}. Notes: ${scale.notes.join(' ')}`);
@@ -1228,24 +1269,75 @@
       }
     });
     if (errors === 0) {
-      console.log(`[SCALES] ✓ Sanity check passed: ${ALL.length} scales validated (${MAJOR_SCALES.length} major, ${NATURAL_MINOR_SCALES.length} natural minor, ${HARMONIC_MINOR_SCALES.length} harmonic minor, ${MELODIC_MINOR_SCALES.length} melodic minor)`);
+      console.log(`[SCALES] ✓ Sanity check passed: ${ALL.length} scales validated (${MAJOR_SCALES.length} major, ${NATURAL_MINOR_SCALES.length} nat. minor, ${HARMONIC_MINOR_SCALES.length} harm. minor, ${MELODIC_MINOR_SCALES.length} mel. minor, ${MAJOR_PENTATONIC_SCALES.length} maj. pent., ${MINOR_PENTATONIC_SCALES.length} min. pent.)`);
     } else {
       console.error(`[SCALES] ✗ Sanity check FAILED with ${errors} error(s). See above.`);
     }
   })();
 
-  // ---- Difficulty pools ----
-  const EASY_MAJORS = ['C Major', 'G Major', 'F Major', 'D Major', 'Bb Major'];
-  const POOLS = {
-    easy: MAJOR_SCALES.filter(s => EASY_MAJORS.includes(s.name)),
-    medium: [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES],
-    tricky: [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...HARMONIC_MINOR_SCALES, ...MELODIC_MINOR_SCALES],
+  // ---- Pool building ----
+  const EASY_TONICS_MAJOR = ['C', 'G', 'F', 'D', 'Bb'];
+  const MED_TONICS_MAJOR  = ['C', 'G', 'F', 'D', 'Bb', 'A', 'E', 'Ab', 'Eb'];
+  const EASY_TONICS_MINOR = ['A', 'E', 'D', 'B', 'G'];
+  const MED_TONICS_MINOR  = ['A', 'E', 'D', 'B', 'G', 'F#', 'C', 'F', 'Bb'];
+
+  function getPool(difficulty, scaleType) {
+    if (scaleType === 'all') {
+      switch (difficulty) {
+        case 'easy':   return MAJOR_SCALES.filter(s => EASY_TONICS_MAJOR.includes(s.tonic));
+        case 'medium': return [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
+        case 'tricky': return [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...HARMONIC_MINOR_SCALES, ...MELODIC_MINOR_SCALES, ...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
+        default:       return MAJOR_SCALES;
+      }
+    }
+    if (scaleType === 'pentatonic') {
+      switch (difficulty) {
+        case 'easy':   return MAJOR_PENTATONIC_SCALES.filter(s => EASY_TONICS_MAJOR.includes(s.tonic));
+        case 'medium': return [...MAJOR_PENTATONIC_SCALES.filter(s => EASY_TONICS_MAJOR.includes(s.tonic)),
+                               ...MINOR_PENTATONIC_SCALES.filter(s => EASY_TONICS_MINOR.includes(s.tonic))];
+        case 'tricky': return [...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
+        default:       return [...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
+      }
+    }
+    const typeMap = {
+      'major':          MAJOR_SCALES,
+      'minor-natural':  NATURAL_MINOR_SCALES,
+      'minor-harmonic': HARMONIC_MINOR_SCALES,
+      'minor-melodic':  MELODIC_MINOR_SCALES,
+    };
+    const scales = typeMap[scaleType] || MAJOR_SCALES;
+    const isMajor = scaleType === 'major';
+    const easyT = isMajor ? EASY_TONICS_MAJOR : EASY_TONICS_MINOR;
+    const medT  = isMajor ? MED_TONICS_MAJOR  : MED_TONICS_MINOR;
+    switch (difficulty) {
+      case 'easy':   return scales.filter(s => easyT.includes(s.tonic));
+      case 'medium': return scales.filter(s => medT.includes(s.tonic));
+      case 'tricky': return scales;
+      default:       return scales;
+    }
+  }
+
+  const TILE_DESCS = {
+    'all':            { easy: '5 major keys<br/>C, G, F, D, B♭', medium: 'all majors, minor<br/>+ pentatonic', tricky: '+ harmonic &amp;<br/>melodic minor' },
+    'major':          { easy: '5 easy keys<br/>C, G, F, D, B♭', medium: '9 keys<br/>+ A, E, A♭, E♭', tricky: 'all 15 keys' },
+    'minor-natural':  { easy: '5 easy keys<br/>A, E, D, B, G',  medium: '9 keys<br/>+ F♯, C, F, B♭',  tricky: 'all 13 keys' },
+    'minor-harmonic': { easy: '5 easy keys<br/>A, E, D, B, G',  medium: '9 keys<br/>+ F♯, C, F, B♭',  tricky: 'all 13 keys' },
+    'minor-melodic':  { easy: '5 easy keys<br/>A, E, D, B, G',  medium: '9 keys<br/>+ F♯, C, F, B♭',  tricky: 'all 13 keys' },
+    'pentatonic':     { easy: '5 major pent.<br/>C, G, F, D, B♭', medium: '+ minor pent.<br/>easy keys', tricky: 'all 28 scales<br/>major + minor' },
   };
+
+  function updateDiffDescriptions(scaleType) {
+    const desc = TILE_DESCS[scaleType] || TILE_DESCS['all'];
+    els['diff-tiles'].querySelectorAll('.tile').forEach(t => {
+      const sub = t.querySelector('.tile-sub');
+      if (sub && desc[t.dataset.diff]) sub.innerHTML = desc[t.dataset.diff];
+    });
+  }
 
   // ============ DOM elements ============
   const els = {};
   ['start-screen','play-screen','summary-screen',
-   'diff-tiles','length-tiles','timer-toggle','timer-pills','timer-toggle-state',
+   'type-tiles','diff-tiles','length-tiles','timer-toggle','timer-pills','timer-toggle-state',
    'start-btn','start-muted-toggle',
    'exit-btn','mute-btn','timer-badge','timer-num','progress-fill','streak-num',
    'staff-wrap','replay-btn','toast','q-num','score-num','last-dots','choices-grid',
@@ -1259,6 +1351,7 @@
   const NS = 'sc_'; // localStorage namespace
   let state = {
     settings: {
+      scaleType: 'all',
       difficulty: 'medium',
       total: 10,
       timer: { enabled: false, seconds: 60 }
@@ -1315,7 +1408,12 @@
   // ============ Start screen wiring ============
   function initStartScreen() {
     loadSettings();
+    if (!state.settings.scaleType) state.settings.scaleType = 'all';
     // Apply settings to UI
+    els['type-tiles'].querySelectorAll('.tpill').forEach(t => {
+      t.classList.toggle('on', t.dataset.type === state.settings.scaleType);
+    });
+    updateDiffDescriptions(state.settings.scaleType);
     els['diff-tiles'].querySelectorAll('.tile').forEach(t => {
       t.classList.toggle('on', t.dataset.diff === state.settings.difficulty);
     });
@@ -1333,6 +1431,15 @@
     }
     els['start-muted-toggle'].checked = loadMuted();
 
+    els['type-tiles'].addEventListener('click', e => {
+      const t = e.target.closest('.tpill');
+      if (!t) return;
+      els['type-tiles'].querySelectorAll('.tpill').forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      state.settings.scaleType = t.dataset.type;
+      updateDiffDescriptions(state.settings.scaleType);
+      saveSettings();
+    });
     els['diff-tiles'].addEventListener('click', e => {
       const t = e.target.closest('.tile');
       if (!t) return;
@@ -1392,7 +1499,7 @@
   }
 
   function startRound() {
-    const pool = POOLS[state.settings.difficulty] || POOLS.medium;
+    const pool = getPool(state.settings.difficulty, state.settings.scaleType);
     state.queue = sampleQueue(pool, state.settings.total);
     state.qIndex = 0;
     state.score = 0;
@@ -1435,24 +1542,26 @@
   }
 
   function makeChoices(correctScale) {
-    const pool = POOLS[state.settings.difficulty] || POOLS.medium;
+    const pool = getPool(state.settings.difficulty, state.settings.scaleType);
     const correctName = correctScale.name;
-    // Pick 3 distractors. Prefer same mode (more confusable), then any other.
     const sameMode = pool.filter(s => s.mode === correctScale.mode && s.name !== correctName);
     const others = pool.filter(s => s.name !== correctName);
 
-    // For majors, also add the relative minor as a tempting distractor when available.
     let tempting = [];
     if (correctScale.mode === 'major') {
-      // Find minor with same ks
       const relMinor = pool.find(s => s.ks === correctScale.ks && s.mode === 'minor-natural');
       if (relMinor) tempting.push(relMinor);
     } else if (correctScale.mode.startsWith('minor')) {
       const relMajor = pool.find(s => s.ks === correctScale.ks && s.mode === 'major');
       if (relMajor) tempting.push(relMajor);
-      // Also throw in the other minor forms with same tonic for harmonic/melodic confusion
       const otherMinors = pool.filter(s => s.tonic === correctScale.tonic && s.mode !== correctScale.mode && s.mode.startsWith('minor'));
       tempting.push(...otherMinors);
+    } else if (correctScale.mode === 'pentatonic-major') {
+      const relMinorPent = pool.find(s => s.ks === correctScale.ks && s.mode === 'pentatonic-minor');
+      if (relMinorPent) tempting.push(relMinorPent);
+    } else if (correctScale.mode === 'pentatonic-minor') {
+      const relMajorPent = pool.find(s => s.ks === correctScale.ks && s.mode === 'pentatonic-major');
+      if (relMajorPent) tempting.push(relMajorPent);
     }
 
     const distractors = [];
@@ -1534,7 +1643,7 @@
     // For majors and natural minors, the notes use the key sig as-is — no extra accidentals.
     // For harmonic/melodic minor, the raised 6th/7th need to be drawn.
 
-    if (scale.mode === 'major' || scale.mode === 'minor-natural') return false;
+    if (scale.mode === 'major' || scale.mode === 'minor-natural' || scale.mode.startsWith('pentatonic')) return false;
 
     // Determine what the key sig expects for this letter
     const sharps = scale.ks; // positive = sharps, negative = flats
