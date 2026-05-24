@@ -1,6 +1,6 @@
 # QuizNote — Project Doc (v2)
 
-_Last revised: May 2026 — **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
+_Last revised: May 2026 — **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
 
 ---
 
@@ -198,14 +198,14 @@ After the May 2026 tier reconciliation, Theory is cleanly "harmony" — chord mo
 
 18. **Primary Chords (I–IV–V)** — the three main chords in a key. *Live.* The *early, practical* harmony skill — distinct from Roman-numeral analysis. Major keys in v1. *Phase 2 expansion: + minor keys + selector.* **Accuracy note:** in minor keys, the V chord is MAJOR (raised leading tone from harmonic minor) — see §9.
 19. **Roman Numerals** — diatonic chord function (I, ii, iii, IV, V, vi, vii°). *Live.* Major keys in v1. *Phase 2 expansion: + minor keys + selector.*
-20. **Triads** — major, minor, diminished, augmented chord qualities by sight. *Planned (Phase 4).* Requires the chord renderer extension (Phase 3).
-21. **Triad Inversions** — root position, 1st inversion, 2nd inversion. *Planned (Phase 4).* Promoted to a standalone module in the May 2026 redesign (was originally folded into Triads).
-22. **Seventh Chords** — dominant 7, major 7, minor 7, half-diminished, fully diminished. *Planned (Phase 4).*
-23. **Chord Progressions** — identify common progressions (I–V–vi–IV, ii–V–I, etc.). *Planned (Phase 4).* Promoted to a standalone module in the May 2026 redesign (was originally folded into Roman Numerals).
-24. **Cadences** — authentic, plagal, half, deceptive. *Planned (Phase 4).*
-25. **Ear: Chord Quality** — hear a chord, identify quality. *Planned (Phase 4).* The only ear module that stays in Theory after the May 2026 reconciliation, because its visual partner (Triads / Seventh Chords) is in Theory.
-26. **Ear: Cadences** — hear a cadence, identify the type. *Planned (Phase 4).*
-27. **Ear: Chord Progressions** — hear a chord progression, identify it. *Planned (Phase 4).*
+20. **Triads** — major, minor, diminished, augmented chord qualities by sight. *Live (May 2026, Phase 4).* 29 chords, clef selector, uses `NH.staff.buildStaffWithChord` + `NH.audio.playChord`. Tiers: Easy (maj/min), Medium (+dim), Tricky (+aug).
+21. **Triad Inversions** — root position, 1st inversion, 2nd inversion. *Live (May 2026, Phase 4).* 36 chords (6 roots × 3 inversions × 2 qualities). "3rd inversion" as pedagogically interesting distractor.
+22. **Seventh Chords** — dominant 7, major 7, minor 7, half-diminished, fully diminished. *Live (May 2026, Phase 4).* 29 four-note chords. Tiers: Easy (dom7/min7), Medium (+maj7), Tricky (+half-dim/dim7).
+23. **Chord Progressions** — identify common progressions (I–V–vi–IV, ii–V–I, etc.). *Live (May 2026, Phase 4).* 13 entries across 5 types in 3 keys. Multi-chord rendering on wider staff (540px), 700ms sequential playback.
+24. **Cadences** — authentic, plagal, half, deceptive. *Live (May 2026, Phase 4).* 18 entries across 4 types in 4-5 keys. Two chords rendered side by side with arrow + roman numeral labels.
+25. **Ear: Chord Quality** — hear a chord, identify quality. *Live (May 2026, Phase 4).* Clone of Triads with staff hidden behind 🎧. The only ear module in Theory (visual partner is in Theory).
+26. **Ear: Cadences** — hear a cadence, identify the type. *Live (May 2026, Phase 4).* 18 cadences, audio-only, 800ms gap between chords.
+27. **Ear: Chord Progressions** — hear a chord progression, identify it. *Live (May 2026, Phase 4).* Audio-only progressions, 700ms gaps.
 
 ### Folded-in, not standalone
 
@@ -402,31 +402,31 @@ Phases are sequenced; each unblocks the next. Inside a phase, modules can be bui
 - Ear: Rhythm (clone from note-values; 🎧 audio cue at locked 60 BPM tempo) — §5 #7
 - Piano & Keyboard (clone from note-names with a new C3..C6 keyboard SVG renderer in `NH.render`) — §5 #4
 
-**Phase 2 — Reading Level-2 gaps + Level-2 expansions. Next up.**
-- Build: **Chromatic Scale** (§5 #17) — new module, clone from scales.
-- Expand: Scales — pentatonic + scale-type selector (major/natural/harmonic/melodic/pentatonic) (§5 #11)
-- Expand: Key Signatures — minor keys + major/minor/both selector (§5 #10)
-- Expand: Ear: Scales — pentatonic + selector (§5 #16)
-- Expand: Primary Chords — minor keys + selector (§5 #18). Accuracy: V is MAJOR in minor (raised leading tone).
-- Expand: Scale Degrees — minor keys + selector (§5 #12)
-- Expand: Roman Numerals — minor keys + selector (§5 #19)
-- Verify + expand if needed: Intervals — clef selector (§5 #14)
+**Phase 2 — Reading Level-2 gaps + Level-2 expansions. ✓ DONE (May 2026).**
+- ✓ Chromatic Scale (§5 #17) — shipped prior session
+- ✓ Scales — pentatonic + 6-option type selector (All/Major/Natural/Harmonic/Melodic/Pentatonic)
+- ✓ Key Signatures — 15 minor keys + Major/Minor/Both selector
+- ✓ Ear: Scales — pentatonic + type selector (mirrors Scales)
+- ✓ Primary Chords — minor keys + selector. V is MAJOR in minor (harmonic minor).
+- ✓ Scale Degrees — minor keys + selector. Degree 7 = subtonic in natural minor.
+- ✓ Roman Numerals — minor keys + selector. Harmonic minor conventions (i, ii°, III+, iv, V, VI, vii°).
+- ✓ Intervals — clef selector verified as already functional. No expansion needed.
 
-End-of-Phase-2 state: **19 modules live** (18 + Chromatic Scale).
+**Phase 3 — Chord renderer engineering session. ✓ DONE (May 2026).**
+- ✓ `qn-staff.js` v1.3.0: `buildChord()` (3-4 stacked noteheads, shared stem, seconds displacement, staggered accidentals) + `buildStaffWithChord()` (high-level composer)
+- ✓ `qn-audio.js` v1.1.0: `playChord(midiArray, opts)` — block chord with 40ms arpeggiation
 
-**Phase 3 — Chord renderer engineering session.** Gates all of Phase 4. Extend `qn-staff.js` with 3-note (root-position triad) and 4-note (seventh chord) rendering: stacked noteheads + shared stem geometry, proper accidental placement for the upper chord tones. Add `playChord(rootMidi, thirdMidi, fifthMidi[, seventhMidi])` helper to `qn-audio.js` — block chord with light arpeggiation, modelled on `playInterval`. Its own dedicated session per the "shared file change = Tier 3, separate session" rule.
+**Phase 4 — Theory chord cluster (8 modules). ✓ DONE (May 2026).** Live count 19 → 27.
+- ✓ Triads (§5 #20) — 29 chords, 4 qualities
+- ✓ Triad Inversions (§5 #21) — 36 chords, 3 inversions × 2 qualities
+- ✓ Seventh Chords (§5 #22) — 29 chords, 5 qualities
+- ✓ Chord Progressions (§5 #23) — 13 entries, 5 progression types
+- ✓ Cadences (§5 #24) — 18 entries, 4 cadence types
+- ✓ Ear: Chord Quality (§5 #25) — audio-only triads
+- ✓ Ear: Cadences (§5 #26) — audio-only cadences
+- ✓ Ear: Chord Progressions (§5 #27) — audio-only progressions
 
-**Phase 4 — Theory chord cluster (8 modules).** Cleanly clone-and-swap once Phase 3 lands.
-- Triads (§5 #20)
-- Triad Inversions (§5 #21)
-- Seventh Chords (§5 #22)
-- Chord Progressions (§5 #23)
-- Cadences (§5 #24)
-- Ear: Chord Quality (§5 #25)
-- Ear: Cadences (§5 #26)
-- Ear: Chord Progressions (§5 #27)
-
-End-of-Phase-4 state: **27 modules live** — the full roster.
+**End state: 27 modules live — the full roster target.**
 
 ### Parallel tracks (not blockers)
 
