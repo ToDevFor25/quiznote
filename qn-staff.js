@@ -396,6 +396,201 @@
   }
 
   // ─────────────────────────────────────────────────────────────
+  // Chord rendering (3-4 stacked noteheads + shared stem)
+  //
+  // Generalizes the 2-note interval renderer to N notes.
+  // Handles stem direction, seconds displacement, ledger lines,
+  // and staggered accidental placement.
+  // ─────────────────────────────────────────────────────────────
+
+  function diatonicStepFromPitch(letter, octave) {
+    const LETTER_STEPS = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+    return octave * 7 + (LETTER_STEPS[letter] || 0);
+  }
+
+  function chordLedgers(d) {
+    const out = [];
+    if (d <= -2) {
+      const eMin = (d % 2 === 0) ? d : d - 1;
+      for (let e = -2; e >= eMin; e -= 2) out.push(e);
+    } else if (d >= 10) {
+      const eMax = (d % 2 === 0) ? d : d + 1;
+      for (let e = 10; e <= eMax; e += 2) out.push(e);
+    }
+    return out;
+  }
+
+  /**
+   * Build SVG for a chord (3-4 stacked noteheads with a shared stem).
+   *
+   * @param {object} opts
+   * @param {'treble'|'bass'} opts.clef
+   * @param {Array<{letter,octave,accidental,midi}>} opts.pitches - parsed pitches, any order
+   * @param {number} opts.bottomY
+   * @param {number} opts.lineGap
+   * @param {number} [opts.x]          - x center for the chord (default: centered in width)
+   * @param {number} [opts.width=360]
+   * @param {number} [opts.xOffset=0]
+   * @param {string} [opts.noteFill='#5B3FE4']
+   * @param {string} [opts.color='#2A2A3E']
+   * @param {string} [opts.noteClass='note-head']
+   * @returns {{ svg: string, noteX: number }}
+   */
+  function buildChord(opts) {
+    const {
+      clef, pitches,
+      bottomY, lineGap,
+      width = 360, xOffset = 0,
+      noteFill = '#5B3FE4', color = '#2A2A3E',
+      noteClass = 'note-head',
+    } = opts;
+
+    if (!pitches || pitches.length < 2) return { svg: '', noteX: 0 };
+
+    const halfStep = lineGap / 2;
+    const headRX = lineGap * 0.70;
+    const headRY = lineGap * 0.50;
+    const tilt = -16;
+    const LETTER_STEPS = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
+    const clefBottom = clef === 'treble'
+      ? diatonicStepFromPitch('E', 4)
+      : diatonicStepFromPitch('G', 2);
+
+    // Sort pitches low to high by diatonic step
+    const sorted = pitches.slice().sort((a, b) => {
+      const da = diatonicStepFromPitch(a.letter, a.octave);
+      const db = diatonicStepFromPitch(b.letter, b.octave);
+      return da - db;
+    });
+
+    const steps = sorted.map(p => diatonicStepFromPitch(p.letter, p.octave) - clefBottom);
+    const ys = steps.map(d => bottomY - d * halfStep);
+
+    // Stem direction: midpoint of outer notes
+    const dMid = (steps[0] + steps[steps.length - 1]) / 2;
+    const stemUp = dMid < 4;
+
+    // Base x position
+    const baseX = (opts.x !== undefined) ? opts.x : (xOffset + width * 0.55);
+
+    // Seconds displacement: when adjacent notes are 1 step apart, offset
+    // the appropriate note. Work from bottom up.
+    const xs = sorted.map(() => baseX);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (steps[i + 1] - steps[i] === 1) {
+        if (stemUp) {
+          xs[i + 1] = baseX + headRX * 1.9;
+        } else {
+          xs[i] = baseX - headRX * 1.9;
+        }
+      }
+    }
+
+    let svg = '';
+
+    // Ledger lines — union of all notes
+    const allLedgers = new Set();
+    steps.forEach(d => chordLedgers(d).forEach(e => allLedgers.add(e)));
+    const xMin = Math.min(...xs);
+    const xMax = Math.max(...xs);
+    allLedgers.forEach(e => {
+      const ly = bottomY - e * halfStep;
+      svg += `<line x1="${xMin - lineGap * 1.05}" y1="${ly}" x2="${xMax + lineGap * 1.05}" y2="${ly}" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>`;
+    });
+
+    // Accidentals — staggered to avoid vertical collision.
+    // Process top-to-bottom; each accidental gets the closest available
+    // column unless a previously placed one is within 2.5 steps.
+    const accColumns = [];
+    for (let i = sorted.length - 1; i >= 0; i--) {
+      if (!sorted[i].accidental) continue;
+      const sym = NOTE_ACC_GLYPH[sorted[i].accidental];
+      if (!sym) continue;
+      let col = 0;
+      for (const placed of accColumns) {
+        if (Math.abs(steps[i] - placed.step) < 3 && placed.col === col) {
+          col++;
+        }
+      }
+      accColumns.push({ step: steps[i], col });
+      const accX = xMin - lineGap * 1.1 - col * lineGap * 1.0;
+      const accY = ys[i] + OFFSET.sharp * lineGap;
+      svg += `<text x="${accX}" y="${accY}" font-family="Bravura Text" font-size="${lineGap * 4}" text-anchor="end" fill="${color}">${sym}</text>`;
+    }
+
+    // Stem
+    const stemLen = lineGap * 3.5;
+    svg += `<g class="chord-group" id="chord-anim">`;
+    if (stemUp) {
+      const sx = baseX + headRX * 0.78;
+      const stemTop = ys[ys.length - 1] - stemLen;
+      svg += `<line x1="${sx}" y1="${ys[0] - 1}" x2="${sx}" y2="${stemTop}" stroke="${color}" stroke-width="2.8" stroke-linecap="round"/>`;
+    } else {
+      const sx = baseX - headRX * 0.78;
+      const stemBot = ys[0] + stemLen;
+      svg += `<line x1="${sx}" y1="${ys[ys.length - 1] + 1}" x2="${sx}" y2="${stemBot}" stroke="${color}" stroke-width="2.8" stroke-linecap="round"/>`;
+    }
+
+    // Noteheads — bottom to top
+    sorted.forEach((p, i) => {
+      svg += `<ellipse class="${noteClass}" data-i="${i}" cx="${xs[i]}" cy="${ys[i]}" rx="${headRX}" ry="${headRY}" transform="rotate(${tilt} ${xs[i]} ${ys[i]})" fill="${noteFill}" stroke="${color}" stroke-width="2"/>`;
+    });
+    svg += `</g>`;
+
+    return { svg, noteX: baseX };
+  }
+
+  /**
+   * Build a complete staff with a chord: lines + clef + optional key sig + chord.
+   * High-level composer for chord modules.
+   *
+   * @param {object} opts
+   * @param {'treble'|'bass'} [opts.clef='treble']
+   * @param {Array} opts.pitches      - parsed pitches for the chord
+   * @param {object} [opts.keySig]    - { type: 'sharp'|'flat', count: 0..7 }
+   * @param {number} [opts.width=360]
+   * @param {number} [opts.lineGap=16]
+   * @param {number} [opts.bottomY=130]
+   * @param {number} [opts.height=200]
+   * @param {string} [opts.noteFill='#5B3FE4']
+   * @param {string} [opts.color='#2A2A3E']
+   * @returns {{ svg: string, noteX: number, accEndX: number }}
+   */
+  function buildStaffWithChord(opts) {
+    const {
+      clef = 'treble',
+      pitches,
+      keySig = null,
+      width = 360,
+      lineGap = 16,
+      bottomY = 130,
+      height = 200,
+      noteFill = '#5B3FE4',
+      color = '#2A2A3E',
+    } = opts;
+
+    // Staff frame: lines + clef + key sig
+    const frame = buildStaff({
+      clef, width, height, lineGap, bottomY, xOffset: 0,
+      keySig, color,
+    });
+
+    // Place chord after key signature with comfortable clearance
+    const chordX = (frame.accEndX || (lineGap * 4.5)) + lineGap * 3;
+
+    const chord = buildChord({
+      clef, pitches, bottomY, lineGap, width,
+      x: chordX, noteFill, color,
+    });
+
+    return {
+      svg: frame.svg + chord.svg,
+      noteX: chord.noteX,
+      accEndX: frame.accEndX,
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────
   // Expose
   // ─────────────────────────────────────────────────────────────
 
@@ -410,7 +605,9 @@
     buildNoteAccidental,
     buildTimeSignature,
     buildStaff,
+    buildChord,
+    buildStaffWithChord,
   };
-  window.NH.staff.version = '1.2.0';
+  window.NH.staff.version = '1.3.0';
 
 })();
