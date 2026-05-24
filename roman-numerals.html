@@ -1264,6 +1264,12 @@
     if (s.clef && ['treble','bass','both'].indexOf(s.clef) !== -1) {
       if (highlight('clef-tiles', 'data-clef', s.clef)) state.settings.clef = s.clef;
     }
+    if (s.keyMode && ['major','minor','both'].indexOf(s.keyMode) !== -1) {
+      if (highlight('mode-tiles', 'data-mode', s.keyMode)) {
+        state.settings.keyMode = s.keyMode;
+        updateRnDiffDescriptions(s.keyMode);
+      }
+    }
   }
 
   function updateRnDiffDescriptions(mode) {
