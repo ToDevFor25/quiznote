@@ -1,5 +1,143 @@
 ---
 
+### Phase 2 #1 — Chromatic Scale — May 2026
+
+**Session type:** Build (1 module via clone-and-swap)
+
+**Net result:** 18 → 19 live modules. Phase 2 item #1 complete. Remaining
+Phase 2 work is expansions to existing modules (not new builds).
+
+**Commit:**
+- `13e5bc9` Phase 2: ship Chromatic Scale module (#19)
+
+**Per-module decisions worth keeping (chromatic-scale.html):**
+
+- **Cloned from scales.html** — staff renderer, audio voice (rich piano
+  timbre), game loop, confetti, FX engine all inherited verbatim. Pure
+  data swap plus a small pool-structure refactor (see below).
+- **24 chromatic scales generated from a single helper** (12 ascending +
+  12 descending). Tonic list = 12 musically-common major-key spellings:
+  C, C#, D, Eb, E, F, F#, G, Ab, A, Bb, B. Same tonic list for both
+  directions — each tonic carries its canonical major-key spelling
+  regardless of direction.
+- **Spelling convention LOCKED** to the school-textbook standard:
+  ascending uses sharps, descending uses flats, tonic stays natural,
+  **no B♯/E♯/C♭/F♭** (uses C/F and B/E instead). The diatonic-preserving
+  "melodic chromatic" variant used in chromatic harmony is **deliberately
+  out of scope** — noted in spec. This decision applies to any future
+  chromatic content too.
+- **POOLS structure refactored** from scales.html's single map into
+  separate `QUESTION_POOLS` (always chromatic — what the round queue
+  samples from) and `DISTRACTOR_POOLS` (chromatic + majors at Medium,
+  + natural minors at Tricky — what `makeChoices` samples wrong-answer
+  candidates from). **Reason:** chromatic discrimination requires
+  comparing against majors/minors, but the learner must never be asked
+  to *name* a non-chromatic scale. Worth remembering: if a future
+  module needs the same separation (asked items ≠ distractor items),
+  this is the proven pattern.
+- **Tempting distractors** for chromatic: same-tonic opposite-direction
+  chromatic (tests asc-vs-desc spelling discrimination) + same-tonic
+  major scale (tests "is this really every half step?"). The old
+  scales-specific relative-major/minor temptation block was replaced.
+- **Audio namespace renamed** `NH.audio_scales` → `NH.audio_chromatic`.
+  Each module's local audio voice gets its own slot under the global NH
+  namespace. The Proxy in the game-loop block checks the renamed slot
+  first, then falls back to `NH.audio`. Pattern unchanged from scales.
+- **Tile design** (play.html, Reading section after Scales): coral
+  background, dense sharp-glyph staff art with alternating natural +
+  sharp glyphs climbing the staff, "half steps?" caption.
+- **Path placement:** between Scales and Scale Degrees in path.html
+  PATH and qn-profile.js PATH. Both lists kept identical (a
+  recurring requirement — search "PATH" in both files when adding any
+  module).
+- **Module ks is always 0** for chromatic — no key signature is drawn;
+  every chromatic note carries its own accidental glyph explicitly.
+  `needsExplicitAccidental` returns true for chromatic notes because
+  mode is neither `major` nor `minor-natural` and `ksAccForLetter` is
+  empty (ks=0). No code change needed to that helper — it falls through
+  correctly.
+- **Sanity check** rewritten for chromatic: every entry must be 13
+  notes, tonic-to-tonic, every adjacent pair ±1 semitone, octave span
+  ±12. All 24 pass on script load. Output: `[CHROM] ✓ Sanity check
+  passed: 24 chromatic scales validated (12 asc, 12 desc)`.
+
+**Spec:** `specs/chromatic-scale-spec.md` (the canonical record for the
+spelling convention, tier breakdown, distractor strategy, and the
+"what this is NOT" list).
+
+**Catches worth remembering:**
+
+- **`git commit -m "$(cat <<'EOF' ... EOF)"` failed on this commit
+  message.** The eval got confused by some character combination in the
+  body (likely the `+/-` chars or the en-dash). Switched to writing the
+  message to `/tmp/qn-commit-msg.txt` and using `git commit -F` — worked
+  immediately. **Workflow lesson:** for commit messages with any
+  unusual punctuation, just write to a temp file. Don't fight bash
+  escapes.
+- **`Edit` requires Read-first ON THE NEW FILE PATH after `cp source
+  dest`.** A copy creates a fresh path the harness hasn't tracked; the
+  first Edit attempts fail with "File has not been read yet." A single
+  Read of any 1-line slice unlocks Edit. Cheap; just do it after every
+  `cp`.
+
+---
+
+**Still open / next (updated):**
+
+COMPLETED this session:
+- ✅ Chromatic Scale (Phase 2 #1) shipped to all 4 surfaces.
+- ✅ CLAUDE.md + QUIZNOTE_PROJECT_DOC.md updated for the new live count
+  and the Phase 2 progress.
+
+STILL OPEN (ordered by priority):
+
+**Phase 2 expansions — remaining (7 items):**
+
+1. Expand Scales: pentatonic + scale-type selector
+   (major/natural/harmonic/melodic/pentatonic)
+2. Expand Key Signatures: minor keys + major/minor/both selector
+3. Expand Ear: Scales: pentatonic + selector
+4. Expand Primary Chords: minor keys + selector. Accuracy: V is MAJOR
+   in minor (raised leading tone from harmonic minor)
+5. Expand Scale Degrees: minor keys + selector
+6. Expand Roman Numerals: minor keys + selector
+7. Verify + expand if needed: Intervals — clef selector
+
+**These are EDIT-IN-PLACE expansions to existing working modules,
+NOT clone-and-swap new-module builds.** The "module builds are always
+additive" rule (copy to a new file) does not apply here. They are
+direct edits to live working code and must NOT break current Major-key
+behavior. Treat each as its own session; surface the diff for review
+before committing. The selector pattern (MANDATORY per CLAUDE.md) is
+the right shape for each — use the existing difficulty-selector tile
+pattern as the model.
+
+**Phase 3 (queued, single dedicated engineering session):** chord
+renderer extension. Extend `qn-staff.js` with 3-note (root-position
+triad) and 4-note (seventh chord) rendering — stacked noteheads +
+shared stem geometry, proper accidental placement for upper chord
+tones. Add `playChord(rootMidi, thirdMidi, fifthMidi[, seventhMidi])`
+helper to `qn-audio.js` (block chord with light arpeggiation, modelled
+on `playInterval`). **Gates all of Phase 4.** Shared-file change =
+Tier 3, own session per CLAUDE.md.
+
+**Phase 4 (after Phase 3 lands):** 8 Level 3 chord modules. Cleanly
+clone-and-swap once the chord renderer exists: Triads, Triad Inversions,
+Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality,
+Ear: Cadences, Ear: Chord Progressions.
+
+**Still flagged for a cleanup pass (no urgency):**
+
+- Orphan CSS in `index.html` (`.tier-section`, `.tier-header`,
+  `.tier-meta`, `.tier-desc`, old `.ltile-*` / `.bg-*` rules) left over
+  from the May 2026 vertical-spine redesign. Harmless but unused.
+  Sweep when next touching that file.
+- `time-signatures` `accStartX:72` pin (QA first).
+- `time-signatures` prompt-layout conversion + `scales` tile
+  reconciliation. Both need a slider harness per §8 before they can move.
+
+---
+
 ### Phase 1 build + landing redesign — May 2026
 
 **Session type:** Build (4 modules) + 2 landing-page restructures

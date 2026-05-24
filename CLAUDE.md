@@ -45,14 +45,14 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **18 live modules (Phase 1 complete, May 2026):** note-names, piano-quiz,
+- **19 live modules (Phase 2 #1 done, May 2026):** note-names, piano-quiz,
   note-values, time-signatures, accidentals, key-signatures, scales, scale-degrees,
   scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals,
-  **ledger-lines, dotted-notes, ear-rhythm, piano-keyboard** (the last four are
-  Phase 1 builds). Roster target is **27 modules** across 3 levels (9 Foundations
-  + 8 Reading + 10 Theory) — see QUIZNOTE_PROJECT_DOC.md §5 for the complete map
-  with build status, selectors, tier reconciliation notes, and §12 for the
-  four-phase build plan.
+  ledger-lines, dotted-notes, ear-rhythm, piano-keyboard (Phase 1), **chromatic-scale**
+  (Phase 2 #1 — clone of scales.html, all 24 chromatic scales asc + desc). Roster
+  target is **27 modules** across 3 levels (9 Foundations + 8 Reading + 10 Theory)
+  — see QUIZNOTE_PROJECT_DOC.md §5 for the complete map with build status,
+  selectors, tier reconciliation notes, and §12 for the four-phase build plan.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -272,7 +272,10 @@ For any future CSS work:
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
 - **Phase 1 of the curriculum redesign: COMPLETE (May 2026).** Ledger Lines,
-  Dotted Notes & Ties, Ear: Rhythm, Piano & Keyboard all shipped. **18 live
+  Dotted Notes & Ties, Ear: Rhythm, Piano & Keyboard all shipped.
+- **Phase 2 in progress (May 2026): Chromatic Scale shipped** (clone of
+  scales.html, separate QUESTION_POOLS vs DISTRACTOR_POOLS so chromatic is
+  always asked while majors/minors only appear as distractors). **19 live
   modules** total. 27-module roster target.
 - **play.html redesigned (May 2026):** three collapsible level sections
   (Foundations / Reading / Theory) with progress chips. FOUC-prevention via
@@ -288,10 +291,13 @@ For any future CSS work:
   only harmony modules (Primary Chords, Roman Numerals) and the future chord
   cluster. All four surfaces (play.html, path.html MODULES + PATH,
   qn-profile.js PATH, index.html spine taglines) consistent.
-- **Next priority: Phase 2 (Level 2 gaps).** Scales pentatonic + selector, Key
-  Signatures minor + selector, Chromatic Scale, the four minor-keys
+- **Next priority: Phase 2 expansions (Chromatic Scale done).** Scales
+  pentatonic + selector, Key Signatures minor + selector, the four minor-keys
   expansions (Primary Chords, Scale Degrees, Roman Numerals, Ear:Scales),
-  Intervals clef selector verify.
+  Intervals clef selector verify. These are EXPANSIONS to existing working
+  modules — NOT clone-and-swap builds — so the additive "copy to a new file"
+  rule does not apply; they are edits in place, and they must not break
+  current Major-key behavior. Treat each as its own session.
 - **Chord renderer session:** queued as Phase 3. Do not attempt chord modules
   before qn-staff.js extension.
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
