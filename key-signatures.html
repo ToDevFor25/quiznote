@@ -56,6 +56,9 @@
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
+  .mode-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
   /* .brand* → qn-theme.css */
 
 
@@ -474,7 +477,16 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="q-label"><span class="num">1</span> Which keys?</div>
+      <div class="mode-pills" id="mode-tiles">
+        <button class="tpill on" data-mode="major">Major</button>
+        <button class="tpill" data-mode="minor">Minor</button>
+        <button class="tpill" data-mode="both">Both</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How tricky?</div>
       <div class="tile-row" id="diff-tiles">
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
@@ -495,7 +507,7 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="q-label"><span class="num">3</span> How many questions?</div>
       <div class="tile-row" id="length-tiles">
         <button class="tile" data-len="5">
           <div class="tile-emoji">⚡</div>
@@ -734,7 +746,7 @@
   const FLAT_ORDER  = ['B', 'E', 'A', 'D', 'G', 'C', 'F'];
 
   const KEYS = {
-    // Sharps
+    // Major — sharps
     'C':   { name: 'C major',  sharps: 0, flats: 0 },
     'G':   { name: 'G major',  sharps: 1, flats: 0 },
     'D':   { name: 'D major',  sharps: 2, flats: 0 },
@@ -743,7 +755,7 @@
     'B':   { name: 'B major',  sharps: 5, flats: 0 },
     'F#':  { name: 'F♯ major', sharps: 6, flats: 0 },
     'C#':  { name: 'C♯ major', sharps: 7, flats: 0 },
-    // Flats
+    // Major — flats
     'F':   { name: 'F major',  sharps: 0, flats: 1 },
     'Bb':  { name: 'B♭ major', sharps: 0, flats: 2 },
     'Eb':  { name: 'E♭ major', sharps: 0, flats: 3 },
@@ -751,15 +763,65 @@
     'Db':  { name: 'D♭ major', sharps: 0, flats: 5 },
     'Gb':  { name: 'G♭ major', sharps: 0, flats: 6 },
     'Cb':  { name: 'C♭ major', sharps: 0, flats: 7 },
+    // Minor — sharps
+    'Am':  { name: 'A minor',  sharps: 0, flats: 0 },
+    'Em':  { name: 'E minor',  sharps: 1, flats: 0 },
+    'Bm':  { name: 'B minor',  sharps: 2, flats: 0 },
+    'F#m': { name: 'F♯ minor', sharps: 3, flats: 0 },
+    'C#m': { name: 'C♯ minor', sharps: 4, flats: 0 },
+    'G#m': { name: 'G♯ minor', sharps: 5, flats: 0 },
+    'D#m': { name: 'D♯ minor', sharps: 6, flats: 0 },
+    'A#m': { name: 'A♯ minor', sharps: 7, flats: 0 },
+    // Minor — flats
+    'Dm':  { name: 'D minor',  sharps: 0, flats: 1 },
+    'Gm':  { name: 'G minor',  sharps: 0, flats: 2 },
+    'Cm':  { name: 'C minor',  sharps: 0, flats: 3 },
+    'Fm':  { name: 'F minor',  sharps: 0, flats: 4 },
+    'Bbm': { name: 'B♭ minor', sharps: 0, flats: 5 },
+    'Ebm': { name: 'E♭ minor', sharps: 0, flats: 6 },
+    'Abm': { name: 'A♭ minor', sharps: 0, flats: 7 },
   };
 
-  // Tiers
-  const TIERS = {
+  const MAJOR_TIERS = {
     easy:   ['C', 'G', 'D', 'F', 'Bb'],
     medium: ['C', 'G', 'D', 'A', 'E', 'F', 'Bb', 'Eb', 'Ab'],
     tricky: ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#',
              'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'],
   };
+  const MINOR_TIERS = {
+    easy:   ['Am', 'Em', 'Bm', 'Dm', 'Gm'],
+    medium: ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'Dm', 'Gm', 'Cm', 'Fm'],
+    tricky: ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m', 'A#m',
+             'Dm', 'Gm', 'Cm', 'Fm', 'Bbm', 'Ebm', 'Abm'],
+  };
+  const TIERS = MAJOR_TIERS;
+
+  const KS_TILE_DESCS = {
+    'major': { easy: 'C, G, D<br/>F, B♭', medium: '+ A, E<br/>A♭, E♭', tricky: '+ B, F♯, D♭<br/>G♭, C♯, C♭' },
+    'minor': { easy: 'Am, Em, Bm<br/>Dm, Gm', medium: '+ F♯m, C♯m<br/>Cm, Fm', tricky: '+ G♯m, D♯m, B♭m<br/>E♭m, A♯m, A♭m' },
+    'both':  { easy: '5 major + 5 minor<br/>easy keys', medium: '9 major + 9 minor', tricky: 'all 15 + 15 keys' },
+  };
+
+  function getKeyPool(difficulty, keyMode) {
+    if (keyMode === 'both') {
+      return [...(MAJOR_TIERS[difficulty] || MAJOR_TIERS.medium), ...(MINOR_TIERS[difficulty] || MINOR_TIERS.medium)];
+    }
+    const tiers = keyMode === 'minor' ? MINOR_TIERS : MAJOR_TIERS;
+    return (tiers[difficulty] || tiers.medium).slice();
+  }
+
+  function isMinorKey(keyId) { return keyId.endsWith('m'); }
+
+  function relativeKey(keyId) {
+    const k = KEYS[keyId];
+    if (!k) return null;
+    const accCount = k.sharps || k.flats;
+    const isFlat = k.flats > 0;
+    if (isMinorKey(keyId)) {
+      return Object.keys(KEYS).find(id => !isMinorKey(id) && KEYS[id].sharps === k.sharps && KEYS[id].flats === k.flats);
+    }
+    return Object.keys(KEYS).find(id => isMinorKey(id) && KEYS[id].sharps === k.sharps && KEYS[id].flats === k.flats);
+  }
 
   // ----- Standard accidental staff positions -----
   // We encode as "diatonic step relative to bottom line" (each step = half lineGap).
@@ -983,6 +1045,12 @@
 
   KS.KEYS = KEYS;
   KS.TIERS = TIERS;
+  KS.MAJOR_TIERS = MAJOR_TIERS;
+  KS.MINOR_TIERS = MINOR_TIERS;
+  KS.KS_TILE_DESCS = KS_TILE_DESCS;
+  KS.getKeyPool = getKeyPool;
+  KS.isMinorKey = isMinorKey;
+  KS.relativeKey = relativeKey;
   KS.render = { renderKeySignature, animateStage, recolorAccidentals };
   KS.fx = { explode };
 })();
@@ -1009,26 +1077,28 @@
   const TIERS = KS.TIERS;
   const R = KS.render;
 
-  // Build 4 answer choices with smart distractors.
-  // Strategy: include one same-accidental-count but opposite-type key (sharp ↔ flat)
-  // so the player can't shortcut by counting accidentals alone.
   function buildChoices(correctId, pool) {
     const correct = KEYS[correctId];
     const distractors = new Set();
     const poolKeys = pool.filter(k => k !== correctId);
 
-    // Mirror distractor: same count but opposite type
+    // Relative key distractor: same key sig, opposite mode (most tempting when "Both" is active)
+    const rel = KS.relativeKey(correctId);
+    if (rel && poolKeys.includes(rel)) distractors.add(rel);
+
+    // Mirror distractor: same accidental count but opposite type (sharp ↔ flat)
     if (correct.sharps > 0) {
-      const mirror = poolKeys.find(k => KEYS[k].flats === correct.sharps);
+      const mirror = poolKeys.find(k => KEYS[k].flats === correct.sharps && !distractors.has(k));
       if (mirror) distractors.add(mirror);
     } else if (correct.flats > 0) {
-      const mirror = poolKeys.find(k => KEYS[k].sharps === correct.flats);
+      const mirror = poolKeys.find(k => KEYS[k].sharps === correct.flats && !distractors.has(k));
       if (mirror) distractors.add(mirror);
     }
 
-    // ±1 accidental distractors (a neighbor on the circle of fifths)
+    // ±1 accidental distractors (circle of fifths neighbor)
     const targetCount = Math.max(correct.sharps, correct.flats);
     const sameTypeNeighbors = poolKeys.filter(k => {
+      if (distractors.has(k)) return false;
       const kk = KEYS[k];
       if (correct.sharps > 0 && kk.sharps > 0) {
         return Math.abs(kk.sharps - correct.sharps) === 1;
@@ -1037,7 +1107,6 @@
         return Math.abs(kk.flats - correct.flats) === 1;
       }
       if (targetCount === 0) {
-        // C major — neighbors are G major (1#) and F major (1b)
         return kk.sharps === 1 || kk.flats === 1;
       }
       return false;
@@ -1079,7 +1148,7 @@
   }
 
   const state = {
-    settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
+    settings: { keyMode: 'major', difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
     pool: [], deck: [], clefDeck: [], drillPool: [],
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
     history: [], current: null, locked: false,
@@ -1093,7 +1162,7 @@
 
   function cacheEls() {
     ['start-screen','play-screen','summary-screen',
-     'diff-tiles','length-tiles','start-btn',
+     'mode-tiles','diff-tiles','length-tiles','start-btn',
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','toast','confetti',
      'q-num','score-num','last-dots',
@@ -1423,7 +1492,7 @@
 
   // ===== Round Setup =====
   function buildPool() {
-    return TIERS[state.settings.difficulty].slice();
+    return KS.getKeyPool(state.settings.difficulty, state.settings.keyMode);
   }
 
   function shuffleDeck(pool, total, drillPool) {
@@ -1811,8 +1880,46 @@
     }, 700);
   }
 
+  function updateKsDiffDescriptions(mode) {
+    var desc = KS.KS_TILE_DESCS[mode] || KS.KS_TILE_DESCS['major'];
+    if (els['diff-tiles']) {
+      els['diff-tiles'].querySelectorAll('.tile').forEach(function(t) {
+        var sub = t.querySelector('.tile-sub');
+        if (sub && desc[t.dataset.diff]) sub.innerHTML = desc[t.dataset.diff];
+      });
+    }
+  }
+
   // ===== Wire up settings =====
   function setupSettings() {
+    // Restore persisted keyMode
+    try {
+      var saved = localStorage.getItem('ks_settings');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (parsed && parsed.keyMode) state.settings.keyMode = parsed.keyMode;
+      }
+    } catch (e) {}
+    if (!state.settings.keyMode) state.settings.keyMode = 'major';
+
+    // Apply mode pills
+    if (els['mode-tiles']) {
+      els['mode-tiles'].querySelectorAll('.tpill').forEach(function(t) {
+        t.classList.toggle('on', t.dataset.mode === state.settings.keyMode);
+      });
+      updateKsDiffDescriptions(state.settings.keyMode);
+
+      els['mode-tiles'].addEventListener('click', function(e) {
+        var t = e.target.closest('.tpill');
+        if (!t) return;
+        els['mode-tiles'].querySelectorAll('.tpill').forEach(function(x) { x.classList.remove('on'); });
+        t.classList.add('on');
+        state.settings.keyMode = t.dataset.mode;
+        updateKsDiffDescriptions(state.settings.keyMode);
+        try { localStorage.setItem('ks_settings', JSON.stringify({ keyMode: state.settings.keyMode })); } catch (e) {}
+      });
+    }
+
     if (els['diff-tiles']) {
       els['diff-tiles'].addEventListener('click', e => {
         const t = e.target.closest('.tile');
