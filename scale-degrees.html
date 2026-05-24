@@ -57,8 +57,9 @@
     padding: 24px 20px 40px;
   }
   /* .brand* → qn-theme.css */
-
-
+  .mode-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
 
 
   /* ============ PLAY SCREEN ============ */
@@ -433,22 +434,31 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="q-label"><span class="num">1</span> Major or minor?</div>
+      <div class="mode-pills" id="mode-tiles">
+        <button class="tpill on" data-mode="major">Major</button>
+        <button class="tpill" data-mode="minor">Minor</button>
+        <button class="tpill" data-mode="both">Both</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How tricky?</div>
       <div class="tile-row" id="diff-tiles">
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
           <div class="tile-title">Easy</div>
-          <div class="tile-sub">5 keys<br/>treble</div>
+          <div class="tile-sub">5 major keys<br/>treble</div>
         </button>
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">9 keys<br/>both clefs</div>
+          <div class="tile-sub">9 major keys<br/>both clefs</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
-          <div class="tile-sub">15 keys<br/>all degrees</div>
+          <div class="tile-sub">15 major keys<br/>all degrees</div>
         </button>
       </div>
     </div>
@@ -464,7 +474,7 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="q-label"><span class="num">3</span> How many questions?</div>
       <div class="tile-row" id="length-tiles">
         <button class="tile" data-len="5">
           <div class="tile-emoji">⚡</div>
@@ -937,6 +947,10 @@
   // Degree function names (major mode, locked — doc §9 standard set).
   const DEGREE_NAMES = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Leading tone'];
 
+  // Minor mode: degree 7 is "Subtonic" (whole step below tonic in natural minor),
+  // NOT "Leading tone" (which is harmonic minor's raised 7th). See CLAUDE.md §9.
+  const MINOR_DEGREE_NAMES = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Subtonic'];
+
   // Key catalog. Each key: tonic letter+accidental, the key-sig {type,count}
   // for the staff, and the 7 diatonic pitch *spellings* in degree order (1..7),
   // spelled per the key signature (e.g. D major degree 7 = C#, never Db).
@@ -965,6 +979,53 @@
     easy:   ['C','G','D','F','Bb'],
     medium: ['C','G','D','F','Bb','A','E','Ab','Eb'],
     tricky: ['C','G','D','F','Bb','A','E','Ab','Eb','B','F#','Db','Gb','C#','Cb'],
+  };
+
+  // Minor key catalog. Natural minor: same key signature as relative major.
+  // Degrees spelled per the key signature. Degree 7 = subtonic (♭7, whole step below tonic).
+  const MINOR_KEYS = {
+    // Easy (5) — the most common minor keys
+    'Am':  { tonic: 'A',  mode: 'minor', sig: { type: 'sharp', count: 0 }, degrees: ['A','B','C','D','E','F','G'] },
+    'Em':  { tonic: 'E',  mode: 'minor', sig: { type: 'sharp', count: 1 }, degrees: ['E','F#','G','A','B','C','D'] },
+    'Dm':  { tonic: 'D',  mode: 'minor', sig: { type: 'flat',  count: 1 }, degrees: ['D','E','F','G','A','Bb','C'] },
+    'Gm':  { tonic: 'G',  mode: 'minor', sig: { type: 'flat',  count: 2 }, degrees: ['G','A','Bb','C','D','Eb','F'] },
+    'Bm':  { tonic: 'B',  mode: 'minor', sig: { type: 'sharp', count: 2 }, degrees: ['B','C#','D','E','F#','G','A'] },
+    // Medium (+4)
+    'F#m': { tonic: 'F#', mode: 'minor', sig: { type: 'sharp', count: 3 }, degrees: ['F#','G#','A','B','C#','D','E'] },
+    'C#m': { tonic: 'C#', mode: 'minor', sig: { type: 'sharp', count: 4 }, degrees: ['C#','D#','E','F#','G#','A','B'] },
+    'Cm':  { tonic: 'C',  mode: 'minor', sig: { type: 'flat',  count: 3 }, degrees: ['C','D','Eb','F','G','Ab','Bb'] },
+    'Fm':  { tonic: 'F',  mode: 'minor', sig: { type: 'flat',  count: 4 }, degrees: ['F','G','Ab','Bb','C','Db','Eb'] },
+    // Tricky (+6)
+    'G#m': { tonic: 'G#', mode: 'minor', sig: { type: 'sharp', count: 5 }, degrees: ['G#','A#','B','C#','D#','E','F#'] },
+    'D#m': { tonic: 'D#', mode: 'minor', sig: { type: 'sharp', count: 6 }, degrees: ['D#','E#','F#','G#','A#','B','C#'] },
+    'Bbm': { tonic: 'Bb', mode: 'minor', sig: { type: 'flat',  count: 5 }, degrees: ['Bb','C','Db','Eb','F','Gb','Ab'] },
+    'Ebm': { tonic: 'Eb', mode: 'minor', sig: { type: 'flat',  count: 6 }, degrees: ['Eb','F','Gb','Ab','Bb','Cb','Db'] },
+    'A#m': { tonic: 'A#', mode: 'minor', sig: { type: 'sharp', count: 7 }, degrees: ['A#','B#','C#','D#','E#','F#','G#'] },
+    'Abm': { tonic: 'Ab', mode: 'minor', sig: { type: 'flat',  count: 7 }, degrees: ['Ab','Bb','Cb','Db','Eb','Fb','Gb'] },
+  };
+  const MINOR_KEY_TIERS = {
+    easy:   ['Am','Em','Dm','Gm','Bm'],
+    medium: ['Am','Em','Dm','Gm','Bm','F#m','C#m','Cm','Fm'],
+    tricky: ['Am','Em','Dm','Gm','Bm','F#m','C#m','Cm','Fm','G#m','D#m','Bbm','Ebm','A#m','Abm'],
+  };
+
+  // Tile descriptions for each mode (updates difficulty tile-sub text dynamically).
+  const SD_TILE_DESCS = {
+    major: {
+      easy:   '5 major keys<br/>treble',
+      medium: '9 major keys<br/>both clefs',
+      tricky: '15 major keys<br/>all degrees',
+    },
+    minor: {
+      easy:   '5 minor keys<br/>treble',
+      medium: '9 minor keys<br/>both clefs',
+      tricky: '15 minor keys<br/>all degrees',
+    },
+    both: {
+      easy:   '5 major + 5 minor<br/>treble',
+      medium: '9 major + 9 minor<br/>both clefs',
+      tricky: '15 + 15 keys<br/>all degrees',
+    },
   };
 
   const TYPE_WEIGHTS = {
@@ -1000,9 +1061,20 @@
     return { letter, accidental, octave, name: letter + accidental + octave, midi: toMidi(letter, accidental, octave) };
   }
 
+  // Resolve degree names for a given key (major vs minor).
+  function degreeNamesFor(key) {
+    return (MINOR_KEYS[key]) ? MINOR_DEGREE_NAMES : DEGREE_NAMES;
+  }
+
+  // Resolve key data from either KEYS or MINOR_KEYS.
+  function keyDataFor(key) {
+    return KEYS[key] || MINOR_KEYS[key];
+  }
+
   // Build the four choices for a question type. Returns { choices:[{label,correct,pitch?}], }
   function makeChoices(type, key, degIdx) {
-    const keyData = KEYS[key];
+    const keyData = keyDataFor(key);
+    const names = degreeNamesFor(key);
     if (type === 'number') {
       const correct = degIdx + 1;
       const others = shuffle([1,2,3,4,5,6,7].filter(n => n !== correct));
@@ -1015,17 +1087,21 @@
       return all.map(n => ({ label: String(n), correct: n === correct }));
     }
     if (type === 'name') {
-      const correct = DEGREE_NAMES[degIdx];
-      // functionally-adjacent confusions: dominant/subdominant, mediant/submediant, plus neighbors
+      const correct = names[degIdx];
+      // functionally-adjacent confusions: dominant/subdominant, mediant/submediant, plus neighbors.
+      // In "both" mode, also include cross-mode confusions (Subtonic vs Leading tone).
       const confuse = {
         'Dominant': ['Subdominant'], 'Subdominant': ['Dominant'],
         'Mediant': ['Submediant'], 'Submediant': ['Mediant'],
-        'Tonic': ['Leading tone','Supertonic'], 'Leading tone': ['Tonic','Submediant'],
-        'Supertonic': ['Tonic','Mediant'],
+        'Tonic': ['Supertonic'], 'Supertonic': ['Tonic','Mediant'],
+        'Leading tone': ['Tonic','Submediant','Subtonic'],
+        'Subtonic': ['Tonic','Submediant','Leading tone'],
       };
+      // Use the full set of names that includes BOTH degree-7 variants for richer distractors
+      const allNames = ['Tonic', 'Supertonic', 'Mediant', 'Subdominant', 'Dominant', 'Submediant', 'Leading tone', 'Subtonic'];
       const distract = [];
       (confuse[correct] || []).forEach(n => { if (distract.length < 3 && n !== correct) distract.push(n); });
-      shuffle(DEGREE_NAMES.filter(n => n !== correct)).forEach(n => { if (distract.length < 3 && !distract.includes(n)) distract.push(n); });
+      shuffle(allNames.filter(n => n !== correct)).forEach(n => { if (distract.length < 3 && !distract.includes(n)) distract.push(n); });
       const all = shuffle([correct, ...distract.slice(0,3)]);
       return all.map(n => ({ label: n, correct: n === correct }));
     }
@@ -1042,11 +1118,26 @@
     return sp[0] + glyph;
   }
 
-  // makeQuestion(diff) → { type, skill, prompt, key, clef, degIdx, pitch, choices, answer }
-  function makeQuestion(diff) {
+  // Build the pool of eligible keys based on mode + difficulty.
+  function getKeyPool(diff, keyMode) {
+    if (keyMode === 'both') {
+      return [...(KEY_TIERS[diff] || KEY_TIERS.medium), ...(MINOR_KEY_TIERS[diff] || MINOR_KEY_TIERS.medium)];
+    }
+    return keyMode === 'minor'
+      ? (MINOR_KEY_TIERS[diff] || MINOR_KEY_TIERS.medium)
+      : (KEY_TIERS[diff] || KEY_TIERS.medium);
+  }
+
+  // makeQuestion(diff, keyMode) → { type, skill, prompt, key, clef, degIdx, pitch, choices, answer }
+  function makeQuestion(diff, keyMode) {
+    keyMode = keyMode || 'major';
     const type = weightedType(diff);
-    const key = pick(KEY_TIERS[diff]);
-    const keyData = KEYS[key];
+    const pool = getKeyPool(diff, keyMode);
+    const key = pick(pool);
+    const keyData = keyDataFor(key);
+    const names = degreeNamesFor(key);
+    const isMinor = !!MINOR_KEYS[key];
+    const modeLabel = isMinor ? 'minor' : 'major';
     const clef = (diff === 'easy') ? 'treble' : pick(['treble','bass']);
 
     // Easy biases toward the most recognizable functions (1,3,5 then 2,4).
@@ -1061,13 +1152,13 @@
 
     let prompt, skill = type, answer;
     if (type === 'number') {
-      prompt = 'Which scale degree is this? (Key of ' + spellingDisplay(keyData.tonic) + ' major)';
+      prompt = 'Which scale degree is this? (Key of ' + spellingDisplay(keyData.tonic) + ' ' + modeLabel + ')';
       answer = String(degIdx + 1);
     } else if (type === 'name') {
-      prompt = "What's the name of this scale degree? (Key of " + spellingDisplay(keyData.tonic) + ' major)';
-      answer = DEGREE_NAMES[degIdx];
+      prompt = "What's the name of this scale degree? (Key of " + spellingDisplay(keyData.tonic) + ' ' + modeLabel + ')';
+      answer = names[degIdx];
     } else {
-      prompt = 'Which note is the ' + DEGREE_NAMES[degIdx].toLowerCase() + '? (Key of ' + spellingDisplay(keyData.tonic) + ' major)';
+      prompt = 'Which note is the ' + names[degIdx].toLowerCase() + '? (Key of ' + spellingDisplay(keyData.tonic) + ' ' + modeLabel + ')';
       answer = spellingDisplay(spelling);
     }
 
@@ -1077,7 +1168,7 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', keyMode: 'major', timer: { enabled: false, seconds: 60 } },
     pool: [], deck: [], drillPool: [],
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
     history: [], current: null, attempts: 0, locked: false,
@@ -1091,7 +1182,7 @@
 
   function cacheEls() {
     ['start-screen','play-screen','summary-screen',
-     'clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
+     'mode-tiles','clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','q-prompt','play-note-btn','toast','confetti',
      'q-num','score-num','last-dots',
@@ -1165,6 +1256,22 @@
     if (s.clef && ['treble','bass','both'].indexOf(s.clef) !== -1) {
       if (highlight('clef-tiles', 'data-clef', s.clef)) state.settings.clef = s.clef;
     }
+    if (s.keyMode && ['major','minor','both'].indexOf(s.keyMode) !== -1) {
+      if (highlight('mode-tiles', 'data-mode', s.keyMode)) {
+        state.settings.keyMode = s.keyMode;
+        updateSdDiffDescriptions(s.keyMode);
+      }
+    }
+  }
+
+  function updateSdDiffDescriptions(mode) {
+    var desc = SD_TILE_DESCS[mode] || SD_TILE_DESCS['major'];
+    if (els['diff-tiles']) {
+      els['diff-tiles'].querySelectorAll('.tile').forEach(function(t) {
+        var sub = t.querySelector('.tile-sub');
+        if (sub && desc[t.dataset.diff]) sub.innerHTML = desc[t.dataset.diff];
+      });
+    }
   }
 
   function setupStart() {
@@ -1173,6 +1280,35 @@
     if (els['start-muted-toggle']) {
       els['start-muted-toggle'].addEventListener('change', () => {
         saveMutedPreference(els['start-muted-toggle'].checked);
+      });
+    }
+
+    // Restore persisted keyMode
+    try {
+      var saved = localStorage.getItem('sd_settings');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (parsed && parsed.keyMode) state.settings.keyMode = parsed.keyMode;
+      }
+    } catch (e) {}
+    if (!state.settings.keyMode) state.settings.keyMode = 'major';
+
+    // Apply mode pills
+    if (els['mode-tiles']) {
+      els['mode-tiles'].querySelectorAll('.tpill').forEach(function(t) {
+        t.classList.toggle('on', t.dataset.mode === state.settings.keyMode);
+      });
+      updateSdDiffDescriptions(state.settings.keyMode);
+
+      els['mode-tiles'].addEventListener('click', function(e) {
+        var t = e.target.closest('.tpill');
+        if (!t) return;
+        A.ensureCtx();
+        els['mode-tiles'].querySelectorAll('.tpill').forEach(function(x) { x.classList.remove('on'); });
+        t.classList.add('on');
+        state.settings.keyMode = t.dataset.mode;
+        updateSdDiffDescriptions(state.settings.keyMode);
+        try { localStorage.setItem('sd_settings', JSON.stringify({ keyMode: state.settings.keyMode })); } catch (e) {}
       });
     }
 
@@ -1277,7 +1413,7 @@
     state.locked = false;
     hideToast();
 
-    const q = makeQuestion(state.settings.difficulty);
+    const q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
     state.current = q;
 
     els['q-num'].textContent = state.q;

@@ -56,6 +56,9 @@
     align-items: center; justify-content: center;
     padding: 24px 20px 40px;
   }
+  .mode-pills {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  }
   /* .brand* → qn-theme.css */
 
 
@@ -433,7 +436,16 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="q-label"><span class="num">1</span> Which keys?</div>
+      <div class="mode-pills" id="mode-tiles">
+        <button class="tpill on" data-mode="major">Major</button>
+        <button class="tpill" data-mode="minor">Minor</button>
+        <button class="tpill" data-mode="both">Both</button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How tricky?</div>
       <div class="tile-row" id="diff-tiles">
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
@@ -464,7 +476,7 @@
     </div>
 
     <div class="q-block">
-      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="q-label"><span class="num">3</span> How many questions?</div>
       <div class="tile-row" id="length-tiles">
         <button class="tile" data-len="5">
           <div class="tile-emoji">⚡</div>
@@ -938,6 +950,12 @@
   const QUALITIES = ['major', 'minor', 'minor', 'major', 'major', 'minor', 'diminished'];
   const FUNCTION_NAMES = ['tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant', 'leading tone'];
 
+  // Harmonic minor roman numerals: i, ii°, III+, iv, V, VI, vii°
+  // V is MAJOR (raised 7th from harmonic minor), vii° is diminished (leading tone).
+  const MINOR_NUMERALS = ['i', 'ii°', 'III+', 'iv', 'V', 'VI', 'vii°'];
+  const MINOR_QUALITIES = ['minor', 'diminished', 'augmented', 'minor', 'major', 'major', 'diminished'];
+  const MINOR_FUNCTION_NAMES = ['tonic', 'supertonic', 'mediant', 'subdominant', 'dominant', 'submediant', 'leading tone'];
+
   // Key catalog. Each key: tonic display name, key-sig for the staff, and the
   // 7 diatonic chord roots spelled correctly for that key.
   const KEYS = {
@@ -960,10 +978,62 @@
     'C#': { tonic: 'C#', sig: { type: 'sharp', count: 7 }, roots: ['C#','D#','E#','F#','G#','A#','B#'] },
     'Cb': { tonic: 'Cb', sig: { type: 'flat',  count: 7 }, roots: ['Cb','Db','Eb','Fb','Gb','Ab','Bb'] },
   };
-  const KEY_TIERS = {
+  const MAJOR_KEY_TIERS = {
     easy:   ['C','G','D','F','Bb'],
     medium: ['C','G','D','F','Bb','A','E','Ab','Eb'],
     tricky: ['C','G','D','F','Bb','A','E','Ab','Eb','B','F#','Db','Gb','C#','Cb'],
+  };
+  // Kept for backward compat (personal-best localStorage keys, path handoff)
+  const KEY_TIERS = MAJOR_KEY_TIERS;
+
+  // Minor keys — harmonic minor chord roots.
+  // Roots are the diatonic scale degrees of the NATURAL minor, but V chord uses
+  // raised 7th (harmonic minor) so V root stays the same letter but the chord
+  // quality becomes major. vii° uses raised 7th as root.
+  const MINOR_KEYS = {
+    // Easy (5) — relative minors of easy major keys
+    'Am': { tonic: 'A',  minor: true, sig: { type: 'sharp', count: 0 }, roots: ['A','B','C','D','E','F','G#'] },
+    'Em': { tonic: 'E',  minor: true, sig: { type: 'sharp', count: 1 }, roots: ['E','F#','G','A','B','C','D#'] },
+    'Bm': { tonic: 'B',  minor: true, sig: { type: 'sharp', count: 2 }, roots: ['B','C#','D','E','F#','G','A#'] },
+    'Dm': { tonic: 'D',  minor: true, sig: { type: 'flat',  count: 1 }, roots: ['D','E','F','G','A','Bb','C#'] },
+    'Gm': { tonic: 'G',  minor: true, sig: { type: 'flat',  count: 2 }, roots: ['G','A','Bb','C','D','Eb','F#'] },
+    // Medium (+4)
+    'F#m':{ tonic: 'F#', minor: true, sig: { type: 'sharp', count: 3 }, roots: ['F#','G#','A','B','C#','D','E#'] },
+    'C#m':{ tonic: 'C#', minor: true, sig: { type: 'sharp', count: 4 }, roots: ['C#','D#','E','F#','G#','A','B#'] },
+    'Cm': { tonic: 'C',  minor: true, sig: { type: 'flat',  count: 3 }, roots: ['C','D','Eb','F','G','Ab','B'] },
+    'Fm': { tonic: 'F',  minor: true, sig: { type: 'flat',  count: 4 }, roots: ['F','G','Ab','Bb','C','Db','E'] },
+    // Tricky (+6)
+    'G#m':{ tonic: 'G#', minor: true, sig: { type: 'sharp', count: 5 }, roots: ['G#','A#','B','C#','D#','E','F##'] },
+    'D#m':{ tonic: 'D#', minor: true, sig: { type: 'sharp', count: 6 }, roots: ['D#','E#','F#','G#','A#','B','C##'] },
+    'Bbm':{ tonic: 'Bb', minor: true, sig: { type: 'flat',  count: 5 }, roots: ['Bb','C','Db','Eb','F','Gb','A'] },
+    'Ebm':{ tonic: 'Eb', minor: true, sig: { type: 'flat',  count: 6 }, roots: ['Eb','F','Gb','Ab','Bb','Cb','D'] },
+    'A#m':{ tonic: 'A#', minor: true, sig: { type: 'sharp', count: 7 }, roots: ['A#','B#','C#','D#','E#','F#','G##'] },
+    'Abm':{ tonic: 'Ab', minor: true, sig: { type: 'flat',  count: 7 }, roots: ['Ab','Bb','Cb','Db','Eb','Fb','G'] },
+  };
+
+  const MINOR_KEY_TIERS = {
+    easy:   ['Am','Em','Bm','Dm','Gm'],
+    medium: ['Am','Em','Bm','Dm','Gm','F#m','C#m','Cm','Fm'],
+    tricky: ['Am','Em','Bm','Dm','Gm','F#m','C#m','Cm','Fm','G#m','D#m','Bbm','Ebm','A#m','Abm'],
+  };
+
+  // Tile description text for each mode x difficulty combo.
+  const RN_TILE_DESCS = {
+    major: {
+      easy:   '5 major keys<br/>C, G, D, F, B♭',
+      medium: '9 major keys<br/>+ A, E, A♭, E♭',
+      tricky: '15 major keys<br/>all keys',
+    },
+    minor: {
+      easy:   '5 minor keys<br/>Am, Em, Bm, Dm, Gm',
+      medium: '9 minor keys<br/>+ F♯m, C♯m, Cm, Fm',
+      tricky: '15 minor keys<br/>all keys',
+    },
+    both: {
+      easy:   '5 major + 5 minor<br/>easy keys',
+      medium: '9 major + 9 minor',
+      tricky: 'all 15 + 15 keys',
+    },
   };
 
   // Question-type weights per difficulty.
@@ -994,14 +1064,17 @@
   }
 
   // Build four-choice set for each question type.
-  function makeChoices(type, key, degIdx) {
-    const keyData = KEYS[key];
+  // isMinor selects harmonic-minor numerals/qualities when true.
+  function makeChoices(type, key, degIdx, isMinor) {
+    const keyData = isMinor ? MINOR_KEYS[key] : KEYS[key];
+    const nums  = isMinor ? MINOR_NUMERALS : NUMERALS;
+    const quals = isMinor ? MINOR_QUALITIES : QUALITIES;
     if (type === 'numeral-to-chord') {
       // Correct answer is the chord name at degIdx. Distractors: other diatonic chords from same key.
-      const correctLabel = chordDisplay(keyData.roots[degIdx], QUALITIES[degIdx]);
+      const correctLabel = chordDisplay(keyData.roots[degIdx], quals[degIdx]);
       const others = [];
       for (let i = 0; i < 7; i++) {
-        if (i !== degIdx) others.push({ label: chordDisplay(keyData.roots[i], QUALITIES[i]), correct: false });
+        if (i !== degIdx) others.push({ label: chordDisplay(keyData.roots[i], quals[i]), correct: false });
       }
       shuffle(others);
       const distract = others.slice(0, 3);
@@ -1010,14 +1083,14 @@
     }
     if (type === 'chord-to-numeral') {
       // Correct answer is the numeral. Distractors: prefer same-quality numerals.
-      const correctNum = NUMERALS[degIdx];
-      const correctQuality = QUALITIES[degIdx];
+      const correctNum = nums[degIdx];
+      const correctQuality = quals[degIdx];
       // Sort distractors: same quality first, then others.
       const sameQuality = [];
       const diffQuality = [];
       for (let i = 0; i < 7; i++) {
         if (i === degIdx) continue;
-        if (QUALITIES[i] === correctQuality) sameQuality.push(i);
+        if (quals[i] === correctQuality) sameQuality.push(i);
         else diffQuality.push(i);
       }
       shuffle(sameQuality);
@@ -1025,20 +1098,20 @@
       const distractIdx = [...sameQuality, ...diffQuality].slice(0, 3);
       const all = shuffle([
         { label: correctNum, correct: true },
-        ...distractIdx.map(i => ({ label: NUMERALS[i], correct: false }))
+        ...distractIdx.map(i => ({ label: nums[i], correct: false }))
       ]);
       return all;
     }
     // quality: 4 options always major, minor, diminished, augmented.
-    const correctQ = QUALITIES[degIdx];
+    const correctQ = quals[degIdx];
     const options = ['major', 'minor', 'diminished', 'augmented'];
     const all = options.map(q => ({ label: q, correct: q === correctQ }));
     return shuffle(all);
   }
 
   // Build a tonic pitch for audio reference (play the tonic of the key).
-  function tonicPitchFor(key) {
-    const keyData = KEYS[key];
+  function tonicPitchFor(key, isMinor) {
+    const keyData = isMinor ? MINOR_KEYS[key] : KEYS[key];
     const sp = keyData.roots[0];
     const m = /^([A-G])(##|bb|[#b]?)$/.exec(sp);
     const letter = m[1], accidental = m[2] || '';
@@ -1047,36 +1120,54 @@
   }
 
   // Display the key tonic with Unicode accidentals.
-  function tonicDisplay(key) {
-    return rootDisplay(KEYS[key].tonic);
+  function tonicDisplay(key, isMinor) {
+    const keyData = isMinor ? MINOR_KEYS[key] : KEYS[key];
+    return rootDisplay(keyData.tonic);
   }
 
-  // makeQuestion(diff) -> { type, skill, prompt, key, clef, degIdx, pitch, choices, answer, keySig, showNote }
-  function makeQuestion(diff) {
+  // Build the key pool based on mode + difficulty.
+  function getKeyPool(diff, keyMode) {
+    if (keyMode === 'both') {
+      return [...(MAJOR_KEY_TIERS[diff] || MAJOR_KEY_TIERS.medium),
+              ...(MINOR_KEY_TIERS[diff] || MINOR_KEY_TIERS.medium)];
+    }
+    if (keyMode === 'minor') return (MINOR_KEY_TIERS[diff] || MINOR_KEY_TIERS.medium).slice();
+    return (MAJOR_KEY_TIERS[diff] || MAJOR_KEY_TIERS.medium).slice();
+  }
+
+  function isMinorKey(keyId) { return keyId.endsWith('m'); }
+
+  // makeQuestion(diff, keyMode) -> { type, skill, prompt, key, clef, degIdx, pitch, choices, answer, keySig, showNote }
+  function makeQuestion(diff, keyMode) {
     const type = weightedType(diff);
-    const key = pick(KEY_TIERS[diff]);
-    const keyData = KEYS[key];
+    const pool = getKeyPool(diff, keyMode);
+    const key = pick(pool);
+    const minor = isMinorKey(key);
+    const keyData = minor ? MINOR_KEYS[key] : KEYS[key];
+    const nums  = minor ? MINOR_NUMERALS : NUMERALS;
+    const quals = minor ? MINOR_QUALITIES : QUALITIES;
     const clef = 'treble'; // treble only for Roman Numerals (text-based, staff shows key sig)
+    const modeLabel = minor ? ' minor' : ' major';
 
     // Pick a degree index.
     let degIdx;
-    if (diff === 'easy') degIdx = pick([0,3,4,0,3,4,1,5]); // bias I,IV,V then ii,vi
+    if (diff === 'easy') degIdx = pick([0,3,4,0,3,4,1,5]); // bias I/i, IV/iv, V then ii/ii°, vi/VI
     else degIdx = Math.floor(Math.random() * 7);
 
-    const pitch = tonicPitchFor(key); // for audio reference
-    const choices = makeChoices(type, key, degIdx);
+    const pitch = tonicPitchFor(key, minor); // for audio reference
+    const choices = makeChoices(type, key, degIdx, minor);
 
     let prompt, skill = type, answer;
     if (type === 'numeral-to-chord') {
-      prompt = 'In ' + tonicDisplay(key) + ' major, what is the ' + NUMERALS[degIdx] + ' chord?';
-      answer = chordDisplay(keyData.roots[degIdx], QUALITIES[degIdx]);
+      prompt = 'In ' + tonicDisplay(key, minor) + modeLabel + ', what is the ' + nums[degIdx] + ' chord?';
+      answer = chordDisplay(keyData.roots[degIdx], quals[degIdx]);
     } else if (type === 'chord-to-numeral') {
-      prompt = 'In ' + tonicDisplay(key) + ' major, ' + chordDisplay(keyData.roots[degIdx], QUALITIES[degIdx]) + ' is the ___';
-      answer = NUMERALS[degIdx];
+      prompt = 'In ' + tonicDisplay(key, minor) + modeLabel + ', ' + chordDisplay(keyData.roots[degIdx], quals[degIdx]) + ' is the ___';
+      answer = nums[degIdx];
     } else {
       // quality
-      prompt = 'In ' + tonicDisplay(key) + ' major, what quality is the ' + NUMERALS[degIdx] + ' chord?';
-      answer = QUALITIES[degIdx];
+      prompt = 'In ' + tonicDisplay(key, minor) + modeLabel + ', what quality is the ' + nums[degIdx] + ' chord?';
+      answer = quals[degIdx];
     }
 
     return { type, skill, prompt, key, clef, degIdx, pitch, keySig: keyData.sig,
@@ -1085,7 +1176,7 @@
 
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', keyMode: 'major', timer: { enabled: false, seconds: 60 } },
     pool: [], deck: [], drillPool: [],
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
     history: [], current: null, attempts: 0, locked: false,
@@ -1099,7 +1190,7 @@
 
   function cacheEls() {
     ['start-screen','play-screen','summary-screen',
-     'clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
+     'mode-tiles','clef-tiles','diff-tiles','length-tiles','acc-block','acc-tiles','start-btn',
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','q-prompt','play-note-btn','toast','confetti',
      'q-num','score-num','last-dots',
@@ -1175,12 +1266,49 @@
     }
   }
 
+  function updateRnDiffDescriptions(mode) {
+    var desc = RN_TILE_DESCS[mode] || RN_TILE_DESCS['major'];
+    if (els['diff-tiles']) {
+      els['diff-tiles'].querySelectorAll('.tile').forEach(function(t) {
+        var sub = t.querySelector('.tile-sub');
+        if (sub && desc[t.dataset.diff]) sub.innerHTML = desc[t.dataset.diff];
+      });
+    }
+  }
+
   function setupStart() {
     const savedMuted = localStorage.getItem('rn_muted') === 'true';
     saveMutedPreference(savedMuted);
     if (els['start-muted-toggle']) {
       els['start-muted-toggle'].addEventListener('change', () => {
         saveMutedPreference(els['start-muted-toggle'].checked);
+      });
+    }
+
+    // ── Mode selector (Major / Minor / Both) ──
+    // Restore persisted keyMode
+    try {
+      var savedMode = localStorage.getItem('rn_key_mode');
+      if (savedMode && ['major','minor','both'].indexOf(savedMode) !== -1) {
+        state.settings.keyMode = savedMode;
+      }
+    } catch (e) {}
+
+    if (els['mode-tiles']) {
+      els['mode-tiles'].querySelectorAll('.tpill').forEach(function(t) {
+        t.classList.toggle('on', t.dataset.mode === state.settings.keyMode);
+      });
+      updateRnDiffDescriptions(state.settings.keyMode);
+
+      els['mode-tiles'].addEventListener('click', function(e) {
+        var t = e.target.closest('.tpill');
+        if (!t) return;
+        A.ensureCtx();
+        els['mode-tiles'].querySelectorAll('.tpill').forEach(function(x) { x.classList.remove('on'); });
+        t.classList.add('on');
+        state.settings.keyMode = t.dataset.mode;
+        updateRnDiffDescriptions(state.settings.keyMode);
+        try { localStorage.setItem('rn_key_mode', state.settings.keyMode); } catch (e) {}
       });
     }
 
@@ -1285,7 +1413,7 @@
     state.locked = false;
     hideToast();
 
-    const q = makeQuestion(state.settings.difficulty);
+    const q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
     state.current = q;
 
     els['q-num'].textContent = state.q;
