@@ -1021,7 +1021,9 @@
   var PATH = [
     'note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'piano-quiz', 'piano-keyboard',
     'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales',
-    'primary-chords', 'roman-numerals'
+    'primary-chords', 'roman-numerals',
+    'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences',
+    'ear-chords', 'ear-cadences', 'ear-progressions'
   ];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
