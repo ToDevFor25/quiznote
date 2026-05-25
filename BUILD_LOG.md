@@ -1,5 +1,215 @@
 ---
 
+### Landing-page copy pass + mobile path reorder + stash rescue — May 2026
+
+**Session type:** Copy/UX scrub on index.html + path.html mobile reorder + an
+unintentional git-stash recovery saga.
+
+**Net result:** path.html mobile-friendly (Your-next-step on top, rail below);
+six "no ads" mentions and the "free during beta" claim removed from
+index.html; the entire "How it works" section deleted; tier-description copy
+on pianoquiz-demo.html and the What's-Inside spine reconciled with the
+post-Phase-1 tier roster (Intervals in Reading; ear chips split
+Pitch-by-ear / Harmony-by-ear); nickname-creation copy on profile.html
+sharpened.
+
+**Commits:**
+- `6cf46a6` path.html: mobile reorder + drop lock metaphor
+- (this session's second commit) Landing copy scrub + ear-training relabel
+  + profile/pianoquiz-demo copy tightening + build log
+
+**path.html — mobile reorder (committed earlier in the session):**
+
+- On mobile the layout now stacks: "Your next step" card on top, "Next up
+  on your path" tiles, purple guide banner, then the path rail at the
+  bottom. Desktop unchanged (rail on left, stage on right). Implementation:
+  CSS `order:` flipped between `.rail` (order: 1) and `.stage` (order: 0)
+  with the existing 880px media query restoring desktop ordering.
+- The path rail no longer renders a 🔒 glyph on upcoming modules. The lock
+  metaphor contradicted the banner copy ("Practice never locks"), and the
+  rail items aren't clickable anyway — the rail is a *map*, not a *menu*.
+  Upcoming nodes are now muted dots; current (★) and done (✓) unchanged.
+  `.node.locked` class renamed to `.node.upcoming` to drop the misleading
+  vocabulary in the code too.
+- "Or jump into anything" → "Next up on your path", and the three tiles
+  switched from a played-frequency mix to the next 3 modules on PATH after
+  the current recommendation. Edge case: if the learner is at the end of
+  the path, backfill with the previous items.
+- Banner copy reworded: "**Your Path guides; Practice never locks.** Every
+  module is open for you to practice whenever you want it — the path just
+  shows what's next."
+
+**index.html — landing copy scrub:**
+
+- Removed all "no ads" mentions (6 of them — hero pill, hero stats tile,
+  pillars section sub, Pillar 1 body, Pillar 2 entire pillar, meta
+  description).
+- Removed "Free during beta" from hero pill (Stripe path is in progress;
+  no longer want a free-forever promise on the page).
+- Hero pill simplified to a single claim: "Follows the music curriculum
+  your teacher uses." Substantive curriculum-alignment claim that answers
+  the first silent question a parent/teacher has on landing.
+- Pink coral pulse on the hero pill dot retired; now reuses existing
+  `pulse-teal` keyframes (same animation as the Try-a-question eyebrow).
+  Visual consistency for free; the coral was reading as alert/urgent
+  instead of healthy/active.
+- "0 / Ads" stat tile → "All / Ages." Same 3-stat layout, swapped a
+  defensive metric for an audience claim.
+- Hero CTA row + stats row both changed from `display: inline-flex` to
+  `display: flex` so stats always sit BELOW the CTAs at every screen size.
+  On wide screens they used to flow inline next to the buttons.
+- Pillar 2 entirely replaced. Old: "No ads" (icon: ⊘). New: "For every
+  learner" (icon: two-person SVG) — "From first notes to intermediate
+  theory — same path, your pace." Title and body intentionally avoid age
+  references ("school-age," "adult learners") per user direction —
+  no age vocabulary anywhere on the landing now.
+- Pillars section sub: "No ads. No filler. Just the practice your teacher
+  assigned, done right." → "Short rounds, sharp focus, the exact skills
+  your method book covers."
+- Pillar 1 body: "No ads, no distractions..." → "Supplementary practice
+  that pairs with whatever your teacher gives you next."
+- **Deleted the entire "How it works" section.** Reason: three sections in
+  a row (Pillars → How it works → What's inside) were all reinforcing the
+  same claim with rotating vocabulary, and "How it works" was the
+  weakest — its 3 steps (Pick / Configure / Play) were generic, applicable
+  to any app. The demo card up top + hero CTA already show "what using it
+  looks like." Removed: HTML section, all `.how`/`.steps`/`.step*` CSS
+  rules (~36 lines), responsive padding override, and the `.step` selector
+  in the IntersectionObserver animation list. Section between Pillars and
+  What's-Inside is now also gone.
+- **What's Inside spine — duplicate "Ear training" chip resolved.** Both
+  Reading and Theory tiers had identical "Ear training" chips. The
+  underlying modules are genuinely different categories of ear work:
+  Reading covers `ear-intervals` + `ear-scales` (pitch-based); Theory
+  covers `ear-chords` + `ear-cadences` + `ear-progressions` (harmony-based).
+  Relabeled: Reading → "Pitch by ear"; Theory → "Harmony by ear." Two
+  distinct categories now read as such, and the spine subtly signals that
+  ear training is woven through the curriculum at different levels of
+  abstraction.
+- Meta description tweaked: "Short rounds, no ads." → "Short rounds, real
+  fluency."
+
+**pianoquiz-demo.html — post-tier-reconciliation copy fix:**
+
+The demo-end promo card's tier descriptions still referenced pre-Phase-1
+tier assignments (Intervals in Theory; no mention of piano modules in
+Foundations). Updated to match the live roster:
+
+- Foundations: now mentions piano modules (Piano Quiz + Piano & Keyboard
+  shipped in Phase 1). "Read notes on the staff and keys, feel rhythm and
+  meter."
+- Reading: now mentions intervals (moved from Theory in the May 2026
+  reconciliation). "Key signatures, scales, and intervals — when the staff
+  feels like home."
+- Theory: harmony-only (no more intervals). "Chords, cadences, and how
+  harmony works."
+
+**profile.html — nickname copy:**
+
+Nickname-creation sub-line on view-nickname tightened. Old: "Pick a fun
+name. Use your real name only if you want to — most people don't."
+New: "Pick a fun nickname — no real names needed."
+
+The prior version softly permitted real names ("only if you want to"),
+which weakens the nickname-first nudge. The new line sets nickname as the
+default expectation. Defensive hygiene for both the pre-cloud
+local-only state (browser autofill, shared devices, screen-sharing) and
+the future adult/child UI when parent/sub-accounts ship. The strong
+minor-protection copy ("never a child's real name") was deliberately left
+for when the adult/child UI exists — putting that language on a screen
+that doesn't have the concept yet would confuse users.
+
+The switcher copy ("Tap a profile to play as them. Or add a new one for
+someone else.") was left as-is — already neutral, doesn't assume adult,
+and "someone else" covers sibling/child/friend without committing to a
+relationship model the data doesn't yet support.
+
+**The stash-rescue saga (worth keeping for future archaeology):**
+
+When pushing the path.html mobile-reorder commit, the local branch was
+behind origin/Dev. Standard fix (stash → rebase → pop) ran into an
+unexpected wrinkle: a parallel `claude/autonomous-module-builds-Ej8Nq`
+branch had landed the full Phase 3 (chord renderer) + Phase 4 (8 chord
+modules) work on Dev independently. The local working tree had the SAME
+work in progress but uncommitted, so the stash captured 13 modified
+tracked files (BUILD_LOG.md, qn-staff.js +199 lines, qn-audio.js, shared
+docs, 8 existing module HTMLs) plus 8 untracked files (the 8 new chord
+HTMLs) which then collided with the now-tracked-on-remote versions of
+those same files. `git stash pop` failed mid-restore (the untracked files
+conflicted with the newly-tracked ones from remote), leaving the stash
+preserved but unapplied.
+
+Per-file md5 diff revealed: shared engines and docs (qn-staff.js,
+qn-audio.js, qn-profile.js, BUILD_LOG.md, QUIZNOTE_PROJECT_DOC.md) were
+**byte-identical** between stash and Dev — both implementations of the
+chord-renderer extension converged. The 16 differing files all differed
+by **exactly 2 lines** (or 10 in dashboard.html's case): a single
+`<script src="qn-gate.js"></script>` insertion that the
+"Data-claim audit + client-side beta access gate" commit added across the
+codebase, plus a small data-claim copy softening on dashboard.html.
+
+**Verdict:** the stash was fully superseded by Dev. Dropped with
+confidence (commit hash `6dad6b1` recorded here in case it's ever needed
+for archaeology). Recovery cost: ~30 minutes of git forensics.
+
+**Lesson worth keeping:** when two parallel Claude sessions build the same
+queued work (Phase 3 chord renderer was on the docket; both sessions
+independently worked it), the engines/docs will converge and the
+per-module HTMLs will diverge only on infrastructure that landed in
+between (here: the beta-gate script tag). Future-proof workflow when
+running parallel sessions on QuizNote: claim the queued item up front in
+a brief commit to Dev (or a tracking file) so both sessions don't
+independently build the same thing.
+
+**Still open / next:**
+
+- **PWA install on the landing page (queued — its own session).**
+  QuizNote's flat-static architecture is already PWA-friendly — the user
+  verified by adding the site to their phone home screen as a bookmark and
+  reports it works "as a mini-app." Productizing the experience needs:
+  `manifest.json` (app name, theme color, `display: standalone`, icons),
+  Apple touch icons + `apple-mobile-web-app-capable` meta tag across every
+  HTML file (not just index — every module needs the meta or it falls back
+  to a Safari window when launched from home screen), a small set of icon
+  assets (192×192, 512×512, plus iOS sizes), and a tap-to-install button on
+  the landing page using `beforeinstallprompt` for Android. **iOS caveat:**
+  Apple does NOT expose a programmatic install API on Safari, so iOS must
+  show a friendly Share → "Add to Home Screen" instruction card. Pair the
+  install CTA with the "No download needed" copy at line ~1853 of
+  index.html. Needs an app icon design first.
+- **Landing-page pillars section repetition not fully resolved.** Pillar 1
+  title is still "Built for learners" which duplicates the section title
+  "Built for learners, not engagement." Proposed (not yet applied):
+  rename Pillar 1 → "Pairs with your lessons", rename Pillar 2 → "From day
+  one", and shorten the section sub so Pillar 4 owns the method-book
+  claim alone. User flagged the repetition; rewrite was tabled
+  mid-session in favor of the "How it works" deletion (which addressed the
+  bigger repetition problem first).
+- **Adult/child UI (Tier 3, lawyer-gated).** Schema scaffolding is in
+  qn-cloud.js (`childProfiles[]`, `consentReceipt`, `profileType`,
+  `managedBy`, two-condition consent gate). The UI flow doesn't exist
+  yet — profile.html has no adult/child distinction. Building this is
+  the right point to add the strong nickname-only copy with the concept
+  visible to the user.
+- **ORYKU branch deleted on GitHub.** All audit/beta-gate work was merged
+  into Dev via PR #55, no commits lost.
+- **Dev merged to main.** Production now has the chord renderer + Phase 4
+  chord modules + data-claim audit + beta gate + privacy/terms + qn-cloud
+  scaffolding, plus (after this commit) the landing copy scrub +
+  mobile path reorder.
+
+**Doc updates flagged for next session:**
+- **CLAUDE.md module count**: line says "19 live modules"; Dev now has
+  27 (Phase 3 + Phase 4 merged via the autonomous-module-builds branch).
+- **CLAUDE.md "Current in-progress state"** section: says "Phase 2 in
+  progress; Chord renderer session queued as Phase 3." Both are now
+  shipped via the parallel session; needs reconciling.
+- **QUIZNOTE_PROJECT_DOC.md §5 (roster) and §12 (phases)**: same — needs
+  reconciling with the current 27-module reality. Recommend a single
+  cleanup session to walk both docs against the live state.
+
+---
+
 ### Phase 2 #1 — Chromatic Scale — May 2026
 
 **Session type:** Build (1 module via clone-and-swap)

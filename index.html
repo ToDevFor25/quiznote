@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>QuizNote — Music theory practice that follows how it's taught</title>
-<meta name="description" content="Supplementary music theory practice from first notes through intermediate — built to match how teachers actually teach it. Short rounds, no ads. Try a real question now." />
+<meta name="description" content="Supplementary music theory practice from first notes through intermediate — built to match how teachers actually teach it. Short rounds, real fluency. Try a real question now." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -205,13 +205,9 @@
   }
   .hero-badge .dot {
     width: 9px; height: 9px; border-radius: 50%;
-    background: var(--coral);
-    box-shadow: 0 0 0 3px rgba(255,107,107,0.18);
-    animation: pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 3px rgba(255,107,107,0.18); }
-    50%      { box-shadow: 0 0 0 7px rgba(255,107,107,0); }
+    background: var(--teal);
+    box-shadow: 0 0 0 3px rgba(31, 184, 168, 0.2);
+    animation: pulse-teal 1.8s ease-in-out infinite;
   }
 
   .hero-title {
@@ -250,7 +246,7 @@
     line-height: 1.5;
   }
 
-  .hero-cta-row { display: inline-flex; flex-wrap: wrap; gap: 14px; }
+  .hero-cta-row { display: flex; flex-wrap: wrap; gap: 14px; }
   .chunky-btn {
     font-family: 'Fredoka', sans-serif; font-weight: 600;
     font-size: 18px;
@@ -291,7 +287,7 @@
   /* Inline stats below the CTAs */
   .hero-stats {
     margin-top: 42px;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 30px;
     flex-wrap: wrap;
@@ -951,46 +947,6 @@
   .anim-bar     { animation: tile-bar-grow 2800ms ease-in-out infinite; transform-origin: left center; }
 
   /* ──────────────────────────────────────────────────────────────
-     HOW IT WORKS
-     ────────────────────────────────────────────────────────────── */
-  .how {
-    padding: 100px 28px;
-    background: var(--paper);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
-  }
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 22px;
-  }
-  .step {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    box-shadow: var(--shadow-soft);
-    padding: 32px 26px 28px;
-    text-align: center;
-    transition: transform 200ms, box-shadow 200ms;
-  }
-  .step:hover { transform: translateY(-3px); box-shadow: var(--shadow-soft-lg); }
-  .step-num {
-    width: 50px; height: 50px;
-    border: none;
-    border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 22px;
-    margin-bottom: 16px;
-    box-shadow: 0 6px 16px -4px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
-  }
-  .step.s1 .step-num { background: linear-gradient(140deg, #ff8b8b 0%, var(--coral) 100%); color: white; box-shadow: 0 6px 16px -4px rgba(255,107,107,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
-  .step.s2 .step-num { background: linear-gradient(140deg, #2dd4c2 0%, var(--teal) 100%); color: white; box-shadow: 0 6px 16px -4px rgba(31,184,168,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
-  .step.s3 .step-num { background: linear-gradient(140deg, #ffd66e 0%, var(--sun) 100%); color: var(--ink); box-shadow: 0 6px 16px -4px rgba(255,182,39,0.5), inset 0 1px 0 rgba(255,255,255,0.4); }
-  .step-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.2rem; margin-bottom: 6px; letter-spacing: -0.005em; }
-  .step-text  { font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.96rem; color: var(--ink-soft); line-height: 1.55; }
-
-  /* ──────────────────────────────────────────────────────────────
      INSTRUMENT CHIP STRIP — under hero, replaces the dedicated section
      ────────────────────────────────────────────────────────────── */
   .instrument-strip {
@@ -1393,11 +1349,10 @@
     .hero-stats { gap: 18px; margin-top: 30px; }
     .stat-div { height: 26px; }
     .stat-num { font-size: 1.4rem; }
-    .pillars, .tiers, .how, .instruments, .final { padding-left: 22px; padding-right: 22px; }
+    .pillars, .tiers, .instruments, .final { padding-left: 22px; padding-right: 22px; }
     .pillars { padding-top: 70px; padding-bottom: 64px; }
     .pillars-grid { grid-template-columns: 1fr; gap: 16px; }
     .tiers   { padding-top: 72px; padding-bottom: 72px; }
-    .how     { padding-top: 68px; padding-bottom: 60px; }
     .instruments { padding-top: 60px; padding-bottom: 60px; }
     .final   { padding-top: 80px; padding-bottom: 80px; }
     .foot { flex-direction: column; align-items: center; text-align: center; }
@@ -1577,7 +1532,7 @@
     <div class="hero-copy">
       <div class="hero-badge">
         <span class="dot" aria-hidden="true"></span>
-        Follows standard music curriculum · No ads · Free during beta
+        Follows the music curriculum your teacher uses
       </div>
 
       <h1 class="hero-title">
@@ -1596,7 +1551,7 @@
       </div>
 
       <div class="hero-stats" aria-label="At a glance">
-        <div class="stat"><span class="stat-num">0</span><span class="stat-label">Ads</span></div>
+        <div class="stat"><span class="stat-num">All</span><span class="stat-label">Ages</span></div>
         <div class="stat-div" aria-hidden="true"></div>
         <div class="stat"><span class="stat-num">3</span><span class="stat-label">Skill tiers</span></div>
         <div class="stat-div" aria-hidden="true"></div>
@@ -1738,7 +1693,7 @@
   <div class="wrap">
     <div class="section-eyebrow">Why QuizNote</div>
     <h2 class="section-title">Built for learners, not engagement.</h2>
-    <p class="section-sub">No ads. No filler. Just the practice your teacher assigned, done right.</p>
+    <p class="section-sub">Short rounds, sharp focus, the exact skills your method book covers.</p>
 
     <div class="pillars-grid">
       <div class="pillar p1">
@@ -1746,14 +1701,14 @@
           <svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
         </div>
         <div class="pillar-title">Built for learners</div>
-        <p class="pillar-text">No ads, no distractions. Practice stays focused on the music.</p>
+        <p class="pillar-text">Supplementary practice that pairs with whatever your teacher gives you next.</p>
       </div>
       <div class="pillar p2">
         <div class="pillar-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5 5l14 14"/></svg>
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5"/><path d="M14 18c.5-2 2-3 4-3s3 1 3 3"/></svg>
         </div>
-        <div class="pillar-title">No ads</div>
-        <p class="pillar-text">Not now, not later, not ever during practice. Focus stays on the staff, not the upsell.</p>
+        <div class="pillar-title">For every learner</div>
+        <p class="pillar-text">From first notes to intermediate theory — same path, your pace.</p>
       </div>
       <div class="pillar p3">
         <div class="pillar-icon" aria-hidden="true">
@@ -1805,7 +1760,7 @@
         <div class="wi-concepts">
           <span class="wi-tag">Key signatures</span>
           <span class="wi-tag">Scales &amp; modes</span>
-          <span class="wi-tag">Ear training</span>
+          <span class="wi-tag">Pitch by ear</span>
         </div>
       </div>
 
@@ -1818,28 +1773,13 @@
         <div class="wi-concepts">
           <span class="wi-tag">Chords &amp; harmony</span>
           <span class="wi-tag">Roman numerals</span>
-          <span class="wi-tag">Ear training</span>
+          <span class="wi-tag">Harmony by ear</span>
         </div>
       </div>
 
     </div>
 
     <a class="wi-explore" href="play.html">Explore all modules&nbsp;&nbsp;&rarr;</a>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how" data-screen-label="04 How it works">
-  <div class="wrap">
-    <div class="section-eyebrow">How it works</div>
-    <h2 class="section-title">Simple by design.</h2>
-    <p class="section-sub">No setup, no learning curve. Open and begin playing in seconds.</p>
-
-    <div class="steps">
-      <div class="step s1"><div class="step-num">1</div><div class="step-title">Pick a module</div><p class="step-text">From any tier. Beginner all the way through intermediate.</p></div>
-      <div class="step s2"><div class="step-num">2</div><div class="step-title">Choose your setup</div><p class="step-text">Pick your focus — clef, scale type, key type, difficulty. Each module adapts to where you are.</p></div>
-      <div class="step s3"><div class="step-num">3</div><div class="step-title">Play a round</div><p class="step-text">Quick rounds. Done. Try another.</p></div>
-    </div>
   </div>
 </section>
 
@@ -2163,7 +2103,7 @@
 
   // ─── Scroll-into-view reveals (added at runtime so non-JS fallback shows everything) ───
   (function(){
-    const targets = document.querySelectorAll('.pillar, .ltile, .step, .chip, .tier-header, .final-inner');
+    const targets = document.querySelectorAll('.pillar, .ltile, .chip, .tier-header, .final-inner');
     if (!('IntersectionObserver' in window) || targets.length === 0) { return; }
     targets.forEach((el, i) => {
       el.classList.add('reveal');
