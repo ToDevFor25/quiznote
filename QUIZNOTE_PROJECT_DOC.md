@@ -163,13 +163,13 @@ localStorage is the right beta persistence layer, but it has known sharp edges. 
 
 Organized by the three user-facing tiers — **Foundations / Reading / Theory**, framed as Levels 1–6. The names that ship on `play.html` and `index.html` are canonical; the older "Beginner core / Intermediate depth / Stretch" framing is retired.
 
-Roster is **27 modules** — 9 Foundations + 8 Reading + 10 Theory. This is the considered complete set for beginner-through-intermediate Western tonal theory. Growing past 27 pushes toward the advanced-theorist / music-school audience that §2 excludes; resist it without a deliberate scope decision. (Earlier framings of "24 modules" are superseded by the May 2026 curriculum redesign.)
+Roster is **32 modules** — 14 Foundations + 8 Reading + 10 Theory. The 27 → 32 expansion was a deliberate Tier 3 scope decision made in the May 2026 curriculum gap analysis (BUILD_LOG.md) and executed in the May 2026 Phase 5 Tier A session, adding the score-literacy cluster (Tempo Markings, Dynamics, Articulation, Score Navigation, Ornaments). Justification: real coverage gap (every method book teaches these from lesson 1; the 27-roster had zero coverage of tempo/dynamics/articulation/navigation/ornaments), not audience expansion. Growing past 32 pushes toward the advanced-theorist / music-school audience that §2 excludes; resist it without another deliberate scope decision. (Earlier framings of "24 modules" and "27 modules" are superseded.)
 
 Status legend: **Live** = shipped; **Planned** = on the build queue.
 
 **Tier reconciliation locked May 2026** (Option B): Intervals and ear modules sit with their visual partners, not clustered together. Reading owns visual Intervals + Ear:Intervals together, visual Scales + Ear:Scales together. Theory holds harmony only — chord modules and the future chord ear training.
 
-### Foundations · Levels 1–2 (reading notes and rhythm) — 9 modules, all Live
+### Foundations · Levels 1–2 (reading notes and rhythm) — 14 modules, all Live
 
 1. **Note Names** — staff note identification. *Live.* Treble / bass / both clef selector.
 2. **Ledger Lines** — pitches outside the staff. *Live (May 2026, Phase 1).* Cloned from note-names; pool strictly notes with visible ledger lines drawn (excludes the "bare space outside the staff" notes Note Names already covers — D4 / G5 treble, F2 / B3 bass). Tier axis = how far past the staff edge (Easy 1st-2nd / Medium +3rd / Tricky +4th ledger). Tricky ceiling capped at 4th ledger by design — covers school repertoire; flute/piccolo high register out of scope per §2. Pool counts per clef: 6 / 10 / 14.
@@ -180,6 +180,11 @@ Status legend: **Live** = shipped; **Planned** = on the build queue.
 7. **Ear: Rhythm** — hear a single duration, identify the notation. *Live (May 2026, Phase 1).* Cloned from note-values with the visual hidden behind a 🎧 placeholder + "▶ Hear it again" button. Audio cue = 2 metronome ticks (lead-in tempo anchor at 60 BPM) + sustained A4 piano tone for `beats × 1000ms`. Notes-only in v1; rests deferred (silence-of-N-beats is a meaningfully different UX). Tiers thin by design: Easy 3, Medium 4, Tricky 5.
 8. **Time Signatures** — identify the meter, count beats per bar. *Live.* Five question types (`label` / `top` / `bottom` / `whichBeats` / `whichUnit`); position-scoped answer highlighting. Easy 2/4·3/4·4/4, Medium +6/8·3/8·2/2, Tricky +9/8·12/8·5/4·7/8. Tuplets / syncopation / compound feel fold in as Tricky-tier complexity here.
 9. **Accidentals** — sharps, flats, naturals, double-sharps/flats, enharmonic equivalents. *Live.* Staff + four-button MC, sibling to Note Names.
+10. **Tempo Markings** — Italian tempo terms, ordering on a slow→fast continuum, metronome markings, change-of-tempo. *Live (May 2026, Phase 5 Tier A #1).* First in the score-literacy cluster; established the cluster's renderer pattern (styled "term card" with italic serif text — no staff). Question types: `meaning` / `ordering` / `metronome` / `change`. 11-term steady-tempo catalog (Grave through Presto) + four change markings (accel., rit., a tempo, rubato). Added `playMetronome(bpm, count)` to the module's inline audio engine — 4 wood-block clicks at the question's BPM via the "Hear it" button. BPM bands taken verbatim from spec.
+11. **Dynamics** — dynamic markings, loud-vs-soft ordering, crescendo/diminuendo direction, sforzando/fortepiano accent family. *Live (May 2026, Phase 5 Tier A #2).* Question types: `meaning` / `ordering` / `direction` / `accent`. Bravura PUA glyphs (U+E520–E525) compose ppp through fff, sfz, fp via concatenation (mf = "m"+"f"). Hairpins drawn as inline SVG polyline. No audio in v1.
+12. **Articulation** — note-treatment markings (staccato, tenuto, accent, marcato, fermata, breath mark, caesura) + tie-vs-slur discrimination. *Live (May 2026, Phase 5 Tier A #3).* Question types: `name` / `effect` / `discriminate`. **Headline skill = tie vs slur:** two adjacent noteheads joined by a curve; same pitch = tie, different pitch = slur. Inline-SVG 5-line staff with notehead + Bravura articulation glyph. No audio.
+13. **Score Navigation** — repeat structures, jump markings (D.C., D.S., Coda, Fine, segno, voltas). *Live (May 2026, Phase 5 Tier A #4).* v1 ships `name` / `meaning` / `discriminate`; `routing` (read-the-path-through-a-passage) deferred to v1.1 per spec. Repeat barlines + voltas drawn as inline SVG; segno (𝄋) / coda (𝄌) via Bravura PUA; D.C./D.S./Fine as italic serif text. Discriminate uses a worded confused-pair pool ("Which means go back to the very beginning?") rather than rendering both targets — text-style markings are visually indistinguishable from each other. No audio.
+14. **Ornaments** — trills, mordents (upper / lower), turn, grace notes (acciaccatura / appoggiatura), tremolo. *Live (May 2026, Phase 5 Tier A #5).* Question types: `name` / `effect` / `discriminate`. Visual ID only in v1 — ornament *realization* is performer-dependent and period-specific (Baroque vs Classical vs Romantic), explicitly out of scope. Inline-SVG notehead with attached ornament (Bravura glyphs above the notehead; grace notes as smaller noteheads with optional slash through the stem; tremolo as slashes across the main stem). No audio.
 
 ### Reading · Levels 3–4 (the staff feels like home) — 8 modules
 
@@ -222,8 +227,8 @@ Two topics that **were** folded-in but are now standalone (May 2026 redesign):
 ### Dropped from earlier roster framings (May 2026 redesign)
 
 - **Rhythm Reading** (was Foundations #6 in the 24-roster) — folded into Time Signatures' Tricky tier (compound meter, tuplets, syncopation already there) rather than its own tile.
-- **Circle of Fifths** (was Reading #11 in the 24-roster) — cut from the 27 to keep the roster tight. The same content surfaces through Key Signatures + relative keys + ear-of-the-app polish elsewhere. Re-add only if user demand surfaces — explicit scope decision.
-- **Transposition** (was Reading #13 in the 24-roster) — Stretch, dropped from the 27.
+- **Circle of Fifths** (was Reading #11 in the 24-roster) — cut from the 27 to keep the roster tight, then **re-queued in May 2026** as Phase 5 Tier B #6 (see CLAUDE.md ranked build queue). The May 2026 curriculum gap analysis judged its absence to read as a coverage hole regardless of equivalent content elsewhere. Spec at `/specs/circle-of-fifths-spec.md`.
+- **Transposition** (was Reading #13 in the 24-roster) — Stretch, dropped from the 27, **re-queued in May 2026** as Phase 5 Tier B #8. Spec at `/specs/transposition-spec.md`.
 - **Melodic Dictation, Rhythmic Dictation, Score Reading** (was Theory #21–23) — Stretch, dropped from the 27. Voice-input dictation is its own engineering track and out of scope per §2.
 
 ### Deliberately out of scope (the boundary, written down)
@@ -233,7 +238,7 @@ Not omissions — decisions. Revisit only with an explicit scope change:
 - **Sight-singing, scale-degree singing, melodic/rhythmic dictation *by voice*** — need microphone input + pitch detection; a separate engineering track.
 - **Counterpoint, phrase/form analysis (binary, sonata), orchestration, composition, music history** — the advanced-theorist / music-school audience §2 excludes.
 - **Jazz/extended/altered harmony, modal-jazz, world-music systems, microtonal & non-Western notation** — out of the Western-tonal-theory mission.
-- **Clefs beyond treble/bass (alto, tenor)** — niche for the target audience; revisit only if demand appears.
+- **Clefs beyond treble/bass (alto, tenor)** — niche for the target audience. Spec drafted (`/specs/c-clefs-spec.md`) and parked in the Phase 5 Tier D ranked queue (#11) — build only with demonstrated demand. The build itself requires a `qn-staff.js` renderer-extension session (Tier 3) before the module clone, so the threshold to start is high.
 
 This list exists so the recurring "is the roster too light?" question has a written answer: the roster isn't light, it's *bounded*. Everything not on it is either folded into a module above or deliberately beyond the line.
 
@@ -377,9 +382,9 @@ Unchanged from v1.
 
 ## 12. Build order
 
-The infrastructure phase is **complete**. The template, the four shared script files (`qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`) plus `qn-music.js`, the shared CSS (`qn-theme.css`), the profile/account layer, the dashboard, the weak-spot tagging (phase 1) and recommender (phase 2) are all shipped. The work now is **completing the 27-module roster** (§5), in path order, plus the parallel Tier-3 monetization/legal track.
+The infrastructure phase is **complete**. The template, the four shared script files (`qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`) plus `qn-music.js`, the shared CSS (`qn-theme.css`), the profile/account layer, the dashboard, the weak-spot tagging (phase 1) and recommender (phase 2) are all shipped. The work now is **further roster expansion per the Phase 5 ranked queue in CLAUDE.md** plus the parallel Tier-3 monetization/legal track.
 
-Current state: **27 of 27 modules live** — the full roster shipped (May 2026). Phases 1 through 4 are complete; remaining work is the parallel Tier-3 monetization/legal track and polish items (see "Parallel tracks" below).
+Current state: **32 of 32 modules live** — Phases 1–4 (27-module floor) plus Phase 5 Tier A score-literacy cluster (5 modules) shipped (May 2026). Remaining curriculum work is Phase 5 Tier B+ (queued, ranked in CLAUDE.md), plus the parallel Tier-3 monetization/legal track and polish items (see "Parallel tracks" below).
 
 ### Infrastructure — done (May 2026)
 
@@ -426,7 +431,18 @@ Phases are sequenced; each unblocks the next. Inside a phase, modules can be bui
 - ✓ Ear: Cadences (§5 #26) — audio-only cadences
 - ✓ Ear: Chord Progressions (§5 #27) — audio-only progressions
 
-**End state: 27 modules live — the full roster target.**
+**End-of-Phase-4 state: 27 modules live — the original full-roster target.**
+
+**Phase 5 Tier A — score-literacy cluster (5 modules). ✓ DONE (May 2026).** Live count 27 → 32.
+- ✓ Tempo Markings (§5 #10) — 11-term steady-tempo catalog + change markings; `meaning` / `ordering` / `metronome` / `change` question types; `playMetronome()` inline audio helper
+- ✓ Dynamics (§5 #11) — ppp–fff composed via Bravura PUA letter glyphs; hairpins as inline SVG; sfz / fp accent family
+- ✓ Articulation (§5 #12) — staccato / tenuto / accent / marcato / fermata / breath mark / caesura + tie-vs-slur discrimination (the headline skill)
+- ✓ Score Navigation (§5 #13) — repeat barlines, voltas, D.C., D.S., Coda, Fine, segno; `routing` question type deferred to v1.1
+- ✓ Ornaments (§5 #14) — trill, mordents, turn, grace notes (acciaccatura / appoggiatura), tremolo; visual ID only in v1
+
+**Pattern reuse:** Tempo Markings was cloned from `accidentals.html` and established the cluster's "term card" renderer + 3- or 4-type question engine. The other four were Python-script clone-and-swap from Tempo Markings (Ornaments cloned from Articulation since both render noteheads on a staff). Boilerplate (audio engine, QN_FX celebration system, game loop, summary, modal) is byte-identical across the five files. No shared-file changes; each module renders its own inline-SVG staff segments. See BUILD_LOG.md "Phase 5 score-literacy cluster shipped" for the session log.
+
+**Phase 5 Tier B+ — queued, ranked in CLAUDE.md.** Tier B (Circle of Fifths, Chord Function, Transposition), Tier C non-module multipliers (Mock Exam Mode, Curriculum Mapping Overlay — Tier 3 / lawyer-gated for the named-method version), and Tier D defensible-but-lower-ROI (C Clefs — Tier 3 renderer-extension required; Construction-mode engineering session — Tier 3; Build-a-X cluster — depends on construction mode; Non-Chord Tones — borderline audience-cap). Build-readiness summary lives in CLAUDE.md "Ranked build queue".
 
 ### Parallel tracks (not blockers)
 

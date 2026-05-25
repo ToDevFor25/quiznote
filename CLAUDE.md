@@ -45,12 +45,14 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **27 live modules — full roster shipped (Phases 1–4 complete, May 2026).**
-  9 Foundations + 8 Reading + 10 Theory. See QUIZNOTE_PROJECT_DOC.md §5 for
-  the complete per-module map (decisions, selectors, tier-reconciliation notes)
-  and §12 for the four-phase build history. Roster is considered the
-  complete set for beginner-through-intermediate Western tonal theory; growing
-  past 27 is a deliberate scope decision per §5.
+- **32 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster
+  shipped (May 2026).** 14 Foundations + 8 Reading + 10 Theory. The 27 → 32
+  expansion was a deliberate Tier 3 scope decision approved in the May 2026
+  curriculum gap analysis (BUILD_LOG.md) and executed in the Phase 5 Tier A
+  cluster: Tempo Markings, Dynamics, Articulation, Score Navigation,
+  Ornaments. See QUIZNOTE_PROJECT_DOC.md §5 for the per-module map and §12
+  for the build history. Further growth beyond 32 is still a deliberate
+  scope decision per §5.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -269,10 +271,12 @@ For any future CSS work:
   showConfirm retired.
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
-- **Curriculum build phases 1–4: ALL COMPLETE (May 2026).** Full 27-module
-  roster shipped. **Phase 5 planned (May 2026): score-literacy cluster + selected
-  Reading/Theory expansions — see "Ranked build queue" below and the 10 specs
-  in `/specs/` covering the planned 27 → 37 expansion.**
+- **Curriculum build phases 1–4: ALL COMPLETE (May 2026).** 27-module
+  roster shipped. **Phase 5 Tier A (score-literacy cluster) shipped May
+  2026** — Tempo Markings, Dynamics, Articulation, Score Navigation,
+  Ornaments. Roster 27 → 32. Phase 5 Tier B+ (Circle of Fifths, Chord
+  Function, Transposition, plus non-module multipliers) still queued —
+  see "Ranked build queue" below and the remaining specs in `/specs/`.
     - **Phase 1** — Foundations gaps: Ledger Lines, Dotted Notes & Ties,
       Ear: Rhythm, Piano & Keyboard.
     - **Phase 2** — Chromatic Scale + the six expansions (Scales pentatonic
@@ -349,18 +353,22 @@ practical value at moderate cost. Non-module multipliers (#9–#10) deliver
 large perceived-value gains without new content. Remaining items are lower
 ROI or audience-boundary cases — build only if conditions warrant.
 
-### Tier A — score-literacy cluster (Foundations · Level 2). Build first, in order.
+### Tier A — score-literacy cluster (Foundations · Level 2). **SHIPPED May 2026.**
 
-1. **Tempo Markings** — `/specs/tempo-markings-spec.md`. First in cluster;
-   surfaces cluster-wide new patterns (ordering on a continuum, optional
-   audio metronome) before they multiply across siblings.
-2. **Dynamics** — `/specs/dynamics-spec.md`. Reuses #1 patterns. No audio in v1.
-3. **Articulation** — `/specs/articulation-spec.md`. Includes the tie-vs-slur
-   discrimination skill (a recurring beginner confusion with no current home).
-4. **Score Navigation Symbols** — `/specs/score-navigation-spec.md`. `routing`
-   question type deferred to v1.1.
-5. **Ornaments** — `/specs/ornaments-spec.md`. Completes the score-literacy
-   cluster. Lowest-cost addition (direct Accidentals clone).
+All five modules cloned and wired through the four-surface rule in a single
+atomic commit. Module count 27 → 32. See BUILD_LOG.md "Phase 5 score-literacy
+cluster shipped" for the full session log.
+
+1. ~~Tempo Markings~~ — shipped. `meaning` / `ordering` / `metronome` /
+   `change` question types. `playMetronome()` audio helper added inline.
+2. ~~Dynamics~~ — shipped. Bravura PUA glyphs compose ppp through fff,
+   sfz, fp. Hairpins as inline SVG.
+3. ~~Articulation~~ — shipped. Tie-vs-slur discrimination via same/different
+   pitch on two adjacent noteheads.
+4. ~~Score Navigation~~ — shipped, v1 only. `routing` question type still
+   deferred to v1.1.
+5. ~~Ornaments~~ — shipped. Visual ID only; period-specific realization
+   out of scope for v1 per spec.
 
 ### Tier B — Reading expansion. Build after the Tier A cluster ships.
 
@@ -405,10 +413,10 @@ ROI or audience-boundary cases — build only if conditions warrant.
 
 ### Notes for the next session
 
-- **The Tier A cluster (#1–#5) can be built fully autonomously** per the
-  "Module builds are autonomous" rule above. No checkpoints needed unless
-  a genuine Tier 3 blocker surfaces (none anticipated — none of the five
-  require shared-file changes).
+- **Tier A cluster (#1–#5) shipped May 2026** — see entry above. Patterns
+  proven: clone-and-swap is repeatable for the score-literacy genre; each
+  module's renderer + question engine is ~150 lines of unique code on a
+  ~1900-line shared scaffold.
 - **#7 Chord Function reuses an existing renderer** (`buildStaffWithChord`).
   Autonomous build.
 - **#6 Circle of Fifths and #8 Transposition are autonomous** but each

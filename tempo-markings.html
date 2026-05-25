@@ -1,0 +1,1952 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%235B3FE4'/%3E%3Ctext x='16' y='22' font-family='serif' font-size='18' fill='white' text-anchor='middle' font-style='italic'%3E♩%3C/text%3E%3C/svg%3E" />
+<title>QuizNote — Tempo Markings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+<!-- Shared design system (tokens + question prompt + answer tiles). Source of truth: edit qn-theme.css, not the inline copies below. -->
+<link rel="stylesheet" href="qn-theme.css">
+<script src="qn-gate.js"></script>
+<style>
+  /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+      radial-gradient(circle at 90% 80%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+  }
+  button, .pressable { font-family: inherit; cursor: pointer; }
+  h1, h2, h3, h4 { margin: 0; }
+
+  /* ============ START SCREEN ============ */
+  #start-screen {
+    align-items: center; justify-content: center;
+    padding: 24px 20px 40px;
+  }
+
+  /* ============ PLAY SCREEN ============ */
+  #play-screen { padding: 10px 12px 8px; gap: 8px; position: relative; }
+
+  @media (max-width: 760px) {
+    #play-screen.active {
+      height: 100dvh;
+      height: 100vh;
+      overflow: hidden;
+      padding: 8px 10px 6px;
+      gap: 6px;
+    }
+  }
+
+  .staff-card {
+    padding: 14px 14px 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  #play-screen #q-prompt {
+    font-size: clamp(15px, 4.4vw, 22px);
+    line-height: 1.15;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink);
+    text-align: center;
+    white-space: normal;
+    max-height: 3.2em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    margin: 0 auto 4px;
+    max-width: 22em;
+  }
+
+  /* ============ Term card (replaces staff renderer) ============
+     Italian tempo terms are conventionally typeset in italic serif —
+     this card mimics that look so the visual + symbolic recognition
+     matches how the markings appear in real scores. The card scales
+     with viewport like the staff SVG so it reads cleanly on phones. */
+  .term-wrap {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 130px;
+  }
+  .term-card {
+    width: 100%;
+    max-width: 340px;
+    min-height: 130px;
+    background: #fffbe9;
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 18px 14px;
+    gap: 6px;
+    text-align: center;
+  }
+  .term-primary {
+    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(28px, 8vw, 44px);
+    color: var(--ink);
+    line-height: 1.05;
+  }
+  .term-primary.no-italic { font-style: normal; }
+  .term-secondary {
+    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(20px, 5.5vw, 28px);
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  /* Two-term layout for ordering questions */
+  .term-card.pair {
+    flex-direction: row;
+    gap: 18px;
+    padding: 14px 10px;
+  }
+  .term-card.pair .term-half {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px;
+  }
+  .term-card.pair .term-divider {
+    width: 2px; align-self: stretch;
+    background: var(--ink);
+    opacity: 0.25;
+  }
+  .term-card.pair .term-half-num {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+  .term-card.pair .term-primary { font-size: clamp(22px, 6.2vw, 32px); }
+  /* Metronome marking: Bravura quarter glyph + " = BPM" */
+  .term-card.metronome .term-primary {
+    font-style: normal;
+    font-family: 'Bravura Text', serif;
+    font-size: clamp(34px, 9vw, 52px);
+  }
+  .term-card.metronome .term-bpm {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 7.5vw, 40px);
+    color: var(--ink);
+    margin-left: 6px;
+  }
+  .term-card .term-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 4px;
+  }
+
+  .staff-actions {
+    display: flex; gap: 10px; justify-content: center;
+  }
+
+  .last-dot.retry { background: var(--sun); }
+
+  /* ---- Choice buttons area ---- */
+  .choices-card {
+    padding: 12px 12px 10px;
+    background: #fff8e6;
+    flex-shrink: 0;
+    border-radius: 20px;
+  }
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  /* 2-tile layout for ordering questions: a wider, taller pair. */
+  .choices-grid.choices-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+  .choices-grid.choices-pair .choice-btn {
+    min-height: 70px;
+    font-size: clamp(18px, 5vw, 24px);
+    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+  }
+  /* Word-tile (long-text) choices — used for meaning + change types. */
+  .choices-grid.choices-wordy .choice-btn {
+    font-size: clamp(13px, 3.5vw, 16px);
+    font-family: 'Nunito', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 10px 8px;
+    min-height: 60px;
+  }
+  /* Term-tile (italic serif) choices — used for metronome type. */
+  .choices-grid.choices-terms .choice-btn {
+    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(17px, 4.5vw, 22px);
+  }
+
+  /* Confetti + note-burst layer */
+  .fx-layer {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;
+    z-index: 4;
+    left: 0; top: 0;
+  }
+  .fx-layer i {
+    position: absolute; width: 10px; height: 14px;
+    top: 0; left: 0;
+    margin: -7px 0 0 -5px;
+    border-radius: 2px;
+    opacity: 0;
+  }
+  @keyframes confetti-fly {
+    0% { opacity: 0; transform: translate(0,0) rotate(0deg) scale(0.6); }
+    8% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--dr)) scale(1); }
+  }
+  .fx-layer.go i { animation: confetti-fly 1100ms ease-out forwards; }
+
+  .fx-layer .note-burst {
+    position: absolute;
+    left: 0; top: 0;
+    font-family: 'Fredoka', serif;
+    font-size: 38px;
+    line-height: 1;
+    pointer-events: none;
+    opacity: 0;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.08);
+    transform-origin: center;
+  }
+  @keyframes noteFloat {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(0) scale(0.4); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--bx)), calc(-50% + var(--by))) rotate(var(--br)) scale(1.2); }
+  }
+  .fx-layer .note-burst.go { animation: noteFloat 1100ms ease-out forwards; }
+
+  /* Term card animations (analogue of note-pop/shake/pulse on the staff) */
+  @keyframes termPop {
+    0% { transform: translateY(-20px) scale(0.6); opacity: 0; }
+    60% { transform: translateY(4px) scale(1.06); opacity: 1; }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .term-pop { animation: termPop 420ms cubic-bezier(.4,1.6,.6,1); }
+  @keyframes termShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px) rotate(-1deg); }
+    40% { transform: translateX(6px) rotate(1deg); }
+    60% { transform: translateX(-5px) rotate(-1deg); }
+    80% { transform: translateX(5px) rotate(1deg); }
+  }
+  .term-shake { animation: termShake 380ms; }
+  @keyframes termPulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  .term-pulse { animation: termPulse 900ms ease-in-out infinite; }
+  .term-card.correct {
+    background: var(--teal-lt);
+    border-color: var(--teal-dk);
+    box-shadow: 0 4px 0 var(--teal-dk);
+  }
+  .term-card.wrong {
+    background: #ffe5e5;
+    border-color: #c64545;
+    box-shadow: 0 4px 0 #c64545;
+  }
+
+  /* Streak jiggle */
+  @keyframes jiggle {
+    0%,100% { transform: scale(1) rotate(0); }
+    25% { transform: scale(1.18) rotate(-5deg); }
+    50% { transform: scale(1.1) rotate(4deg); }
+    75% { transform: scale(1.14) rotate(-2deg); }
+  }
+  .jiggle { animation: jiggle 420ms ease-out; }
+
+  /* ============ Summary Fanfare ============ */
+  @keyframes summaryPop {
+    0%   { transform: scale(0.4) rotate(-6deg); opacity: 0; }
+    60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+    80%  { transform: scale(0.96) rotate(-1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+  @keyframes scoreShimmer {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.6; transform: scale(1.08); color: var(--sun-dk); }
+  }
+  @keyframes fanfareFloat {
+    0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-120px) scale(1.2); }
+  }
+  #sum-score.score-shimmer { display: inline-block; animation: scoreShimmer 400ms ease-in-out 2; }
+  .fanfare-note {
+    position: fixed; font-size: 32px; pointer-events: none; z-index: 300;
+    opacity: 0; animation: fanfareFloat 1.4s ease-out forwards;
+  }
+
+  /* ============ Timer ============ */
+  #timer-block { text-align: center; }
+  @keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.09); }
+  }
+
+  /* Personal best row */
+  .pb-row {
+    margin-top: 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* ============ Modal ============ */
+  @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalPop {
+    0% { transform: scale(0.7) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  #qn-nav-slot {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+  }
+  .save-scores-prompt {
+    background: var(--teal-lt);
+    border: 2px solid var(--teal);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin: 4px 0 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .save-scores-prompt[hidden] { display: none; }
+  .save-scores-prompt .ssp-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  /* ============ Mute button ============ */
+  .mute-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 20px;
+    width: 46px; height: 46px;
+    border: 2.5px solid var(--ink); background: white;
+    color: var(--ink);
+    border-radius: 13px;
+    box-shadow: 0 4px 0 var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Audio nudge */
+  .audio-nudge {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+    padding: 10px 20px; border-radius: 999px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms;
+    z-index: 200;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .audio-nudge.show { opacity: 1; pointer-events: auto; }
+
+  /* Hide header/footer during gameplay */
+  #play-screen.active ~ .site-footer,
+  body.playing .site-header,
+  body.playing .site-footer { display: none; }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 760px) {
+    .play-body { grid-template-columns: 1fr; gap: 8px; }
+    .stats-col { flex-direction: row; gap: 8px; }
+    .stats-col .last-dots-card { display: none; }
+    .stat-value { font-size: 28px; }
+    .topbar { gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; border-radius: 10px; font-size: 16px; }
+    .streak-badge { font-size: 15px; padding: 4px 8px; min-width: 50px; }
+    .timer-badge { font-size: 16px; padding: 4px 8px; min-width: 64px; }
+    .brand h1 { font-size: 44px; }
+    .summary-title { font-size: 40px; }
+    .tile-emoji { font-size: 30px; }
+    .tile-title { font-size: 17px; }
+    .term-wrap { min-height: 110px; }
+    .term-card { min-height: 110px; max-width: 300px; padding: 14px 12px; }
+    .staff-card { padding: 10px 10px 8px; gap: 6px; }
+    .staff-actions .btn { font-size: 14px; padding: 8px 12px; }
+    .staff-actions { gap: 6px; }
+    .choices-grid { gap: 8px; }
+  }
+
+  @media (min-width: 1100px) {
+    #play-screen { padding: 22px 32px 24px; gap: 14px; }
+    .play-body { gap: 20px; }
+    .term-wrap { min-height: 180px; }
+    .term-card { min-height: 180px; max-width: 380px; }
+    .stat-value { font-size: 38px; }
+  }
+</style>
+
+<!-- QuizNote shared profile + event helper (loads window.QN) -->
+<script src="qn-profile.js" defer></script>
+<script src="qn-nav.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand-name" href="index.html">Quiz<span>Note</span></a>
+  <div id="qn-nav-slot"></div>
+</header>
+
+<!-- ============ START SCREEN ============ -->
+<section class="screen active" id="start-screen">
+  <div class="start-wrap">
+    <a href="play.html" class="start-back-link">← All modules</a>
+    <div class="brand">
+      <div class="logo-mark">
+        <div>
+          <h1>Tempo Markings</h1>
+          <div class="tagline">How fast — and how it changes.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">1</span> How tricky?</div>
+      <div class="tile-row" id="diff-tiles">
+        <button class="tile" data-diff="easy">
+          <div class="tile-emoji">🐢</div>
+          <div class="tile-title">Easy</div>
+          <div class="tile-sub">7 common<br/>tempo terms</div>
+        </button>
+        <button class="tile on" data-diff="medium">
+          <div class="tile-emoji">🐰</div>
+          <div class="tile-title">Medium</div>
+          <div class="tile-sub">11 terms +<br/>metronome</div>
+        </button>
+        <button class="tile" data-diff="tricky">
+          <div class="tile-emoji">🐆</div>
+          <div class="tile-title">Tricky</div>
+          <div class="tile-sub">+ accel., rit.,<br/>a tempo</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block">
+      <div class="q-label"><span class="num">2</span> How many questions?</div>
+      <div class="tile-row" id="length-tiles">
+        <button class="tile" data-len="5">
+          <div class="tile-emoji">⚡</div>
+          <div class="tile-title">Quick</div>
+          <div class="tile-sub">5 questions</div>
+        </button>
+        <button class="tile on" data-len="10">
+          <div class="tile-emoji">🎯</div>
+          <div class="tile-title">Standard</div>
+          <div class="tile-sub">10 questions</div>
+        </button>
+        <button class="tile" data-len="20">
+          <div class="tile-emoji">🏋️</div>
+          <div class="tile-title">Long</div>
+          <div class="tile-sub">20 questions</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="q-block" id="timer-block">
+      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
+        <span class="t-icon">⏱</span>
+        <span class="t-label">Add a timer</span>
+        <span class="t-state" id="timer-toggle-state">off</span>
+      </button>
+      <div class="timer-pills" id="timer-pills" hidden>
+        <button class="tpill" data-secs="30">30s</button>
+        <button class="tpill" data-secs="45">45s</button>
+        <button class="tpill on" data-secs="60">60s</button>
+      </div>
+    </div>
+
+    <div class="start-cta">
+      <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
+        🔇 Start muted
+      </label>
+      <button class="btn sun huge" id="start-btn">Start Game →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLAY SCREEN ============ -->
+<section class="screen" id="play-screen">
+  <div class="topbar">
+    <a href="play.html" class="icon-btn" title="Back to modules" style="text-decoration:none;">🏠</a>
+    <button class="icon-btn" id="exit-btn" title="Quit round">✕</button>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="timer-badge" id="timer-badge" hidden><span class="t-icon">⏱</span><span id="timer-num">60</span>s</div>
+    <div class="streak-badge" id="streak-badge">🔥 <span class="num" id="streak-num">0</span></div>
+    <button class="mute-btn" id="mute-btn" title="Toggle sound">🔊</button>
+  </div>
+
+  <div class="play-body">
+    <div class="card staff-card">
+      <div class="staff-label" id="q-prompt">What does this mean?</div>
+      <div class="term-wrap" id="term-wrap"></div>
+      <div class="staff-actions">
+        <button class="btn" id="hear-btn" hidden>🔊 Hear it</button>
+      </div>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="stats-col">
+      <div class="card stat-card">
+        <div class="stat-label">Question</div>
+        <div class="stat-value"><span id="q-num">1</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value"><span id="score-num">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card last-dots-card">
+        <div class="stat-label">Last answers</div>
+        <div class="last-dots" id="last-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card choices-card">
+    <div class="choices-grid" id="choices-grid">
+      <!-- buttons injected by JS -->
+    </div>
+  </div>
+
+  <div class="fx-layer" id="confetti"></div>
+</section>
+
+<!-- ============ SUMMARY SCREEN ============ -->
+<section class="screen" id="summary-screen">
+  <div class="summary-wrap">
+    <div class="summary-title">Round done! 🎉</div>
+    <div class="summary-sub" id="summary-sub">You named those tempi.</div>
+    <div class="summary-speed" id="summary-speed" hidden></div>
+
+    <div class="summary-grid">
+      <div class="card stat-card">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
+      </div>
+      <div class="card stat-card sun-card">
+        <div class="stat-label">Best streak</div>
+        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-label">Stars</div>
+        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
+      </div>
+    </div>
+
+    <div class="miss-list" id="miss-list">
+      <h3>Markings to practice next time</h3>
+      <ul id="miss-items"></ul>
+    </div>
+
+    <div class="save-scores-prompt" id="save-scores-prompt" hidden>
+      <div class="ssp-text">💾 Save your scores? Add a name to track your progress.</div>
+      <a href="profile.html" class="btn teal big" style="text-decoration:none;">Add a name →</a>
+    </div>
+
+    <div class="summary-actions">
+      <button class="btn sun big" id="again-btn">↻ Play again</button>
+      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed markings</button>
+      <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
+      <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
+    </div>
+
+    <div class="pb-row" id="pb-row" hidden>
+      <span class="pb-label">Personal best:</span>
+      <span id="pb-score"></span>
+      <span class="pb-sep">·</span>
+      <span id="pb-streak"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2 id="modal-title">Quit this round?</h2>
+    <p id="modal-body">Your score for this round won't be saved.</p>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">Quit round</button>
+      <button class="btn" id="modal-confirm">Keep playing</button>
+    </div>
+  </div>
+</div>
+
+<div class="audio-nudge" id="audio-nudge">🔇 Tap here to enable sound</div>
+
+<footer class="site-footer">
+  © 2026 QuizNote <span class="sep">·</span>
+  <a href="privacy.html" target="_blank">Privacy Policy</a>
+  <span class="sep">·</span>
+  <a href="terms.html" target="_blank">Terms of Service</a>
+  <span class="sep">·</span>
+  Made by musicians, for musicians
+</footer>
+
+<script>
+// ============ QuizNote Tempo Markings — Audio Engine ============
+// Mirrors accidentals' audio engine; playMidi unused here (no pitched notes),
+// but kept so shared FX (fanfares, ticks) keep working. playClick is the only
+// new helper — a wood-block metronome tick for the "Hear it" button.
+(function () {
+  const NH = window.NH = window.NH || {};
+  let ctx = null, masterGain = null, muted = false;
+
+  function ensureCtx() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      ctx = new AC();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = muted ? 0 : 0.6;
+      masterGain.connect(ctx.destination);
+    }
+    if (ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        const n = document.getElementById('audio-nudge');
+        if (n) n.classList.remove('show');
+      }).catch(() => {
+        const n = document.getElementById('audio-nudge');
+        if (n) n.classList.add('show');
+      });
+    }
+    return ctx;
+  }
+
+  function setMuted(val) { muted = val; if (masterGain) masterGain.gain.value = muted ? 0 : 0.6; }
+  function isMuted() { return muted; }
+
+  function playClick(when) {
+    const ac = ensureCtx(), t = when != null ? when : ac.currentTime;
+    // Wood-block: short sine + noise burst, no sustain.
+    const osc = ac.createOscillator();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(880, t);
+    osc.frequency.exponentialRampToValueAtTime(440, t + 0.04);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.5, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(t); osc.stop(t + 0.1);
+  }
+
+  // Play `count` clicks spaced at `bpm` quarter notes per minute, starting now.
+  function playMetronome(bpm, count) {
+    const ac = ensureCtx(), now = ac.currentTime;
+    const interval = 60 / bpm;
+    for (let i = 0; i < count; i++) {
+      playClick(now + i * interval);
+    }
+    return interval * count;
+  }
+
+  function playBoop() {
+    const ac = ensureCtx(), now = ac.currentTime;
+    const osc = ac.createOscillator();
+    osc.type = 'sine'; osc.frequency.setValueAtTime(380, now);
+    osc.frequency.exponentialRampToValueAtTime(200, now + 0.22);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(now); osc.stop(now + 0.3);
+  }
+
+  function playTick() {
+    const ac = ensureCtx(), now = ac.currentTime;
+    const osc = ac.createOscillator();
+    osc.type = 'square'; osc.frequency.value = 1400;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.06, now + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(now); osc.stop(now + 0.1);
+  }
+
+  function playChime(_unusedMidi, streak) {
+    // Pitched chime on correct answers — mirrors accidentals, but with a fixed
+    // C-major arpeggio (no per-question pitch to anchor on).
+    const ac = ensureCtx(), now = ac.currentTime;
+    const SCALE = [60,64,67,72,76,79,84,88,91,96];
+    const len = Math.max(3, Math.min(streak || 1, SCALE.length));
+    const step = len <= 4 ? 0.06 : len <= 7 ? 0.07 : 0.08;
+    SCALE.slice(0, len).forEach((midi, i) => {
+      const f = 440 * Math.pow(2, (midi - 69) / 12);
+      const osc = ac.createOscillator(), g = ac.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const start = now + i * step;
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(0.18, start + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.5);
+      osc.connect(g); g.connect(masterGain);
+      osc.start(start); osc.stop(start + 0.55);
+    });
+  }
+
+  function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  function playFanfare(tier) {
+    const ac = ensureCtx();
+    if (!ac || muted) return;
+    const now = ac.currentTime;
+    if (tier === 'perfect') {
+      const melody = [60,64,67,72,76,79,84];
+      melody.forEach((midi, i) => {
+        const f = midiToFreq(midi), t = now + i * 0.09;
+        const osc = ac.createOscillator(), g = ac.createGain();
+        osc.type = 'triangle'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+        osc.connect(g); g.connect(masterGain); osc.start(t); osc.stop(t + 0.6);
+      });
+      const chordT = now + melody.length * 0.09 + 0.05;
+      [60,64,67,72].forEach(midi => {
+        const f = midiToFreq(midi), osc = ac.createOscillator(), g = ac.createGain();
+        osc.type = 'triangle'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, chordT); g.gain.exponentialRampToValueAtTime(0.18, chordT + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, chordT + 1.1);
+        osc.connect(g); g.connect(masterGain); osc.start(chordT); osc.stop(chordT + 1.2);
+      });
+    } else if (tier === 'great') {
+      [60,64,67,72,76].forEach((midi, i) => {
+        const f = midiToFreq(midi), t = now + i * 0.09;
+        const osc = ac.createOscillator(), g = ac.createGain();
+        osc.type = 'triangle'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+        osc.connect(g); g.connect(masterGain); osc.start(t); osc.stop(t + 0.5);
+      });
+    } else if (tier === 'good') {
+      [60, 67].forEach((midi, i) => {
+        const f = midiToFreq(midi), t = now + i * 0.14;
+        const osc = ac.createOscillator(), g = ac.createGain();
+        osc.type = 'sine'; osc.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.18, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+        osc.connect(g); g.connect(masterGain); osc.start(t); osc.stop(t + 0.75);
+      });
+    } else {
+      const f = midiToFreq(64), osc = ac.createOscillator(), g = ac.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.14, now + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
+      osc.connect(g); g.connect(masterGain); osc.start(now); osc.stop(now + 1.0);
+    }
+  }
+
+  NH.audio = { ensureCtx, playClick, playMetronome, playBoop, playTick, playChime, setMuted, isMuted, playFanfare };
+})();
+</script>
+
+<script>
+// ============ QuizNote Tempo Markings — Term Renderer ============
+// Replaces the staff renderer. Each render mutates #term-wrap's innerHTML
+// to show one of four card layouts (term / pair / metronome / change-symbol).
+(function () {
+  const NH = window.NH = window.NH || {};
+
+  function renderTerm(wrap, q) {
+    if (q.type === 'meaning') {
+      // One italic Italian term in the card.
+      wrap.innerHTML =
+        '<div class="term-card" id="term-card">' +
+          '<div class="term-primary">' + q.display + '</div>' +
+        '</div>';
+    } else if (q.type === 'ordering') {
+      // Two terms side-by-side. Tile A (left) vs Tile B (right).
+      wrap.innerHTML =
+        '<div class="term-card pair" id="term-card">' +
+          '<div class="term-half"><div class="term-half-num">A</div><div class="term-primary">' + q.pair[0] + '</div></div>' +
+          '<div class="term-divider"></div>' +
+          '<div class="term-half"><div class="term-half-num">B</div><div class="term-primary">' + q.pair[1] + '</div></div>' +
+        '</div>';
+    } else if (q.type === 'metronome') {
+      // Bravura quarter glyph (U+E1D5) + "= BPM".
+      wrap.innerHTML =
+        '<div class="term-card metronome" id="term-card">' +
+          '<div class="term-row">' +
+            '<span class="term-primary"></span>' +
+            '<span class="term-bpm">= ' + q.bpm + '</span>' +
+          '</div>' +
+        '</div>';
+    } else if (q.type === 'change') {
+      // The change-of-tempo abbreviation or word — italic serif, often abbreviated.
+      wrap.innerHTML =
+        '<div class="term-card" id="term-card">' +
+          '<div class="term-primary">' + q.display + '</div>' +
+        '</div>';
+    }
+  }
+
+  function animateCard(wrap, kind) {
+    const c = wrap.querySelector('#term-card');
+    if (!c) return;
+    c.classList.remove('term-pop', 'term-shake', 'term-pulse');
+    void c.getBoundingClientRect();
+    if (kind) c.classList.add('term-' + kind);
+  }
+
+  function flagCard(wrap, kind) {
+    const c = wrap.querySelector('#term-card');
+    if (!c) return;
+    c.classList.remove('correct', 'wrong');
+    if (kind) c.classList.add(kind);
+  }
+
+  NH.render = { renderTerm, animateCard, flagCard };
+})();
+</script>
+
+<script>
+// ============ QuizNote Tempo Markings — Game Loop ============
+(function () {
+  const NH = window.NH;
+  const R = NH.render;
+  const A = NH.audio;
+
+  // ===================================================================
+  // TEMPO MARKINGS QUESTION ENGINE
+  // Four question types: meaning / ordering / metronome / change.
+  // Tiers gate which terms + types appear. See tempo-markings-spec.md.
+  //
+  // Speed data sourced from common pedagogy references; bands overlap
+  // (Italian terms are conventional, not absolute). `mid` is the value
+  // used for ordering comparisons; `band` defines distractor selection
+  // for metronome questions.
+  // ===================================================================
+
+  const TERMS = {
+    grave:      { name: 'Grave',      meaning: 'Very slow and solemn', mid: 45,  band: [40, 60] },
+    largo:      { name: 'Largo',      meaning: 'Very slow and broad',  mid: 55,  band: [50, 60] },
+    lento:      { name: 'Lento',      meaning: 'Slow',                 mid: 60,  band: [52, 68] },
+    adagio:     { name: 'Adagio',     meaning: 'Slow and stately',     mid: 66,  band: [60, 72] },
+    larghetto:  { name: 'Larghetto',  meaning: 'A little less slow than Largo', mid: 63, band: [60, 66] },
+    andante:    { name: 'Andante',    meaning: 'Walking pace',         mid: 92,  band: [76, 108] },
+    moderato:   { name: 'Moderato',   meaning: 'Moderate speed',       mid: 114, band: [108, 120] },
+    allegretto: { name: 'Allegretto', meaning: 'A little less fast than Allegro', mid: 116, band: [112, 120] },
+    allegro:    { name: 'Allegro',    meaning: 'Fast and lively',      mid: 144, band: [120, 168] },
+    vivace:     { name: 'Vivace',     meaning: 'Lively and fast',      mid: 150, band: [132, 168] },
+    presto:     { name: 'Presto',     meaning: 'Very fast',            mid: 184, band: [168, 200] },
+  };
+
+  // The 7 most common steady tempi (Easy tier).
+  const COMMON_7 = ['largo','adagio','andante','moderato','allegro','vivace','presto'];
+  // All 11 steady tempi (Medium + Tricky tiers).
+  const ALL_11   = ['grave','largo','lento','adagio','larghetto','andante','moderato','allegretto','allegro','vivace','presto'];
+
+  // Change-of-tempo markings (Tricky tier only). Distractors are the other three.
+  const CHANGES = {
+    accel:   { display: 'accel.',   full: 'accelerando', meaning: 'Gets faster' },
+    rit:     { display: 'rit.',     full: 'ritardando',  meaning: 'Gets slower' },
+    atempo:  { display: 'a tempo',  full: 'a tempo',     meaning: 'Returns to the original tempo' },
+    rubato:  { display: 'rubato',   full: 'rubato',      meaning: 'Free, flexible timing' },
+  };
+  const CHANGE_KEYS = Object.keys(CHANGES);
+
+  function termsForTier(diff) {
+    if (diff === 'easy') return COMMON_7.slice();
+    return ALL_11.slice();
+  }
+  function typeWeights(diff) {
+    if (diff === 'easy')   return { meaning: 0.6, ordering: 0.4 };
+    if (diff === 'medium') return { meaning: 0.4, ordering: 0.4, metronome: 0.2 };
+    return                        { meaning: 0.3, ordering: 0.25, metronome: 0.25, change: 0.2 };
+  }
+  function pickWeighted(weights) {
+    var r = Math.random(), acc = 0;
+    for (var k in weights) { acc += weights[k]; if (r <= acc) return k; }
+    return Object.keys(weights)[0];
+  }
+  function shuffle(a) {
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+    return a;
+  }
+  function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+  // Build one question object. Shape:
+  //   { type, skill, prompt, display, pair?, bpm?, choices:[{label,correct}], answer }
+  function makeQuestion(diff) {
+    var weights = typeWeights(diff);
+    var type = pickWeighted(weights);
+    var pool = termsForTier(diff);
+
+    if (type === 'meaning') {
+      var key = rand(pool);
+      var t = TERMS[key];
+      var correct = t.meaning;
+      // Distractors: one opposite-direction descriptor, one adjacent-band,
+      // one random other. We pull from the other terms' meaning strings so
+      // distractors are real tempo descriptors, not invented English.
+      var others = pool.filter(function(k){ return k !== key; }).map(function(k){ return TERMS[k].meaning; });
+      // Bias: prefer one meaning whose mid is on the opposite side of the
+      // continuum's midpoint (~120 BPM) for clear direction-discrimination.
+      var oppSide = others.filter(function(m){
+        var src = Object.keys(TERMS).find(function(kk){ return TERMS[kk].meaning === m; });
+        if (!src) return false;
+        var srcMid = TERMS[src].mid, isFast = srcMid >= 120, tIsFast = t.mid >= 120;
+        return isFast !== tIsFast;
+      });
+      shuffle(oppSide); shuffle(others);
+      var distractors = [];
+      if (oppSide.length) distractors.push(oppSide.shift());
+      var pool2 = others.filter(function(m){ return distractors.indexOf(m) < 0; });
+      while (distractors.length < 3 && pool2.length) {
+        var cand = pool2.shift();
+        if (distractors.indexOf(cand) < 0 && cand !== correct) distractors.push(cand);
+      }
+      var choices = shuffle([correct].concat(distractors.slice(0,3)).map(function(lbl){
+        return { label: lbl, correct: lbl === correct };
+      }));
+      return {
+        type: 'meaning', skill: 'meaning',
+        prompt: 'What does this mean?',
+        display: t.name,
+        choices: choices, answer: correct
+      };
+    }
+
+    if (type === 'ordering') {
+      // Pick two distinct terms; for Easy/Medium ensure non-adjacent on the
+      // continuum; Tricky may use adjacent.
+      var sorted = pool.slice().sort(function(a,b){ return TERMS[a].mid - TERMS[b].mid; });
+      var iA, iB;
+      if (diff === 'tricky') {
+        iA = Math.floor(Math.random() * sorted.length);
+        do { iB = Math.floor(Math.random() * sorted.length); } while (iB === iA);
+      } else {
+        iA = Math.floor(Math.random() * sorted.length);
+        do { iB = Math.floor(Math.random() * sorted.length); } while (Math.abs(iB - iA) < 2);
+      }
+      var aKey = sorted[iA], bKey = sorted[iB];
+      var pair = [TERMS[aKey].name, TERMS[bKey].name];
+      // Correct = whichever is faster.
+      var faster = TERMS[aKey].mid > TERMS[bKey].mid ? TERMS[aKey].name : TERMS[bKey].name;
+      var choices2 = shuffle(pair.map(function(lbl){
+        return { label: lbl, correct: lbl === faster };
+      }));
+      return {
+        type: 'ordering', skill: 'ordering',
+        prompt: 'Which is faster?',
+        display: null, pair: pair,
+        choices: choices2, answer: faster
+      };
+    }
+
+    if (type === 'metronome') {
+      // Pick a term, pick a BPM inside its band; distractors are terms whose
+      // bands are above and below.
+      var sorted2 = pool.slice().sort(function(a,b){ return TERMS[a].mid - TERMS[b].mid; });
+      var idx = Math.floor(Math.random() * sorted2.length);
+      var correctKey = sorted2[idx];
+      var ct = TERMS[correctKey];
+      var bpm = ct.band[0] + Math.floor(Math.random() * (ct.band[1] - ct.band[0] + 1));
+      var distractors3 = [];
+      // Below
+      for (var b = idx - 1; b >= 0 && distractors3.length < 1; b--) {
+        if (TERMS[sorted2[b]].name !== ct.name) distractors3.push(TERMS[sorted2[b]].name);
+      }
+      // Above
+      for (var u = idx + 1; u < sorted2.length && distractors3.length < 2; u++) {
+        if (TERMS[sorted2[u]].name !== ct.name) distractors3.push(TERMS[sorted2[u]].name);
+      }
+      // Fill from random remaining if at the edges
+      var rem = sorted2.filter(function(k){ return k !== correctKey && distractors3.indexOf(TERMS[k].name) < 0; });
+      shuffle(rem);
+      while (distractors3.length < 3 && rem.length) distractors3.push(TERMS[rem.shift()].name);
+      var choices3 = shuffle([ct.name].concat(distractors3.slice(0,3)).map(function(lbl){
+        return { label: lbl, correct: lbl === ct.name };
+      }));
+      return {
+        type: 'metronome', skill: 'metronome',
+        prompt: 'Which term best matches this tempo?',
+        display: null, bpm: bpm,
+        choices: choices3, answer: ct.name
+      };
+    }
+
+    // change
+    var ck = rand(CHANGE_KEYS);
+    var c = CHANGES[ck];
+    var correctMeaning = c.meaning;
+    var distractors4 = CHANGE_KEYS.filter(function(k){ return k !== ck; }).map(function(k){ return CHANGES[k].meaning; });
+    shuffle(distractors4);
+    var choices4 = shuffle([correctMeaning].concat(distractors4.slice(0,3)).map(function(lbl){
+      return { label: lbl, correct: lbl === correctMeaning };
+    }));
+    return {
+      type: 'change', skill: 'change',
+      prompt: 'What happens?',
+      display: c.display,
+      choices: choices4, answer: correctMeaning
+    };
+  }
+
+  // Game state
+  const state = {
+    settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
+    q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
+    history: [], current: null, attempts: 0, locked: false,
+    timeLeft: 0, timerInterval: null,
+    timedOut: false, startedAt: 0, timerWasRunning: false,
+    endedRound: false, toastCycle: 0, currentChoices: [],
+  };
+
+  const $ = id => document.getElementById(id);
+  const els = {};
+
+  function cacheEls() {
+    ['start-screen','play-screen','summary-screen',
+     'diff-tiles','length-tiles','start-btn',
+     'exit-btn','progress-fill','streak-badge','streak-num',
+     'term-wrap','hear-btn','toast','confetti','q-prompt',
+     'q-num','score-num','last-dots',
+     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'again-btn','drill-btn','change-btn','choices-grid',
+     'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
+     'pb-row','pb-score','pb-streak',
+     'save-scores-prompt',
+     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
+     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
+  }
+
+  function showScreen(name) {
+    if (name !== 'play') stopTimer();
+    ['start','play','summary'].forEach(s => {
+      document.getElementById(s + '-screen').classList.toggle('active', s === name);
+    });
+    document.body.classList.toggle('playing', name === 'play');
+    window.scrollTo(0, 0);
+  }
+
+  function syncMuteUI(muted) {
+    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
+    if (els['mute-btn']) {
+      els['mute-btn'].textContent = muted ? '🔇' : '🔊';
+      els['mute-btn'].classList.toggle('muted', muted);
+      els['mute-btn'].setAttribute('aria-pressed', String(muted));
+    }
+  }
+
+  function saveMutedPreference(muted) {
+    localStorage.setItem('pq_muted', String(muted));
+    A.setMuted(muted);
+    syncMuteUI(muted);
+  }
+
+  // Path handoff — mirrors accidentals. Reads tm_settings (short prefix) OR
+  // tempo-markings_settings (full slug). One-shot, then cleared.
+  function applyPathHandoff() {
+    var s = null;
+    try {
+      var raw = localStorage.getItem('tempo-markings_settings') || localStorage.getItem('tm_settings');
+      if (!raw) return;
+      try { localStorage.removeItem('tempo-markings_settings'); } catch (e) {}
+      try { localStorage.removeItem('tm_settings'); } catch (e) {}
+      s = JSON.parse(raw);
+    } catch (e) { return; }
+    if (!s || typeof s !== 'object') return;
+
+    function highlight(group, attr, value) {
+      var box = els[group]; if (!box || value == null) return false;
+      var kids = box.children, matched = false;
+      for (var i = 0; i < kids.length; i++) {
+        var on = String(kids[i].getAttribute(attr)) === String(value);
+        kids[i].classList.toggle('on', on);
+        if (on) matched = true;
+      }
+      return matched;
+    }
+
+    if (s.difficulty && ['easy','medium','tricky'].indexOf(s.difficulty) !== -1) {
+      if (highlight('diff-tiles', 'data-diff', s.difficulty)) state.settings.difficulty = s.difficulty;
+    }
+    if (s.total && [5,10,20].indexOf(s.total) !== -1) {
+      if (highlight('length-tiles', 'data-len', s.total)) state.settings.total = s.total;
+    }
+  }
+
+  function setupStart() {
+    const savedMuted = localStorage.getItem('pq_muted') === 'true';
+    saveMutedPreference(savedMuted);
+    if (els['start-muted-toggle']) {
+      els['start-muted-toggle'].addEventListener('change', () => {
+        saveMutedPreference(els['start-muted-toggle'].checked);
+      });
+    }
+
+    els['diff-tiles'].addEventListener('click', e => {
+      const t = e.target.closest('.tile'); if (!t) return;
+      A.ensureCtx();
+      [...els['diff-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on'); state.settings.difficulty = t.dataset.diff;
+    });
+
+    els['length-tiles'].addEventListener('click', e => {
+      const t = e.target.closest('.tile'); if (!t) return;
+      A.ensureCtx();
+      [...els['length-tiles'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on'); state.settings.total = parseInt(t.dataset.len, 10);
+    });
+
+    els['start-btn'].addEventListener('click', () => {
+      const muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
+      saveMutedPreference(muted);
+      if (!muted) { try { A.ensureCtx(); } catch(e) {} }
+      if (state.settings.timer.enabled) showStartTimerModal();
+      else startRound();
+    });
+
+    els['timer-toggle'].addEventListener('click', () => {
+      A.ensureCtx();
+      const enabled = !state.settings.timer.enabled;
+      state.settings.timer.enabled = enabled;
+      els['timer-toggle'].classList.toggle('on', enabled);
+      els['timer-toggle'].setAttribute('aria-pressed', enabled ? 'true' : 'false');
+      els['timer-toggle-state'].textContent = enabled ? state.settings.timer.seconds + 's' : 'off';
+      els['timer-pills'].hidden = !enabled;
+    });
+
+    els['timer-pills'].addEventListener('click', e => {
+      const t = e.target.closest('.tpill'); if (!t) return;
+      A.ensureCtx();
+      [...els['timer-pills'].children].forEach(c => c.classList.remove('on'));
+      t.classList.add('on'); state.settings.timer.seconds = parseInt(t.dataset.secs, 10);
+      if (state.settings.timer.enabled) els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
+    });
+  }
+
+  function startRound() {
+    state.total = state.settings.total;
+    state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
+    state.history = []; state.lastQ = null;
+    state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
+    state.startedAt = Date.now();
+
+    document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
+    showScreen('play');
+    nextQuestion();
+    startTimer();
+  }
+
+  function renderChoices(q) {
+    const grid = els['choices-grid'];
+    grid.innerHTML = '';
+    grid.classList.remove('choices-wordy', 'choices-pair', 'choices-terms');
+    if (q.type === 'ordering') {
+      grid.classList.add('choices-pair');
+    } else if (q.type === 'meaning' || q.type === 'change') {
+      grid.classList.add('choices-wordy');
+    } else if (q.type === 'metronome') {
+      grid.classList.add('choices-terms');
+    }
+    q.choices.forEach((choice, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.dataset.idx = idx;
+      btn.textContent = choice.label;
+      btn.addEventListener('click', () => handleChoiceTap(idx, choice, btn));
+      grid.appendChild(btn);
+    });
+  }
+
+  function nextQuestion() {
+    if (state.timedOut) return;
+    if (state.q >= state.total) return endRound();
+    state.q += 1;
+    state.attempts = 0;
+    state.locked = false;
+    hideToast();
+
+    let q = makeQuestion(state.settings.difficulty);
+    let guard = 0;
+    while (state.lastQ && q.type === state.lastQ.type && q.answer === state.lastQ.answer && guard++ < 6) {
+      q = makeQuestion(state.settings.difficulty);
+    }
+    state.lastQ = q;
+    state.current = q;
+    state.currentChoices = q.choices;
+
+    els['q-num'].textContent = state.q;
+    els['score-num'].textContent = state.score;
+    updateProgress();
+
+    if (els['q-prompt']) els['q-prompt'].textContent = q.prompt;
+
+    R.renderTerm(els['term-wrap'], q);
+    R.animateCard(els['term-wrap'], 'pop');
+
+    // "Hear it" button: only shown on metronome questions. Plays 4 clicks at BPM.
+    if (els['hear-btn']) {
+      els['hear-btn'].hidden = q.type !== 'metronome';
+    }
+
+    renderChoices(q);
+  }
+
+  function updateProgress() {
+    els['progress-fill'].style.width = (state.q / state.total * 100) + '%';
+  }
+
+  function handleChoiceTap(idx, choice, btn) {
+    if (state.locked || !state.current) return;
+    A.ensureCtx();
+    const isCorrect = !!choice.correct;
+    if (isCorrect) onCorrect(btn);
+    else onWrong(btn);
+  }
+
+  function onCorrect(btn) {
+    state.locked = true;
+    state.attempts += 1;
+    const cleanFirstTry = state.attempts === 1;
+    if (cleanFirstTry) {
+      state.score += 1;
+      state.streak += 1;
+      state.bestStreak = Math.max(state.bestStreak, state.streak);
+    } else {
+      state.streak = 0;
+    }
+
+    btn.classList.add('correct');
+    R.flagCard(els['term-wrap'], 'correct');
+    R.animateCard(els['term-wrap'], 'pop');
+
+    if (cleanFirstTry) {
+      const isPerfectFinal = state.q === state.total && state.score === state.total;
+      burstConfetti(isPerfectFinal);
+      noteBurst(isPerfectFinal);
+      showToast(pickPraise(state.streak, isPerfectFinal), 'correct');
+      A.playChime(null, state.streak);
+      jiggleStreak();
+    } else {
+      showToast('Got it! ✓', 'reveal');
+      A.playChime(null, 1);
+    }
+
+    els['score-num'].textContent = state.score;
+    els['streak-num'].textContent = state.streak;
+    pushHistory(cleanFirstTry ? 'correct' : 'retry');
+
+    setTimeout(() => {
+      hideToast();
+      nextQuestion();
+    }, 1200);
+  }
+
+  function onWrong(btn) {
+    state.attempts += 1;
+    state.streak = 0;
+    els['streak-num'].textContent = 0;
+
+    A.playBoop();
+    btn.classList.add('wrong');
+    R.animateCard(els['term-wrap'], 'shake');
+
+    if (state.attempts >= 2) {
+      state.locked = true;
+      const correctIdx = state.currentChoices.findIndex(c => c.correct);
+      const grid = els['choices-grid'];
+      const correctBtn = grid.children[correctIdx];
+      if (correctBtn) correctBtn.classList.add('reveal-correct');
+      R.flagCard(els['term-wrap'], 'wrong');
+      showToast("It's " + state.current.answer, 'reveal');
+      pushHistory('wrong');
+      setTimeout(() => {
+        hideToast();
+        nextQuestion();
+      }, 1600);
+    } else {
+      showToast('Try once more!', 'retry');
+      setTimeout(() => {
+        btn.classList.remove('wrong');
+        hideToast();
+      }, 900);
+    }
+  }
+
+  function pushHistory(kind) {
+    // For meaning/metronome/change, label is the term/marking; for ordering, the pair label.
+    var label = state.current.display
+      || (state.current.pair ? (state.current.pair[0] + ' vs ' + state.current.pair[1]) : (state.current.bpm ? '♩ = ' + state.current.bpm : state.current.answer));
+    state.history.push({
+      type: state.current.type,
+      skill: state.current.skill,
+      display: label,
+      answer: state.current.answer,
+      kind,
+    });
+    renderLastDots();
+  }
+
+  function renderLastDots() {
+    const last4 = state.history.slice(-4);
+    els['last-dots'].innerHTML = last4.map(h => {
+      const cls = h.kind === 'correct' ? 'correct' : h.kind === 'retry' ? 'retry' : 'wrong';
+      return `<div class="last-dot ${cls}" title="${h.display}"></div>`;
+    }).join('');
+  }
+
+  function pickPraise(streak, isPerfectFinal) {
+    if (isPerfectFinal) return 'TEMPO MAESTRO!';
+    const base = [
+      'Nice!', 'You got it!', 'Right on tempo!', 'Right on!', 'Bravo!', 'Encore!',
+      'Spot on!', 'Right pace!', 'Music to my ears!', "Maestro's pick!",
+    ];
+    const streak3 = ['Three in a row!', 'Hot streak!'];
+    const streak5 = ['Maestro!', 'Virtuoso!', "You're on fire 🔥", 'Unstoppable!'];
+    if (streak >= 5) return streak5[Math.floor(Math.random() * streak5.length)];
+    if (streak === 3) return streak3[Math.floor(Math.random() * streak3.length)];
+    return base[Math.floor(Math.random() * base.length)];
+  }
+
+  function showToast(text, kind) {
+    const t = els['toast'];
+    t.className = 'toast ' + (kind || '');
+    if (kind === 'correct') {
+      state.toastCycle = (state.toastCycle + 1) % 3;
+      t.classList.add('cycle-' + state.toastCycle);
+    }
+    t.textContent = text;
+    void t.offsetWidth;
+    t.classList.add('show');
+  }
+
+  function hideToast() { els['toast'].classList.remove('show'); }
+
+  function jiggleStreak() {
+    const b = els['streak-badge'];
+    b.classList.remove('jiggle'); void b.offsetWidth; b.classList.add('jiggle');
+  }
+
+  function burstConfetti(big) {
+    const colors = ['#1FB8A8', '#FFB627', '#5B3FE4', '#FF6B6B', '#34d4c2'];
+    const wrap = els['confetti'];
+    wrap.innerHTML = '';
+    const cardRect = els['term-wrap'].getBoundingClientRect();
+    const playRect = document.getElementById('play-screen').getBoundingClientRect();
+    wrap.style.left = (cardRect.left + cardRect.width / 2 - playRect.left) + 'px';
+    wrap.style.top = (cardRect.top + cardRect.height * 0.5 - playRect.top) + 'px';
+    const n = big ? 60 : 26;
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement('i');
+      const angle = (Math.PI * 2 * i) / n + (Math.random() - 0.5) * 0.6;
+      const dist = (big ? 180 : 120) + Math.random() * 180;
+      el.style.background = colors[i % colors.length];
+      el.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      el.style.setProperty('--dy', Math.sin(angle) * dist - 40 + 'px');
+      el.style.setProperty('--dr', ((Math.random() - 0.5) * 720) + 'deg');
+      el.style.animationDelay = (Math.random() * 80) + 'ms';
+      wrap.appendChild(el);
+    }
+    wrap.classList.remove('go'); void wrap.offsetWidth; wrap.classList.add('go');
+    setTimeout(() => { wrap.classList.remove('go'); wrap.innerHTML = ''; }, 1300);
+  }
+
+  function noteBurst(big) {
+    const wrap = els['confetti'];
+    const symbols = ['♪', '♫', '♬', '♩'];
+    const colors = ['#1FB8A8', '#5B3FE4', '#FFB627', '#FF6B6B'];
+    const n = big ? 9 : 5;
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement('div');
+      b.className = 'note-burst';
+      b.textContent = symbols[i % symbols.length];
+      b.style.color = colors[i % colors.length];
+      const ang = -Math.PI / 2 + (Math.random() - 0.5) * 1.6;
+      const dist = 70 + Math.random() * 60;
+      b.style.setProperty('--bx', Math.cos(ang) * dist + 'px');
+      b.style.setProperty('--by', Math.sin(ang) * dist + 'px');
+      b.style.setProperty('--br', ((Math.random() - 0.5) * 120) + 'deg');
+      b.style.animationDelay = (i * 70) + 'ms';
+      wrap.appendChild(b);
+      void b.offsetWidth; b.classList.add('go');
+      setTimeout(() => b.remove(), 1400);
+    }
+  }
+
+  // ===== Shared Fanfare FX (canonical, mirrored across all modules) =====
+  (function setupCelebrationFX() {
+    if (window.__qnCelebration) return;
+    window.__qnCelebration = true;
+  })();
+
+  const QN_FX = (() => {
+    const FW_COLORS = ['#FFB627','#FF6B6B','#1FB8A8','#5B3FE4','#34d4c2','#FF8FB1','#FFD700','#00E5FF'];
+    const NOTE_GLYPHS = ['','','','','♪','♫','♬','♩'];
+    const NOTE_EMOJI = ['🎵','🎶','⭐','✨'];
+    const NOTE_COLORS = ['#1FB8A8','#FFB627','#5B3FE4','#FF6B6B','#34d4c2','#FFD700','#FF8FB1'];
+
+    function getLayer() {
+      let layer = document.getElementById('qn-fx-layer');
+      if (!layer) {
+        layer = document.createElement('div');
+        layer.id = 'qn-fx-layer';
+        layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1000;overflow:hidden;';
+        document.body.appendChild(layer);
+      }
+      return layer;
+    }
+
+    function getBadge() {
+      let badge = document.getElementById('qn-celeb-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'qn-celeb-badge';
+        badge.style.cssText = [
+          'position:fixed','left:50%','top:28%',
+          'transform:translate(-50%,-50%) scale(0.3)',
+          "font-family:'Fredoka',sans-serif",'font-weight:700',
+          'font-size:clamp(1.6rem,5vw,2.8rem)',
+          'color:#c98800','background:white',
+          'border:4px solid #2A2A3E','border-radius:22px',
+          'box-shadow:0 8px 0 #2A2A3E','padding:14px 30px',
+          'z-index:1100','opacity:0','pointer-events:none','white-space:nowrap'
+        ].join(';');
+        document.body.appendChild(badge);
+      }
+      return badge;
+    }
+
+    function ensureKeyframes() {
+      if (document.getElementById('qn-celeb-keyframes')) return;
+      const s = document.createElement('style');
+      s.id = 'qn-celeb-keyframes';
+      s.textContent = `
+        @keyframes qnBadgePop {
+          0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0; }
+          12%  { transform: translate(-50%,-50%) scale(1.18); opacity: 1; }
+          22%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          80%  { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(0.9); opacity: 0; }
+        }
+        #qn-celeb-badge.show { animation: qnBadgePop 2.5s cubic-bezier(.5,1.5,.5,1) forwards; }
+      `;
+      document.head.appendChild(s);
+    }
+
+    function showBadge(text) {
+      ensureKeyframes();
+      const b = getBadge();
+      b.textContent = text;
+      b.classList.remove('show');
+      void b.offsetWidth;
+      b.classList.add('show');
+    }
+
+    function launchFirework(targetX, targetY, color, delay, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const startX = targetX + (Math.random() - 0.5) * 40;
+      const startY = window.innerHeight + 20;
+      setTimeout(() => {
+        const trail = document.createElement('div');
+        trail.style.cssText = 'position:absolute;width:5px;height:5px;border-radius:50%;background:' + color + ';box-shadow:0 0 12px ' + color + ';';
+        trail.style.left = startX + 'px';
+        trail.style.top = startY + 'px';
+        layer.appendChild(trail);
+        trail.animate(
+          [{ transform: 'translate(0,0)', opacity: 1 },
+           { transform: 'translate(' + (targetX - startX) + 'px,' + (targetY - startY) + 'px)', opacity: 0.5 }],
+          { duration: 450, easing: 'cubic-bezier(0.3, 0, 0.7, 0.4)', fill: 'forwards' }
+        );
+        setTimeout(() => { trail.remove(); burst(targetX, targetY, color, scale); }, 450);
+      }, delay);
+    }
+
+    function burst(x, y, color, scale) {
+      const layer = getLayer();
+      scale = scale || 1;
+      const sparkCount = Math.floor(40 * scale);
+      const baseDist = 160 * scale;
+      for (let i = 0; i < sparkCount; i++) {
+        const spark = document.createElement('div');
+        const size = (5 + Math.random() * 5) * Math.min(scale, 1.4);
+        spark.style.cssText = 'position:absolute;border-radius:50%;width:' + size + 'px;height:' + size + 'px;background:' + color + ';box-shadow:0 0 8px ' + color + ';';
+        spark.style.left = x + 'px';
+        spark.style.top = y + 'px';
+        layer.appendChild(spark);
+        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.3;
+        const speed = baseDist * (0.6 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed;
+        const dur = 900 + Math.random() * 500;
+        spark.animate(
+          [{ transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.5) + 'px), calc(-50% + ' + (dy*0.5) + 'px)) scale(1)', opacity: 1, offset: 0.4 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 100) + 'px)) scale(0.3)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.15, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => spark.remove(), dur + 50);
+      }
+    }
+
+    function noteExplosion(x, y, count) {
+      const layer = getLayer();
+      const baseDist = 380;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const size = 38 + Math.random() * 40;
+        const color = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)];
+        p.style.cssText = "position:absolute;font-family:'Bravura Text',serif;line-height:1;user-select:none;text-shadow:0 0 8px " + color + ';color:' + color + ';font-size:' + size + 'px;';
+        p.textContent = (Math.random() < 0.7)
+          ? NOTE_GLYPHS[Math.floor(Math.random() * NOTE_GLYPHS.length)]
+          : NOTE_EMOJI[Math.floor(Math.random() * NOTE_EMOJI.length)];
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.transform = 'translate(-50%,-50%)';
+        layer.appendChild(p);
+        const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const speed = baseDist * (0.5 + Math.random() * 0.6);
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 40;
+        const rot = (Math.random() - 0.5) * 720;
+        const dur = 1400 + Math.random() * 600;
+        p.animate(
+          [{ transform: 'translate(-50%,-50%) rotate(0deg) scale(0.7)', opacity: 1 },
+           { transform: 'translate(calc(-50% + ' + (dx*0.4) + 'px), calc(-50% + ' + (dy*0.4 - 40) + 'px)) rotate(' + (rot*0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.25 },
+           { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 240) + 'px)) rotate(' + rot + 'deg) scale(0.7)', opacity: 0 }],
+          { duration: dur, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' }
+        );
+        setTimeout(() => p.remove(), dur + 50);
+      }
+    }
+
+    function getAudioCtx() {
+      try { return NH.audio.ensureCtx(); } catch (e) { return null; }
+    }
+
+    function boomSound(t, freq, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      freq = freq || 80; vol = vol || 0.55;
+      const dest = ac.destination;
+      const osc = ac.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq * 2.5, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.3);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+      osc.connect(g); g.connect(dest);
+      osc.start(t); osc.stop(t + 0.5);
+
+      const nbuf = ac.createBuffer(1, ac.sampleRate * 0.35, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = Math.random() * 2 - 1;
+      const noise = ac.createBufferSource(); noise.buffer = nbuf;
+      const nf = ac.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 1800;
+      const ng = ac.createGain();
+      ng.gain.setValueAtTime(0.0001, t);
+      ng.gain.exponentialRampToValueAtTime(vol * 0.5, t + 0.008);
+      ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      noise.connect(nf); nf.connect(ng); ng.connect(dest);
+      noise.start(t); noise.stop(t + 0.35);
+    }
+
+    function crowdCheer(t, dur, vol) {
+      const ac = getAudioCtx();
+      if (!ac || (NH.audio.isMuted && NH.audio.isMuted())) return;
+      dur = dur || 2.5; vol = vol || 0.4;
+      const dest = ac.destination;
+      const nbuf = ac.createBuffer(1, ac.sampleRate * dur, ac.sampleRate);
+      const ndata = nbuf.getChannelData(0);
+      for (let i = 0; i < ndata.length; i++) ndata[i] = (Math.random() * 2 - 1) * 0.5;
+      const voices = [{f:700,q:8,g:1.0},{f:1200,q:6,g:0.7},{f:2400,q:4,g:0.4}];
+      voices.forEach(v => {
+        const noise = ac.createBufferSource(); noise.buffer = nbuf;
+        const filter = ac.createBiquadFilter();
+        filter.type = 'bandpass'; filter.frequency.value = v.f; filter.Q.value = v.q;
+        const gain = ac.createGain();
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(vol * v.g, t + 0.25);
+        gain.gain.setValueAtTime(vol * v.g, t + dur * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+        noise.connect(filter); filter.connect(gain); gain.connect(dest);
+        noise.start(t); noise.stop(t + dur + 0.05);
+      });
+      const whoopCount = Math.floor(dur * 2);
+      for (let i = 0; i < whoopCount; i++) {
+        const wt = t + Math.random() * (dur - 0.2);
+        const wbuf = ac.createBuffer(1, ac.sampleRate * 0.18, ac.sampleRate);
+        const wd = wbuf.getChannelData(0);
+        for (let j = 0; j < wd.length; j++) wd[j] = (Math.random() * 2 - 1) * 0.6;
+        const w = ac.createBufferSource(); w.buffer = wbuf;
+        const wf = ac.createBiquadFilter();
+        wf.type = 'bandpass'; wf.Q.value = 4;
+        wf.frequency.setValueAtTime(800 + Math.random() * 400, wt);
+        wf.frequency.exponentialRampToValueAtTime(1800 + Math.random() * 600, wt + 0.15);
+        const wg = ac.createGain();
+        wg.gain.setValueAtTime(0.0001, wt);
+        wg.gain.exponentialRampToValueAtTime(vol * 0.6, wt + 0.04);
+        wg.gain.exponentialRampToValueAtTime(0.0001, wt + 0.16);
+        w.connect(wf); wf.connect(wg); wg.connect(dest);
+        w.start(wt); w.stop(wt + 0.2);
+      }
+    }
+
+    function fire(tier) {
+      const ac = getAudioCtx();
+      const now = ac ? ac.currentTime : 0;
+      const w = window.innerWidth, h = window.innerHeight;
+
+      if (tier === 'perfect') {
+        showBadge('PERFECT! 🎆');
+        const launches = [
+          { x: w*0.25, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.4 },
+          { x: w*0.70, y: h*0.25, color: FW_COLORS[1], delay: 250,  scale: 1.4 },
+          { x: w*0.45, y: h*0.20, color: FW_COLORS[2], delay: 550,  scale: 1.5 },
+          { x: w*0.18, y: h*0.32, color: FW_COLORS[3], delay: 900,  scale: 1.3 },
+          { x: w*0.78, y: h*0.28, color: FW_COLORS[4], delay: 1300, scale: 1.3 },
+          { x: w*0.50, y: h*0.18, color: FW_COLORS[6], delay: 1800, scale: 1.7 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0,0.25,0.55,0.90,1.30,1.80].forEach((t,i) => {
+            const isFinale = i === 5;
+            boomSound(now + t + 0.45, isFinale ? 60 : (70 + i*8), isFinale ? 0.55 : 0.38);
+          });
+          crowdCheer(now + 0.1, 3.2, 0.4);
+        }
+        setTimeout(() => noteExplosion(w / 2, h * 0.35, 100), 2250);
+      } else if (tier === 'great') {
+        showBadge('GREAT! ✨');
+        const launches = [
+          { x: w*0.30, y: h*0.30, color: FW_COLORS[0], delay: 0,    scale: 1.2 },
+          { x: w*0.70, y: h*0.28, color: FW_COLORS[2], delay: 500,  scale: 1.2 },
+          { x: w*0.50, y: h*0.22, color: FW_COLORS[1], delay: 1100, scale: 1.3 },
+        ];
+        launches.forEach(l => launchFirework(l.x, l.y, l.color, l.delay, l.scale));
+        if (ac) {
+          [0, 0.5, 1.1].forEach((t,i) => boomSound(now + t + 0.45, 75 + i*5, 0.36));
+          crowdCheer(now + 0.1, 2.0, 0.3);
+        }
+      } else if (tier === 'good') {
+        showBadge('NICE! 🎵');
+        launchFirework(w*0.5, h*0.30, FW_COLORS[0], 200, 1.0);
+        if (ac) {
+          boomSound(now + 0.65, 80, 0.32);
+          crowdCheer(now + 0.2, 1.2, 0.22);
+        }
+      } else {
+        showBadge('Good try!');
+      }
+    }
+
+    return { fire };
+  })();
+
+  function endRound() {
+    if (state.endedRound) return;
+    state.endedRound = true;
+    stopTimer();
+    const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
+    showScreen('summary');
+
+    const pct = state.total > 0 ? state.score / state.total : 0;
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.5 ? 'good' : 'practice';
+
+    if (els['sum-score']) els['sum-score'].textContent = state.score;
+    const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
+    if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
+    if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
+    if (els['sum-stars']) {
+      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
+      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
+      els['sum-stars'].textContent = starStr.trim();
+    }
+
+    if (els['summary-sub']) {
+      els['summary-sub'].textContent = state.timedOut
+        ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
+        : encouragingLine(state.score, state.total);
+    }
+
+    const speed = els['summary-speed'];
+    if (speed) {
+      speed.classList.remove('timed-out');
+      if (state.settings.timer.enabled) {
+        speed.hidden = false;
+        if (state.timedOut) {
+          speed.classList.add('timed-out');
+          speed.textContent = '⏱ Time up at ' + state.history.length + '/' + state.total;
+        } else {
+          const allotted = state.settings.timer.seconds;
+          const left = Math.max(0, allotted - elapsed);
+          const emoji = left >= 10 ? '🚀' : left > 0 ? '✨' : '⏱';
+          speed.textContent = emoji + ' Finished in ' + elapsed + 's' + (left > 0 ? ' (' + left + 's to spare)' : ' — right at the buzzer');
+        }
+      } else {
+        speed.hidden = true;
+        speed.textContent = '';
+      }
+    }
+
+    const counts = {};
+    const missedIds = new Set();
+    state.history.forEach(h => {
+      if (h.kind !== 'correct') {
+        const label = h.display;
+        counts[label] = (counts[label] || 0) + 1;
+        missedIds.add(h.answer);
+      }
+    });
+    state.drillPool = [...missedIds];
+    if (els['drill-btn']) els['drill-btn'].hidden = (state.drillPool.length === 0);
+    if (els['miss-items']) {
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3);
+      if (sorted.length === 0) {
+        els['miss-items'].innerHTML = '<li class="miss-empty">Clean round — no markings to practice. ⭐</li>';
+      } else {
+        els['miss-items'].innerHTML = sorted.map(([name, n]) =>
+          '<li>' + name + ' — ' + (n === 1 ? 'needed a retry' : 'tripped you up ' + n + ' times') + '</li>'
+        ).join('');
+      }
+    }
+
+    let pb = { score: 0, pct: 0, streak: 0 };
+    try {
+      pb = JSON.parse(localStorage.getItem('tempo-markings_pb') || '{}');
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
+    } catch(e) {}
+    const thisPct = state.total > 0 ? state.score / state.total : 0;
+    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
+    const newStreakPB = state.bestStreak > pb.streak;
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newStreakPB) pb.streak = state.bestStreak;
+    try { localStorage.setItem('tempo-markings_pb', JSON.stringify(pb)); } catch(e) {}
+    const pbRow = els['pb-row'];
+    if (pbRow) {
+      if (pb.score > 0 || pb.streak > 0) {
+        pbRow.hidden = false;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
+        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+      } else {
+        pbRow.hidden = true;
+      }
+    }
+
+    const titleMap = { perfect: 'TEMPO MAESTRO! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practising! 🌱' };
+    const titleEl = document.querySelector('.summary-title');
+    if (titleEl) {
+      titleEl.textContent = titleMap[tier];
+      titleEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      void titleEl.offsetWidth;
+      titleEl.classList.add('tier-' + tier);
+    }
+    const subEl = els['summary-sub'];
+    if (subEl) {
+      subEl.classList.remove('tier-perfect','tier-great','tier-good','tier-practice');
+      subEl.classList.add('tier-' + tier);
+    }
+
+    if (tier === 'perfect') {
+      setTimeout(() => {
+        const scoreEl = document.getElementById('sum-score');
+        if (scoreEl) { scoreEl.classList.remove('score-shimmer'); void scoreEl.offsetWidth; scoreEl.classList.add('score-shimmer'); }
+      }, 300);
+    }
+
+    var roundOutcome = 'logged';
+    var roundSkills = {};
+    try {
+      for (var _i = 0; _i < state.history.length; _i++) {
+        var h = state.history[_i];
+        var _k = h && h.skill != null ? String(h.skill) : 'unknown';
+        if (!roundSkills[_k]) roundSkills[_k] = { c: 0, t: 0 };
+        roundSkills[_k].t++;
+        if (h.kind === 'correct') roundSkills[_k].c++;
+      }
+    } catch (e) { roundSkills = null; }
+
+    if (window.QN && QN.events) {
+      roundOutcome = QN.events.logOrHold({
+        module:     'tempo-markings',
+        tier:       state.settings.difficulty,
+        length:     state.total,
+        correct:    state.score,
+        total:      state.total,
+        durationMs: Date.now() - state.startedAt,
+        timedMode:  !!state.settings.timer.enabled,
+        skills:     roundSkills
+      });
+    }
+
+    var ssp = els['save-scores-prompt'];
+    if (ssp) ssp.hidden = !(roundOutcome === 'held' && window.QN && QN.events && QN.events.pendingCount() > 0);
+
+    setTimeout(() => {
+      A.playFanfare(tier);
+      QN_FX.fire(tier);
+    }, 700);
+  }
+
+  function encouragingLine(score, total) {
+    const pct = score / total;
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    if (pct >= 1)   return pick(['TEMPO MAESTRO! Every marking nailed! 🎵','Perfect score — you crushed it! 🌟','Flawless! Not one marking missed! 🎶']);
+    if (pct >= 0.8) return pick(["Amazing — so close to perfect!","Nearly flawless! You're really getting it! ⭐","Brilliant round — just a couple slipped by!"]);
+    if (pct >= 0.5) return pick(["Nice work! A few more rounds and you'll nail it 🎶","Good playing — those tricky terms are getting easier!","Solid round! Keep going — you're improving! 🎵"]);
+    return pick(["Every round makes you stronger — keep going! 🌱","Great practice! The markings are learning to recognize you 🎵","Music takes time — you're on your way! Keep playing!"]);
+  }
+
+  function setupActions() {
+    els['hear-btn'].addEventListener('click', () => {
+      // Metronome questions only — play 4 clicks at the question's BPM.
+      if (!state.current || state.current.type !== 'metronome') return;
+      A.ensureCtx();
+      A.playMetronome(state.current.bpm, 4);
+      R.animateCard(els['term-wrap'], 'pulse');
+      setTimeout(() => R.animateCard(els['term-wrap'], null), 1000);
+    });
+
+    els['mute-btn'].addEventListener('click', () => {
+      A.ensureCtx();
+      const nowMuted = !A.isMuted();
+      saveMutedPreference(nowMuted);
+    });
+
+    els['exit-btn'].addEventListener('click', () => {
+      QN.ui.confirm({
+        title: 'Quit this round?',
+        body: "Your score for this round won't be saved.",
+        confirmLabel: 'Keep playing',
+        cancelLabel: 'Quit round',
+        onOpen: () => pauseTimer(),
+        onConfirm: () => resumeTimer(),
+        onCancel: () => { stopTimer(); showScreen('start'); }
+      });
+    });
+
+    els['drill-btn'].addEventListener('click', () => {
+      state.total = state.settings.total;
+      state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
+      state.history = []; state.lastQ = null;
+      state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
+      state.startedAt = Date.now();
+      document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
+      showScreen('play');
+      nextQuestion();
+      startTimer();
+    });
+
+    els['again-btn'].addEventListener('click', () => startRound());
+    els['change-btn'].addEventListener('click', () => showScreen('start'));
+  }
+
+  // Timer
+  function startTimer() {
+    state.timedOut = false;
+    if (!state.settings.timer.enabled) { els['timer-badge'].hidden = true; return; }
+    state.timeLeft = state.settings.timer.seconds;
+    els['timer-badge'].hidden = false;
+    updateTimerUI();
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  function tickTimer() {
+    state.timeLeft -= 1; updateTimerUI();
+    if (state.timeLeft <= 0) { stopTimer(); onTimeUp(); }
+    else if (state.timeLeft <= 5) A.playTick();
+  }
+
+  function stopTimer() { if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; } }
+  function pauseTimer() { state.timerWasRunning = state.timerInterval != null; stopTimer(); }
+  function resumeTimer() {
+    if (state.timerWasRunning && state.timeLeft > 0 && !state.timedOut) {
+      state.timerInterval = setInterval(tickTimer, 1000);
+    }
+    state.timerWasRunning = false;
+  }
+
+  function updateTimerUI() {
+    els['timer-num'].textContent = state.timeLeft;
+    els['timer-badge'].classList.toggle('urgent', state.timeLeft <= 5 && state.timeLeft > 0);
+  }
+
+  function onTimeUp() {
+    state.timedOut = true; state.locked = true;
+    showToast("Time's up!", 'reveal');
+    setTimeout(() => endRound(), 900);
+  }
+
+  function showStartTimerModal() {
+    const secs = state.settings.timer.seconds, n = state.settings.total;
+    QN.ui.confirm({
+      title: 'Ready, set…',
+      body: secs <= 30 ? "You'll have " + secs + ' seconds to name ' + n + ' markings.' : 'Take your time — ' + secs + ' seconds for ' + n + ' markings.',
+      confirmLabel: 'Start timer ▶',
+      cancelLabel: 'Go back',
+      onConfirm: () => startRound(),
+      onCancel: () => {},
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cacheEls();
+    if (window.QNNav) { QNNav.mount({ current: null }); }
+    setupStart();
+    applyPathHandoff();
+    setupActions();
+    const nudge = document.getElementById('audio-nudge');
+    if (nudge) nudge.addEventListener('click', () => { A.ensureCtx(); nudge.classList.remove('show'); });
+  });
+})();
+</script>
+
+</body>
+</html>

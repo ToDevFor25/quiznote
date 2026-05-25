@@ -1,5 +1,153 @@
 ---
 
+### Phase 5 score-literacy cluster shipped — May 2026
+
+**Session type:** Module build session. Autonomous mode per the May 2026
+"Module builds are autonomous" rule. Five new modules cloned and wired
+through the four-surface rule in one atomic commit.
+
+**Net result:** Full Tier A score-literacy cluster from the Phase 5 ranked
+build queue now live. Module roster **27 → 32**. Closes the score-literacy
+coverage gap identified in the May 2026 curriculum review (zero coverage
+of tempo/dynamics/articulation/navigation/ornaments).
+
+**Built (in queue order):**
+1. **Tempo Markings** (`tempo-markings.html`) — Foundations Level 2. Question
+   types: `meaning` / `ordering` / `metronome` / `change`. 11-term steady-
+   tempo catalog + four change-of-tempo markings. BPM bands taken verbatim
+   from the spec. `playMetronome(bpm, count)` audio helper added to the
+   module's local audio engine — 4 wood-block clicks at the question's BPM.
+2. **Dynamics** (`dynamics.html`) — Foundations Level 2. Question types:
+   `meaning` / `ordering` / `direction` / `accent`. Bravura PUA glyphs
+   (U+E520–E525) compose ppp through fff, sfz, fp via concatenation
+   (mf = "m"+"f"). Hairpins drawn as inline SVG polyline. No audio.
+3. **Articulation** (`articulation.html`) — Foundations Level 2. Question
+   types: `name` / `effect` / `discriminate`. Inline-SVG 5-line staff with
+   notehead + Bravura articulation glyph. **Tie-vs-slur discrimination**
+   (the headline skill of the module) is realised as two adjacent noteheads
+   joined by a curve — same pitch = tie, different pitch = slur. No audio.
+4. **Score Navigation** (`score-navigation.html`) — Foundations Level 2.
+   Question types: `name` / `meaning` / `discriminate` (v1 only — `routing`
+   deferred to v1.1 per spec). Repeat barlines + voltas drawn as inline SVG;
+   segno (𝄋) / coda (𝄌) via Bravura PUA; D.C./D.S./Fine as italic serif.
+   Discriminate uses a worded confused-pair pool (D.C. vs D.S., 1st vs 2nd
+   ending) rather than rendering both targets side-by-side.
+5. **Ornaments** (`ornaments.html`) — Foundations Level 2. Question types:
+   `name` / `effect` / `discriminate`. Inline-SVG notehead with attached
+   ornament (Bravura glyphs for trill/turn/mordents above the notehead;
+   grace notes drawn as smaller noteheads with optional slash through the
+   stem; tremolo slashes across the main stem). Visual ID only in v1 —
+   ornament *realization* is performer-dependent and out of scope.
+
+**Cloning pattern (proven across all five):**
+- **#1 Tempo Markings** was the cluster's pattern-establisher. Cloned from
+  `accidentals.html`, swapped the staff renderer for a styled "term card"
+  (italic serif Italian terms on a cream card), and added a 4-type question
+  engine. Took ~80% of the build time; established the renderer + question
+  shape every sibling reuses.
+- **#2 Dynamics, #3 Articulation, #4 Score Navigation, #5 Ornaments** were
+  cloned from Tempo Markings (Articulation → cloned to → Ornaments because
+  both render noteheads on a staff). Each one is a Python-script surgery
+  pass: simple string swaps for title/slug/copy, plus a full replacement of
+  the renderer block and the question engine. Boilerplate (audio engine,
+  QN_FX celebration system, game loop scaffolding, summary screen, modal)
+  is byte-identical across the five files.
+- **No `qn-staff.js` changes were made.** Each module renders its own
+  inline-SVG staff segments where needed — Foundations score-literacy is
+  too small a context (single notehead, two adjacent noteheads) to justify
+  a shared-file extension. This was a Tier 1/2 call inside the autonomous-
+  build rule.
+
+**Tier 1/2 decisions made (autonomous, noted for the log):**
+- File names match slugs verbatim — no abbreviation.
+- Short prefixes: `tm_`, `dy_`, `ar_`, `sn_`, `or_`.
+- Module-count statistic does not live in `index.html` literally; the
+  four-surface rule's "index" update was satisfied by adding a new
+  "Expression markings" tag to the Foundations row of the `wi-` spine
+  (the spine is concept-level, so one tag covers the whole cluster — kept
+  it as a single addition rather than five).
+- Tile colors in `play.html` chosen to avoid adjacent collisions in the
+  Foundations grid: Tempo Markings `bg-sun`, Dynamics `bg-coral`,
+  Articulation `bg-teal`, Score Navigation `bg-green`, Ornaments `bg-grape`.
+- Each module reuses a font load for Libre Caslon Text (italic serif) —
+  redundant across the cluster but kept inline-per-module to honor the
+  "no shared file changes" rule of autonomous builds. If we later observe
+  bundle size matters, the obvious follow-up is to fold the font into
+  `qn-theme.css`.
+- `hear-btn` in the play screen template is kept (DOM-present, JS-hidden)
+  in Dynamics, Articulation, Score Navigation, and Ornaments because the
+  cost of removing it cleanly across the template exceeded the cost of
+  leaving it dormant.
+- For Ornaments' `discriminate` questions, the "always-confused-pair"
+  pool is gated by tier: Medium gets upper-vs-lower mordent only; Tricky
+  also unlocks acciaccatura vs appoggiatura.
+- For Score Navigation's `discriminate`, the "render the pair" approach
+  used by other modules in the cluster wouldn't work (D.C. al Fine and
+  D.S. al Coda are both italic-text instructions — visually
+  indistinguishable). Switched to a *worded prompt* pool: "Which one
+  means go back to the very beginning?" with the two textual answers as
+  tiles. Confirmed by reading the spec's distractor-strategy guidance.
+
+**Tier 3 watch-outs that did NOT trigger this session:**
+- Renderer extension. Each module drew what it needed inline; no module
+  attempted a 3-note chord, a circular Circle-of-Fifths SVG, or anything
+  else that would require `qn-staff.js` work.
+- Music theory accuracy. Speed bands for tempo terms have legitimate
+  source variation; pulled them verbatim from the spec (which carries a
+  "flag for review" note) rather than guessing. Italian-term plain-
+  English meanings use the conventional pedagogy gloss ("walking pace"
+  for andante, "very loud" for ff, etc.).
+
+**Four-surface integration (single atomic commit, uncommitted):**
+- `tempo-markings.html`, `dynamics.html`, `articulation.html`,
+  `score-navigation.html`, `ornaments.html` — 5 new module files.
+- `play.html` — 5 new Foundations tiles after Accidentals.
+- `path.html` — 5 entries in MODULES, 5 entries in PATH, 5 entries
+  in SHORT_PREFIX.
+- `qn-profile.js` — 5 entries in the recommender PATH.
+- `index.html` — single "Expression markings" tag added to the
+  Foundations row of the `wi-` concept spine.
+
+**Verification:** Structural only this session — div balance, brace
+balance, parse-by-grep of the engine and renderer blocks across the five
+files. No browser-render verification yet. The `verify` skill or a manual
+round-trip on each of the five start screens should be the next step
+before relying on them in production.
+
+**Still open / next (post this session, ranked):**
+1. **Browser verification** of all 5 new modules (run through one
+   round each at each tier). Catches anything the structural checks miss
+   — particularly the Bravura glyph composition in Dynamics, the
+   tie-vs-slur SVG curve geometry in Articulation, and the volta brackets
+   in Score Navigation.
+2. **Tier B — Reading expansion** from the Phase 5 queue:
+     - #6 Circle of Fifths (own renderer; SVG circle ~80 lines, no
+       shared-file changes)
+     - #7 Chord Function (T / PD / D — reuses `buildStaffWithChord`)
+     - #8 Transposition (instrument labels, 4-button MC v1)
+3. **Tier C non-module multipliers:** Mock Exam Mode (Phase A is the
+   QNM-contract audit across all 32 modules; gated on that).
+4. **Tier D defensible-but-lower-ROI:** C Clefs (Tier 3, renderer
+   extension), Construction-mode engineering session (Tier 3, prereq
+   for any Build-a-X cluster).
+5. **PWA install** still queued (own session, manifest + icons).
+6. **Adult/child profile UI** still queued (lawyer-gated).
+7. **Monetization track** still queued (server auth required first).
+
+**CLAUDE.md / QUIZNOTE_PROJECT_DOC.md updates needed:**
+- CLAUDE.md "Current in-progress state" section: bump module count from
+  27 to 32; mark Tier A score-literacy cluster as COMPLETE in the ranked
+  queue; bump the queue to start at #6 Circle of Fifths.
+- QUIZNOTE_PROJECT_DOC.md §5: add the 5 new modules to the roster map
+  with their built status; bump roster total.
+- Both files describe roster "considered the complete set... growing
+  past 27 is a deliberate scope decision" — that 27 number is now stale.
+  The decision to grow past it was already approved (May 2026 curriculum
+  review). Update the prose to reflect 32 as the current floor and
+  document the Phase 5 expansion as the formal Tier 3 approval.
+
+---
+
 ### Pricing/monetization assessment + curriculum gap analysis + Phase 5 spec drafting — May 2026
 
 **Session type:** Strategy + spec-writing session. No code changed. 10 new
