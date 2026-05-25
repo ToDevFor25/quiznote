@@ -218,6 +218,7 @@
     .foot-links { justify-content: center; }
   }
 </style>
+<script src="qn-gate.js"></script>
 </head>
 <body>
 
@@ -232,19 +233,24 @@
   </div>
 </nav>
 
+
 <div class="page-wrap">
+
+  <div style="background:#FFB627;border:3px solid #2A2A3E;border-radius:14px;padding:16px 20px;margin-bottom:24px;font-weight:700;color:#2A2A3E;text-align:center;box-shadow:0 4px 0 #c98800;">
+    ⚠️ DRAFT — NOT LEGAL ADVICE — This document is a working draft prepared for attorney review. It does not constitute finalized terms of service. Do not rely on it as legal guidance.
+  </div>
 
   <p class="doc-eyebrow">Legal</p>
   <h1>Terms of Service</h1>
   <p class="doc-meta">
-    Effective date: May 21, 2026 &nbsp;·&nbsp; Last updated: May 21, 2026
+    Effective date: May 25, 2026 &nbsp;·&nbsp; Last updated: May 25, 2026
     &nbsp;·&nbsp; Questions? <a href="mailto:support@quiznote.online">support@quiznote.online</a>
   </p>
 
-  <!-- NOTE (not shown to users): These terms are written for the current local-only beta. A qualified attorney should review before any non-beta launch, especially the parent/guardian, payments, and governing-law sections. -->
+  <!-- NOTE FOR ATTORNEY: This is a working draft covering QuizNote's current local-only beta AND planned features (accounts, cloud sync, Stripe payments, child profiles). Sections describing planned features are visually flagged with a PLANNED badge. Please review for: (1) COPPA / GDPR-K / UK AADC compliance for child profiles, (2) Stripe integration terms, (3) auto-renewal disclosures per state consumer-protection laws, (4) arbitration vs. court dispute resolution, (5) US-only service restriction enforceability. -->
 
   <div class="plain-note">
-    <strong>The short version:</strong> QuizNote is a free music theory game. Use it to learn. Don't misuse it. We provide it as-is. That's about it.
+    <strong>The short version:</strong> QuizNote is a music theory practice app. Right now it's free, runs entirely in your browser, and stores all data on your device. We're building accounts, cloud sync, and paid plans — those sections are flagged as <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> below. Nothing planned is active yet.
   </div>
 
   <nav class="toc">
@@ -252,44 +258,70 @@
     <ol>
       <li><a href="#s1">Acceptance of Terms</a></li>
       <li><a href="#s2">Description of Service</a></li>
-      <li><a href="#s3">Use of the App</a></li>
-      <li><a href="#s4">Acceptable Use</a></li>
-      <li><a href="#s5">Intellectual Property</a></li>
-      <li><a href="#s6">Profiles and Local Storage</a></li>
-      <li><a href="#s7">Future Paid Features</a></li>
-      <li><a href="#s8">Disclaimer of Warranties</a></li>
-      <li><a href="#s9">Limitation of Liability</a></li>
-      <li><a href="#s10">Indemnification</a></li>
-      <li><a href="#s11">Third-Party Services</a></li>
-      <li><a href="#s12">Termination</a></li>
-      <li><a href="#s13">Governing Law</a></li>
-      <li><a href="#s14">Changes to These Terms</a></li>
-      <li><a href="#s15">Contact</a></li>
+      <li><a href="#s3">Eligibility &amp; Geographic Availability</a></li>
+      <li><a href="#s4">Use of the App</a></li>
+      <li><a href="#s5">Acceptable Use</a></li>
+      <li><a href="#s6">Accounts and Profiles</a></li>
+      <li><a href="#s7">Cloud Sync</a></li>
+      <li><a href="#s8">Payments and Subscriptions</a></li>
+      <li><a href="#s9">Intellectual Property</a></li>
+      <li><a href="#s10">Disclaimer of Warranties</a></li>
+      <li><a href="#s11">Limitation of Liability</a></li>
+      <li><a href="#s12">Indemnification</a></li>
+      <li><a href="#s13">Third-Party Services</a></li>
+      <li><a href="#s14">Termination</a></li>
+      <li><a href="#s15">Governing Law</a></li>
+      <li><a href="#s16">Changes to These Terms</a></li>
+      <li><a href="#s17">Contact</a></li>
     </ol>
   </nav>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 — ACCEPTANCE OF TERMS                           -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s1">
     <h2><span class="sec-num">01</span> Acceptance of Terms</h2>
     <p>By accessing or using QuizNote at <a href="https://quiznote.online">quiznote.online</a> (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, please do not use the App.</p>
-    <p>QuizNote is designed for learners of any age. If a learner is under 18, the App should be set up and managed by a parent or guardian. Profiles intended for use by a minor are owned and managed by the parent or guardian account, not by the minor independently.</p>
-    <!-- NOTE (not shown to users): Neutral framing for the current local-only beta — states the adult-setup expectation without claiming a parental-consent mechanism that does not yet exist. When a backend / accounts that store a minor's data off-device are added, revisit with counsel for COPPA / GDPR-K / UK AADC compliance (verifiable parental consent, etc.). -->
+    <p>If you are using the App on behalf of a minor (anyone under 18), you represent that you are the minor's parent or legal guardian. You accept these Terms on the minor's behalf and are responsible for the minor's use of the App.</p>
+    <!-- NOTE FOR ATTORNEY: When accounts go live, the consent flow for child profiles will require affirmative parental consent before any child data leaves the device. Review the Accounts and Profiles section (§6) and Cloud Sync section (§7) for the planned mechanism. Consider whether a click-through at account creation is sufficient or whether VPC (verifiable parental consent) under COPPA is needed. -->
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 — DESCRIPTION OF SERVICE                        -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s2">
     <h2><span class="sec-num">02</span> Description of Service</h2>
-    <p>QuizNote is a free, browser-based music theory practice app. It presents short rounds of interactive questions on topics including staff reading, note values, key signatures, intervals, and chord identification, designed to help learners build fluency in Western tonal music theory.</p>
+    <p>QuizNote is a browser-based music theory practice app. It presents short rounds of interactive questions on topics including staff reading, note values, key signatures, intervals, scales, and chord identification, designed to help learners build fluency in Western tonal music theory.</p>
     <p>The App is fluency-targeted rather than age-targeted. It is suitable for learners of any age, from absolute beginners through intermediate-level study.</p>
-    <p>The App is provided free of charge during beta. Features, content, and availability may change at any time.</p>
+    <p><strong>Current state (beta):</strong> The App is free, requires no account, and stores all practice data locally in your browser. No user data is transmitted to or stored on our servers.</p>
+    <p><strong>Planned additions:</strong> Accounts with sign-in, cloud sync of practice data, and optional paid subscription tiers. These features are described in Sections 6, 7, and 8, and will be activated only after these Terms are reviewed by legal counsel and updated with an effective date for each feature.</p>
+    <p>Features, content, and availability may change at any time during the beta period.</p>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 — ELIGIBILITY & GEOGRAPHIC AVAILABILITY          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s3">
-    <h2><span class="sec-num">03</span> Use of the App</h2>
-    <p>You may use QuizNote for personal, educational, and non-commercial purposes. Teachers and schools are welcome to use the App in educational settings at no cost.</p>
+    <h2><span class="sec-num">03</span> Eligibility &amp; Geographic Availability</h2>
+    <p><strong>Age.</strong> Anyone may use the free, local-only version of the App. When accounts and paid features are introduced, account holders must be at least 18 years old (or the age of majority in their jurisdiction). Minors may use the App through a child profile managed by a parent or guardian account holder (see Section 6).</p>
+    <p><strong>Geography.</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> When accounts and payments are introduced, the service will initially be available to users in the <strong>United States only</strong>. You will be asked to confirm your country during signup. Payment methods issued outside the United States will be declined. We may expand availability to additional countries in the future, at which time these Terms will be updated.</p>
+    <!-- NOTE FOR ATTORNEY: Confirm whether a self-reported country selection is adequate or whether geo-IP verification is legally required. Also review for interaction with state-specific consumer-protection laws (e.g., California auto-renewal disclosure requirements). -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 4 — USE OF THE APP                                 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s4">
+    <h2><span class="sec-num">04</span> Use of the App</h2>
+    <p>You may use QuizNote for personal, educational, and non-commercial purposes. Teachers and schools are welcome to use the App in educational settings at no cost during the beta period.</p>
     <p>You may not use the App in any way that violates applicable law or these Terms.</p>
   </div>
 
-  <div class="doc-section" id="s4">
-    <h2><span class="sec-num">04</span> Acceptable Use</h2>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 5 — ACCEPTABLE USE                                 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s5">
+    <h2><span class="sec-num">05</span> Acceptable Use</h2>
     <p>You agree not to:</p>
     <ul>
       <li>Attempt to reverse-engineer, decompile, or extract source code from the App</li>
@@ -298,82 +330,169 @@
       <li>Use the App for any commercial purpose without our prior written consent</li>
       <li>Reproduce, distribute, or create derivative works from the App's content without permission</li>
       <li>Transmit any malicious code or interfere with the App's operation</li>
+      <li>Share, sell, or transfer your account credentials to another person (when accounts are available)</li>
+      <li>Create an account on behalf of a minor without being that minor's parent or legal guardian</li>
     </ul>
   </div>
 
-  <div class="doc-section" id="s5">
-    <h2><span class="sec-num">05</span> Intellectual Property</h2>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 6 — ACCOUNTS AND PROFILES                          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s6">
+    <h2><span class="sec-num">06</span> Accounts and Profiles</h2>
+
+    <p><strong>Today (local-only beta).</strong> QuizNote uses on-device profiles to track learning progress. A profile may include a nickname you choose, a color, an optional self-reported experience level, and a log of practice rounds (module, difficulty tier, score, and time). All profile data is stored locally in your browser's <code>localStorage</code>. We do not transmit this data to our servers and cannot see it. Multiple profiles can exist on a single device, and any profile can be deleted from within the App.</p>
+
+    <p><strong>Planned: adult accounts.</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> We plan to introduce optional user accounts. An account will be held by an adult (18+) and authenticated via third-party sign-in providers (initially Apple and Google). The account holder is responsible for all activity under the account.</p>
+
+    <p><strong>Planned: child profiles.</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> An adult account holder may create one or more child profiles nested under their account. Child profiles are owned and managed entirely by the adult account holder. A child profile is for a learner under 18 whose practice is supervised by the adult account holder.</p>
+    <ul>
+      <li>The adult account holder provides verifiable parental consent before any child profile data is synced to our servers.</li>
+      <li>Without consent, child profiles remain local-only (data stays on the device).</li>
+      <li>The adult account holder may view, export, or delete a child profile's data at any time.</li>
+      <li>We do not contact children directly or collect personal information from children without the adult account holder's consent.</li>
+    </ul>
+    <!-- NOTE FOR ATTORNEY: Review for COPPA compliance. Specifically: (1) Is the planned "consent before sync" flow adequate for verifiable parental consent? (2) Do we need a separate Children's Privacy Policy? (3) What form of consent is required — email-plus-confirmation, signed form, payment-method verification, or other? The privacy policy should be updated in parallel with this section. -->
+
+    <p><strong>Account security.</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> You are responsible for maintaining the security of your sign-in credentials. You agree to notify us promptly at <a href="mailto:support@quiznote.online">support@quiznote.online</a> if you become aware of any unauthorized use of your account.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 7 — CLOUD SYNC                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s7">
+    <h2><span class="sec-num">07</span> Cloud Sync <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span></h2>
+    <p>We plan to introduce cloud sync so that signed-in users can access their practice data across devices.</p>
+    <ul>
+      <li><strong>Offline-first.</strong> The App is designed to work without a network connection. Practice data is saved locally first, then synced to our servers when a connection is available.</li>
+      <li><strong>What syncs.</strong> Practice history (module, difficulty tier, score, time), profile settings (nickname, color, experience level), and subscription status. We do not sync browser fingerprints, IP addresses, or device identifiers beyond what is necessary for authentication.</li>
+      <li><strong>Opt-in for child profiles.</strong> Cloud sync for child profiles requires the adult account holder to provide verifiable parental consent. Until consent is given, child profile data stays on the device.</li>
+      <li><strong>Data deletion.</strong> You may delete your synced data at any time through the App. Account deletion removes all associated data from our servers, subject to legal retention requirements.</li>
+    </ul>
+    <p>Cloud sync will be activated only after these Terms and our <a href="privacy.html">Privacy Policy</a> are updated with feature-specific effective dates.</p>
+    <!-- NOTE FOR ATTORNEY: Review data-retention and deletion timelines. Consider whether we need to specify a maximum retention period or immediate-deletion guarantee. Also consider GDPR implications if/when the service expands beyond the US. -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 8 — PAYMENTS AND SUBSCRIPTIONS                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s8">
+    <h2><span class="sec-num">08</span> Payments and Subscriptions <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span></h2>
+    <p>We plan to introduce optional paid subscription tiers. Nothing in the current version of these Terms creates any obligation to pay for anything. The following describes the planned payment model.</p>
+
+    <p><strong>Payment processor.</strong> All payment processing will be handled by <a href="https://stripe.com" rel="noopener">Stripe</a>. QuizNote will never receive, store, or have access to your full credit card number or payment credentials. Your payment information is submitted directly to Stripe and governed by <a href="https://stripe.com/legal" rel="noopener">Stripe's terms of service</a> and <a href="https://stripe.com/privacy" rel="noopener">privacy policy</a>.</p>
+
+    <p><strong>Free trial.</strong> New subscriptions will begin with a 7-day free trial. You will not be charged during the trial period. If you cancel before the trial ends, no charge will be made. If you do not cancel, your subscription will automatically convert to a paid subscription at the end of the trial.</p>
+    <!-- NOTE FOR ATTORNEY: Review free-trial auto-conversion disclosure requirements per FTC Negative Option Rule and state-specific auto-renewal laws (California ARL, etc.). Confirm whether pre-trial email confirmation or reminder before first charge is legally required. -->
+
+    <p><strong>Pricing cohorts.</strong> QuizNote may offer different pricing tiers based on when you join or other factors:</p>
+    <ul>
+      <li><strong>Founder pricing:</strong> early beta users who subscribe will receive a permanently lower rate for as long as their subscription remains active and in good standing.</li>
+      <li><strong>Standard pricing:</strong> the regular rate available to users who subscribe after the founder window closes.</li>
+    </ul>
+    <p>Specific prices will be displayed at the point of purchase. We will provide notice before any price increase takes effect on your account.</p>
+    <!-- NOTE FOR ATTORNEY: Confirm whether "permanently lower rate" language creates a binding obligation. Consider whether to add language reserving the right to adjust founder pricing with advance notice, or whether that would defeat the purpose. -->
+
+    <p><strong>Auto-renewal.</strong> Subscriptions automatically renew at the end of each billing period (monthly or annual, as selected at purchase) unless you cancel before the renewal date. You can cancel at any time through the App or by contacting us. Cancellation takes effect at the end of the current billing period — you retain access until then.</p>
+
+    <p><strong>Refunds.</strong> Refund requests will be evaluated on a case-by-case basis. Please contact <a href="mailto:support@quiznote.online">support@quiznote.online</a> for refund inquiries.</p>
+    <!-- NOTE FOR ATTORNEY: Draft a specific refund policy. Consider: (1) automatic refund if cancelled within X hours of charge, (2) pro-rata vs. no pro-rata for mid-cycle cancellation, (3) refund policy for the trial-to-paid conversion. State law may impose minimum refund windows. -->
+
+    <p><strong>US-only payments.</strong> Payment methods issued outside the United States will be declined. This restriction is in place while the service is limited to US availability (see Section 3).</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 9 — INTELLECTUAL PROPERTY                          -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s9">
+    <h2><span class="sec-num">09</span> Intellectual Property</h2>
     <p>All content in the App — including quiz questions, educational content, UI design, audio, graphics, and code — is the property of QuizNote or its licensors and is protected by applicable intellectual property laws.</p>
     <p>Nothing in these Terms grants you ownership of any QuizNote content. You receive a limited, revocable, non-exclusive license to use the App for personal, non-commercial educational purposes only.</p>
     <p>Music theory itself — intervals, scales, chords, notation — is part of the public domain. Our expression and presentation of that knowledge is what is protected.</p>
   </div>
 
-  <div class="doc-section" id="s6">
-    <h2><span class="sec-num">06</span> Profiles and Local Storage</h2>
-    <p>QuizNote uses on-device profiles to track learning progress. A profile may include a nickname you choose, a color, an optional self-reported experience level, and a log of practice rounds you have completed (which module, difficulty tier, score, and time taken).</p>
-    <p>All profile data is stored locally in your browser. We do not transmit profile data to our servers and cannot see it. Multiple profiles can exist on a single device, and any profile can be deleted from within the App.</p>
-    <p>There is currently no online account system, no login, and no password. If cross-device sync is introduced in the future, you will be notified before any profile data leaves your device, and these Terms will be updated accordingly.</p>
-  </div>
-
-  <div class="doc-section" id="s7">
-    <h2><span class="sec-num">07</span> Future Paid Features</h2>
-    <p>QuizNote may introduce optional paid features, subscriptions, or premium content in the future. The core free experience will remain available. If paid features are launched:</p>
-    <ul>
-      <li>Pricing, billing terms, and cancellation policies will be clearly communicated before any charge is made</li>
-      <li>Payment processing will be handled by a trusted third-party payment provider; QuizNote will never store credit card or payment details directly</li>
-      <li>These Terms will be updated to include relevant payment, refund, and account terms before paid features go live</li>
-      <li>You will have the opportunity to review and accept updated terms before subscribing</li>
-    </ul>
-    <p>Nothing in the current version of these Terms creates any obligation to pay for anything.</p>
-  </div>
-
-  <div class="doc-section" id="s8">
-    <h2><span class="sec-num">08</span> Disclaimer of Warranties</h2>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 10 — DISCLAIMER OF WARRANTIES                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s10">
+    <h2><span class="sec-num">10</span> Disclaimer of Warranties</h2>
     <div class="caps-block">
       THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE APP WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF VIRUSES OR OTHER HARMFUL COMPONENTS. YOUR USE OF THE APP IS AT YOUR SOLE RISK.
     </div>
-    <p>We make reasonable efforts to ensure the accuracy of music theory content, but we do not guarantee that all content is free from errors. If you find an error, please let us know at <a href="mailto:support@quiznote.online">support@quiznote.online</a>.</p>
+    <p>We make reasonable efforts to ensure the accuracy of music theory content, but we do not guarantee that all content is free from errors. The App is an educational practice tool and is not a substitute for qualified instruction. If you find an error, please let us know at <a href="mailto:support@quiznote.online">support@quiznote.online</a>.</p>
+    <p>During the beta period, features may be added, modified, or removed without notice.</p>
   </div>
 
-  <div class="doc-section" id="s9">
-    <h2><span class="sec-num">09</span> Limitation of Liability</h2>
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 11 — LIMITATION OF LIABILITY                       -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s11">
+    <h2><span class="sec-num">11</span> Limitation of Liability</h2>
     <div class="caps-block">
       TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, QUIZNOTE AND ITS OPERATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF DATA, LOSS OF PROFITS, OR INTERRUPTION OF SERVICE, ARISING OUT OF YOUR USE OF OR INABILITY TO USE THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
     </div>
-    <p>Because QuizNote is currently provided free of charge, our total cumulative liability to you for any claim shall not exceed one hundred dollars ($100).</p>
+    <p>Our total cumulative liability to you for any claim arising out of or relating to these Terms or the App shall not exceed the greater of (a) one hundred dollars ($100) or (b) the total amount you have paid to QuizNote in the twelve (12) months immediately preceding the event giving rise to the claim.</p>
+    <!-- NOTE FOR ATTORNEY: Confirm the liability cap formula. The current version uses max($100, last-12-months-paid). Consider whether this is appropriate for a freemium product. Some jurisdictions may not enforce liability caps for certain types of claims. -->
   </div>
 
-  <div class="doc-section" id="s10">
-    <h2><span class="sec-num">10</span> Indemnification</h2>
-    <p>You agree to indemnify, defend, and hold harmless QuizNote and its operators from and against any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or related to your use of the App, your violation of these Terms, or your violation of any third-party rights.</p>
-  </div>
-
-  <div class="doc-section" id="s11">
-    <h2><span class="sec-num">11</span> Third-Party Services</h2>
-    <p>QuizNote is hosted by Vercel and loads typography from Google Fonts and the Bravura music notation font from the jsDelivr content delivery network (cdn.jsdelivr.net). These services may collect technical access information (such as IP address and browser type) as part of normal hosting and content delivery. Their use of such data is governed by their respective privacy policies.</p>
-    <p>QuizNote is not responsible for the privacy or security practices of third-party services.</p>
-  </div>
-
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 12 — INDEMNIFICATION                               -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s12">
-    <h2><span class="sec-num">12</span> Termination</h2>
-    <p>You may stop using the App at any time. Since no account is required, no formal termination process exists.</p>
-    <p>We reserve the right to suspend or discontinue the App, in whole or in part, at any time and without notice. Provisions of these Terms that by their nature should survive termination shall survive, including intellectual property, disclaimers, limitation of liability, and indemnification.</p>
+    <h2><span class="sec-num">12</span> Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless QuizNote and its operators from and against any claims, liabilities, damages, losses, costs, or expenses (including reasonable attorneys' fees) arising out of or related to: (a) your use of the App, (b) your violation of these Terms, (c) your violation of any third-party rights, or (d) any activity under your account (when accounts are available), including activity by child profiles you have created.</p>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 13 — THIRD-PARTY SERVICES                         -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s13">
-    <h2><span class="sec-num">13</span> Governing Law</h2>
-    <p>These Terms are governed by the laws of the State of Oklahoma, United States, without regard to its conflict-of-law provisions. Any dispute arising from these Terms or your use of the App shall be resolved in the state or federal courts located in Oklahoma.</p>
-    <!-- NOTE (not shown to users): Oklahoma matches the operator's location and is correct while no legal entity exists. Revisit if/when an entity is formed in another state (e.g. Delaware/Wyoming), since governing law typically follows the entity's home state. -->
+    <h2><span class="sec-num">13</span> Third-Party Services</h2>
+    <p>QuizNote uses the following third-party services:</p>
+    <ul>
+      <li><strong>Vercel</strong> — hosting and deployment</li>
+      <li><strong>Google Fonts</strong> — web typography</li>
+      <li><strong>jsDelivr CDN</strong> (cdn.jsdelivr.net) — Bravura music notation font delivery</li>
+      <li><strong>Apple and Google sign-in</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> — authentication (when accounts are available)</li>
+      <li><strong>Stripe</strong> <span style="background:#fff4d6;padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:#c98800;">PLANNED</span> — payment processing (when paid features are available)</li>
+    </ul>
+    <p>These services may collect technical access information (such as IP address and browser type) as part of normal operation. Their use of such data is governed by their respective privacy policies. QuizNote is not responsible for the privacy or security practices of third-party services.</p>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 14 — TERMINATION                                   -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s14">
-    <h2><span class="sec-num">14</span> Changes to These Terms</h2>
-    <p>We may update these Terms from time to time. When we do, we will revise the "Last updated" date at the top of this page. For material changes — especially those related to the introduction of paid features or data collection practices — we will make the notice prominent within the App prior to the change taking effect.</p>
-    <p>Your continued use of the App after any update constitutes your acceptance of the revised Terms.</p>
+    <h2><span class="sec-num">14</span> Termination</h2>
+    <p><strong>By you.</strong> You may stop using the App at any time. During the current beta (no accounts), no formal termination process exists. When accounts are available, you may delete your account through the App, which will remove your data from our servers.</p>
+    <p><strong>By us.</strong> We reserve the right to suspend or terminate your access to the App, or to discontinue the App entirely, at any time and for any reason, with or without notice. If we terminate your account and you have an active paid subscription, we will issue a pro-rata refund for the unused portion of your current billing period.</p>
+    <!-- NOTE FOR ATTORNEY: Confirm pro-rata refund on termination-by-us is the right policy. Consider whether to distinguish between termination for cause (violation of Terms) vs. termination without cause (product shutdown). -->
+    <p>Provisions of these Terms that by their nature should survive termination shall survive, including intellectual property, disclaimers, limitation of liability, and indemnification.</p>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 15 — GOVERNING LAW                                 -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
   <div class="doc-section" id="s15">
-    <h2><span class="sec-num">15</span> Contact</h2>
+    <h2><span class="sec-num">15</span> Governing Law</h2>
+    <p>These Terms are governed by the laws of the State of Oklahoma, United States, without regard to its conflict-of-law provisions. Any dispute arising from these Terms or your use of the App shall be resolved in the state or federal courts located in Oklahoma.</p>
+    <!-- NOTE FOR ATTORNEY: Oklahoma matches the operator's location and is correct while no legal entity exists. Revisit if/when an entity is formed in another state (e.g. Delaware/Wyoming), since governing law typically follows the entity's home state. Also consider adding an arbitration clause as an alternative to litigation. -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 16 — CHANGES TO THESE TERMS                        -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s16">
+    <h2><span class="sec-num">16</span> Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. When we do, we will revise the "Last updated" date at the top of this page. For material changes — especially those related to the introduction of accounts, data collection, or paid features — we will provide prominent notice within the App before the change takes effect.</p>
+    <p>If you have an account at the time of a material change, we will notify you via the email address associated with your account. Your continued use of the App after the updated Terms take effect constitutes your acceptance of the revised Terms.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- SECTION 17 — CONTACT                                       -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="doc-section" id="s17">
+    <h2><span class="sec-num">17</span> Contact</h2>
     <p>Questions about these Terms can be directed to:</p>
     <p>
       QuizNote<br>
