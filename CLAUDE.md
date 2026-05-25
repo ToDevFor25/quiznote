@@ -43,8 +43,9 @@ anything. This is the handshake — it catches stale docs before they cause dama
 - **No build step. No framework. No package.json.** Every module is a single
   self-contained HTML file with inline CSS + JS. Shared code lives in sibling
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
-  `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
-  a bundler, or a build step. The flat static structure is correct and deliberate.
+  `qn-music.js`, `qn-theme.css`, `qn-ui.js`. Flat repo at root — do NOT
+  introduce folders, a bundler, or a build step. The flat static structure
+  is correct and deliberate.
 - **32 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster
   shipped (May 2026).** 14 Foundations + 8 Reading + 10 Theory. The 27 → 32
   expansion was a deliberate Tier 3 scope decision approved in the May 2026
@@ -186,9 +187,10 @@ Clone-and-swap means **copy to a new file**. The source file is read-only once
 cloned. Never edit an existing working module as part of building a new one.
 
 If a new module requires changes to existing shared files (qn-staff.js,
-qn-theme.css, qn-profile.js, qn-audio.js), stop and flag as **Tier 3** before
-proceeding. Shared file changes are their own session — they must be proposed,
-approved, and committed separately from the new module build.
+qn-theme.css, qn-profile.js, qn-audio.js, qn-ui.js, qn-music.js, qn-nav.js),
+stop and flag as **Tier 3** before proceeding. Shared file changes are their
+own session — they must be proposed, approved, and committed separately from
+the new module build.
 
 The **founding example:** May 2026 Triads attempt off intervals.html — the
 2-note renderer was asked to draw a 3-note triad. The right response is to stop,
@@ -332,9 +334,22 @@ For any future CSS work:
       server-authoritative entitlement → parent-consent gate.
     - **Landing pillars section** — Pillar 1 title still duplicates section
       title ("Built for learners"); rewrite proposed but not yet applied.
+- **Clef-picker tile centralization: shipped (May 2026).** New shared
+  file `qn-ui.js` exports `QN.ui.clefTile({clef})` (canonical SVG) +
+  `QN.ui.mountClefTiles(scope?)` (auto-mount on DOMContentLoaded). All 14
+  clef-picker modules now carry no inline `tile-clef` SVG — they keep the
+  `[data-clef]` button wrapper and `qn-ui.js` injects the canonical tile.
+  To change clef appearance globally: edit the `SINGLE` / `BOTH` config
+  blocks in `qn-ui.js`. Calibration done via `_clef-calibrator.html`
+  (untracked internal tool, prefix-`_` convention). **Pattern for future
+  visual-consistency work:** clone `_clef-calibrator.html`'s shape —
+  §1 shows the current variants in the wild, §2 has a live editor with
+  sliders + preset buttons that match each shipping variant, §3 outputs
+  a copy-paste JS snippet with the chosen values.
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
   (QA first), time-signatures prompt-layout conversion + scales tile
-  reconciliation (needs visual harness per §8).
+  reconciliation (needs visual harness per §8). The clef-tile calibrator
+  pattern (see above) is the proven template for these.
 - See BUILD_LOG.md for complete "Still open / next" list.
 
 ---

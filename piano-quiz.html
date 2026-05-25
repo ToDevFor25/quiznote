@@ -521,6 +521,7 @@
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
 <script src="qn-nav.js" defer></script>
+<script src="qn-ui.js" defer></script>
 <script src="qn-staff.js" defer></script>
 <script src="qn-audio.js" defer></script>
 </head>
@@ -548,48 +549,14 @@
       <div class="q-label"><span class="num">1</span> Which clef?</div>
       <div class="tile-row" id="clef-tiles">
         <button class="tile on" data-clef="treble">
-          <svg class="tile-clef" viewBox="0 0 80 60">
-            <g class="staff-line" stroke="#2A2A3E" stroke-width="1.5" fill="none">
-              <line x1="6" y1="14" x2="74" y2="14"/><line x1="6" y1="24" x2="74" y2="24"/>
-              <line x1="6" y1="34" x2="74" y2="34"/><line x1="6" y1="44" x2="74" y2="44"/>
-              <line x1="6" y1="54" x2="74" y2="54"/>
-            </g>
-            <!-- Bravura gClef: lineGap=10, G4=44, y = 44 + 0.75*10 = 51.5 -->
-            <text class="clef" x="14" y="51.5" font-family="Bravura Text" font-size="40" fill="#2A2A3E">&#xE050;</text>
-          </svg>
           <div class="tile-title">Treble</div>
           <div class="tile-sub">right hand</div>
         </button>
         <button class="tile" data-clef="bass">
-          <svg class="tile-clef" viewBox="0 0 80 60">
-            <g class="staff-line" stroke="#2A2A3E" stroke-width="1.5" fill="none">
-              <line x1="6" y1="14" x2="74" y2="14"/><line x1="6" y1="24" x2="74" y2="24"/>
-              <line x1="6" y1="34" x2="74" y2="34"/><line x1="6" y1="44" x2="74" y2="44"/>
-              <line x1="6" y1="54" x2="74" y2="54"/>
-            </g>
-            <!-- Bravura fClef: lineGap=10, F3=24, y = 24 + 2.375*10 = 47.75 -->
-            <text class="clef" x="14" y="47.75" font-family="Bravura Text" font-size="40" fill="#2A2A3E">&#xE062;</text>
-          </svg>
           <div class="tile-title">Bass</div>
           <div class="tile-sub">left hand</div>
         </button>
         <button class="tile" data-clef="both">
-          <svg class="tile-clef" viewBox="0 0 80 60">
-            <g class="staff-line" stroke="#2A2A3E" stroke-width="1.2" fill="none">
-              <!-- Treble staff: 5 lines, lineGap=5, bottomY=27 -->
-              <line x1="6" y1="7" x2="74" y2="7"/><line x1="6" y1="12" x2="74" y2="12"/>
-              <line x1="6" y1="17" x2="74" y2="17"/><line x1="6" y1="22" x2="74" y2="22"/>
-              <line x1="6" y1="27" x2="74" y2="27"/>
-              <!-- Bass staff: 5 lines, lineGap=5, bottomY=55 -->
-              <line x1="6" y1="35" x2="74" y2="35"/><line x1="6" y1="40" x2="74" y2="40"/>
-              <line x1="6" y1="45" x2="74" y2="45"/><line x1="6" y1="50" x2="74" y2="50"/>
-              <line x1="6" y1="55" x2="74" y2="55"/>
-            </g>
-            <!-- Treble Bravura gClef: G4=22, y = 22 + 0.75*5 = 25.75, font = 5*4 = 20 -->
-            <text class="clef" x="10" y="25.75" font-family="Bravura Text" font-size="20" fill="#2A2A3E">&#xE050;</text>
-            <!-- Bass Bravura fClef: F3=40, y = 40 + 2.375*5 = 51.875, font = 20 -->
-            <text class="clef" x="10" y="51.875" font-family="Bravura Text" font-size="20" fill="#2A2A3E">&#xE062;</text>
-          </svg>
           <div class="tile-title">Both</div>
           <div class="tile-sub">mix it up</div>
         </button>

@@ -1,5 +1,126 @@
 ---
 
+### Clef-picker tile centralization — May 2026
+
+**Session type:** Visual-consistency refactor + new shared file. One
+commit (`bdec8f3`). Net -271 lines across 14 module files.
+
+**Problem.** 14 modules (note-names, piano-quiz, piano-keyboard,
+ledger-lines, accidentals, intervals, ear-intervals, scale-degrees,
+primary-chords, roman-numerals, triads, triad-inversions, seventh-
+chords, pianoquiz-demo) each had treble / bass / both clef-picker
+tiles on their start screen, rendered as inline `<svg class="tile-clef">`
+blocks in the HTML. Hand-written per-module, so they had drifted into
+**3 distinct visual variants per clef** across the 14 modules — split
+roughly 7 / 5 / 2:
+
+- Variant 1 (7 modules): serif Unicode glyphs (𝄞 U+1D11E, 𝄢 U+1D122),
+  font-size 44pt treble / 32pt bass, x=12/14 y=50/34.
+- Variant 2 (5 modules): Bravura SMuFL glyphs (`` / ``),
+  font-size 40pt, x=12 y=51.5 treble / x=14 y=47.75 bass.
+- Variant 3 (2 modules, both Piano Quiz-family): same as Variant 2
+  but treble x=14 instead of 12.
+
+Invisible at the grep level (same class names, same structure);
+only surfaced at the pixel level. Exactly the "verify-by-rendered-
+result, not grep" case from CLAUDE.md.
+
+**Fix.** New shared file **`qn-ui.js`** with two exports:
+- `QN.ui.clefTile({clef})` — returns canonical SVG markup for treble /
+  bass / both. Single source of truth.
+- `QN.ui.mountClefTiles(scope?)` — auto-called on DOMContentLoaded;
+  finds every `[data-clef]` element and injects the canonical SVG,
+  replacing any pre-existing `.tile-clef` child SVG (or prepending
+  if missing).
+
+Each of the 14 modules: (1) loads `qn-ui.js` after `qn-nav.js` in the
+head, and (2) carries **no inline tile-clef SVG** — just the
+`<button data-clef="treble|bass|both">` wrapper that the existing
+tile-pick handlers still use.
+
+**The calibrator.** `_clef-calibrator.html` (untracked; prefix-`_`
+convention matches `_mockups/`). A self-contained HTML page with:
+- **§1** — all 3 current variants of treble / bass / both rendered
+  side-by-side at actual size + 2× scale, with the module-counts
+  per variant and the raw params shown as monospace.
+- **§2** — a live editor: single canonical tile rendered with sliders
+  for every knob (font system, viewBox, staff geometry, per-clef
+  font-size/x/y, "both" tile's twin-staff layout). Two-way bound
+  slider ↔ numeric input. Four preset buttons load: clean defaults,
+  variant 1, variant 2, variant 3.
+- **§3** — live-updating JS snippet output (the canonical
+  `QN.ui.clefTile` body with chosen values baked in) + copy-to-
+  clipboard.
+
+Jonathan dialed in the canonical values in-browser, sent the snippet
+back as a chat message. Values committed verbatim into `qn-ui.js`.
+Canonical config (locked May 2026):
+
+    VBW=66, VBH=68, font=Bravura Text
+    SINGLE: lx=7, rx=66, topY=15, gap=9.5, sw=1.5
+            treble: fs=39.5, x=13, y=52.75
+            bass:   fs=40,   x=11, y=48.75
+    BOTH:   topY=8, gap=9, lineGap=5.5, sw=1.1
+            treble: fs=26.5, x=10, y=30.5
+            bass:   fs=24,   x=10, y=59
+
+**To change clef appearance globally:** edit the `SINGLE` / `BOTH`
+blocks in `qn-ui.js`. No more 14-file diff.
+
+**Tier 1/2 decisions made (autonomous, noted for the log):**
+- New shared file rather than extending `qn-profile.js`. `qn-profile.js`
+  is the profile / event / account / `QN.ui.confirm` file; adding
+  presentation helpers (`QN.ui.clefTile`, `QN.ui.mountClefTiles`)
+  felt out-of-scope for it. `qn-ui.js` is now the home for *visual*
+  shared helpers — same `QN.ui` namespace, separate file.
+- Auto-mount on DOMContentLoaded so modules don't need an explicit
+  `QN.ui.mountClefTiles()` call. Defensively idempotent: if a module
+  later mutates the DOM and adds a new clef picker, it can call
+  `QN.ui.mountClefTiles(newScope)` itself.
+- Removed inline SVG from module HTML entirely (rather than keep it
+  as a fallback that gets replaced). Eliminates the inconsistency at
+  the source; the script tag's `defer` attribute means the gap
+  between HTML parse and JS run is sub-frame.
+- pianoquiz-demo.html (the marketing demo on the landing page)
+  doesn't load `qn-profile.js`, so the rollout script's anchor-match
+  missed it on the first pass — the inline SVGs were stripped but
+  no script tag was inserted, leaving empty buttons. Caught in the
+  verification sweep; manual patch added `qn-ui.js` after
+  `qn-audio.js`. **Lesson for future shared-script rollouts:** check
+  the demo / marketing surfaces too, they often don't share the full
+  module script chain.
+
+**Tier 3 watch-outs that DID trigger this session:**
+- This was technically a Tier 3 session by CLAUDE.md's standing rules:
+  it added a new shared file and modified 14 module files. Jonathan
+  explicitly asked for the work ("create a clef calibrator and I'll
+  tell you exactly how everything should look"), so it was authorized
+  — not unilateral.
+
+**Verification:** Structural only. Each module ends with: 3 `data-clef`
+buttons, 0 inline tile-clef SVGs, 1 reference to `qn-ui.js`. Browser
+verification on each of the 14 modules (start screen renders the
+canonical tiles, picker still updates state.settings.clef on tap)
+is still owed before relying on this in production — same caveat as
+the Phase 5 cluster.
+
+**Files modified:**
+- New: `qn-ui.js` (~110 lines).
+- 14 module HTMLs: added one `<script src="qn-ui.js" defer>` line in
+  head, removed inline tile-clef SVG from each `[data-clef]` button.
+- Internal-only: `_clef-calibrator.html` (untracked).
+
+**Still open / next:**
+- Browser verify the 14 modules (was also owed before for the Phase 5
+  cluster of 5 new files — bundle the two verification passes).
+- `qn-ui.js` is now the natural home for the next wave of visual
+  shared helpers if/when more inline-SVG inconsistencies surface
+  (e.g. the staff-card chrome, the difficulty-tile emoji+label
+  pattern, etc.). Not Tier 3 to add new exports to `qn-ui.js` going
+  forward — it was Tier 3 to *create* it.
+
+---
+
 ### Phase 5 score-literacy cluster shipped — May 2026
 
 **Session type:** Module build session. Autonomous mode per the May 2026
