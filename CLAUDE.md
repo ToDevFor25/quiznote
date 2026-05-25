@@ -45,14 +45,12 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **19 live modules (Phase 2 #1 done, May 2026):** note-names, piano-quiz,
-  note-values, time-signatures, accidentals, key-signatures, scales, scale-degrees,
-  scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals,
-  ledger-lines, dotted-notes, ear-rhythm, piano-keyboard (Phase 1), **chromatic-scale**
-  (Phase 2 #1 — clone of scales.html, all 24 chromatic scales asc + desc). Roster
-  target is **27 modules** across 3 levels (9 Foundations + 8 Reading + 10 Theory)
-  — see QUIZNOTE_PROJECT_DOC.md §5 for the complete map with build status,
-  selectors, tier reconciliation notes, and §12 for the four-phase build plan.
+- **27 live modules — full roster shipped (Phases 1–4 complete, May 2026).**
+  9 Foundations + 8 Reading + 10 Theory. See QUIZNOTE_PROJECT_DOC.md §5 for
+  the complete per-module map (decisions, selectors, tier-reconciliation notes)
+  and §12 for the four-phase build history. Roster is considered the
+  complete set for beginner-through-intermediate Western tonal theory; growing
+  past 27 is a deliberate scope decision per §5.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -271,35 +269,63 @@ For any future CSS work:
   showConfirm retired.
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
-- **Phase 1 of the curriculum redesign: COMPLETE (May 2026).** Ledger Lines,
-  Dotted Notes & Ties, Ear: Rhythm, Piano & Keyboard all shipped.
-- **Phase 2 in progress (May 2026): Chromatic Scale shipped** (clone of
-  scales.html, separate QUESTION_POOLS vs DISTRACTOR_POOLS so chromatic is
-  always asked while majors/minors only appear as distractors). **19 live
-  modules** total. 27-module roster target.
+- **Curriculum build phases 1–4: ALL COMPLETE (May 2026).** Full 27-module
+  roster shipped.
+    - **Phase 1** — Foundations gaps: Ledger Lines, Dotted Notes & Ties,
+      Ear: Rhythm, Piano & Keyboard.
+    - **Phase 2** — Chromatic Scale + the six expansions (Scales pentatonic
+      + selector, Key Signatures + minor + selector, Primary Chords +
+      minor + selector, Scale Degrees + minor + selector, Roman Numerals +
+      minor + selector, Ear: Scales pentatonic + selector). Intervals
+      clef selector verified.
+    - **Phase 3** — Chord renderer engineering session: `qn-staff.js`
+      v1.3.0 added `buildChord()` + `buildStaffWithChord()`; `qn-audio.js`
+      v1.1.0 added `playChord()`.
+    - **Phase 4** — Theory chord cluster: Triads, Triad Inversions,
+      Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality,
+      Ear: Cadences, Ear: Chord Progressions. All 8 wired into the four
+      surfaces (play.html / path.html MODULES+PATH / qn-profile.js PATH /
+      index.html spine).
+- **Data-claim audit + beta-access gate: shipped (May 2026).** Client-side
+  beta-unlock script (`qn-gate.js`) added to every module; data-storage
+  copy softened across surfaces ahead of the cloud-sync layer.
+- **`qn-cloud.js` scaffolding: shipped (May 2026).** Cloud/sync/account/
+  payment + adult-owner/child-profile schema, structural two-condition
+  consent gate. All flags off; UI not yet built.
+- **Privacy policy + terms of service: drafted (May 2026, in repo as
+  privacy.html / terms.html — for lawyer review).**
 - **play.html redesigned (May 2026):** three collapsible level sections
   (Foundations / Reading / Theory) with progress chips. FOUC-prevention via
   `body.tier-no-anim` + 2×rAF (documented in BUILD_LOG.md). All-expanded by
   default per the catalog-UI genre standard.
 - **index.html "What's Inside" replaced (May 2026):** vertical-spine concept
   view, not module tiles. Decoupled from per-module tiering. Class names
-  prefixed `wi-` to avoid collisions.
-- **Tier reconciliation: DONE (May 2026).** Intervals moved Theory→Reading
-  on play.html (matching path.html which already had it correct). Ear:
-  Intervals and Ear: Scales both moved Theory→Reading per the "ear modules
-  sit with their visual partner" pedagogy (Option B). Theory now contains
-  only harmony modules (Primary Chords, Roman Numerals) and the future chord
-  cluster. All four surfaces (play.html, path.html MODULES + PATH,
-  qn-profile.js PATH, index.html spine taglines) consistent.
-- **Next priority: Phase 2 expansions (Chromatic Scale done).** Scales
-  pentatonic + selector, Key Signatures minor + selector, the four minor-keys
-  expansions (Primary Chords, Scale Degrees, Roman Numerals, Ear:Scales),
-  Intervals clef selector verify. These are EXPANSIONS to existing working
-  modules — NOT clone-and-swap builds — so the additive "copy to a new file"
-  rule does not apply; they are edits in place, and they must not break
-  current Major-key behavior. Treat each as its own session.
-- **Chord renderer session:** queued as Phase 3. Do not attempt chord modules
-  before qn-staff.js extension.
+  prefixed `wi-` to avoid collisions. Landing copy scrub May 2026 removed
+  all "no ads" / "free during beta" claims ahead of Stripe; ear-training
+  chips split Reading "Pitch by ear" / Theory "Harmony by ear".
+- **path.html mobile reorder (May 2026):** on mobile, the "Your next
+  step" card sits on top, with the "Next up on your path" tiles, guide
+  banner, and the path rail stacking below. Desktop layout unchanged.
+  Path rail no longer renders 🔒 glyphs — upcoming modules show as
+  muted dots (the rail is a map, not a menu).
+- **Tier reconciliation: DONE (May 2026).** Intervals moved Theory→Reading;
+  Ear: Intervals and Ear: Scales moved Theory→Reading per the
+  "ear modules sit with their visual partner" pedagogy. Theory now
+  contains only harmony modules + the chord ear training.
+- **Next priorities (no longer curriculum builds — see BUILD_LOG.md for
+  detail):**
+    - **PWA install on the landing page** (own session). Manifest.json,
+      Apple touch icons + meta tags across every module HTML,
+      `beforeinstallprompt` button on landing for Android, Share →
+      "Add to Home Screen" instructions for iOS. Architecture is already
+      PWA-friendly (user verified via bookmark install).
+    - **Adult/child profile UI** — schema scaffolding exists in
+      `qn-cloud.js`; the visible flow doesn't. Lawyer-gated before any
+      cloud sync of child data.
+    - **Monetization track** — Apple/Google sign-in → Stripe + paywall →
+      server-authoritative entitlement → parent-consent gate.
+    - **Landing pillars section** — Pillar 1 title still duplicates section
+      title ("Built for learners"); rewrite proposed but not yet applied.
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
   (QA first), time-signatures prompt-layout conversion + scales tile
   reconciliation (needs visual harness per §8).
