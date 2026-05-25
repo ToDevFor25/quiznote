@@ -1,5 +1,251 @@
 ---
 
+### Pricing/monetization assessment + curriculum gap analysis + Phase 5 spec drafting — May 2026
+
+**Session type:** Strategy + spec-writing session. No code changed. 10 new
+spec files added to `/specs/`. CLAUDE.md updated with a ranked build queue.
+The next several sessions will work from that queue.
+
+**Net result:** A pricing assessment Jonathan can hand to advisors / use as
+internal reference; a curriculum gap analysis that justifies a deliberate
+27 → 37 module roster expansion (Tier 3 decision, approved); 10 specs
+covering 7 new modules + 3 non-module features, all ranked by ROI; a
+documented trademark conversation that gates the curriculum-mapping feature
+behind lawyer review.
+
+**Commits:** none yet — files written, awaiting Jonathan's review and
+explicit go on the commit.
+
+---
+
+#### Part 1 — Pricing & monetization assessment (no code)
+
+Audited the codebase against the question "what does QuizNote cost per
+user to operate, and what pricing structures fit?" Key findings:
+
+- **Per-user cost is effectively zero.** Pure static site (Vercel), all
+  audio is WebAudio synth (`qn-audio.js`), all data in localStorage, no
+  backend, no external API calls beyond Google Fonts + jsDelivr Bravura
+  CDN (both free, cached). Heavy user ≈ $0.015/mo bandwidth on Vercel
+  Pro overage; light user ≈ $0.
+- **Stripe fees are the binding constraint on cheap subscriptions.**
+  $0.99/mo nets ~$0.66 after 2.9% + $0.30; $1.99/mo nets ~$1.63;
+  $4.99 lifetime nets ~$4.55. Sub-$2 monthly subscriptions are
+  margin-fights against payment processors.
+- **Existing scaffolding is honest plumbing.** `qn-cloud.js` has Stripe
+  Checkout pattern (SAQ-A PCI scope), feature flags all OFF, US-only geo
+  gating, two-condition child consent lockout. `qn-profile.js` has
+  `pricingCohort: 'beta'` tag on every existing account → these users
+  are "founders" forever once the go-live lever flips. 7-day trial built
+  but not armed. `trialStatus()` explicitly advisory; real entitlement
+  must be server-authoritative.
+- **No real auth today.** `qn-gate.js` is an explicitly-labeled
+  client-side velvet rope (SHA-256 hash, trivially bypassable). MUST be
+  replaced by server-side auth before any paid feature ships.
+
+Four pricing proposals laid out: (A) cheap subscription no trial,
+(B) lifetime-only, (C) hybrid (trial + sub + lifetime escape hatch),
+(D) donate / pay-what-you-want. **Recommended: Proposal C — free
+Foundations + 7-day trial + $2.99/mo or $19.99/yr + $39.99 lifetime.**
+Rationale: cost structure permits any of them; the hybrid is the one
+that lets the data tell you which audience (subscribers vs.
+one-time buyers) dominates before doubling down.
+
+**No code touched.** Assessment lives in the chat transcript; no
+written deliverable in repo (Jonathan can re-derive from cited file
+references + this log entry if needed).
+
+#### Part 2 — Curriculum gap analysis
+
+CEO/PhD pass: audited the 27-module roster against ABRSM Grades 1–5,
+RCM Levels 1–8, AP Music Theory units 1–8, NAfME standards, and the
+Alfred + Faber method-book series. Reframed the question from "what
+does theory have?" to "what makes the 27 number feel like an undersell?"
+
+**Headline finding:** the roster *count* is generous in this category
+(Tenuto ~14, EarMaster ~16, Duolingo Music ~12, Teoria ~20 — QuizNote
+at 27 is already at the top). The real risks are surface variety
+(many drills look like staff+4-button), coverage type (zero score-
+literacy markings: tempo/dynamics/articulation/symbols), and external
+legibility (no mapping to recognized syllabi).
+
+**Tier A gaps identified (real, build):**
+- Expression markings cluster — tempo, dynamics, articulation, score
+  navigation, ornaments. Zero current coverage; every method book uses
+  these from page 1. Five Foundations modules. Clone-and-swap from
+  Accidentals; no shared-file changes.
+- Circle of Fifths — reopen the May 2026 §5 cut. Iconic visual artifact;
+  its absence reads as a coverage hole regardless of how it's covered
+  elsewhere.
+- Transposition — every band/orchestra student needs it; ABRSM Grade 5
+  tests it.
+
+**Tier B (defensible at intermediate, build):**
+- Chord Function (T/PD/D) — cheapest meaningful Theory expansion;
+  genuinely new pedagogical skill.
+
+**Tier C (build only with demonstrated demand):**
+- C Clefs (alto/tenor) — niche orchestral audience.
+- Non-Chord Tones — at the upper edge of the §2 audience cap.
+
+**Tier D (out of scope, written down to prevent re-litigation):**
+- Modulation, figured bass, voice-leading rules, modes-as-harmony,
+  jazz extensions, sight-singing, non-Western systems. All cited in
+  §2 as out-of-scope; flagged for inclusion in §5's "Deliberately out
+  of scope" list during next project-doc revision.
+
+**Non-module multipliers (real value, not modules):**
+- Mock Exam Mode — recombination of existing question pools; feels like
+  5+ new modules.
+- Curriculum Mapping Overlay — re-organizes existing 27+ modules under
+  ABRSM / RCM / AP / method-book labels. Lawyer-gated for the named-
+  method version.
+- Construction-mode engineering session — unlocks Build-a-X cluster as
+  a future cheap clone-and-swap chain (Phase 3 → Phase 4 pattern).
+
+#### Part 3 — Trademark conversation (Tier 3, documented for future sessions)
+
+Jonathan asked: "Can I get in trouble saying 'click here if you're
+following Bastien and do these exercises which map to their book?'"
+
+Answer summary (documented here so future sessions don't re-litigate):
+
+- **Probably fine if worded carefully**, but Tier 3 — needs a real
+  lawyer review before any named-method copy ships. Claude is not a
+  lawyer.
+- **US nominative fair use** allows referring to a third-party product
+  by its actual name if (1) you can't reasonably identify it otherwise,
+  (2) you use only as much of the mark as needed, (3) you don't suggest
+  sponsorship/endorsement.
+- **Do:** use phrasings like "aligns with the concepts in," "compatible
+  with," "for students working through." Include a disclaimer:
+  "QuizNote is not affiliated with, endorsed by, or sponsored by
+  [marks]. All trademarks are property of their respective owners."
+- **Don't:** use their logos, cover art, exact lesson titles, or imply
+  endorsement. Don't copy their exercise sequences or expressed lesson
+  order. Don't say "official," "approved by," "in partnership with."
+- **Risk by mark holder:** Bastien (Kjos) and Faber lowest; ABRSM,
+  Trinity, RCM actively police marks (consider applying for official
+  partner programs); College Board / AP highest risk (extremely
+  protective of "AP" mark).
+- **Recommended launch path:** ship a **generic-language v1** of
+  curriculum mapping first ("Beginner — first year of theory" /
+  "Grade-1-equivalent" / etc.), no named marks. Add the named-method
+  overlay as v1.1 *only after* lawyer signs off on the disclaimer
+  language and the specific marks used.
+
+This conversation is the source-of-truth gate for the curriculum-mapping
+feature (#10 in the queue). Do not ship named-method copy without
+revisiting this and obtaining lawyer review.
+
+#### Part 4 — Phase 5 specs drafted (10 files added to /specs/)
+
+Roster expansion 27 → 37 approved as a Tier 3 scope decision.
+Justification: closes a real score-literacy gap (5 Foundations modules)
+within the existing audience, plus carefully-bounded Reading/Theory
+expansions. Not an audience-scope change — a roster-scope correction.
+
+Slicing decision: 5 standalone Foundations modules (rather than 1
+mega-module or 2 combined), because the question types and renderers
+differ per topic; the existing module pattern fits each cleanly.
+
+**Specs written (all in `/specs/`):**
+
+Tier A — score-literacy cluster (Foundations):
+- `tempo-markings-spec.md` (#28)
+- `dynamics-spec.md` (#29)
+- `articulation-spec.md` (#30) — includes the tie-vs-slur skill
+- `score-navigation-spec.md` (#31) — `routing` question type deferred to v1.1
+- `ornaments-spec.md` (#32)
+
+Tier B — Reading + Theory expansion:
+- `circle-of-fifths-spec.md` (#33) — re-opens the May 2026 cut
+- `transposition-spec.md` (#35)
+- `chord-function-spec.md` (#34) — cheapest meaningful Theory add
+
+Tier C — defensible / borderline:
+- `c-clefs-spec.md` (#36) — requires `qn-staff.js` extension first
+  (alto/tenor clef glyphs + STEP_TO_Y per clef); flagged as Tier 3
+  renderer-extension session before module build
+- `non-chord-tones-spec.md` (#37) — borderline; build only with
+  demonstrated demand
+
+Non-module features (Tier C multipliers):
+- `mock-exam-mode-spec.md` — Phase A is an architecture audit of all
+  27 modules' QNM contract exposure
+- `curriculum-mapping-spec.md` — lawyer-gated for named-method version
+- `construction-mode-engineering-spec.md` — Phase 3-sized engineering
+  session; unlocks Build-a-X cluster as cheap follow-on clones
+
+All specs follow the canonical `accidentals-spec.md` format. Each
+specifies build source, ROI rank, tiers, question types, distractor
+strategy, theory accuracy notes, renderer requirements (with explicit
+"no `qn-staff.js` changes required" callouts where true), sub-skill
+tagging, and concept explainer card text.
+
+#### Decisions made (Tier 3, approved by Jonathan)
+
+- **Scope expansion 27 → 37 modules** — approved. Not audience
+  expansion; closes a real score-literacy gap within the stated audience.
+- **Slicing: 5 standalone Foundations score-literacy modules** —
+  approved (not 1 mega-module, not 2 combined).
+- **Tier placement: all score-literacy modules in Foundations · Level 2** —
+  approved.
+- **Re-open Circle of Fifths from the May 2026 §5 cut** — approved.
+- **Construction-mode is its own engineering session, not bundled with
+  module builds** — approved (mirrors Phase 3 pattern).
+- **Generic-language curriculum mapping v1 can ship; named-method
+  v1.1 is lawyer-gated** — approved.
+
+#### Ranked build queue established (see CLAUDE.md "Ranked build queue")
+
+The next several sessions will work from a 14-item ranked queue, written
+into a new section of CLAUDE.md. Top of queue: the 5-module Foundations
+score-literacy cluster (Tempo → Dynamics → Articulation → Score Nav →
+Ornaments). Ranking is by ROI = (perceived-value gain) ÷ (build cost),
+not by topic clustering or numerical balance across tiers.
+
+**Tier symmetry was explicitly rejected as a planning goal** — adding
+the same number to Reading and Theory just to balance the chart would
+be padding. Per-module pedagogical merit is the test. Final shape:
+Foundations 9 → 14 (+5), Reading 8 → 10 or 11 (+2 firm, +1 optional),
+Theory 10 → 11 or 12 (+1 firm, +1 borderline).
+
+#### Still open / next
+
+1. **Jonathan reviews this BUILD_LOG entry and approves the commit.**
+2. **Commit the spec files + doc updates** (single commit: 10 new specs +
+   CLAUDE.md ranked queue + this BUILD_LOG entry).
+3. **Next session:** start at top of queue — `tempo-markings-spec.md`.
+   Build autonomously per "Module builds are autonomous" rule. No
+   checkpoints expected until commit/push.
+4. **QUIZNOTE_PROJECT_DOC.md update** is pending — §5 needs four-phase
+   rewrite to add Phase 5 (score-literacy + Reading/Theory expansion),
+   roster header bumped from "27 modules" to "27 live / 37 planned with
+   Phase 5", new entries #28–37 added with status "Planned" and links
+   to spec files. Could be done in this commit or deferred to the
+   Tempo Markings build session. Recommend deferring — easier to land
+   §5 entries module-by-module as each ships, mirroring how Phases 1–4
+   were logged.
+5. **Carried open items from prior sessions** (unchanged):
+   - Visual QA on all 8 Phase 4 chord modules + Phase 2 expansions.
+   - Sampled-piano audio (Tier 2) roadmap item.
+   - time-signatures `accStartX: 72` pin + 2 qn-theme.css holdouts.
+   - PWA install on landing page (own session).
+   - Adult/child profile UI (lawyer-gated).
+   - Monetization track (sign-in → Stripe → entitlement).
+   - Landing pillars Pillar 1 title duplication.
+
+#### CLAUDE.md updates folded into this session
+
+- Phase 4 status line updated to point at Phase 5 as planned (with
+  pointer to the ranked queue + spec files).
+- New section "Ranked build queue (May 2026 — Phase 5 and beyond)"
+  inserted before "Music-theory accuracy" — lists 14 items in priority
+  order with spec-file paths and per-item notes for the next session.
+
+---
+
 ### Landing-page copy pass + mobile path reorder + stash rescue — May 2026
 
 **Session type:** Copy/UX scrub on index.html + path.html mobile reorder + an

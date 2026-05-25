@@ -270,7 +270,9 @@ For any future CSS work:
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
 - **Curriculum build phases 1–4: ALL COMPLETE (May 2026).** Full 27-module
-  roster shipped.
+  roster shipped. **Phase 5 planned (May 2026): score-literacy cluster + selected
+  Reading/Theory expansions — see "Ranked build queue" below and the 10 specs
+  in `/specs/` covering the planned 27 → 37 expansion.**
     - **Phase 1** — Foundations gaps: Ledger Lines, Dotted Notes & Ties,
       Ear: Rhythm, Piano & Keyboard.
     - **Phase 2** — Chromatic Scale + the six expansions (Scales pentatonic
@@ -330,6 +332,99 @@ For any future CSS work:
   (QA first), time-signatures prompt-layout conversion + scales tile
   reconciliation (needs visual harness per §8).
 - See BUILD_LOG.md for complete "Still open / next" list.
+
+---
+
+## Ranked build queue (May 2026 — Phase 5 and beyond)
+
+This is the **prioritized work queue** for chipping away in future sessions.
+Highest-ROI first. Each item links to its spec in `/specs/`. The next session
+should pull from the top of this list unless Jonathan directs otherwise.
+
+ROI methodology: perceived-value gain ÷ build cost. Score-literacy cluster
+(#1–#5) is highest because it closes a real pedagogical gap teachers will
+notice immediately AND is the cheapest possible build (clone-and-swap from
+Accidentals, no shared-file changes). Reading expansions (#6–#8) carry real
+practical value at moderate cost. Non-module multipliers (#9–#10) deliver
+large perceived-value gains without new content. Remaining items are lower
+ROI or audience-boundary cases — build only if conditions warrant.
+
+### Tier A — score-literacy cluster (Foundations · Level 2). Build first, in order.
+
+1. **Tempo Markings** — `/specs/tempo-markings-spec.md`. First in cluster;
+   surfaces cluster-wide new patterns (ordering on a continuum, optional
+   audio metronome) before they multiply across siblings.
+2. **Dynamics** — `/specs/dynamics-spec.md`. Reuses #1 patterns. No audio in v1.
+3. **Articulation** — `/specs/articulation-spec.md`. Includes the tie-vs-slur
+   discrimination skill (a recurring beginner confusion with no current home).
+4. **Score Navigation Symbols** — `/specs/score-navigation-spec.md`. `routing`
+   question type deferred to v1.1.
+5. **Ornaments** — `/specs/ornaments-spec.md`. Completes the score-literacy
+   cluster. Lowest-cost addition (direct Accidentals clone).
+
+### Tier B — Reading expansion. Build after the Tier A cluster ships.
+
+6. **Circle of Fifths** — `/specs/circle-of-fifths-spec.md`. Highest
+   single-module ROI outside the cluster. Re-opens the May 2026 §5 cut.
+   Single new circular SVG renderer (~80 lines, lives in the module file,
+   does not touch `qn-staff.js`).
+7. **Chord Function (Tonic/Predominant/Dominant)** — `/specs/chord-function-spec.md`.
+   Cheapest meaningful Theory expansion — clone of Roman Numerals with a
+   different categorization axis. Adds a new pedagogical skill at the upper
+   edge of Theory's audience cap.
+8. **Transposition** — `/specs/transposition-spec.md`. High real-world value
+   (every band/orchestra student needs it). v1 uses a constrained 4-button-MC
+   format; generative format deferred.
+
+### Tier C — non-module multipliers. Independent of all above.
+
+9. **Mock Exam Mode** — `/specs/mock-exam-mode-spec.md`. Feature, not a
+   module. Feels like 5+ new modules to a user; isn't. Phase A (architecture
+   audit of all 27 modules' QNM contract) is the gate.
+10. **Curriculum Mapping Overlay** — `/specs/curriculum-mapping-spec.md`.
+    Feature, not a module. **⚠️ TIER 3 / LAWYER-GATED for the named-method
+    version.** Generic-language v1 can ship immediately; named-method
+    overlay (ABRSM/RCM/AP/Bastien/Faber) requires legal review per the
+    May 2026 trademark conversation logged in BUILD_LOG.md.
+
+### Tier D — defensible but lower ROI. Build only if conditions warrant.
+
+11. **C Clefs (Alto & Tenor)** — `/specs/c-clefs-spec.md`. Niche audience
+    (viola, cello/bassoon/trombone upper register). Lowest-cost intermediate
+    add. **Requires a `qn-staff.js` renderer extension session before the
+    module build can start** — flag as Tier 3.
+12. **Construction-mode engineering session** — `/specs/construction-mode-engineering-spec.md`.
+    Architectural prereq for any Build-a-X cluster. Roughly Phase 3 sized.
+    Schedule when depth-of-pedagogy becomes the priority over breadth.
+13. **Build-a-Scale / Build-a-Triad / Build-a-Key-Sig cluster** — depends
+    on #12. Becomes a cheap clone-and-swap cluster once construction mode
+    exists. No individual specs yet — write them after #12 ships.
+14. **Non-Chord Tones** — `/specs/non-chord-tones-spec.md`. **Borderline.**
+    Sits at the upper edge of the §2 audience cap. Build only with
+    demonstrated user demand or curriculum-mapping partner pull.
+
+### Notes for the next session
+
+- **The Tier A cluster (#1–#5) can be built fully autonomously** per the
+  "Module builds are autonomous" rule above. No checkpoints needed unless
+  a genuine Tier 3 blocker surfaces (none anticipated — none of the five
+  require shared-file changes).
+- **#7 Chord Function reuses an existing renderer** (`buildStaffWithChord`).
+  Autonomous build.
+- **#6 Circle of Fifths and #8 Transposition are autonomous** but each
+  involves one piece of new visual machinery (circular renderer; instrument
+  labels). Both kept in the module file, no shared-file changes.
+- **#11 C Clefs and #12 Construction-mode are TIER 3 SESSIONS** — they
+  modify shared files. Pause and confirm before starting.
+- **#10 Curriculum Mapping named-method version is TIER 3** — lawyer review
+  required before any ABRSM/AP/Bastien/Faber names ship.
+- The four-surface rule applies to every new module (#1–#8, #11, #13, #14).
+  Each gets `index.html` + `play.html` + `path.html` + `qn-profile.js`
+  updated atomically in the same commit. Module count goes 27 → 28 → 29 → ...
+- The roster scope expansion 27 → 37 was a Tier 3 decision approved by
+  Jonathan in the May 2026 curriculum-gap session. Justification: real
+  score-literacy gap, not audience expansion. Documented in BUILD_LOG.md
+  under "Curriculum gap analysis + Phase 5 spec drafting session."
 
 ---
 
