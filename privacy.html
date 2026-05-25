@@ -189,158 +189,381 @@
   </div>
 </nav>
 
+
 <div class="page-wrap">
+
+  <div style="background:#FFB627;border:3px solid #2A2A3E;border-radius:14px;padding:16px 20px;margin-bottom:24px;font-weight:700;color:#2A2A3E;text-align:center;box-shadow:0 4px 0 #c98800;">
+    ⚠️ DRAFT — NOT LEGAL ADVICE — This document is a working draft prepared for attorney review. It does not constitute a finalized privacy policy. Do not rely on it as legal guidance.
+  </div>
 
   <p class="doc-eyebrow">Legal</p>
   <h1>Privacy Policy</h1>
   <p class="doc-meta">
-    Effective date: May 21, 2026 &nbsp;·&nbsp; Last updated: May 21, 2026
+    Effective date: May 21, 2026 &nbsp;·&nbsp; Last updated: May 25, 2026
     &nbsp;·&nbsp; Questions? <a href="mailto:support@quiznote.online">support@quiznote.online</a>
   </p>
 
-  <!-- NOTE (not shown to users): Written for the current local-only beta (no accounts, no data leaves the device). A qualified attorney should review before any non-beta launch, especially the children's-privacy / parent-guardian section and anything that changes when a backend is added. -->
+  <!-- NOTE (not shown to users): This draft covers the full target architecture
+       (accounts, cloud sync, Stripe payments, child profiles) while clearly
+       marking features that are not yet live. Written for attorney review before
+       any non-beta launch. All [PLANNED] items are behind feature flags currently OFF.
+
+       LAWYER REVIEW REQUIRED on: COPPA/VPC for child profiles, CCPA/CPRA data-sale
+       definition, GDPR-K / UK AADC applicability, Stripe data-controller vs
+       data-processor classification, "verifiable parental consent" mechanism
+       adequacy, geographic scoping enforceability, and the "local-only play
+       is not collection" position. -->
 
   <div class="plain-note">
-    <strong>The short version:</strong> QuizNote is a free music theory practice app. We collect the minimum necessary to keep the App running well. Your learning data lives on your device, not on our servers. We don't show ads, we don't sell data, and we never will.
+    <strong>The short version:</strong> QuizNote is a free music-theory practice app. Right now, all your learning data stays on your device — no accounts, no login, no server-side storage. We don't show ads and we don't sell data. This policy also describes features we are building (accounts, cloud sync, payments, child profiles) so you can see what's coming. Anything not yet live is clearly marked <span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span>.
   </div>
 
   <nav class="toc">
     <p class="toc-title">Contents</p>
     <ol>
       <li><a href="#s1">Who We Are</a></li>
-      <li><a href="#s2">What We Collect</a></li>
-      <li><a href="#s3">What We Don't Do</a></li>
-      <li><a href="#s4">Cookies and Local Storage</a></li>
-      <li><a href="#s5">Third-Party Services</a></li>
-      <li><a href="#s6">Children's Privacy</a></li>
-      <li><a href="#s7">Data Retention</a></li>
-      <li><a href="#s8">Your Rights</a></li>
-      <li><a href="#s9">Future Paid Features</a></li>
-      <li><a href="#s10">Changes to This Policy</a></li>
-      <li><a href="#s11">Contact Us</a></li>
+      <li><a href="#s2">What's Active Now vs. What's Planned</a></li>
+      <li><a href="#s3">What We Collect</a></li>
+      <li><a href="#s4">What We Don't Do</a></li>
+      <li><a href="#s5">Cookies and Local Storage</a></li>
+      <li><a href="#s6">Cloud Sync and Accounts</a></li>
+      <li><a href="#s7">Payments</a></li>
+      <li><a href="#s8">Third-Party Services</a></li>
+      <li><a href="#s9">Children's Privacy</a></li>
+      <li><a href="#s10">Data Retention</a></li>
+      <li><a href="#s11">Your Rights</a></li>
+      <li><a href="#s12">Geographic Availability</a></li>
+      <li><a href="#s13">Changes to This Policy</a></li>
+      <li><a href="#s14">Contact Us</a></li>
     </ol>
   </nav>
 
+  <!-- ============================================================
+       SECTION 1 — WHO WE ARE
+       ============================================================ -->
   <div class="doc-section" id="s1">
     <h2><span class="sec-num">01</span> Who We Are</h2>
     <p>QuizNote ("we," "us," or "our") is an independent music education project operating at <a href="https://quiznote.online">quiznote.online</a>. QuizNote is currently operated as an unincorporated project. A formal legal entity may be established in the future, at which point this policy will be updated.</p>
-    <p>This Privacy Policy explains how we handle information when you use our web application (the "App").</p>
+    <p>This Privacy Policy explains how we handle information when you use our web application (the "App"), including features that are active today and features we plan to add in the future.</p>
     <!-- NOTE (not shown to users): No legal entity formed yet; operator is an individual in Oklahoma. If an LLC/entity is registered, add its name and state here. -->
   </div>
 
+  <!-- ============================================================
+       SECTION 2 — WHAT'S ACTIVE VS. PLANNED
+       ============================================================ -->
   <div class="doc-section" id="s2">
-    <h2><span class="sec-num">02</span> What We Collect</h2>
-    <p>QuizNote is designed to collect as little information as possible. Most of what is stored never leaves your device. Here's the full picture:</p>
+    <h2><span class="sec-num">02</span> What's Active Now vs. What's Planned</h2>
+    <p>QuizNote is in active development. Some features described in this policy are live today; others are planned but not yet available. We include both so you can see where we're headed and so the policy is ready for attorney review ahead of launch.</p>
+    <p><strong>Active now (local-only beta):</strong></p>
+    <ul>
+      <li>All practice data, profiles, and preferences are stored in your browser's local storage — nothing leaves your device.</li>
+      <li>No accounts, no login, no registration.</li>
+      <li>No server-side storage of user data.</li>
+      <li>Vercel hosting logs only (standard web-server logs).</li>
+    </ul>
+    <p><strong>Planned (not yet active — behind feature flags currently turned off):</strong></p>
+    <ul>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Adult accounts — sign in via Apple or Google.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Cloud sync — practice data syncs to our server when signed in.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Payments — optional paid tier via Stripe Checkout.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Child profiles — nested under an adult/guardian account.</li>
+    </ul>
+    <p>Each planned feature will be activated only after this policy has been finalized by legal counsel. We will update the "Last updated" date when features go live, and we will provide prominent notice of material changes before they take effect.</p>
+  </div>
+
+  <!-- ============================================================
+       SECTION 3 — WHAT WE COLLECT
+       ============================================================ -->
+  <div class="doc-section" id="s3">
+    <h2><span class="sec-num">03</span> What We Collect</h2>
+    <p>QuizNote is designed to collect as little information as possible. The table below covers both what we collect today and what we will collect when planned features go live.</p>
+
     <table class="data-table">
       <thead>
-        <tr><th>Type</th><th>What it includes</th><th>Where it lives / why</th></tr>
+        <tr><th>Status</th><th>Type</th><th>What it includes</th><th>Where it lives</th></tr>
       </thead>
       <tbody>
         <tr>
+          <td><strong>TODAY</strong></td>
           <td><strong>Profile data</strong></td>
           <td>A randomly-generated profile ID, a nickname you choose, a color, an optional self-reported experience level, and timestamps for when the profile was created and last used</td>
-          <td>Stored only in your browser's local storage. Never transmitted to us. You can have multiple profiles on one device, and you can delete any profile at any time from within the App.</td>
+          <td>Stored only in your browser's local storage. Never transmitted to us. You can have multiple profiles on one device and delete any profile at any time from within the App.</td>
         </tr>
         <tr>
+          <td><strong>TODAY</strong></td>
           <td><strong>Practice round log</strong></td>
           <td>An append-only log of completed rounds: which profile, which module, difficulty tier, number of questions, number correct, time taken, and completion timestamp</td>
-          <td>Stored only in your browser's local storage. Used by the App to show personal-best scores and (in the future) to recommend what to practice next. Not transmitted to us.</td>
+          <td>Stored only in your browser's local storage. Used by the App to show personal-best scores and recommend what to practice next. Not transmitted to us.</td>
         </tr>
         <tr>
+          <td><strong>TODAY</strong></td>
           <td><strong>UI preferences</strong></td>
           <td>Selected difficulty tier per module, sound on/off, timed-mode setting, and similar per-module UI state</td>
           <td>Stored only in your browser's local storage. Convenience only.</td>
         </tr>
         <tr>
-          <td><strong>Technical / usage data</strong></td>
+          <td><strong>TODAY</strong></td>
+          <td><strong>Technical / hosting logs</strong></td>
           <td>Browser type, OS, approximate region, referring URL, pages visited, time of visit</td>
-          <td>Collected automatically by Vercel (our host) for uptime and performance. Not used to identify you personally.</td>
+          <td>Collected automatically by Vercel (our host) for uptime and performance. Not used to identify you personally. See Section 8.</td>
         </tr>
         <tr>
+          <td><strong>TODAY</strong></td>
           <td><strong>Voluntary contact</strong></td>
           <td>Your email and message, if you contact us directly</td>
           <td>Used only to respond to your inquiry. Not added to any list or shared.</td>
         </tr>
+        <tr>
+          <td><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></td>
+          <td><strong>Account credentials</strong></td>
+          <td>Name and email address provided by your Apple or Google sign-in</td>
+          <td>Stored on our server, linked to your QuizNote account. Used for authentication and account recovery. We do not receive or store your Apple/Google password.</td>
+        </tr>
+        <tr>
+          <td><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></td>
+          <td><strong>Synced practice data</strong></td>
+          <td>The same profile data, practice round logs, and preferences described above — synced from your device to the cloud when you are signed in</td>
+          <td>Stored on our server to enable cross-device access and backup. The App is offline-first: it works without a connection and syncs when one is available.</td>
+        </tr>
+        <tr>
+          <td><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></td>
+          <td><strong>Payment data</strong></td>
+          <td>Billing name, email, and payment-method token (card details go directly to Stripe — see Section 7)</td>
+          <td>Stripe processes and stores card details. We receive only a token, the last four digits of the card, expiration date, and billing email — enough to show you your subscription status and issue receipts.</td>
+        </tr>
+        <tr>
+          <td><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></td>
+          <td><strong>Child profile data</strong></td>
+          <td>Nickname, color, practice round logs — linked to a parent/guardian's account</td>
+          <td>Synced to the cloud only after verifiable parental consent. Local-only child play on a parent's device (without sync) does not constitute collection of children's data — see Section 9.</td>
+        </tr>
+        <!-- LAWYER REVIEW: Confirm the "local-only play is not collection" position
+             for COPPA purposes. Also confirm whether the profile nickname (freely
+             chosen, not verified) qualifies as PII under COPPA. -->
       </tbody>
     </table>
-    <p>We do <strong>not</strong> collect real names, email addresses, or account information during normal App use. There is no login or registration system at this time. Nicknames are freely chosen and are not verified as real names.</p>
+    <p>We do <strong>not</strong> collect real names, email addresses, or account information during normal App use today. There is no login or registration system at this time. Nicknames are freely chosen and are not verified as real names.</p>
   </div>
 
-  <div class="doc-section" id="s3">
-    <h2><span class="sec-num">03</span> What We Don't Do</h2>
+  <!-- ============================================================
+       SECTION 4 — WHAT WE DON'T DO
+       ============================================================ -->
+  <div class="doc-section" id="s4">
+    <h2><span class="sec-num">04</span> What We Don't Do</h2>
     <ul>
       <li>We do not sell your data — ever.</li>
       <li>We do not display advertising or share data with advertisers.</li>
-      <li>We do not build a profile on you.</li>
+      <li>We do not build behavioral profiles on you or use your data for targeted advertising.</li>
       <li>We do not use tracking pixels, fingerprinting, or cross-site tracking.</li>
-      <li>We do not share your information with third parties except as described in Section 5.</li>
+      <li>We do not share your information with third parties except as described in Section 8 (Third-Party Services).</li>
+      <li>We do not use your practice data to train machine-learning models.</li>
+      <li>We will never store your credit card number on our servers — payment processing is handled entirely by Stripe (see Section 7).</li>
     </ul>
+    <!-- LAWYER REVIEW: Confirm "we do not sell your data" is accurate under CCPA/CPRA's
+         broad definition of "sale" and "sharing" (which includes cross-context behavioral
+         advertising, even without money changing hands). Our current third-party list
+         (Vercel, Google Fonts, jsDelivr) should not trigger this, but confirm. -->
   </div>
 
-  <div class="doc-section" id="s4">
-    <h2><span class="sec-num">04</span> Cookies and Local Storage</h2>
-    <p>QuizNote does not use advertising cookies or third-party tracking cookies.</p>
-    <p>We use <strong>browser local storage</strong> on your device to save the profile data, practice round log, and UI preferences described in Section 2. This data is stored entirely on your device and is not transmitted to our servers. You can clear it at any time through your browser settings, or by deleting individual profiles from within the App.</p>
-    <p>Our hosting provider (Vercel) may set minimal technical cookies necessary for the delivery and security of the App. These are not used to track you across other websites.</p>
-    <!-- DRAFT — needs lawyer review before non-beta launch. Forward-looking caveat
-         for features not yet live (payments, account sign-in, cloud sync). Remove or
-         revise per counsel; do not treat as final legal language. -->
-    <p>Some features are not yet available during beta. If and when we add optional account sign-in, payments, or cloud sync, those features will rely on third-party providers (such as a payments processor or identity provider) that process limited data under their own privacy policies. We will update this policy to describe any such processing before those features launch.</p>
-  </div>
-
+  <!-- ============================================================
+       SECTION 5 — COOKIES AND LOCAL STORAGE
+       ============================================================ -->
   <div class="doc-section" id="s5">
-    <h2><span class="sec-num">05</span> Third-Party Services</h2>
-    <p>QuizNote relies on the following third-party infrastructure. Each has its own privacy practices:</p>
+    <h2><span class="sec-num">05</span> Cookies and Local Storage</h2>
+    <p>QuizNote does not use advertising cookies or third-party tracking cookies.</p>
+    <p>We use <strong>browser local storage</strong> (not cookies) on your device to save the profile data, practice round logs, and UI preferences described in Section 3. This data is stored entirely on your device and is not transmitted to our servers under the current local-only beta.</p>
+    <p>Our hosting provider (Vercel) may set minimal technical cookies necessary for the delivery and security of the App. These are not used to track you across other websites.</p>
+    <p><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> When accounts and cloud sync are available, we may use an authentication cookie or token to keep you signed in across sessions. This will be a first-party, strictly-necessary cookie — not used for tracking or advertising.</p>
+    <!-- LAWYER REVIEW: Confirm whether an auth token stored in localStorage (vs. a
+         cookie) triggers cookie-consent requirements under ePrivacy Directive / UK PECR.
+         Current position: localStorage for auth token = "strictly necessary" and
+         exempt from consent, but this is jurisdiction-dependent. -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 6 — CLOUD SYNC AND ACCOUNTS [PLANNED]
+       ============================================================ -->
+  <div class="doc-section" id="s6">
+    <h2><span class="sec-num">06</span> Cloud Sync and Accounts <span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></h2>
+    <p>This feature is not yet active. The following describes how it will work when launched.</p>
+    <p><strong>Accounts:</strong> You will be able to create a QuizNote account by signing in with your Apple or Google account. We will receive your name and email address from the identity provider. We will not receive or store your Apple or Google password.</p>
+    <p><strong>Cloud sync:</strong> When you are signed in, your practice data (profiles, round logs, preferences) will sync to our servers so you can access it from any device. The App is designed to be <strong>offline-first</strong> — it works without an internet connection and syncs automatically when a connection is available.</p>
+    <p><strong>Without an account:</strong> QuizNote will continue to work fully without an account. Unsigned-in users will have the same local-only experience described in this policy. Creating an account is optional.</p>
+    <p><strong>Signing out or deleting your account:</strong> You can sign out at any time, which stops syncing. You can request full account deletion, which will remove all synced data from our servers. Local data on your device will remain until you clear it yourself.</p>
+    <!-- LAWYER REVIEW: Confirm account-deletion timeline commitment (e.g., "within 30 days"
+         or "within a reasonable period"). CCPA requires disclosure of deletion timeline. -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 7 — PAYMENTS [PLANNED]
+       ============================================================ -->
+  <div class="doc-section" id="s7">
+    <h2><span class="sec-num">07</span> Payments <span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></h2>
+    <p>This feature is not yet active. The following describes how it will work when launched.</p>
+    <p>QuizNote will offer an optional paid tier. Payment processing will be handled entirely by <strong>Stripe</strong> via Stripe Checkout (a hosted payment page). Here is how the data flows:</p>
+    <ul>
+      <li><strong>What Stripe receives:</strong> Your card number, expiration date, CVC, and billing details. This data goes directly from your browser to Stripe's servers — it never passes through or is stored on QuizNote's servers.</li>
+      <li><strong>What QuizNote receives from Stripe:</strong> A payment token, the last four digits of your card, the expiration date, your billing email, and your subscription status. This is enough for us to show your subscription status and generate receipts.</li>
+      <li><strong>What QuizNote does NOT receive:</strong> Your full card number, CVC, or full billing address.</li>
+    </ul>
+    <p>Stripe is a PCI DSS Level 1 certified payment processor. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe's Privacy Policy</a> for how they handle your payment information.</p>
+    <p><strong>Pricing cohorts:</strong> We may offer different pricing to users who joined during the beta period ("beta founders") versus users who join later. Cohort membership is determined by your account creation date and is stored on our server. It does not involve any additional data collection.</p>
+    <!-- LAWYER REVIEW: Confirm Stripe data-controller vs. data-processor classification.
+         Under GDPR, Stripe is typically an independent controller for payment data.
+         Confirm this is accurately characterized. Also review whether pricing-cohort
+         disclosure triggers any price-discrimination concerns under state consumer
+         protection laws. -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 8 — THIRD-PARTY SERVICES
+       ============================================================ -->
+  <div class="doc-section" id="s8">
+    <h2><span class="sec-num">08</span> Third-Party Services</h2>
+    <p>QuizNote relies on the following third-party services. Each has its own privacy practices:</p>
+
+    <p><strong>Active now:</strong></p>
     <ul>
       <li><strong>Vercel</strong> (hosting) — automatically receives standard server logs including IP addresses. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Vercel's Privacy Policy</a>.</li>
       <li><strong>Google Fonts</strong> — fonts are loaded from Google's servers, which may log your IP address. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
-      <li><strong>Bravura music notation font</strong> — loaded from the jsDelivr content delivery network (<a href="https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-com">cdn.jsdelivr.net</a>) so that music symbols render correctly. The CDN may log your IP address as part of normal content delivery.</li>
+      <li><strong>jsDelivr</strong> (Bravura music notation font) — the font is loaded from the jsDelivr content delivery network (<a href="https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-com">cdn.jsdelivr.net</a>) so that music symbols render correctly. The CDN may log your IP address as part of normal content delivery.</li>
     </ul>
-    <p>We do not currently use analytics platforms, ad networks, or any other data-collecting third-party services beyond those listed above.</p>
-  </div>
 
-  <div class="doc-section" id="s6">
-    <h2><span class="sec-num">06</span> Children's Privacy</h2>
-    <p>QuizNote is designed to be safe and appropriate for learners of any age, including children.</p>
-    <p>The App does not collect real names, email addresses, phone numbers, photographs, geolocation, or any other personally identifiable information from any user during normal use. All profile data — including the nickname a learner chooses and their record of completed practice rounds — is stored locally on the device and is not transmitted to our servers.</p>
-    <p>If a learner is under 18, the App should be set up and managed by a parent or guardian. Profiles intended for use by a minor are owned and managed by the parent or guardian, not by the minor independently.</p>
-    <p>If we inadvertently receive personal information from a child via email or another contact channel, we will delete it promptly. Parents and guardians with concerns can reach us at <a href="mailto:support@quiznote.online">support@quiznote.online</a>.</p>
-    <!-- LAWYER REVIEW REQUIRED before non-beta launch (children's privacy):
-         This section states a neutral parent/guardian expectation and a "no PII collected" position true for the current local-only beta. Counsel should specifically confirm, especially once a backend/accounts store a minor's data off-device:
-         (1) whether the "no PII collected" position still holds with profiles/nicknames/round-logs (we believe yes while nothing leaves the device, but it is a legal question);
-         (2) whether parent/guardian language is enforceable without an actual parent-account mechanism;
-         (3) any additional notice/consent required for EEA, UK, or California users regardless of COPPA's reach (GDPR-K, UK AADC, CCPA/CPRA). -->
-  </div>
-
-  <div class="doc-section" id="s7">
-    <h2><span class="sec-num">07</span> Data Retention</h2>
-    <p>Server logs collected by Vercel are retained for a short operational period (typically days to weeks). We do not maintain our own long-term database of user data.</p>
-    <p>Local storage data lives on your device until you clear it via your browser settings. We have no access to it and cannot delete it on your behalf.</p>
-  </div>
-
-  <div class="doc-section" id="s8">
-    <h2><span class="sec-num">08</span> Your Rights</h2>
+    <p><strong>Planned (not yet active):</strong></p>
     <ul>
-      <li><strong>Profile and practice data:</strong> Delete any profile from within the App, or clear your browser's local storage to remove everything at once.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Stripe</strong> (payment processing) — will process payment card data directly. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe's Privacy Policy</a>.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Apple</strong> (Sign in with Apple) — will provide your name and email for authentication. See <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple's Privacy Policy</a>.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Google</strong> (Google Sign-In) — will provide your name and email for authentication. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+    </ul>
+    <p>We do not use analytics platforms, ad networks, social-media pixels, or any other data-collecting third-party services beyond those listed above.</p>
+    <!-- LAWYER REVIEW: If a cloud database provider is selected (e.g., Supabase, Firebase,
+         Planetscale), add it here as a sub-processor. Also confirm whether Google Fonts
+         CDN usage triggers GDPR transfer concerns (Schrems II / CJEU Google Analytics ruling). -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 9 — CHILDREN'S PRIVACY
+       ============================================================ -->
+  <div class="doc-section" id="s9">
+    <h2><span class="sec-num">09</span> Children's Privacy</h2>
+    <p>QuizNote is designed to be safe and appropriate for learners of any age, including children. We take children's privacy seriously and have designed our system with the following principles:</p>
+
+    <p><strong>Today (local-only beta):</strong></p>
+    <p>The App does not collect real names, email addresses, phone numbers, photographs, geolocation, or any other personally identifiable information from any user during normal use. All profile data — including nicknames and practice round logs — is stored locally on the device and is never transmitted to our servers. Under the current local-only architecture, no children's data is "collected" within the meaning of COPPA because nothing leaves the device.</p>
+
+    <p><strong><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Child profiles (under accounts):</strong></p>
+    <ul>
+      <li>Child profiles will be nested under a parent or guardian's adult account. Children will not be able to create their own independent accounts.</li>
+      <li><strong>Verifiable parental consent</strong> will be required before any child's data is synced to the cloud. We will implement a consent mechanism that meets COPPA requirements.</li>
+      <li><strong>Local-only child play:</strong> A parent or guardian may allow a child to play on the parent's device without creating a synced child profile. In this scenario, the child's practice data remains in the browser's local storage on the parent's device and is never transmitted to our servers. We consider this equivalent to a parent letting a child use any locally-installed application and do not treat it as "collection" of children's data.</li>
+      <li>Parents and guardians will have full control over their child's profile: they can review all data, pause syncing, or delete the child profile entirely at any time.</li>
+      <li>We will not use children's data for any purpose other than providing the practice experience and showing progress to the parent/guardian.</li>
+    </ul>
+
+    <p>If we inadvertently receive personal information from a child via email or another contact channel, we will delete it promptly. Parents and guardians with concerns can reach us at <a href="mailto:support@quiznote.online">support@quiznote.online</a>.</p>
+
+    <!-- LAWYER REVIEW REQUIRED (children's privacy — critical section):
+         (1) Confirm "local-only play is not collection" position under COPPA. FTC guidance
+             says "collection" means obtaining information that is maintained by the operator
+             in retrievable form. If data never leaves the device, we believe it is not
+             "collected" by the operator. Counsel should confirm.
+         (2) Confirm whether freely-chosen nicknames constitute PII under COPPA (FTC says
+             screen names that allow contacting a child are PII; our nicknames are local-only
+             and cannot be used for contact).
+         (3) Specify the verifiable parental consent (VPC) method we will use. COPPA-approved
+             methods include: signed consent form, credit card transaction, video call,
+             knowledge-based authentication, government ID check. We need to select one.
+         (4) Confirm what age threshold applies (COPPA = under 13; some state laws go higher;
+             UK AADC = under 18; GDPR-K varies by EU member state, typically 13-16).
+         (5) Confirm any additional obligations under California's CCPA/CPRA (minors 13-16
+             opt-in for "sale"), UK Age Appropriate Design Code, and EU GDPR Article 8.
+         (6) Determine whether we need a separate children's privacy policy or if this
+             integrated section is sufficient. -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 10 — DATA RETENTION
+       ============================================================ -->
+  <div class="doc-section" id="s10">
+    <h2><span class="sec-num">10</span> Data Retention</h2>
+    <p><strong>Today (local-only beta):</strong></p>
+    <ul>
+      <li><strong>Local storage data</strong> lives on your device until you clear it via your browser settings or delete individual profiles from within the App. We have no access to it and cannot delete it on your behalf.</li>
+      <li><strong>Server logs</strong> collected by Vercel are retained for a short operational period (typically days to weeks). We do not maintain our own long-term database of user data.</li>
+    </ul>
+
+    <p><strong><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> When accounts are available:</strong></p>
+    <ul>
+      <li><strong>Account data</strong> (name, email, preferences) and <strong>synced practice data</strong> will be retained for as long as your account is active.</li>
+      <li>When you <strong>delete your account</strong>, we will delete all associated data from our servers. Local data on your device will remain until you clear it yourself.</li>
+      <li><strong>Payment records</strong> (transaction history, invoices) may be retained for a longer period as required by tax and accounting regulations.</li>
+      <li><strong>Child profile data</strong> will be deleted when the parent/guardian deletes the child profile or the parent/guardian's account.</li>
+    </ul>
+    <!-- LAWYER REVIEW: Specify a concrete deletion timeline (e.g., "within 30 days of
+         account deletion request"). CCPA requires disclosure. Also confirm retention
+         periods for payment records under applicable tax law (typically 3-7 years). -->
+  </div>
+
+  <!-- ============================================================
+       SECTION 11 — YOUR RIGHTS
+       ============================================================ -->
+  <div class="doc-section" id="s11">
+    <h2><span class="sec-num">11</span> Your Rights</h2>
+    <p><strong>Today (local-only beta):</strong></p>
+    <ul>
+      <li><strong>Profile and practice data:</strong> Delete any profile from within the App, or clear your browser's local storage to remove everything at once. Since this data is on your device, you have full control.</li>
       <li><strong>Email inquiries:</strong> Contact us and we'll delete any message you've sent us.</li>
     </ul>
-    <p>If you are in the EEA, UK, or California, you may have additional rights under GDPR, UK GDPR, or the CCPA. Contact us at <a href="mailto:support@quiznote.online">support@quiznote.online</a> with any request.</p>
+
+    <p><strong><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> When accounts are available:</strong></p>
+    <ul>
+      <li><strong>Access:</strong> View all data associated with your account from within the App.</li>
+      <li><strong>Export:</strong> Download a copy of your practice data.</li>
+      <li><strong>Deletion:</strong> Delete your account and all associated server-side data.</li>
+      <li><strong>Child data:</strong> Parents and guardians can access, export, and delete their child's data at any time.</li>
+    </ul>
+
+    <p>If you are in the EEA, UK, or California, you may have additional rights under GDPR, UK GDPR, or the CCPA/CPRA. These may include the right to data portability, the right to restrict processing, and the right to object to processing. Contact us at <a href="mailto:support@quiznote.online">support@quiznote.online</a> with any request.</p>
+    <!-- LAWYER REVIEW: Once accounts launch, we need to confirm: (1) response time for
+         data access/deletion requests (GDPR = 30 days, CCPA = 45 days), (2) identity
+         verification process for rights requests, (3) whether we need a "Do Not Sell
+         My Personal Information" link (CCPA requirement — we don't sell data, but the
+         link may still be required). -->
   </div>
 
-  <div class="doc-section" id="s9">
-    <h2><span class="sec-num">09</span> Future Paid Features</h2>
-    <p>QuizNote is currently free with no accounts or payments required. If paid features, user accounts, or subscriptions are introduced, this Privacy Policy will be updated before launch to describe any new data practices — including sign-up data, payment handling (via a trusted third-party processor; we will never store card details ourselves), and account deletion.</p>
-    <p>You will be notified of material changes before they take effect.</p>
+  <!-- ============================================================
+       SECTION 12 — GEOGRAPHIC AVAILABILITY
+       ============================================================ -->
+  <div class="doc-section" id="s12">
+    <h2><span class="sec-num">12</span> Geographic Availability</h2>
+    <p><strong>Today (local-only beta):</strong> QuizNote is available to anyone with a web browser. Since no data leaves your device, geographic restrictions are not necessary from a privacy standpoint.</p>
+    <p><strong><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> When accounts launch:</strong> QuizNote accounts will initially be available to <strong>United States users only</strong>. During signup, users will be asked to confirm their country of residence. We may use geo-IP as a secondary check to help enforce this restriction.</p>
+    <p>The US-only scope simplifies our initial compliance obligations while we focus on getting the product right. We plan to expand to additional countries in the future, updating this policy and our compliance practices accordingly.</p>
+    <p>Users outside the US can continue to use QuizNote in local-only mode (without an account) at any time.</p>
+    <!-- LAWYER REVIEW: Confirm whether US-only scoping via country selection + geo-IP is
+         sufficient to avoid triggering GDPR obligations, or whether the "available to
+         anyone with a browser" local-only mode already subjects us to GDPR for EEA users.
+         Also confirm whether geo-IP constitutes "monitoring behavior" under GDPR Art. 3(2). -->
   </div>
 
-  <div class="doc-section" id="s10">
-    <h2><span class="sec-num">10</span> Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page. For significant changes, we will make the notice prominent in the App before the change takes effect.</p>
+  <!-- ============================================================
+       SECTION 13 — CHANGES TO THIS POLICY
+       ============================================================ -->
+  <div class="doc-section" id="s13">
+    <h2><span class="sec-num">13</span> Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we do, we will update the "Last updated" date at the top of this page.</p>
+    <p>For <strong>significant changes</strong> — especially the activation of planned features described here (accounts, cloud sync, payments, child profiles) — we will provide prominent notice in the App before the change takes effect.</p>
     <p>Continued use of QuizNote after an update constitutes acceptance of the revised policy.</p>
+    <!-- LAWYER REVIEW: Confirm whether "continued use = acceptance" is enforceable,
+         especially for material changes to data practices. Some jurisdictions may require
+         affirmative re-consent for significant changes (particularly around children's data). -->
   </div>
 
-  <div class="doc-section" id="s11">
-    <h2><span class="sec-num">11</span> Contact Us</h2>
+  <!-- ============================================================
+       SECTION 14 — CONTACT US
+       ============================================================ -->
+  <div class="doc-section" id="s14">
+    <h2><span class="sec-num">14</span> Contact Us</h2>
     <p>Privacy questions, concerns, or requests:</p>
     <p>
       QuizNote<br>
@@ -348,6 +571,9 @@
       Website: <a href="https://quiznote.online">quiznote.online</a>
     </p>
     <p>We aim to respond within 10 business days.</p>
+    <!-- LAWYER REVIEW: Once a legal entity is formed, add the entity name and registered
+         address here. If we appoint a Data Protection Officer (DPO) or EU/UK representative
+         (required under GDPR if we process EU/UK data), add their contact details here. -->
   </div>
 
 </div>
