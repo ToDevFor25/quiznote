@@ -45,14 +45,12 @@ anything. This is the handshake — it catches stale docs before they cause dama
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
   `qn-music.js`, `qn-theme.css`. Flat repo at root — do NOT introduce folders,
   a bundler, or a build step. The flat static structure is correct and deliberate.
-- **19 live modules (Phase 2 #1 done, May 2026):** note-names, piano-quiz,
-  note-values, time-signatures, accidentals, key-signatures, scales, scale-degrees,
-  scale-modes, intervals, ear-intervals, ear-scales, primary-chords, roman-numerals,
-  ledger-lines, dotted-notes, ear-rhythm, piano-keyboard (Phase 1), **chromatic-scale**
-  (Phase 2 #1 — clone of scales.html, all 24 chromatic scales asc + desc). Roster
-  target is **27 modules** across 3 levels (9 Foundations + 8 Reading + 10 Theory)
-  — see QUIZNOTE_PROJECT_DOC.md §5 for the complete map with build status,
-  selectors, tier reconciliation notes, and §12 for the four-phase build plan.
+- **27 live modules — full roster shipped (Phases 1–4 complete, May 2026).**
+  9 Foundations + 8 Reading + 10 Theory. See QUIZNOTE_PROJECT_DOC.md §5 for
+  the complete per-module map (decisions, selectors, tier-reconciliation notes)
+  and §12 for the four-phase build history. Roster is considered the
+  complete set for beginner-through-intermediate Western tonal theory; growing
+  past 27 is a deliberate scope decision per §5.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -271,39 +269,162 @@ For any future CSS work:
   showConfirm retired.
 - **schemaVersion hook: installed.** qn-profile.js v1.8.0 has the migration
   hook. This gates backend work.
-- **Phase 1 of the curriculum redesign: COMPLETE (May 2026).** Ledger Lines,
-  Dotted Notes & Ties, Ear: Rhythm, Piano & Keyboard all shipped.
-- **Phase 2 in progress (May 2026): Chromatic Scale shipped** (clone of
-  scales.html, separate QUESTION_POOLS vs DISTRACTOR_POOLS so chromatic is
-  always asked while majors/minors only appear as distractors). **19 live
-  modules** total. 27-module roster target.
+- **Curriculum build phases 1–4: ALL COMPLETE (May 2026).** Full 27-module
+  roster shipped. **Phase 5 planned (May 2026): score-literacy cluster + selected
+  Reading/Theory expansions — see "Ranked build queue" below and the 10 specs
+  in `/specs/` covering the planned 27 → 37 expansion.**
+    - **Phase 1** — Foundations gaps: Ledger Lines, Dotted Notes & Ties,
+      Ear: Rhythm, Piano & Keyboard.
+    - **Phase 2** — Chromatic Scale + the six expansions (Scales pentatonic
+      + selector, Key Signatures + minor + selector, Primary Chords +
+      minor + selector, Scale Degrees + minor + selector, Roman Numerals +
+      minor + selector, Ear: Scales pentatonic + selector). Intervals
+      clef selector verified.
+    - **Phase 3** — Chord renderer engineering session: `qn-staff.js`
+      v1.3.0 added `buildChord()` + `buildStaffWithChord()`; `qn-audio.js`
+      v1.1.0 added `playChord()`.
+    - **Phase 4** — Theory chord cluster: Triads, Triad Inversions,
+      Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality,
+      Ear: Cadences, Ear: Chord Progressions. All 8 wired into the four
+      surfaces (play.html / path.html MODULES+PATH / qn-profile.js PATH /
+      index.html spine).
+- **Data-claim audit + beta-access gate: shipped (May 2026).** Client-side
+  beta-unlock script (`qn-gate.js`) added to every module; data-storage
+  copy softened across surfaces ahead of the cloud-sync layer.
+- **`qn-cloud.js` scaffolding: shipped (May 2026).** Cloud/sync/account/
+  payment + adult-owner/child-profile schema, structural two-condition
+  consent gate. All flags off; UI not yet built.
+- **Privacy policy + terms of service: drafted (May 2026, in repo as
+  privacy.html / terms.html — for lawyer review).**
 - **play.html redesigned (May 2026):** three collapsible level sections
   (Foundations / Reading / Theory) with progress chips. FOUC-prevention via
   `body.tier-no-anim` + 2×rAF (documented in BUILD_LOG.md). All-expanded by
   default per the catalog-UI genre standard.
 - **index.html "What's Inside" replaced (May 2026):** vertical-spine concept
   view, not module tiles. Decoupled from per-module tiering. Class names
-  prefixed `wi-` to avoid collisions.
-- **Tier reconciliation: DONE (May 2026).** Intervals moved Theory→Reading
-  on play.html (matching path.html which already had it correct). Ear:
-  Intervals and Ear: Scales both moved Theory→Reading per the "ear modules
-  sit with their visual partner" pedagogy (Option B). Theory now contains
-  only harmony modules (Primary Chords, Roman Numerals) and the future chord
-  cluster. All four surfaces (play.html, path.html MODULES + PATH,
-  qn-profile.js PATH, index.html spine taglines) consistent.
-- **Next priority: Phase 2 expansions (Chromatic Scale done).** Scales
-  pentatonic + selector, Key Signatures minor + selector, the four minor-keys
-  expansions (Primary Chords, Scale Degrees, Roman Numerals, Ear:Scales),
-  Intervals clef selector verify. These are EXPANSIONS to existing working
-  modules — NOT clone-and-swap builds — so the additive "copy to a new file"
-  rule does not apply; they are edits in place, and they must not break
-  current Major-key behavior. Treat each as its own session.
-- **Chord renderer session:** queued as Phase 3. Do not attempt chord modules
-  before qn-staff.js extension.
+  prefixed `wi-` to avoid collisions. Landing copy scrub May 2026 removed
+  all "no ads" / "free during beta" claims ahead of Stripe; ear-training
+  chips split Reading "Pitch by ear" / Theory "Harmony by ear".
+- **path.html mobile reorder (May 2026):** on mobile, the "Your next
+  step" card sits on top, with the "Next up on your path" tiles, guide
+  banner, and the path rail stacking below. Desktop layout unchanged.
+  Path rail no longer renders 🔒 glyphs — upcoming modules show as
+  muted dots (the rail is a map, not a menu).
+- **Tier reconciliation: DONE (May 2026).** Intervals moved Theory→Reading;
+  Ear: Intervals and Ear: Scales moved Theory→Reading per the
+  "ear modules sit with their visual partner" pedagogy. Theory now
+  contains only harmony modules + the chord ear training.
+- **Next priorities (no longer curriculum builds — see BUILD_LOG.md for
+  detail):**
+    - **PWA install on the landing page** (own session). Manifest.json,
+      Apple touch icons + meta tags across every module HTML,
+      `beforeinstallprompt` button on landing for Android, Share →
+      "Add to Home Screen" instructions for iOS. Architecture is already
+      PWA-friendly (user verified via bookmark install).
+    - **Adult/child profile UI** — schema scaffolding exists in
+      `qn-cloud.js`; the visible flow doesn't. Lawyer-gated before any
+      cloud sync of child data.
+    - **Monetization track** — Apple/Google sign-in → Stripe + paywall →
+      server-authoritative entitlement → parent-consent gate.
+    - **Landing pillars section** — Pillar 1 title still duplicates section
+      title ("Built for learners"); rewrite proposed but not yet applied.
 - **Still-open visual calibration items:** time-signatures accStartX:72 pin
   (QA first), time-signatures prompt-layout conversion + scales tile
   reconciliation (needs visual harness per §8).
 - See BUILD_LOG.md for complete "Still open / next" list.
+
+---
+
+## Ranked build queue (May 2026 — Phase 5 and beyond)
+
+This is the **prioritized work queue** for chipping away in future sessions.
+Highest-ROI first. Each item links to its spec in `/specs/`. The next session
+should pull from the top of this list unless Jonathan directs otherwise.
+
+ROI methodology: perceived-value gain ÷ build cost. Score-literacy cluster
+(#1–#5) is highest because it closes a real pedagogical gap teachers will
+notice immediately AND is the cheapest possible build (clone-and-swap from
+Accidentals, no shared-file changes). Reading expansions (#6–#8) carry real
+practical value at moderate cost. Non-module multipliers (#9–#10) deliver
+large perceived-value gains without new content. Remaining items are lower
+ROI or audience-boundary cases — build only if conditions warrant.
+
+### Tier A — score-literacy cluster (Foundations · Level 2). Build first, in order.
+
+1. **Tempo Markings** — `/specs/tempo-markings-spec.md`. First in cluster;
+   surfaces cluster-wide new patterns (ordering on a continuum, optional
+   audio metronome) before they multiply across siblings.
+2. **Dynamics** — `/specs/dynamics-spec.md`. Reuses #1 patterns. No audio in v1.
+3. **Articulation** — `/specs/articulation-spec.md`. Includes the tie-vs-slur
+   discrimination skill (a recurring beginner confusion with no current home).
+4. **Score Navigation Symbols** — `/specs/score-navigation-spec.md`. `routing`
+   question type deferred to v1.1.
+5. **Ornaments** — `/specs/ornaments-spec.md`. Completes the score-literacy
+   cluster. Lowest-cost addition (direct Accidentals clone).
+
+### Tier B — Reading expansion. Build after the Tier A cluster ships.
+
+6. **Circle of Fifths** — `/specs/circle-of-fifths-spec.md`. Highest
+   single-module ROI outside the cluster. Re-opens the May 2026 §5 cut.
+   Single new circular SVG renderer (~80 lines, lives in the module file,
+   does not touch `qn-staff.js`).
+7. **Chord Function (Tonic/Predominant/Dominant)** — `/specs/chord-function-spec.md`.
+   Cheapest meaningful Theory expansion — clone of Roman Numerals with a
+   different categorization axis. Adds a new pedagogical skill at the upper
+   edge of Theory's audience cap.
+8. **Transposition** — `/specs/transposition-spec.md`. High real-world value
+   (every band/orchestra student needs it). v1 uses a constrained 4-button-MC
+   format; generative format deferred.
+
+### Tier C — non-module multipliers. Independent of all above.
+
+9. **Mock Exam Mode** — `/specs/mock-exam-mode-spec.md`. Feature, not a
+   module. Feels like 5+ new modules to a user; isn't. Phase A (architecture
+   audit of all 27 modules' QNM contract) is the gate.
+10. **Curriculum Mapping Overlay** — `/specs/curriculum-mapping-spec.md`.
+    Feature, not a module. **⚠️ TIER 3 / LAWYER-GATED for the named-method
+    version.** Generic-language v1 can ship immediately; named-method
+    overlay (ABRSM/RCM/AP/Bastien/Faber) requires legal review per the
+    May 2026 trademark conversation logged in BUILD_LOG.md.
+
+### Tier D — defensible but lower ROI. Build only if conditions warrant.
+
+11. **C Clefs (Alto & Tenor)** — `/specs/c-clefs-spec.md`. Niche audience
+    (viola, cello/bassoon/trombone upper register). Lowest-cost intermediate
+    add. **Requires a `qn-staff.js` renderer extension session before the
+    module build can start** — flag as Tier 3.
+12. **Construction-mode engineering session** — `/specs/construction-mode-engineering-spec.md`.
+    Architectural prereq for any Build-a-X cluster. Roughly Phase 3 sized.
+    Schedule when depth-of-pedagogy becomes the priority over breadth.
+13. **Build-a-Scale / Build-a-Triad / Build-a-Key-Sig cluster** — depends
+    on #12. Becomes a cheap clone-and-swap cluster once construction mode
+    exists. No individual specs yet — write them after #12 ships.
+14. **Non-Chord Tones** — `/specs/non-chord-tones-spec.md`. **Borderline.**
+    Sits at the upper edge of the §2 audience cap. Build only with
+    demonstrated user demand or curriculum-mapping partner pull.
+
+### Notes for the next session
+
+- **The Tier A cluster (#1–#5) can be built fully autonomously** per the
+  "Module builds are autonomous" rule above. No checkpoints needed unless
+  a genuine Tier 3 blocker surfaces (none anticipated — none of the five
+  require shared-file changes).
+- **#7 Chord Function reuses an existing renderer** (`buildStaffWithChord`).
+  Autonomous build.
+- **#6 Circle of Fifths and #8 Transposition are autonomous** but each
+  involves one piece of new visual machinery (circular renderer; instrument
+  labels). Both kept in the module file, no shared-file changes.
+- **#11 C Clefs and #12 Construction-mode are TIER 3 SESSIONS** — they
+  modify shared files. Pause and confirm before starting.
+- **#10 Curriculum Mapping named-method version is TIER 3** — lawyer review
+  required before any ABRSM/AP/Bastien/Faber names ship.
+- The four-surface rule applies to every new module (#1–#8, #11, #13, #14).
+  Each gets `index.html` + `play.html` + `path.html` + `qn-profile.js`
+  updated atomically in the same commit. Module count goes 27 → 28 → 29 → ...
+- The roster scope expansion 27 → 37 was a Tier 3 decision approved by
+  Jonathan in the May 2026 curriculum-gap session. Justification: real
+  score-literacy gap, not audience expansion. Documented in BUILD_LOG.md
+  under "Curriculum gap analysis + Phase 5 spec drafting session."
 
 ---
 

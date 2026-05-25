@@ -1,5 +1,461 @@
 ---
 
+### Pricing/monetization assessment + curriculum gap analysis + Phase 5 spec drafting — May 2026
+
+**Session type:** Strategy + spec-writing session. No code changed. 10 new
+spec files added to `/specs/`. CLAUDE.md updated with a ranked build queue.
+The next several sessions will work from that queue.
+
+**Net result:** A pricing assessment Jonathan can hand to advisors / use as
+internal reference; a curriculum gap analysis that justifies a deliberate
+27 → 37 module roster expansion (Tier 3 decision, approved); 10 specs
+covering 7 new modules + 3 non-module features, all ranked by ROI; a
+documented trademark conversation that gates the curriculum-mapping feature
+behind lawyer review.
+
+**Commits:** none yet — files written, awaiting Jonathan's review and
+explicit go on the commit.
+
+---
+
+#### Part 1 — Pricing & monetization assessment (no code)
+
+Audited the codebase against the question "what does QuizNote cost per
+user to operate, and what pricing structures fit?" Key findings:
+
+- **Per-user cost is effectively zero.** Pure static site (Vercel), all
+  audio is WebAudio synth (`qn-audio.js`), all data in localStorage, no
+  backend, no external API calls beyond Google Fonts + jsDelivr Bravura
+  CDN (both free, cached). Heavy user ≈ $0.015/mo bandwidth on Vercel
+  Pro overage; light user ≈ $0.
+- **Stripe fees are the binding constraint on cheap subscriptions.**
+  $0.99/mo nets ~$0.66 after 2.9% + $0.30; $1.99/mo nets ~$1.63;
+  $4.99 lifetime nets ~$4.55. Sub-$2 monthly subscriptions are
+  margin-fights against payment processors.
+- **Existing scaffolding is honest plumbing.** `qn-cloud.js` has Stripe
+  Checkout pattern (SAQ-A PCI scope), feature flags all OFF, US-only geo
+  gating, two-condition child consent lockout. `qn-profile.js` has
+  `pricingCohort: 'beta'` tag on every existing account → these users
+  are "founders" forever once the go-live lever flips. 7-day trial built
+  but not armed. `trialStatus()` explicitly advisory; real entitlement
+  must be server-authoritative.
+- **No real auth today.** `qn-gate.js` is an explicitly-labeled
+  client-side velvet rope (SHA-256 hash, trivially bypassable). MUST be
+  replaced by server-side auth before any paid feature ships.
+
+Four pricing proposals laid out: (A) cheap subscription no trial,
+(B) lifetime-only, (C) hybrid (trial + sub + lifetime escape hatch),
+(D) donate / pay-what-you-want. **Recommended: Proposal C — free
+Foundations + 7-day trial + $2.99/mo or $19.99/yr + $39.99 lifetime.**
+Rationale: cost structure permits any of them; the hybrid is the one
+that lets the data tell you which audience (subscribers vs.
+one-time buyers) dominates before doubling down.
+
+**No code touched.** Assessment lives in the chat transcript; no
+written deliverable in repo (Jonathan can re-derive from cited file
+references + this log entry if needed).
+
+#### Part 2 — Curriculum gap analysis
+
+CEO/PhD pass: audited the 27-module roster against ABRSM Grades 1–5,
+RCM Levels 1–8, AP Music Theory units 1–8, NAfME standards, and the
+Alfred + Faber method-book series. Reframed the question from "what
+does theory have?" to "what makes the 27 number feel like an undersell?"
+
+**Headline finding:** the roster *count* is generous in this category
+(Tenuto ~14, EarMaster ~16, Duolingo Music ~12, Teoria ~20 — QuizNote
+at 27 is already at the top). The real risks are surface variety
+(many drills look like staff+4-button), coverage type (zero score-
+literacy markings: tempo/dynamics/articulation/symbols), and external
+legibility (no mapping to recognized syllabi).
+
+**Tier A gaps identified (real, build):**
+- Expression markings cluster — tempo, dynamics, articulation, score
+  navigation, ornaments. Zero current coverage; every method book uses
+  these from page 1. Five Foundations modules. Clone-and-swap from
+  Accidentals; no shared-file changes.
+- Circle of Fifths — reopen the May 2026 §5 cut. Iconic visual artifact;
+  its absence reads as a coverage hole regardless of how it's covered
+  elsewhere.
+- Transposition — every band/orchestra student needs it; ABRSM Grade 5
+  tests it.
+
+**Tier B (defensible at intermediate, build):**
+- Chord Function (T/PD/D) — cheapest meaningful Theory expansion;
+  genuinely new pedagogical skill.
+
+**Tier C (build only with demonstrated demand):**
+- C Clefs (alto/tenor) — niche orchestral audience.
+- Non-Chord Tones — at the upper edge of the §2 audience cap.
+
+**Tier D (out of scope, written down to prevent re-litigation):**
+- Modulation, figured bass, voice-leading rules, modes-as-harmony,
+  jazz extensions, sight-singing, non-Western systems. All cited in
+  §2 as out-of-scope; flagged for inclusion in §5's "Deliberately out
+  of scope" list during next project-doc revision.
+
+**Non-module multipliers (real value, not modules):**
+- Mock Exam Mode — recombination of existing question pools; feels like
+  5+ new modules.
+- Curriculum Mapping Overlay — re-organizes existing 27+ modules under
+  ABRSM / RCM / AP / method-book labels. Lawyer-gated for the named-
+  method version.
+- Construction-mode engineering session — unlocks Build-a-X cluster as
+  a future cheap clone-and-swap chain (Phase 3 → Phase 4 pattern).
+
+#### Part 3 — Trademark conversation (Tier 3, documented for future sessions)
+
+Jonathan asked: "Can I get in trouble saying 'click here if you're
+following Bastien and do these exercises which map to their book?'"
+
+Answer summary (documented here so future sessions don't re-litigate):
+
+- **Probably fine if worded carefully**, but Tier 3 — needs a real
+  lawyer review before any named-method copy ships. Claude is not a
+  lawyer.
+- **US nominative fair use** allows referring to a third-party product
+  by its actual name if (1) you can't reasonably identify it otherwise,
+  (2) you use only as much of the mark as needed, (3) you don't suggest
+  sponsorship/endorsement.
+- **Do:** use phrasings like "aligns with the concepts in," "compatible
+  with," "for students working through." Include a disclaimer:
+  "QuizNote is not affiliated with, endorsed by, or sponsored by
+  [marks]. All trademarks are property of their respective owners."
+- **Don't:** use their logos, cover art, exact lesson titles, or imply
+  endorsement. Don't copy their exercise sequences or expressed lesson
+  order. Don't say "official," "approved by," "in partnership with."
+- **Risk by mark holder:** Bastien (Kjos) and Faber lowest; ABRSM,
+  Trinity, RCM actively police marks (consider applying for official
+  partner programs); College Board / AP highest risk (extremely
+  protective of "AP" mark).
+- **Recommended launch path:** ship a **generic-language v1** of
+  curriculum mapping first ("Beginner — first year of theory" /
+  "Grade-1-equivalent" / etc.), no named marks. Add the named-method
+  overlay as v1.1 *only after* lawyer signs off on the disclaimer
+  language and the specific marks used.
+
+This conversation is the source-of-truth gate for the curriculum-mapping
+feature (#10 in the queue). Do not ship named-method copy without
+revisiting this and obtaining lawyer review.
+
+#### Part 4 — Phase 5 specs drafted (10 files added to /specs/)
+
+Roster expansion 27 → 37 approved as a Tier 3 scope decision.
+Justification: closes a real score-literacy gap (5 Foundations modules)
+within the existing audience, plus carefully-bounded Reading/Theory
+expansions. Not an audience-scope change — a roster-scope correction.
+
+Slicing decision: 5 standalone Foundations modules (rather than 1
+mega-module or 2 combined), because the question types and renderers
+differ per topic; the existing module pattern fits each cleanly.
+
+**Specs written (all in `/specs/`):**
+
+Tier A — score-literacy cluster (Foundations):
+- `tempo-markings-spec.md` (#28)
+- `dynamics-spec.md` (#29)
+- `articulation-spec.md` (#30) — includes the tie-vs-slur skill
+- `score-navigation-spec.md` (#31) — `routing` question type deferred to v1.1
+- `ornaments-spec.md` (#32)
+
+Tier B — Reading + Theory expansion:
+- `circle-of-fifths-spec.md` (#33) — re-opens the May 2026 cut
+- `transposition-spec.md` (#35)
+- `chord-function-spec.md` (#34) — cheapest meaningful Theory add
+
+Tier C — defensible / borderline:
+- `c-clefs-spec.md` (#36) — requires `qn-staff.js` extension first
+  (alto/tenor clef glyphs + STEP_TO_Y per clef); flagged as Tier 3
+  renderer-extension session before module build
+- `non-chord-tones-spec.md` (#37) — borderline; build only with
+  demonstrated demand
+
+Non-module features (Tier C multipliers):
+- `mock-exam-mode-spec.md` — Phase A is an architecture audit of all
+  27 modules' QNM contract exposure
+- `curriculum-mapping-spec.md` — lawyer-gated for named-method version
+- `construction-mode-engineering-spec.md` — Phase 3-sized engineering
+  session; unlocks Build-a-X cluster as cheap follow-on clones
+
+All specs follow the canonical `accidentals-spec.md` format. Each
+specifies build source, ROI rank, tiers, question types, distractor
+strategy, theory accuracy notes, renderer requirements (with explicit
+"no `qn-staff.js` changes required" callouts where true), sub-skill
+tagging, and concept explainer card text.
+
+#### Decisions made (Tier 3, approved by Jonathan)
+
+- **Scope expansion 27 → 37 modules** — approved. Not audience
+  expansion; closes a real score-literacy gap within the stated audience.
+- **Slicing: 5 standalone Foundations score-literacy modules** —
+  approved (not 1 mega-module, not 2 combined).
+- **Tier placement: all score-literacy modules in Foundations · Level 2** —
+  approved.
+- **Re-open Circle of Fifths from the May 2026 §5 cut** — approved.
+- **Construction-mode is its own engineering session, not bundled with
+  module builds** — approved (mirrors Phase 3 pattern).
+- **Generic-language curriculum mapping v1 can ship; named-method
+  v1.1 is lawyer-gated** — approved.
+
+#### Ranked build queue established (see CLAUDE.md "Ranked build queue")
+
+The next several sessions will work from a 14-item ranked queue, written
+into a new section of CLAUDE.md. Top of queue: the 5-module Foundations
+score-literacy cluster (Tempo → Dynamics → Articulation → Score Nav →
+Ornaments). Ranking is by ROI = (perceived-value gain) ÷ (build cost),
+not by topic clustering or numerical balance across tiers.
+
+**Tier symmetry was explicitly rejected as a planning goal** — adding
+the same number to Reading and Theory just to balance the chart would
+be padding. Per-module pedagogical merit is the test. Final shape:
+Foundations 9 → 14 (+5), Reading 8 → 10 or 11 (+2 firm, +1 optional),
+Theory 10 → 11 or 12 (+1 firm, +1 borderline).
+
+#### Still open / next
+
+1. **Jonathan reviews this BUILD_LOG entry and approves the commit.**
+2. **Commit the spec files + doc updates** (single commit: 10 new specs +
+   CLAUDE.md ranked queue + this BUILD_LOG entry).
+3. **Next session:** start at top of queue — `tempo-markings-spec.md`.
+   Build autonomously per "Module builds are autonomous" rule. No
+   checkpoints expected until commit/push.
+4. **QUIZNOTE_PROJECT_DOC.md update** is pending — §5 needs four-phase
+   rewrite to add Phase 5 (score-literacy + Reading/Theory expansion),
+   roster header bumped from "27 modules" to "27 live / 37 planned with
+   Phase 5", new entries #28–37 added with status "Planned" and links
+   to spec files. Could be done in this commit or deferred to the
+   Tempo Markings build session. Recommend deferring — easier to land
+   §5 entries module-by-module as each ships, mirroring how Phases 1–4
+   were logged.
+5. **Carried open items from prior sessions** (unchanged):
+   - Visual QA on all 8 Phase 4 chord modules + Phase 2 expansions.
+   - Sampled-piano audio (Tier 2) roadmap item.
+   - time-signatures `accStartX: 72` pin + 2 qn-theme.css holdouts.
+   - PWA install on landing page (own session).
+   - Adult/child profile UI (lawyer-gated).
+   - Monetization track (sign-in → Stripe → entitlement).
+   - Landing pillars Pillar 1 title duplication.
+
+#### CLAUDE.md updates folded into this session
+
+- Phase 4 status line updated to point at Phase 5 as planned (with
+  pointer to the ranked queue + spec files).
+- New section "Ranked build queue (May 2026 — Phase 5 and beyond)"
+  inserted before "Music-theory accuracy" — lists 14 items in priority
+  order with spec-file paths and per-item notes for the next session.
+
+---
+
+### Landing-page copy pass + mobile path reorder + stash rescue — May 2026
+
+**Session type:** Copy/UX scrub on index.html + path.html mobile reorder + an
+unintentional git-stash recovery saga.
+
+**Net result:** path.html mobile-friendly (Your-next-step on top, rail below);
+six "no ads" mentions and the "free during beta" claim removed from
+index.html; the entire "How it works" section deleted; tier-description copy
+on pianoquiz-demo.html and the What's-Inside spine reconciled with the
+post-Phase-1 tier roster (Intervals in Reading; ear chips split
+Pitch-by-ear / Harmony-by-ear); nickname-creation copy on profile.html
+sharpened.
+
+**Commits:**
+- `6cf46a6` path.html: mobile reorder + drop lock metaphor
+- (this session's second commit) Landing copy scrub + ear-training relabel
+  + profile/pianoquiz-demo copy tightening + build log
+
+**path.html — mobile reorder (committed earlier in the session):**
+
+- On mobile the layout now stacks: "Your next step" card on top, "Next up
+  on your path" tiles, purple guide banner, then the path rail at the
+  bottom. Desktop unchanged (rail on left, stage on right). Implementation:
+  CSS `order:` flipped between `.rail` (order: 1) and `.stage` (order: 0)
+  with the existing 880px media query restoring desktop ordering.
+- The path rail no longer renders a 🔒 glyph on upcoming modules. The lock
+  metaphor contradicted the banner copy ("Practice never locks"), and the
+  rail items aren't clickable anyway — the rail is a *map*, not a *menu*.
+  Upcoming nodes are now muted dots; current (★) and done (✓) unchanged.
+  `.node.locked` class renamed to `.node.upcoming` to drop the misleading
+  vocabulary in the code too.
+- "Or jump into anything" → "Next up on your path", and the three tiles
+  switched from a played-frequency mix to the next 3 modules on PATH after
+  the current recommendation. Edge case: if the learner is at the end of
+  the path, backfill with the previous items.
+- Banner copy reworded: "**Your Path guides; Practice never locks.** Every
+  module is open for you to practice whenever you want it — the path just
+  shows what's next."
+
+**index.html — landing copy scrub:**
+
+- Removed all "no ads" mentions (6 of them — hero pill, hero stats tile,
+  pillars section sub, Pillar 1 body, Pillar 2 entire pillar, meta
+  description).
+- Removed "Free during beta" from hero pill (Stripe path is in progress;
+  no longer want a free-forever promise on the page).
+- Hero pill simplified to a single claim: "Follows the music curriculum
+  your teacher uses." Substantive curriculum-alignment claim that answers
+  the first silent question a parent/teacher has on landing.
+- Pink coral pulse on the hero pill dot retired; now reuses existing
+  `pulse-teal` keyframes (same animation as the Try-a-question eyebrow).
+  Visual consistency for free; the coral was reading as alert/urgent
+  instead of healthy/active.
+- "0 / Ads" stat tile → "All / Ages." Same 3-stat layout, swapped a
+  defensive metric for an audience claim.
+- Hero CTA row + stats row both changed from `display: inline-flex` to
+  `display: flex` so stats always sit BELOW the CTAs at every screen size.
+  On wide screens they used to flow inline next to the buttons.
+- Pillar 2 entirely replaced. Old: "No ads" (icon: ⊘). New: "For every
+  learner" (icon: two-person SVG) — "From first notes to intermediate
+  theory — same path, your pace." Title and body intentionally avoid age
+  references ("school-age," "adult learners") per user direction —
+  no age vocabulary anywhere on the landing now.
+- Pillars section sub: "No ads. No filler. Just the practice your teacher
+  assigned, done right." → "Short rounds, sharp focus, the exact skills
+  your method book covers."
+- Pillar 1 body: "No ads, no distractions..." → "Supplementary practice
+  that pairs with whatever your teacher gives you next."
+- **Deleted the entire "How it works" section.** Reason: three sections in
+  a row (Pillars → How it works → What's inside) were all reinforcing the
+  same claim with rotating vocabulary, and "How it works" was the
+  weakest — its 3 steps (Pick / Configure / Play) were generic, applicable
+  to any app. The demo card up top + hero CTA already show "what using it
+  looks like." Removed: HTML section, all `.how`/`.steps`/`.step*` CSS
+  rules (~36 lines), responsive padding override, and the `.step` selector
+  in the IntersectionObserver animation list. Section between Pillars and
+  What's-Inside is now also gone.
+- **What's Inside spine — duplicate "Ear training" chip resolved.** Both
+  Reading and Theory tiers had identical "Ear training" chips. The
+  underlying modules are genuinely different categories of ear work:
+  Reading covers `ear-intervals` + `ear-scales` (pitch-based); Theory
+  covers `ear-chords` + `ear-cadences` + `ear-progressions` (harmony-based).
+  Relabeled: Reading → "Pitch by ear"; Theory → "Harmony by ear." Two
+  distinct categories now read as such, and the spine subtly signals that
+  ear training is woven through the curriculum at different levels of
+  abstraction.
+- Meta description tweaked: "Short rounds, no ads." → "Short rounds, real
+  fluency."
+
+**pianoquiz-demo.html — post-tier-reconciliation copy fix:**
+
+The demo-end promo card's tier descriptions still referenced pre-Phase-1
+tier assignments (Intervals in Theory; no mention of piano modules in
+Foundations). Updated to match the live roster:
+
+- Foundations: now mentions piano modules (Piano Quiz + Piano & Keyboard
+  shipped in Phase 1). "Read notes on the staff and keys, feel rhythm and
+  meter."
+- Reading: now mentions intervals (moved from Theory in the May 2026
+  reconciliation). "Key signatures, scales, and intervals — when the staff
+  feels like home."
+- Theory: harmony-only (no more intervals). "Chords, cadences, and how
+  harmony works."
+
+**profile.html — nickname copy:**
+
+Nickname-creation sub-line on view-nickname tightened. Old: "Pick a fun
+name. Use your real name only if you want to — most people don't."
+New: "Pick a fun nickname — no real names needed."
+
+The prior version softly permitted real names ("only if you want to"),
+which weakens the nickname-first nudge. The new line sets nickname as the
+default expectation. Defensive hygiene for both the pre-cloud
+local-only state (browser autofill, shared devices, screen-sharing) and
+the future adult/child UI when parent/sub-accounts ship. The strong
+minor-protection copy ("never a child's real name") was deliberately left
+for when the adult/child UI exists — putting that language on a screen
+that doesn't have the concept yet would confuse users.
+
+The switcher copy ("Tap a profile to play as them. Or add a new one for
+someone else.") was left as-is — already neutral, doesn't assume adult,
+and "someone else" covers sibling/child/friend without committing to a
+relationship model the data doesn't yet support.
+
+**The stash-rescue saga (worth keeping for future archaeology):**
+
+When pushing the path.html mobile-reorder commit, the local branch was
+behind origin/Dev. Standard fix (stash → rebase → pop) ran into an
+unexpected wrinkle: a parallel `claude/autonomous-module-builds-Ej8Nq`
+branch had landed the full Phase 3 (chord renderer) + Phase 4 (8 chord
+modules) work on Dev independently. The local working tree had the SAME
+work in progress but uncommitted, so the stash captured 13 modified
+tracked files (BUILD_LOG.md, qn-staff.js +199 lines, qn-audio.js, shared
+docs, 8 existing module HTMLs) plus 8 untracked files (the 8 new chord
+HTMLs) which then collided with the now-tracked-on-remote versions of
+those same files. `git stash pop` failed mid-restore (the untracked files
+conflicted with the newly-tracked ones from remote), leaving the stash
+preserved but unapplied.
+
+Per-file md5 diff revealed: shared engines and docs (qn-staff.js,
+qn-audio.js, qn-profile.js, BUILD_LOG.md, QUIZNOTE_PROJECT_DOC.md) were
+**byte-identical** between stash and Dev — both implementations of the
+chord-renderer extension converged. The 16 differing files all differed
+by **exactly 2 lines** (or 10 in dashboard.html's case): a single
+`<script src="qn-gate.js"></script>` insertion that the
+"Data-claim audit + client-side beta access gate" commit added across the
+codebase, plus a small data-claim copy softening on dashboard.html.
+
+**Verdict:** the stash was fully superseded by Dev. Dropped with
+confidence (commit hash `6dad6b1` recorded here in case it's ever needed
+for archaeology). Recovery cost: ~30 minutes of git forensics.
+
+**Lesson worth keeping:** when two parallel Claude sessions build the same
+queued work (Phase 3 chord renderer was on the docket; both sessions
+independently worked it), the engines/docs will converge and the
+per-module HTMLs will diverge only on infrastructure that landed in
+between (here: the beta-gate script tag). Future-proof workflow when
+running parallel sessions on QuizNote: claim the queued item up front in
+a brief commit to Dev (or a tracking file) so both sessions don't
+independently build the same thing.
+
+**Still open / next:**
+
+- **PWA install on the landing page (queued — its own session).**
+  QuizNote's flat-static architecture is already PWA-friendly — the user
+  verified by adding the site to their phone home screen as a bookmark and
+  reports it works "as a mini-app." Productizing the experience needs:
+  `manifest.json` (app name, theme color, `display: standalone`, icons),
+  Apple touch icons + `apple-mobile-web-app-capable` meta tag across every
+  HTML file (not just index — every module needs the meta or it falls back
+  to a Safari window when launched from home screen), a small set of icon
+  assets (192×192, 512×512, plus iOS sizes), and a tap-to-install button on
+  the landing page using `beforeinstallprompt` for Android. **iOS caveat:**
+  Apple does NOT expose a programmatic install API on Safari, so iOS must
+  show a friendly Share → "Add to Home Screen" instruction card. Pair the
+  install CTA with the "No download needed" copy at line ~1853 of
+  index.html. Needs an app icon design first.
+- **Landing-page pillars section repetition not fully resolved.** Pillar 1
+  title is still "Built for learners" which duplicates the section title
+  "Built for learners, not engagement." Proposed (not yet applied):
+  rename Pillar 1 → "Pairs with your lessons", rename Pillar 2 → "From day
+  one", and shorten the section sub so Pillar 4 owns the method-book
+  claim alone. User flagged the repetition; rewrite was tabled
+  mid-session in favor of the "How it works" deletion (which addressed the
+  bigger repetition problem first).
+- **Adult/child UI (Tier 3, lawyer-gated).** Schema scaffolding is in
+  qn-cloud.js (`childProfiles[]`, `consentReceipt`, `profileType`,
+  `managedBy`, two-condition consent gate). The UI flow doesn't exist
+  yet — profile.html has no adult/child distinction. Building this is
+  the right point to add the strong nickname-only copy with the concept
+  visible to the user.
+- **ORYKU branch deleted on GitHub.** All audit/beta-gate work was merged
+  into Dev via PR #55, no commits lost.
+- **Dev merged to main.** Production now has the chord renderer + Phase 4
+  chord modules + data-claim audit + beta gate + privacy/terms + qn-cloud
+  scaffolding, plus (after this commit) the landing copy scrub +
+  mobile path reorder.
+
+**Doc updates flagged for next session:**
+- **CLAUDE.md module count**: line says "19 live modules"; Dev now has
+  27 (Phase 3 + Phase 4 merged via the autonomous-module-builds branch).
+- **CLAUDE.md "Current in-progress state"** section: says "Phase 2 in
+  progress; Chord renderer session queued as Phase 3." Both are now
+  shipped via the parallel session; needs reconciling.
+- **QUIZNOTE_PROJECT_DOC.md §5 (roster) and §12 (phases)**: same — needs
+  reconciling with the current 27-module reality. Recommend a single
+  cleanup session to walk both docs against the live state.
+
+---
+
 ### Phase 2 #1 — Chromatic Scale — May 2026
 
 **Session type:** Build (1 module via clone-and-swap)
