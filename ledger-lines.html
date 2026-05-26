@@ -878,34 +878,28 @@
   const R = NH.render;
   const A = NH.audio;
 
-  // Ledger-line pools — pitches with VISIBLE LEDGER LINES drawn for them.
-  // Includes notes on a ledger AND notes in the space between two ledgers
-  // (where 2 ledger lines flank the notehead). Excludes bare-space notes
-  // immediately outside the staff (D4/G5 treble, F2/B3 bass) — those get
-  // zero ledgers drawn and Note Names already covers them.
-  // Treble: below = C4(on 1st), B3(between 1st-2nd), A3(on 2nd),
-  //                 G3(between 2nd-3rd), F3(on 3rd), E3(between 3rd-4th),
-  //                 D3(on 4th);
-  //         above = A5(on 1st), B5(between 1st-2nd), C6(on 2nd),
-  //                 D6(between 2nd-3rd), E6(on 3rd), F6(between 3rd-4th),
-  //                 G6(on 4th).
-  // Bass:   below = E2(on 1st), D2(between 1st-2nd), C2(on 2nd),
-  //                 B1(between 2nd-3rd), A1(on 3rd), G1(between 3rd-4th),
-  //                 F1(on 4th);
-  //         above = C4(on 1st), D4(between 1st-2nd), E4(on 2nd),
-  //                 F4(between 2nd-3rd), G4(on 3rd), A4(between 3rd-4th),
-  //                 B4(on 4th).
-  // Easy = 1st-2nd ledger range · Medium = + 3rd · Tricky = + 4th.
+  // Ledger-line pools — capped at 3 ledger lines max for readability.
+  // Treble: below = C4(1 line), B3(1), A3(2), G3(2), F3(3), E3(3)
+  //         above = A5(1 line), B5(1), C6(2), D6(2), E6(3), F6(3)
+  // Bass:   below = E2(1 line), D2(1), C2(2), B1(2), A1(3), G1(3)
+  //         above = C4(1 line), D4(1), E4(2), F4(2), G4(3), A4(3)
+  // Easy = 1 ledger line · Medium = up to 2 · Tricky = up to 3 (max).
+  // Ledger-line counts per note:
+  //   Treble below: C4/B3 = 1, A3/G3 = 2, F3/E3 = 3
+  //   Treble above: A5/B5 = 1, C6/D6 = 2, E6/F6 = 3
+  //   Bass below:   E2/D2 = 1, C2/B1 = 2, A1/G1 = 3
+  //   Bass above:   C4/D4 = 1, E4/F4 = 2, G4/A4 = 3
+  // Never exceeds 3 ledger lines for readability.
   const RANGES = {
     treble: {
-      easy:   ['C4','B3','A3','A5','B5','C6'],
-      medium: ['C4','B3','A3','A5','B5','C6','G3','F3','D6','E6'],
-      tricky: ['C4','B3','A3','A5','B5','C6','G3','F3','D6','E6','E3','D3','F6','G6'],
+      easy:   ['C4','B3','A5','B5'],
+      medium: ['C4','B3','A5','B5','A3','G3','C6','D6'],
+      tricky: ['C4','B3','A5','B5','A3','G3','C6','D6','F3','E3','E6','F6'],
     },
     bass: {
-      easy:   ['E2','D2','C2','C4','D4','E4'],
-      medium: ['E2','D2','C2','C4','D4','E4','B1','A1','F4','G4'],
-      tricky: ['E2','D2','C2','C4','D4','E4','B1','A1','F4','G4','G1','F1','A4','B4'],
+      easy:   ['E2','D2','C4','D4'],
+      medium: ['E2','D2','C4','D4','C2','B1','E4','F4'],
+      tricky: ['E2','D2','C4','D4','C2','B1','E4','F4','A1','G1','G4','A4'],
     },
   };
 
