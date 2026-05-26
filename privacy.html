@@ -110,6 +110,16 @@
   .toc li { margin-bottom: 7px; }
   .toc a { color: var(--teal-dk); font-weight: 700; text-decoration: none; font-size: 0.94rem; }
   .toc a:hover { text-decoration: underline; }
+  @media (max-width: 640px) {
+    .toc { padding: 0; border: none; box-shadow: none; background: none; margin-bottom: 32px; }
+    .toc-details { background: white; border: 2.5px solid var(--ink); border-radius: 20px; padding: 18px 22px; box-shadow: 0 5px 0 var(--ink); }
+    .toc-details summary { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+    .toc-details summary::after { content: '▾'; font-size: 18px; }
+    .toc-details[open] summary::after { content: '▴'; }
+    .toc-details summary::-webkit-details-marker { display: none; }
+    .toc-title { display: none; }
+    .toc-details ol { margin-top: 14px; }
+  }
 
   .doc-section { margin-bottom: 44px; scroll-margin-top: 80px; }
   h2 {
@@ -220,6 +230,8 @@
 
   <nav class="toc">
     <p class="toc-title">Contents</p>
+    <details class="toc-details">
+    <summary>Contents</summary>
     <ol>
       <li><a href="#s1">Who We Are</a></li>
       <li><a href="#s2">What's Active Now vs. What's Planned</a></li>
@@ -236,6 +248,7 @@
       <li><a href="#s13">Changes to This Policy</a></li>
       <li><a href="#s14">Contact Us</a></li>
     </ol>
+    </details>
   </nav>
 
   <!-- ============================================================

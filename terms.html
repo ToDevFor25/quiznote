@@ -135,8 +135,15 @@
     font-weight: 600;
   }
   .toc a:hover { text-decoration: underline; }
-  @media (max-width: 560px) {
-    .toc ol { columns: 1; }
+  @media (max-width: 640px) {
+    .toc { padding: 0; border: none; box-shadow: none; background: none; margin-bottom: 24px; }
+    .toc-details { background: white; border: 2.5px solid var(--ink); border-radius: 16px; padding: 16px 20px; box-shadow: 0 4px 0 var(--ink); }
+    .toc-details summary { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+    .toc-details summary::after { content: '▾'; font-size: 18px; }
+    .toc-details[open] summary::after { content: '▴'; }
+    .toc-details summary::-webkit-details-marker { display: none; }
+    .toc-title { display: none; }
+    .toc-details ol { margin-top: 12px; columns: 1; }
   }
 
   .doc-section {
@@ -255,6 +262,8 @@
 
   <nav class="toc">
     <p class="toc-title">Contents</p>
+    <details class="toc-details">
+    <summary>Contents</summary>
     <ol>
       <li><a href="#s1">Acceptance of Terms</a></li>
       <li><a href="#s2">Description of Service</a></li>
@@ -274,6 +283,7 @@
       <li><a href="#s16">Changes to These Terms</a></li>
       <li><a href="#s17">Contact</a></li>
     </ol>
+    </details>
   </nav>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
