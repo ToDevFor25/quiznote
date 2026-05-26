@@ -230,14 +230,12 @@
     display: inline-block;
     width: 36px;
   }
-  .dn-symbol.dn-tied .dn-tie-arc {
+  .dn-tie-svg {
     position: absolute;
-    bottom: 20px;
-    height: 16px;
-    border: 2.5px solid currentColor;
-    border-top: 0;
-    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
+    overflow: visible;
   }
 
   /* Explosion FX layer — full-screen overlay (Dotted Notes & Ties exploding symbols) */
@@ -891,7 +889,7 @@
       const parts = sym.parts.map(function (p) {
         return '<span class="dn-glyph">' + p.char + (p.dotted ? dotSpan(p.char) : '') + '</span>';
       }).join('<span class="dn-tie-gap"></span>');
-      container.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
+      container.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '</div>';
       positionTieArc(container);
     } else {
       const dot = sym.dotted ? dotSpan(sym.char) : '';
@@ -903,15 +901,29 @@
     requestAnimationFrame(function () {
       var parent = container.querySelector('.dn-tied');
       var glyphs = container.querySelectorAll('.dn-glyph');
-      var arc = container.querySelector('.dn-tie-arc');
-      if (!parent || glyphs.length < 2 || !arc) return;
+      if (!parent || glyphs.length < 2) return;
+      var old = parent.querySelector('.dn-tie-svg');
+      if (old) old.remove();
       var pr = parent.getBoundingClientRect();
       var g1 = glyphs[0].getBoundingClientRect();
       var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
       var x1 = (g1.left - pr.left) + g1.width * 0.31;
       var x2 = (g2.left - pr.left) + g2.width * 0.31;
-      arc.style.left = x1 + 'px';
-      arc.style.width = (x2 - x1) + 'px';
+      var y = (g1.bottom + g2.bottom) / 2 - pr.top - 6;
+      var depth = 14;
+      var midX = (x1 + x2) / 2;
+      var ns = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('class', 'dn-tie-svg');
+      svg.setAttribute('viewBox', '0 0 ' + pr.width + ' ' + pr.height);
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', 'M' + x1 + ',' + y + ' Q' + midX + ',' + (y + depth) + ' ' + x2 + ',' + y);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', '#2A2A3E');
+      path.setAttribute('stroke-width', '2.5');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+      parent.appendChild(svg);
     });
   }
 
