@@ -822,7 +822,7 @@
   }
 
   function patternSVG(notes) {
-    var w = 160, h = 48, cy = 28, stemH = 20;
+    var w = 160, h = 48, cy = 16, stemH = 22;
     var rx = 5.5, ry = 4, tilt = -14, ink = '#2A2A3E';
     var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
     svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
@@ -839,8 +839,8 @@
       var p = positions[i], filled = p.b < 2;
       svg += '<ellipse cx="'+p.cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+tilt+' '+p.cx+' '+cy+')" fill="'+(filled?ink:'none')+'" stroke="'+ink+'" stroke-width="'+(filled?'1':'2')+'"/>';
       if (p.b < 4) {
-        var sx = p.cx + rx*0.7;
-        svg += '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy-stemH)+'" stroke="'+ink+'" stroke-width="1.8"/>';
+        var sx = p.cx - rx*0.7;
+        svg += '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="1.8"/>';
       }
     }
     var i = 0;
@@ -850,12 +850,12 @@
         while (i < positions.length && positions[i].b < 1) i++;
         var groupEnd = i - 1;
         if (groupEnd > groupStart) {
-          var x1 = positions[groupStart].cx + rx*0.7;
-          var x2 = positions[groupEnd].cx + rx*0.7;
-          svg += '<line x1="'+x1+'" y1="'+(cy-stemH)+'" x2="'+x2+'" y2="'+(cy-stemH)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
+          var x1 = positions[groupStart].cx - rx*0.7;
+          var x2 = positions[groupEnd].cx - rx*0.7;
+          svg += '<line x1="'+x1+'" y1="'+(cy+stemH)+'" x2="'+x2+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
         } else {
-          var sx = positions[groupStart].cx + rx*0.7;
-          svg += '<path d="M'+sx+','+(cy-stemH)+' c2,3 5,7 2,12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+          var sx = positions[groupStart].cx - rx*0.7;
+          svg += '<path d="M'+sx+','+(cy+stemH)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
         }
       } else {
         i++;
