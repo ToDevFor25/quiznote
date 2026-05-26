@@ -783,14 +783,21 @@
     'eeqqq':   { notes: [0.5,0.5,1,1,1] },
     'qeeh':    { notes: [1,0.5,0.5,2] },
     'heeq':    { notes: [2,0.5,0.5,1] },
-    'eehqq':   { notes: [0.5,0.5,0.5,0.5,2] },
+    'eeeeh':   { notes: [0.5,0.5,0.5,0.5,2] },
     'qeeqq':   { notes: [1,0.5,0.5,1,1] },
+    'eqqe':    { notes: [0.5,0.5,1,1,0.5,0.5] },
+    'qeqe':    { notes: [1,0.5,0.5,1,0.5,0.5] },
+    'heee':    { notes: [2,0.5,0.5,0.5,0.5] },
+    'eeqh':    { notes: [0.5,0.5,1,2] },
     'eeqeeq':  { notes: [0.5,0.5,1,0.5,0.5,1] },
     'qeeeeq':  { notes: [1,0.5,0.5,0.5,0.5,1] },
     'eeeeeeee':{ notes: [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5] },
     'hqee':    { notes: [2,1,0.5,0.5] },
     'eeeeqq':  { notes: [0.5,0.5,0.5,0.5,1,1] },
     'qqeeee':  { notes: [1,1,0.5,0.5,0.5,0.5] },
+    'eehee':   { notes: [0.5,0.5,2,0.5,0.5] },
+    'qeeeee':  { notes: [1,0.5,0.5,0.5,0.5,0.5,0.5] },
+    'eeeeqe':  { notes: [0.5,0.5,0.5,0.5,1,0.5,0.5] },
   };
 
   var TEMPO_BPM = 80;
@@ -940,9 +947,9 @@
 
   // ============ QNM contract adapter ============
   var POOLS = {
-    easy:   ['qqqq','hh','hqq','qqh','w','qhq'],
-    medium: ['qqqq','hh','hqq','qqh','w','qhq','qqeeq','eeqqq','qeeh','heeq','eehqq','qeeqq'],
-    tricky: ['qqqq','hh','hqq','qqh','w','qhq','qqeeq','eeqqq','qeeh','heeq','eehqq','qeeqq','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee'],
+    easy:   ['qqqq','hh','hqq','qqh','qhq'],
+    medium: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh'],
+    tricky: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee','eehee','qeeeee','eeeeqe'],
   };
 
   function buildChoices(correctKey, pool) {
