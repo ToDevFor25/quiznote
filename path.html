@@ -336,7 +336,6 @@
     'piano-keyboard':  { name: 'Piano & Keyboard', tier: 'foundations', sub: 'see the key, name the note' },
     'note-values':     { name: 'Note Values',      tier: 'foundations', sub: 'how long each note lasts' },
     'dotted-notes':    { name: 'Dotted Notes & Ties', tier: 'foundations', sub: 'dots and ties extend duration' },
-    'ear-rhythm':      { name: 'Ear: Rhythm',       tier: 'foundations', sub: 'hear and name the duration' },
     'time-signatures': { name: 'Time Signatures',  tier: 'foundations', sub: 'read the meter' },
     'accidentals':     { name: 'Accidentals',      tier: 'foundations', sub: 'sharp, flat, natural' },
     'tempo-markings':  { name: 'Tempo Markings',   tier: 'foundations', sub: 'how fast — and how it changes' },
@@ -366,7 +365,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -399,7 +398,6 @@
     'piano-keyboard':  'pk_',
     'note-values':     'nv_',
     'dotted-notes':    'dn_',
-    'ear-rhythm':      'er_',
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
     'scales':          'sc_',
