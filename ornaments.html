@@ -198,25 +198,16 @@
   .choices-grid.choices-pair .choice-btn {
     min-height: 70px;
     font-size: clamp(18px, 5vw, 24px);
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
   }
   /* Word-tile (long-text) choices — used for meaning + change types. */
   .choices-grid.choices-wordy .choice-btn {
     font-size: clamp(13px, 3.5vw, 16px);
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 600;
     line-height: 1.2;
     padding: 10px 8px;
     min-height: 60px;
   }
   /* Term-tile (italic serif) choices — used for metronome type. */
   .choices-grid.choices-terms .choice-btn {
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
     font-size: clamp(17px, 4.5vw, 22px);
   }
 
@@ -864,7 +855,7 @@
     if (opts.kind === 'trill' || opts.kind === 'upperMordent' || opts.kind === 'lowerMordent' || opts.kind === 'turn' || opts.kind === 'invertedTurn') {
       var g = GLYPH[opts.kind];
       var sz = opts.kind === 'trill' ? 28 : 26;
-      svg += '<text x="' + cx + '" y="' + (cy - 30) + '" font-family="Bravura Text" font-size="' + sz + '" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
+      svg += '<text x="' + cx + '" y="' + (cy - 40) + '" font-family="Bravura Text" font-size="' + sz + '" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
     }
 
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
@@ -1037,16 +1028,17 @@
     var pair = rand(pairs);
     var q = rand(pair.questions);
     var correctName = ORNAMENTS[q.answer].name;
-    var choicesD = shuffle([
-      { label: ORNAMENTS[pair.a].name, correct: q.answer === pair.a },
-      { label: ORNAMENTS[pair.b].name, correct: q.answer === pair.b },
-    ]);
+    var correctIsA = q.answer === pair.a;
+    var choicesD = [
+      { label: 'A', correct: correctIsA },
+      { label: 'B', correct: !correctIsA },
+    ];
     return {
       type: 'discriminate', skill: 'discriminate',
       prompt: q.q,
       pair: [{ kind: RENDER_KIND[pair.a] }, { kind: RENDER_KIND[pair.b] }],
       display: correctName,
-      choices: choicesD, answer: correctName
+      choices: choicesD, answer: (correctIsA ? 'A' : 'B')
     };
   }
 

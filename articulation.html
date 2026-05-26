@@ -198,25 +198,16 @@
   .choices-grid.choices-pair .choice-btn {
     min-height: 70px;
     font-size: clamp(18px, 5vw, 24px);
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
   }
   /* Word-tile (long-text) choices — used for meaning + change types. */
   .choices-grid.choices-wordy .choice-btn {
     font-size: clamp(13px, 3.5vw, 16px);
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 600;
     line-height: 1.2;
     padding: 10px 8px;
     min-height: 60px;
   }
   /* Term-tile (italic serif) choices — used for metronome type. */
   .choices-grid.choices-terms .choice-btn {
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
     font-size: clamp(17px, 4.5vw, 22px);
   }
 
@@ -815,8 +806,8 @@
   // Build a short 5-line staff SVG with a single notehead at (cx, cy) and
   // optional articulation glyph above/below.
   function buildSingleNote(opts) {
-    var w = 220, h = 130;
-    var midY = 70, gap = 9;  // staff bottom at midY + 2*gap; notehead near middle line
+    var w = 220, h = 180;
+    var midY = 90, gap = 9;  // staff bottom at midY + 2*gap; notehead near middle line
     var lines = '';
     for (var i = 0; i < 5; i++) {
       var y = midY - 2*gap + i*gap;
@@ -832,9 +823,9 @@
       // Most marks go below the notehead (since stem is up). Fermata and
       // breath mark go above.
       var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var ay = above ? (cy - 24) : (cy + 22);
+      var ay = above ? (cy - 38) : (cy + 40);
       var g = GLYPH[opts.articulation] || '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="26" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
+      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="56" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1">' + g + '</text>';
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
@@ -1003,10 +994,10 @@
     // discriminate (tie vs slur)
     var samePitch = Math.random() < 0.5;
     var correctD = samePitch ? 'Tie' : 'Slur';
-    var choicesD = shuffle([
+    var choicesD = [
       { label: 'Tie', correct: correctD === 'Tie' },
       { label: 'Slur', correct: correctD === 'Slur' },
-    ]);
+    ];
     return {
       type: 'discriminate', skill: 'discriminate',
       prompt: 'Is this a tie or a slur?',

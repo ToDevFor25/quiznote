@@ -112,6 +112,7 @@
     padding: 18px 14px;
     gap: 6px;
     text-align: center;
+    overflow: hidden;
   }
   .term-primary {
     font-family: 'Libre Caslon Text', 'Times New Roman', serif;
@@ -129,12 +130,12 @@
     font-family: 'Bravura Text', serif;
     font-style: normal;
     font-weight: 400;
-    font-size: clamp(56px, 14vw, 88px);
+    font-size: clamp(44px, 11vw, 72px);
     line-height: 1;
     color: var(--ink);
     letter-spacing: 0.02em;
   }
-  .term-card.pair .term-primary.dynamic-glyph { font-size: clamp(42px, 11vw, 64px); }
+  .term-card.pair .term-primary.dynamic-glyph { font-size: clamp(32px, 8vw, 52px); }
   .term-secondary {
     font-family: 'Libre Caslon Text', 'Times New Roman', serif;
     font-style: italic;
@@ -153,6 +154,8 @@
     flex: 1;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px;
+    overflow: hidden;
+    min-width: 0;
   }
   .term-card.pair .term-divider {
     width: 2px; align-self: stretch;
@@ -208,25 +211,16 @@
   .choices-grid.choices-pair .choice-btn {
     min-height: 70px;
     font-size: clamp(18px, 5vw, 24px);
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
   }
   /* Word-tile (long-text) choices — used for meaning + change types. */
   .choices-grid.choices-wordy .choice-btn {
     font-size: clamp(13px, 3.5vw, 16px);
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 600;
     line-height: 1.2;
     padding: 10px 8px;
     min-height: 60px;
   }
   /* Term-tile (italic serif) choices — used for metronome type. */
   .choices-grid.choices-terms .choice-btn {
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
     font-size: clamp(17px, 4.5vw, 22px);
   }
 
@@ -1005,15 +999,16 @@
       }
       var aD = DYNAMICS[sorted[iA]], bD = DYNAMICS[sorted[iB]];
       var pair = [aD, bD];
-      var louder = aD.loud > bD.loud ? aD.name : bD.name;
-      var choices2 = shuffle(pair.map(function(d){
-        return { label: d.name, correct: d.name === louder, spelling: d.spelling };
-      }));
+      var aIsLouder = aD.loud > bD.loud;
+      var choices2 = [
+        { label: 'A', correct: aIsLouder },
+        { label: 'B', correct: !aIsLouder },
+      ];
       return {
         type: 'ordering', skill: 'ordering',
         prompt: 'Which is louder?',
         pair: pair,
-        choices: choices2, answer: louder
+        choices: choices2, answer: (aIsLouder ? 'A' : 'B')
       };
     }
 

@@ -847,7 +847,7 @@
       inner += t.svg + b.svg;
       wrap.innerHTML = `<svg viewBox="0 0 ${width + 50} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
     } else {
-      const width = 360, lineGap = 16, bottomY = 130, height = 200;
+      const width = 360, lineGap = 16, bottomY = 185, height = 310;
       const { svg } = buildStaff({ clef, pitch: p, width, lineGap, bottomY });
       wrap.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`;
     }
@@ -1176,7 +1176,8 @@
     const pitch = parsePitch(pick);
     let clef = state.settings.clef;
     if (clef === 'both') {
-      const d = diatonicStep(pitch.letter, pitch.octave) - clefBottomStep('treble');
+      var step = NH.music.diatonicStep;
+      var d = step(pitch.letter, pitch.octave) - step('E', 4);
       clef = (d <= -2 || d >= 10) ? 'treble' : 'bass';
     }
     state.current = { pitch, clef };
