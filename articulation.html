@@ -823,7 +823,7 @@
       // Most marks go below the notehead (since stem is up). Fermata and
       // breath mark go above.
       var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var ay = above ? (cy - 30) : (cy + 28);
+      var ay = above ? (cy - 34) : (cy + 36);
       var g = GLYPH[opts.articulation] || '';
       art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="42" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="0.8">' + g + '</text>';
     }
