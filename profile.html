@@ -838,7 +838,7 @@ footer .sep { margin: 0 8px; }
   }
 
   document.getElementById('switcher-add').addEventListener('click', function () {
-    if (!QN.profile.account.canAddProfile()) {
+    if (!QN.account.canAddProfile()) {
       showView('cap-reached');
       return;
     }
