@@ -56,16 +56,17 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #555; font-weight: 700; }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
+  min-height: 180px;
   overflow: hidden;
   position: relative;
+  padding: 14px 14px 10px;
 }
 
 /* ── Symbol rendering ── */
 .dn-symbol {
   font-family: 'Bravura Text', serif;
-  font-size: var(--dn-font-size, 140px);
-  line-height: var(--dn-line-height, 1.4);
+  font-size: var(--dn-font-size, 80px);
+  line-height: var(--dn-line-height, 1.35);
   color: #2a2a3e;
   user-select: none;
   display: flex;
@@ -86,12 +87,12 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #555; font-weight: 700; }
 }
 .dn-symbol.dn-tied .dn-tie-gap {
   display: inline-block;
-  width: var(--tie-note-gap, 26px);
+  width: var(--tie-note-gap, 36px);
 }
 .dn-symbol.dn-tied .dn-tie-arc {
   position: absolute;
-  bottom: var(--tie-bottom, 65px);
-  height: var(--tie-height, 19px);
+  bottom: var(--tie-bottom, 26px);
+  height: var(--tie-height, 20px);
   border: var(--tie-border, 3px) solid currentColor;
   border-top: 0;
   border-radius: 0 0 50% 50% / 0 0 100% 100%;
@@ -151,28 +152,28 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #555; font-weight: 700; }
 <h3>Tie Arc</h3>
 <div class="controls">
   <label>bottom (px)</label>
-  <input type="range" id="tie-bottom" min="20" max="120" value="65">
-  <span class="val" id="tie-bottom-val">65</span>
+  <input type="range" id="tie-bottom" min="5" max="80" value="26">
+  <span class="val" id="tie-bottom-val">26</span>
 
   <label>height (px)</label>
-  <input type="range" id="tie-height" min="6" max="40" value="19">
-  <span class="val" id="tie-height-val">19</span>
+  <input type="range" id="tie-height" min="6" max="40" value="20">
+  <span class="val" id="tie-height-val">20</span>
 
   <label>border (px)</label>
   <input type="range" id="tie-border" min="1" max="6" value="3" step="0.5">
   <span class="val" id="tie-border-val">3</span>
 
   <label>note gap (px)</label>
-  <input type="range" id="tie-note-gap" min="0" max="60" value="26">
-  <span class="val" id="tie-note-gap-val">26</span>
+  <input type="range" id="tie-note-gap" min="0" max="60" value="36">
+  <span class="val" id="tie-note-gap-val">36</span>
 
   <label>pad-bottom (px)</label>
   <input type="range" id="tie-pad-bottom" min="0" max="40" value="0">
   <span class="val" id="tie-pad-bottom-val">0</span>
 
   <label>glyph anchor (%)</label>
-  <input type="range" id="tie-anchor" min="10" max="60" value="35">
-  <span class="val" id="tie-anchor-val">35</span>
+  <input type="range" id="tie-anchor" min="10" max="60" value="31">
+  <span class="val" id="tie-anchor-val">31</span>
 </div>
 
 <!-- ═══ SECTION 2: Dotted notes (per-type) ═══ -->
@@ -210,12 +211,12 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #555; font-weight: 700; }
 <h2>3 &mdash; Symbol Size (bleed fix)</h2>
 <div class="controls">
   <label>font-size (px)</label>
-  <input type="range" id="dn-font-size" min="80" max="160" value="140">
-  <span class="val" id="dn-font-size-val">140</span>
+  <input type="range" id="dn-font-size" min="40" max="160" value="80">
+  <span class="val" id="dn-font-size-val">80</span>
 
   <label>line-height</label>
-  <input type="range" id="dn-line-height" min="0.8" max="2.0" value="1.4" step="0.05">
-  <span class="val" id="dn-line-height-val">1.4</span>
+  <input type="range" id="dn-line-height" min="0.8" max="2.0" value="1.35" step="0.05">
+  <span class="val" id="dn-line-height-val">1.35</span>
 </div>
 
 <!-- ═══ SECTION 4: Output ═══ -->
