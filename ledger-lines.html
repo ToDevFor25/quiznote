@@ -1175,7 +1175,10 @@
 
     const pitch = parsePitch(pick);
     let clef = state.settings.clef;
-    if (clef === 'both') clef = pitch.midi >= 60 ? 'treble' : 'bass';
+    if (clef === 'both') {
+      const d = diatonicStep(pitch.letter, pitch.octave) - clefBottomStep('treble');
+      clef = (d <= -2 || d >= 10) ? 'treble' : 'bass';
+    }
     state.current = { pitch, clef };
 
     els['q-num'].textContent = state.q;
