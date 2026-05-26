@@ -864,7 +864,7 @@
     if (opts.kind === 'trill' || opts.kind === 'upperMordent' || opts.kind === 'lowerMordent' || opts.kind === 'turn' || opts.kind === 'invertedTurn') {
       var g = GLYPH[opts.kind];
       var sz = opts.kind === 'trill' ? 28 : 26;
-      svg += '<text x="' + cx + '" y="' + (cy - 30) + '" font-family="Bravura Text" font-size="' + sz + '" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
+      svg += '<text x="' + cx + '" y="' + (cy - 40) + '" font-family="Bravura Text" font-size="' + sz + '" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
     }
 
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
