@@ -825,7 +825,7 @@
       var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
       var ay = above ? (cy - 30) : (cy + 28);
       var g = GLYPH[opts.articulation] || '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="34" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="0.5">' + g + '</text>';
+      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="42" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="0.8">' + g + '</text>';
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
