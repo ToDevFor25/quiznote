@@ -195,8 +195,8 @@
   /* Bravura Text symbol display */
   .dn-symbol {
     font-family: 'Bravura Text', serif;
-    font-size: 140px;
-    line-height: 1.4;
+    font-size: 80px;
+    line-height: 1.35;
     color: var(--ink);
     user-select: none;
     display: flex;
@@ -218,7 +218,7 @@
     position: relative;
     flex-direction: row;
     gap: 0;
-    padding-bottom: 18px;    /* room for the tie arc below */
+    padding-bottom: 0;
   }
   .dn-symbol.dn-tied .dn-glyph {
     font-family: inherit;
@@ -228,13 +228,13 @@
   }
   .dn-symbol.dn-tied .dn-tie-gap {
     display: inline-block;
-    width: 30px;
+    width: 36px;
   }
   .dn-symbol.dn-tied .dn-tie-arc {
     position: absolute;
-    bottom: 65px;
-    height: 19px;
-    border: 3px solid currentColor;
+    bottom: 20px;
+    height: 16px;
+    border: 2.5px solid currentColor;
     border-top: 0;
     border-radius: 0 0 50% 50% / 0 0 100% 100%;
     pointer-events: none;
@@ -864,18 +864,37 @@
   }
 
   const AUG_DOT = '\uE1E7';
+  const GLYPH_NOTE_TYPE = {};
+  GLYPH_NOTE_TYPE['\uE1D5'] = 'quarter';
+  GLYPH_NOTE_TYPE['\uE1D3'] = 'half';
+  GLYPH_NOTE_TYPE['\uE1D7'] = 'eighth';
+  GLYPH_NOTE_TYPE['\uE1D9'] = 'sixteenth';
+  GLYPH_NOTE_TYPE['\uE1D2'] = 'whole';
+  const DOT_OFFSETS = {
+    quarter:   { x: 4, y: 4 },
+    half:      { x: 3, y: 4 },
+    eighth:    { x: -9, y: 4 },
+    sixteenth: { x: -9, y: 4 },
+    whole:     { x: 3, y: 4 },
+  };
+
+  function dotSpan(glyphChar) {
+    var t = GLYPH_NOTE_TYPE[glyphChar] || 'quarter';
+    var o = DOT_OFFSETS[t] || { x: 0, y: 0 };
+    return '<span style="position:relative;left:' + o.x + 'px;top:' + o.y + 'px">' + AUG_DOT + '</span>';
+  }
 
   function renderSymbol(container, key) {
     const sym = SYMBOLS[key];
     if (!sym) return;
     if (sym.kind === 'tied') {
       const parts = sym.parts.map(function (p) {
-        return '<span class="dn-glyph">' + p.char + (p.dotted ? AUG_DOT : '') + '</span>';
+        return '<span class="dn-glyph">' + p.char + (p.dotted ? dotSpan(p.char) : '') + '</span>';
       }).join('<span class="dn-tie-gap"></span>');
       container.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
       positionTieArc(container);
     } else {
-      const dot = sym.dotted ? AUG_DOT : '';
+      const dot = sym.dotted ? dotSpan(sym.char) : '';
       container.innerHTML = '<div class="dn-symbol">' + sym.char + dot + '</div>';
     }
   }
@@ -889,8 +908,8 @@
       var pr = parent.getBoundingClientRect();
       var g1 = glyphs[0].getBoundingClientRect();
       var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
-      var x1 = (g1.left - pr.left) + g1.width * 0.35;
-      var x2 = (g2.left - pr.left) + g2.width * 0.35;
+      var x1 = (g1.left - pr.left) + g1.width * 0.31;
+      var x2 = (g2.left - pr.left) + g2.width * 0.31;
       arc.style.left = x1 + 'px';
       arc.style.width = (x2 - x1) + 'px';
     });
