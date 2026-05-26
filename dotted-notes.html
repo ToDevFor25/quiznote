@@ -912,6 +912,12 @@
       var x2 = (g2.left - pr.left) + g2.width * 0.31;
       arc.style.left = x1 + 'px';
       arc.style.width = (x2 - x1) + 'px';
+      var noteY = Math.max(
+        (g1.top - pr.top) + g1.height * 0.68,
+        (g2.top - pr.top) + g2.height * 0.68
+      );
+      arc.style.top = noteY + 'px';
+      arc.style.bottom = 'auto';
     });
   }
 
