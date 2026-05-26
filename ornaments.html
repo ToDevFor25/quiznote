@@ -1037,16 +1037,17 @@
     var pair = rand(pairs);
     var q = rand(pair.questions);
     var correctName = ORNAMENTS[q.answer].name;
+    var correctIsA = q.answer === pair.a;
     var choicesD = shuffle([
-      { label: ORNAMENTS[pair.a].name, correct: q.answer === pair.a },
-      { label: ORNAMENTS[pair.b].name, correct: q.answer === pair.b },
+      { label: 'A', correct: correctIsA },
+      { label: 'B', correct: !correctIsA },
     ]);
     return {
       type: 'discriminate', skill: 'discriminate',
       prompt: q.q,
       pair: [{ kind: RENDER_KIND[pair.a] }, { kind: RENDER_KIND[pair.b] }],
       display: correctName,
-      choices: choicesD, answer: correctName
+      choices: choicesD, answer: (correctIsA ? 'A' : 'B')
     };
   }
 
