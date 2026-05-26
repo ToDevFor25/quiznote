@@ -89,7 +89,7 @@
   // ─────────────────────────────────────────────────────────────
 
   const SHARP_STEPS_TREBLE = [8, 5, 9, 6, 3, 7, 4];
-  const FLAT_STEPS_TREBLE  = [4, 7, 3, 6, 2, 5, 8];
+  const FLAT_STEPS_TREBLE  = [4, 7, 3, 6, 2, 5, 1];
   const SHARP_STEPS_BASS   = [6, 3, 7, 4, 1, 5, 2];
   const FLAT_STEPS_BASS    = [2, 5, 1, 4, 0, 3, -1];
 
