@@ -232,10 +232,8 @@
   }
   .dn-symbol.dn-tied .dn-tie-arc {
     position: absolute;
-    bottom: 38px;
-    left: 32%;
-    width: 36%;
-    height: 22px;
+    bottom: 65px;
+    height: 19px;
     border: 3px solid currentColor;
     border-top: 0;
     border-radius: 0 0 50% 50% / 0 0 100% 100%;
@@ -875,10 +873,27 @@
         return '<span class="dn-glyph">' + p.char + (p.dotted ? AUG_DOT : '') + '</span>';
       }).join('<span class="dn-tie-gap"></span>');
       container.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
+      positionTieArc(container);
     } else {
       const dot = sym.dotted ? AUG_DOT : '';
       container.innerHTML = '<div class="dn-symbol">' + sym.char + dot + '</div>';
     }
+  }
+
+  function positionTieArc(container) {
+    requestAnimationFrame(function () {
+      var parent = container.querySelector('.dn-tied');
+      var glyphs = container.querySelectorAll('.dn-glyph');
+      var arc = container.querySelector('.dn-tie-arc');
+      if (!parent || glyphs.length < 2 || !arc) return;
+      var pr = parent.getBoundingClientRect();
+      var g1 = glyphs[0].getBoundingClientRect();
+      var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
+      var x1 = (g1.left - pr.left) + g1.width * 0.35;
+      var x2 = (g2.left - pr.left) + g2.width * 0.35;
+      arc.style.left = x1 + 'px';
+      arc.style.width = (x2 - x1) + 'px';
+    });
   }
 
   function animateSymbol(container, kind) {

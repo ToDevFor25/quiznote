@@ -100,7 +100,7 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
 }
 .dn-symbol.dn-tied .dn-tie-arc {
   position: absolute;
-  bottom: var(--tie-bottom, 38px);
+  bottom: var(--tie-bottom, 65px);
   left: var(--tie-left, 32%);
   width: var(--tie-width, 36%);
   height: var(--tie-height, 22px);
@@ -282,6 +282,7 @@ function renderPreviews() {
         return '<span class="dn-glyph">' + p.char + dot + '</span>';
       }).join('<span class="dn-tie-gap"></span>');
       wrap.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
+      positionTieArc(wrap);
     } else {
       const dot = ex.dotted ? '<span class="dn-dot">' + AUG_DOT + '</span>' : '';
       wrap.innerHTML = '<div class="dn-symbol">' + ex.char + dot + '</div>';
@@ -361,7 +362,23 @@ document.getElementById('css-output').addEventListener('click', function() {
   });
 });
 
-document.fonts.load("140px 'Bravura Text'", '').then(function() {
+function positionTieArc(container) {
+  requestAnimationFrame(function () {
+    var parent = container.querySelector('.dn-tied');
+    var glyphs = container.querySelectorAll('.dn-glyph');
+    var arc = container.querySelector('.dn-tie-arc');
+    if (!parent || glyphs.length < 2 || !arc) return;
+    var pr = parent.getBoundingClientRect();
+    var g1 = glyphs[0].getBoundingClientRect();
+    var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
+    var x1 = (g1.left - pr.left) + g1.width * 0.35;
+    var x2 = (g2.left - pr.left) + g2.width * 0.35;
+    arc.style.left = x1 + 'px';
+    arc.style.width = (x2 - x1) + 'px';
+  });
+}
+
+document.fonts.load("140px 'Bravura Text'", '\uE1D5').then(function() {
   renderPreviews();
   updateAll();
 }).catch(function() {
