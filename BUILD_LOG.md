@@ -1,6 +1,94 @@
 ---
 
-### Clef-picker tile centralization — May 2026
+### Music notation fixes — May 2026
+
+**Session type:** Bug-fix + visual-polish session across multiple modules.
+Triggered by Jonathan's QA screenshots identifying rendering issues in
+note display, ties, ledger lines, articulation marks, dynamics, ornaments,
+and dotted-notes modules.
+
+**Fixes delivered (16+ files touched):**
+
+1. **Ledger line bug (16 files).** Notes on spaces (odd step positions)
+   outside the staff were getting one extra phantom ledger line drawn
+   beyond the note. Root cause: `chordLedgers()` / `ledgers()` used
+   `d - 1` for below-staff odd steps and `d + 1` for above-staff odd
+   steps — both should be the reverse. Mechanical swap in all 16 files
+   that carry the function (every staff-rendering module + `qn-staff.js`).
+
+2. **Ledger Lines "both" mode routing.** In "both" clef mode, the MIDI
+   >= 60 shortcut routed bass-pool notes (D4, E4, etc.) to the treble
+   staff where they don't need ledger lines. Fixed to check actual
+   diatonic step instead. Also fixed a scoping bug (`diatonicStep` was
+   called from the game-loop IIFE where it wasn't in scope — caused
+   blank staff).
+
+3. **Ledger Lines viewBox.** Deep ledger notes (3-4 ledger lines below)
+   were cut off by the SVG viewBox. Expanded: bottomY 130→185,
+   height 200→310.
+
+4. **Dotted Notes — tie arc.** Original CSS border-radius arc was
+   impossible to position reliably. Replaced with SVG quadratic bezier
+   path drawn between measured glyph positions. JS `positionTieArc()`
+   sets horizontal position from glyph bounding boxes; CSS `bottom`
+   controls vertical. Calibrator built and used to tune values at 80px
+   font-size.
+
+5. **Dotted Notes — symbol size.** Reduced from 140px to 80px font-size
+   (line-height 1.4→1.35) to fix stems bleeding into question text.
+
+6. **Dotted Notes — dot spacing.** Removed excess thin space (` `)
+   before augmentation dot. Added per-note-type DOT_OFFSETS lookup
+   (eighth/sixteenth get x:-9 to compensate for flag width).
+
+7. **Dotted Notes — beat label grammar.** Fractions ≤1 now use singular
+   "beat" (½ beat, ¼ beat) instead of "beats".
+
+8. **Ornaments + Dynamics — A/B question UX.** Discriminate/ordering
+   questions showed A/B visual options but answer buttons had term names
+   ("upper mordent", "fortissimo"). Changed to A/B buttons. Removed
+   shuffle so A is always left, B always right.
+
+9. **Tempo Markings — same A/B fix.** "Which is faster?" converted from
+   term-name buttons to A/B.
+
+10. **Dynamics — glyph overflow.** fff/pp overflowed comparison boxes.
+    Reduced pair font-size, added `overflow: hidden` to `.term-card`.
+
+11. **Articulation — mark visibility.** Font-size 26→56px with 1px
+    stroke. SVG height expanded (130→180, midY 70→90) to prevent
+    fermata clipping. Spacing adjusted for larger glyphs.
+
+12. **Ornaments — mordent spacing.** Offset increased 30→40px above
+    noteheads.
+
+13. **Font consistency.** Removed italic serif font overrides from
+    `.choices-pair`, `.choices-terms`, `.choices-wordy` in all 4
+    Phase 5 modules (ornaments, dynamics, articulation, tempo-markings).
+    Answer buttons now inherit shared Fredoka 700 from qn-theme.css.
+
+14. **Note color audit.** Confirmed all modules consistently use purple
+    (#5B3FE4) — no inconsistency found.
+
+**Calibrator pattern.** Built `_tie-dot-calibrator.html` (same
+`_` prefix convention as `_clef-calibrator.html`) with per-note-type
+dot sliders, tie anchor %, font-size/line-height controls. Deleted
+from repo after calibration complete.
+
+**Architecture lesson — tie positioning:** CSS absolute positioning
+(`bottom: Xpx`) is unreliable when the positioned element's container
+height depends on font metrics and flex layout. The SVG bezier approach
+is robust because it measures actual glyph positions at render time.
+
+**Still open / next:**
+- Summary screen "All modules" button sits slightly higher than sibling
+  buttons — minor alignment issue in `.summary-actions`.
+- Score-navigation `routing` question type still deferred to v1.1.
+- Dynamics single-term glyph may still clip on very narrow viewports.
+- Full browser verification pass across all 32 modules still owed.
+
+---
+
 
 **Session type:** Visual-consistency refactor + new shared file. One
 commit (`bdec8f3`). Net -271 lines across 14 module files.
