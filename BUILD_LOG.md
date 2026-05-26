@@ -1,5 +1,42 @@
 ---
 
+### Landing page + legal pages polish — May 2026
+
+**Session type:** Copy + UX polish (continuation of the notation-fixes
+session).
+
+**Changes:**
+
+1. **Footer tagline alignment.** index.html had drifted to "for students
+   of all ages", privacy/terms had "Practice music theory, one short
+   round at a time." All three aligned to match the 32 modules:
+   "Made by musicians, for musicians."
+
+2. **"All ages" removed from index.** Hero subtitle trimmed ("for all
+   ages" dropped). Hero stat "All Ages" replaced with **"30+ Modules"**
+   (future-proof — won't need updating until 40+). "Lots of fun" stat
+   replaced with **"Any Device"**. Bottom CTA meta changed to "Works on
+   any smartphone, tablet, or desktop."
+
+3. **Legal page headers simplified.** Replaced the sticky nav + "Test
+   drive →" CTA on privacy.html and terms.html with a clean static
+   header: logo + "← Back to QuizNote" link. Legal pages aren't
+   conversion surfaces — no sticky, no blur, no marketing buttons.
+
+4. **Legal page TOC collapsible on mobile.** Both privacy.html and
+   terms.html TOC now wraps in a `<details>` element on mobile (≤640px),
+   starting collapsed with a "Contents ▾" toggle. Scrolls inline — no
+   overlay, no sticky behavior. Desktop unchanged.
+
+**Still open / next:**
+- Summary screen "All modules" button alignment (minor).
+- Full browser verification pass across all 32 modules still owed.
+- Tie arc positioning in dotted-notes: SVG bezier approach works but
+  vertical offset (-18px from glyph bottom) may need further tuning
+  per user feedback.
+
+---
+
 ### Music notation fixes — May 2026
 
 **Session type:** Bug-fix + visual-polish session across multiple modules.
