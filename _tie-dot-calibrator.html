@@ -22,17 +22,16 @@ body {
   background: #f5f0e8;
   color: #2a2a3e;
   padding: 20px;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
 }
 h1 { font-size: 22px; margin-bottom: 8px; }
 h2 { font-size: 17px; margin: 24px 0 10px; border-bottom: 2px solid #ccc; padding-bottom: 4px; }
-h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
+h3 { font-size: 14px; margin: 16px 0 6px; color: #555; font-weight: 700; }
 
-/* ── Preview area ── */
 .preview-row {
   display: flex;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
   margin: 12px 0;
 }
@@ -40,14 +39,14 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
   background: #fff;
   border: 3px solid #2a2a3e;
   border-radius: 18px;
-  width: 320px;
-  padding: 14px;
+  width: 200px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .preview-label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
   color: #888;
@@ -57,21 +56,12 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 180px;
+  min-height: 160px;
   overflow: hidden;
   position: relative;
-  border: 1px dashed #ddd;
-}
-.preview-wrap::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0;
-  top: 50%;
-  border-top: 1px dashed rgba(255,0,0,0.25);
-  pointer-events: none;
 }
 
-/* ── Symbol rendering (mirrors dotted-notes.html) ── */
+/* ── Symbol rendering ── */
 .dn-symbol {
   font-family: 'Bravura Text', serif;
   font-size: var(--dn-font-size, 140px);
@@ -86,7 +76,7 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
   position: relative;
   flex-direction: row;
   gap: 0;
-  padding-bottom: var(--tie-pad-bottom, 18px);
+  padding-bottom: var(--tie-pad-bottom, 0px);
 }
 .dn-symbol.dn-tied .dn-glyph {
   font-family: inherit;
@@ -96,41 +86,30 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
 }
 .dn-symbol.dn-tied .dn-tie-gap {
   display: inline-block;
-  width: var(--tie-note-gap, 30px);
+  width: var(--tie-note-gap, 26px);
 }
 .dn-symbol.dn-tied .dn-tie-arc {
   position: absolute;
   bottom: var(--tie-bottom, 65px);
-  left: var(--tie-left, 32%);
-  width: var(--tie-width, 36%);
-  height: var(--tie-height, 22px);
+  height: var(--tie-height, 19px);
   border: var(--tie-border, 3px) solid currentColor;
   border-top: 0;
   border-radius: 0 0 50% 50% / 0 0 100% 100%;
   pointer-events: none;
 }
 
-/* Dot rendering */
-.dn-dot {
-  display: inline-block;
-  margin-left: var(--dot-ml, 0px);
-  position: relative;
-  top: var(--dot-top, 0px);
-}
-
 /* ── Controls ── */
 .controls {
   display: grid;
-  grid-template-columns: 140px 1fr 60px;
-  gap: 6px 10px;
+  grid-template-columns: 160px 1fr 50px;
+  gap: 5px 10px;
   align-items: center;
   font-size: 13px;
 }
 .controls label { font-weight: 600; }
 .controls input[type=range] { width: 100%; }
-.controls .val { font-family: monospace; text-align: right; }
+.controls .val { font-family: monospace; text-align: right; font-size: 12px; }
 
-/* ── Output ── */
 .output {
   background: #1e1e2e;
   color: #a6e3a1;
@@ -161,62 +140,75 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
 </style>
 </head>
 <body>
-<span class="font-preload"></span>
+<span class="font-preload">&#xE1D5;&#xE1D3;&#xE1D7;&#xE1E7;</span>
 
 <h1>Tie &amp; Dot Calibrator</h1>
-<p style="font-size:13px;color:#666;">Adjust sliders to tune tie arc position/shape and dot spacing. Click the CSS output to copy.</p>
 
-<!-- ═══ SECTION 1: Current state ═══ -->
-<h2>1 &mdash; Current Rendering</h2>
-<div class="preview-row" id="previews"></div>
+<!-- ═══ SECTION 1: Tied notes ═══ -->
+<h2>1 &mdash; Tied Notes</h2>
+<div class="preview-row" id="tie-previews"></div>
 
-<!-- ═══ SECTION 2: Tie Controls ═══ -->
-<h2>2 &mdash; Tie Arc Controls</h2>
-<div class="controls" id="tie-controls">
+<h3>Tie Arc</h3>
+<div class="controls">
   <label>bottom (px)</label>
-  <input type="range" id="tie-bottom" min="20" max="120" value="38">
-  <span class="val" id="tie-bottom-val">38</span>
-
-  <label>left (%)</label>
-  <input type="range" id="tie-left" min="10" max="50" value="32">
-  <span class="val" id="tie-left-val">32</span>
-
-  <label>width (%)</label>
-  <input type="range" id="tie-width" min="15" max="70" value="36">
-  <span class="val" id="tie-width-val">36</span>
+  <input type="range" id="tie-bottom" min="20" max="120" value="65">
+  <span class="val" id="tie-bottom-val">65</span>
 
   <label>height (px)</label>
-  <input type="range" id="tie-height" min="6" max="40" value="22">
-  <span class="val" id="tie-height-val">22</span>
+  <input type="range" id="tie-height" min="6" max="40" value="19">
+  <span class="val" id="tie-height-val">19</span>
 
   <label>border (px)</label>
   <input type="range" id="tie-border" min="1" max="6" value="3" step="0.5">
   <span class="val" id="tie-border-val">3</span>
 
   <label>note gap (px)</label>
-  <input type="range" id="tie-note-gap" min="0" max="60" value="30">
-  <span class="val" id="tie-note-gap-val">30</span>
+  <input type="range" id="tie-note-gap" min="0" max="60" value="26">
+  <span class="val" id="tie-note-gap-val">26</span>
 
   <label>pad-bottom (px)</label>
-  <input type="range" id="tie-pad-bottom" min="0" max="40" value="18">
-  <span class="val" id="tie-pad-bottom-val">18</span>
+  <input type="range" id="tie-pad-bottom" min="0" max="40" value="0">
+  <span class="val" id="tie-pad-bottom-val">0</span>
+
+  <label>glyph anchor (%)</label>
+  <input type="range" id="tie-anchor" min="10" max="60" value="35">
+  <span class="val" id="tie-anchor-val">35</span>
 </div>
 
-<!-- ═══ SECTION 3: Dot Controls ═══ -->
-<h2>3 &mdash; Dot Controls</h2>
-<div class="controls" id="dot-controls">
-  <label>margin-left (px)</label>
-  <input type="range" id="dot-ml" min="-10" max="20" value="0">
-  <span class="val" id="dot-ml-val">0</span>
+<!-- ═══ SECTION 2: Dotted notes (per-type) ═══ -->
+<h2>2 &mdash; Dotted Notes</h2>
+<div class="preview-row" id="dot-previews"></div>
 
-  <label>vertical (px)</label>
-  <input type="range" id="dot-top" min="-30" max="30" value="0">
-  <span class="val" id="dot-top-val">0</span>
+<h3>Dot offset per note type (px from glyph edge)</h3>
+<div class="controls">
+  <label>Quarter dot-x</label>
+  <input type="range" id="dot-quarter-x" min="-40" max="10" value="0">
+  <span class="val" id="dot-quarter-x-val">0</span>
+
+  <label>Half dot-x</label>
+  <input type="range" id="dot-half-x" min="-40" max="10" value="0">
+  <span class="val" id="dot-half-x-val">0</span>
+
+  <label>Eighth dot-x</label>
+  <input type="range" id="dot-eighth-x" min="-40" max="10" value="0">
+  <span class="val" id="dot-eighth-x-val">0</span>
+
+  <label>Sixteenth dot-x</label>
+  <input type="range" id="dot-sixteenth-x" min="-40" max="10" value="0">
+  <span class="val" id="dot-sixteenth-x-val">0</span>
+
+  <label>Whole dot-x</label>
+  <input type="range" id="dot-whole-x" min="-40" max="10" value="0">
+  <span class="val" id="dot-whole-x-val">0</span>
+
+  <label>All dot-y</label>
+  <input type="range" id="dot-y" min="-30" max="30" value="0">
+  <span class="val" id="dot-y-val">0</span>
 </div>
 
-<!-- ═══ SECTION 4: Font Size (bleed fix) ═══ -->
-<h2>4 &mdash; Symbol Size (bleed fix)</h2>
-<div class="controls" id="size-controls">
+<!-- ═══ SECTION 3: Font size ═══ -->
+<h2>3 &mdash; Symbol Size (bleed fix)</h2>
+<div class="controls">
   <label>font-size (px)</label>
   <input type="range" id="dn-font-size" min="80" max="160" value="140">
   <span class="val" id="dn-font-size-val">140</span>
@@ -226,13 +218,13 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
   <span class="val" id="dn-line-height-val">1.4</span>
 </div>
 
-<!-- ═══ SECTION 5: CSS Output ═══ -->
-<h2>5 &mdash; CSS Output</h2>
+<!-- ═══ SECTION 4: Output ═══ -->
+<h2>4 &mdash; CSS / JS Output</h2>
 <div class="output" id="css-output"></div>
 
 <script>
-const AUG_DOT = '\uE1E7';
-const GLYPHS = {
+var AUG_DOT = '\uE1E7';
+var GLYPHS = {
   quarter: '\uE1D5',
   eighth: '\uE1D7',
   half: '\uE1D3',
@@ -240,53 +232,82 @@ const GLYPHS = {
   sixteenth: '\uE1D9',
 };
 
-const EXAMPLES = [
-  { label: 'Tied quarter + eighth', kind: 'tied', parts: [
+var TIE_EXAMPLES = [
+  { label: 'Quarter + Eighth', parts: [
     { char: GLYPHS.quarter, dotted: false },
     { char: GLYPHS.eighth, dotted: false }
   ]},
-  { label: 'Tied half + quarter', kind: 'tied', parts: [
+  { label: 'Half + Quarter', parts: [
     { char: GLYPHS.half, dotted: false },
     { char: GLYPHS.quarter, dotted: false }
   ]},
-  { label: 'Tied dotted quarter + eighth', kind: 'tied', parts: [
+  { label: 'Dotted Qtr + Eighth', parts: [
     { char: GLYPHS.quarter, dotted: true },
     { char: GLYPHS.eighth, dotted: false }
   ]},
-  { label: 'Tied half + half', kind: 'tied', parts: [
+  { label: 'Half + Half', parts: [
     { char: GLYPHS.half, dotted: false },
     { char: GLYPHS.half, dotted: false }
   ]},
-  { label: 'Dotted quarter', kind: 'single', char: GLYPHS.quarter, dotted: true },
-  { label: 'Dotted eighth', kind: 'single', char: GLYPHS.eighth, dotted: true },
-  { label: 'Dotted half', kind: 'single', char: GLYPHS.half, dotted: true },
-  { label: 'Dotted sixteenth', kind: 'single', char: GLYPHS.sixteenth, dotted: true },
+  { label: 'Half + Eighth', parts: [
+    { char: GLYPHS.half, dotted: false },
+    { char: GLYPHS.eighth, dotted: false }
+  ]},
+  { label: 'Qtr + Sixteenth', parts: [
+    { char: GLYPHS.quarter, dotted: false },
+    { char: GLYPHS.sixteenth, dotted: false }
+  ]},
 ];
 
-function renderPreviews() {
-  const container = document.getElementById('previews');
+var DOT_EXAMPLES = [
+  { label: 'Dotted quarter', type: 'quarter', char: GLYPHS.quarter },
+  { label: 'Dotted half', type: 'half', char: GLYPHS.half },
+  { label: 'Dotted eighth', type: 'eighth', char: GLYPHS.eighth },
+  { label: 'Dotted sixteenth', type: 'sixteenth', char: GLYPHS.sixteenth },
+  { label: 'Dotted whole', type: 'whole', char: GLYPHS.whole },
+];
+
+function renderTiePreviews() {
+  var container = document.getElementById('tie-previews');
   container.innerHTML = '';
-  EXAMPLES.forEach((ex, i) => {
-    const card = document.createElement('div');
+  TIE_EXAMPLES.forEach(function (ex, i) {
+    var card = document.createElement('div');
     card.className = 'preview-card';
-    const lbl = document.createElement('div');
+    var lbl = document.createElement('div');
     lbl.className = 'preview-label';
     lbl.textContent = ex.label;
-    const wrap = document.createElement('div');
+    var wrap = document.createElement('div');
     wrap.className = 'preview-wrap';
-    wrap.id = 'pw-' + i;
+    wrap.id = 'tw-' + i;
 
-    if (ex.kind === 'tied') {
-      const parts = ex.parts.map(p => {
-        const dot = p.dotted ? '<span class="dn-dot">' + AUG_DOT + '</span>' : '';
-        return '<span class="dn-glyph">' + p.char + dot + '</span>';
-      }).join('<span class="dn-tie-gap"></span>');
-      wrap.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
-      positionTieArc(wrap);
-    } else {
-      const dot = ex.dotted ? '<span class="dn-dot">' + AUG_DOT + '</span>' : '';
-      wrap.innerHTML = '<div class="dn-symbol">' + ex.char + dot + '</div>';
-    }
+    var parts = ex.parts.map(function (p) {
+      var dot = p.dotted ? AUG_DOT : '';
+      return '<span class="dn-glyph">' + p.char + dot + '</span>';
+    }).join('<span class="dn-tie-gap"></span>');
+    wrap.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
+
+    card.appendChild(lbl);
+    card.appendChild(wrap);
+    container.appendChild(card);
+  });
+  positionAllTieArcs();
+}
+
+function renderDotPreviews() {
+  var container = document.getElementById('dot-previews');
+  container.innerHTML = '';
+  DOT_EXAMPLES.forEach(function (ex, i) {
+    var card = document.createElement('div');
+    card.className = 'preview-card';
+    var lbl = document.createElement('div');
+    lbl.className = 'preview-label';
+    lbl.textContent = ex.label;
+    var wrap = document.createElement('div');
+    wrap.className = 'preview-wrap';
+    wrap.id = 'dw-' + i;
+
+    wrap.innerHTML = '<div class="dn-symbol" data-note="' + ex.type + '">' +
+      ex.char + '<span class="dn-aug-dot" data-note="' + ex.type + '">' + AUG_DOT + '</span></div>';
 
     card.appendChild(lbl);
     card.appendChild(wrap);
@@ -294,95 +315,109 @@ function renderPreviews() {
   });
 }
 
-const SLIDER_IDS = [
-  'tie-bottom', 'tie-left', 'tie-width', 'tie-height', 'tie-border',
-  'tie-note-gap', 'tie-pad-bottom',
-  'dot-ml', 'dot-top',
-  'dn-font-size', 'dn-line-height',
-];
+function getAnchor() {
+  return parseFloat(document.getElementById('tie-anchor').value) / 100;
+}
+
+function positionAllTieArcs() {
+  var anchor = getAnchor();
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.dn-tied').forEach(function (parent) {
+      var glyphs = parent.querySelectorAll('.dn-glyph');
+      var arc = parent.querySelector('.dn-tie-arc');
+      if (!arc || glyphs.length < 2) return;
+      var pr = parent.getBoundingClientRect();
+      var g1 = glyphs[0].getBoundingClientRect();
+      var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
+      var x1 = (g1.left - pr.left) + g1.width * anchor;
+      var x2 = (g2.left - pr.left) + g2.width * anchor;
+      arc.style.left = x1 + 'px';
+      arc.style.width = (x2 - x1) + 'px';
+    });
+  });
+}
+
+var TIE_SLIDERS = ['tie-bottom', 'tie-height', 'tie-border', 'tie-note-gap', 'tie-pad-bottom', 'tie-anchor'];
+var DOT_SLIDERS = ['dot-quarter-x', 'dot-half-x', 'dot-eighth-x', 'dot-sixteenth-x', 'dot-whole-x', 'dot-y'];
+var SIZE_SLIDERS = ['dn-font-size', 'dn-line-height'];
+var ALL_SLIDERS = TIE_SLIDERS.concat(DOT_SLIDERS).concat(SIZE_SLIDERS);
 
 function updateAll() {
-  const root = document.documentElement.style;
-  SLIDER_IDS.forEach(id => {
-    const el = document.getElementById(id);
-    const val = el.value;
+  var root = document.documentElement.style;
+  ALL_SLIDERS.forEach(function (id) {
+    var el = document.getElementById(id);
+    var val = el.value;
     document.getElementById(id + '-val').textContent = val;
-
-    switch (id) {
-      case 'tie-bottom':    root.setProperty('--tie-bottom', val + 'px'); break;
-      case 'tie-left':      root.setProperty('--tie-left', val + '%'); break;
-      case 'tie-width':     root.setProperty('--tie-width', val + '%'); break;
-      case 'tie-height':    root.setProperty('--tie-height', val + 'px'); break;
-      case 'tie-border':    root.setProperty('--tie-border', val + 'px'); break;
-      case 'tie-note-gap':  root.setProperty('--tie-note-gap', val + 'px'); break;
-      case 'tie-pad-bottom': root.setProperty('--tie-pad-bottom', val + 'px'); break;
-      case 'dot-ml':        root.setProperty('--dot-ml', val + 'px'); break;
-      case 'dot-top':       root.setProperty('--dot-top', val + 'px'); break;
-      case 'dn-font-size':  root.setProperty('--dn-font-size', val + 'px'); break;
-      case 'dn-line-height': root.setProperty('--dn-line-height', val); break;
-    }
   });
+
+  root.setProperty('--tie-bottom', document.getElementById('tie-bottom').value + 'px');
+  root.setProperty('--tie-height', document.getElementById('tie-height').value + 'px');
+  root.setProperty('--tie-border', document.getElementById('tie-border').value + 'px');
+  root.setProperty('--tie-note-gap', document.getElementById('tie-note-gap').value + 'px');
+  root.setProperty('--tie-pad-bottom', document.getElementById('tie-pad-bottom').value + 'px');
+  root.setProperty('--dn-font-size', document.getElementById('dn-font-size').value + 'px');
+  root.setProperty('--dn-line-height', document.getElementById('dn-line-height').value);
+
+  // Per-note dot offsets
+  ['quarter', 'half', 'eighth', 'sixteenth', 'whole'].forEach(function (note) {
+    var dx = document.getElementById('dot-' + note + '-x').value;
+    var dy = document.getElementById('dot-y').value;
+    document.querySelectorAll('.dn-aug-dot[data-note="' + note + '"]').forEach(function (dot) {
+      dot.style.position = 'relative';
+      dot.style.left = dx + 'px';
+      dot.style.top = dy + 'px';
+    });
+  });
+
+  positionAllTieArcs();
   updateOutput();
 }
 
 function updateOutput() {
-  const v = {};
-  SLIDER_IDS.forEach(id => { v[id] = document.getElementById(id).value; });
+  var v = {};
+  ALL_SLIDERS.forEach(function (id) { v[id] = document.getElementById(id).value; });
 
-  const css = `.dn-symbol {
-  font-size: ${v['dn-font-size']}px;
-  line-height: ${v['dn-line-height']};
-}
-.dn-symbol.dn-tied {
-  padding-bottom: ${v['tie-pad-bottom']}px;
-}
-.dn-symbol.dn-tied .dn-tie-gap {
-  width: ${v['tie-note-gap']}px;
-}
-.dn-symbol.dn-tied .dn-tie-arc {
-  bottom: ${v['tie-bottom']}px;
-  left: ${v['tie-left']}%;
-  width: ${v['tie-width']}%;
-  height: ${v['tie-height']}px;
-  border-width: ${v['tie-border']}px;
-}
-/* Dot: margin-left ${v['dot-ml']}px, top ${v['dot-top']}px */`;
+  var out = '/* === Tie arc === */\n';
+  out += '.dn-symbol.dn-tied .dn-tie-arc {\n';
+  out += '  bottom: ' + v['tie-bottom'] + 'px;\n';
+  out += '  height: ' + v['tie-height'] + 'px;\n';
+  out += '  border-width: ' + v['tie-border'] + 'px;\n';
+  out += '}\n';
+  out += '.dn-symbol.dn-tied .dn-tie-gap { width: ' + v['tie-note-gap'] + 'px; }\n';
+  out += '.dn-symbol.dn-tied { padding-bottom: ' + v['tie-pad-bottom'] + 'px; }\n';
+  out += 'positionTieArc anchor: ' + v['tie-anchor'] + '%\n\n';
 
-  document.getElementById('css-output').textContent = css;
+  out += '/* === Dot offsets (per note) === */\n';
+  out += 'DOT_OFFSETS = {\n';
+  ['quarter', 'half', 'eighth', 'sixteenth', 'whole'].forEach(function (note) {
+    out += '  "' + note + '": { x: ' + v['dot-' + note + '-x'] + ', y: ' + v['dot-y'] + ' },\n';
+  });
+  out += '};\n\n';
+
+  out += '/* === Symbol size === */\n';
+  out += '.dn-symbol { font-size: ' + v['dn-font-size'] + 'px; line-height: ' + v['dn-line-height'] + '; }\n';
+
+  document.getElementById('css-output').textContent = out;
 }
 
-SLIDER_IDS.forEach(id => {
+ALL_SLIDERS.forEach(function (id) {
   document.getElementById(id).addEventListener('input', updateAll);
 });
 
 document.getElementById('css-output').addEventListener('click', function() {
-  navigator.clipboard.writeText(this.textContent).then(() => {
-    this.classList.add('copied');
-    setTimeout(() => this.classList.remove('copied'), 1200);
+  navigator.clipboard.writeText(this.textContent).then(function() {
+    document.getElementById('css-output').classList.add('copied');
+    setTimeout(function() { document.getElementById('css-output').classList.remove('copied'); }, 1200);
   });
 });
 
-function positionTieArc(container) {
-  requestAnimationFrame(function () {
-    var parent = container.querySelector('.dn-tied');
-    var glyphs = container.querySelectorAll('.dn-glyph');
-    var arc = container.querySelector('.dn-tie-arc');
-    if (!parent || glyphs.length < 2 || !arc) return;
-    var pr = parent.getBoundingClientRect();
-    var g1 = glyphs[0].getBoundingClientRect();
-    var g2 = glyphs[glyphs.length - 1].getBoundingClientRect();
-    var x1 = (g1.left - pr.left) + g1.width * 0.35;
-    var x2 = (g2.left - pr.left) + g2.width * 0.35;
-    arc.style.left = x1 + 'px';
-    arc.style.width = (x2 - x1) + 'px';
-  });
-}
-
 document.fonts.load("140px 'Bravura Text'", '\uE1D5').then(function() {
-  renderPreviews();
+  renderTiePreviews();
+  renderDotPreviews();
   updateAll();
 }).catch(function() {
-  renderPreviews();
+  renderTiePreviews();
+  renderDotPreviews();
   updateAll();
 });
 </script>
