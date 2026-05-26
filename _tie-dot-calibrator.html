@@ -151,9 +151,17 @@ h3 { font-size: 14px; margin: 16px 0 6px; color: #666; }
   color: #666;
 }
 .copied::after { content: 'copied!' !important; color: #a6e3a1 !important; }
+.font-preload {
+  font-family: 'Bravura Text', serif;
+  position: absolute;
+  left: -9999px;
+  font-size: 1px;
+  visibility: hidden;
+}
 </style>
 </head>
 <body>
+<span class="font-preload"></span>
 
 <h1>Tie &amp; Dot Calibrator</h1>
 <p style="font-size:13px;color:#666;">Adjust sliders to tune tie arc position/shape and dot spacing. Click the CSS output to copy.</p>
@@ -353,8 +361,13 @@ document.getElementById('css-output').addEventListener('click', function() {
   });
 });
 
-renderPreviews();
-updateAll();
+document.fonts.load("140px 'Bravura Text'", '').then(function() {
+  renderPreviews();
+  updateAll();
+}).catch(function() {
+  renderPreviews();
+  updateAll();
+});
 </script>
 </body>
 </html>
