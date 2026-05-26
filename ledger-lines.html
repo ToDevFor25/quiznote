@@ -1174,9 +1174,15 @@
       var ps = step(pitch.letter, pitch.octave);
       var dt = ps - step('E', 4);
       var db = ps - step('G', 2);
-      var tL = (dt <= -2) ? -dt : (dt >= 10) ? dt - 8 : 0;
-      var bL = (db <= -2) ? -db : (db >= 10) ? db - 8 : 0;
-      clef = tL <= bL ? 'treble' : 'bass';
+      var needsT = dt <= -2 || dt >= 10;
+      var needsB = db <= -2 || db >= 10;
+      if (needsT && needsB) {
+        var tL = dt <= -2 ? -dt : dt - 8;
+        var bL = db <= -2 ? -db : db - 8;
+        clef = tL <= bL ? 'treble' : 'bass';
+      } else {
+        clef = needsT ? 'treble' : 'bass';
+      }
     }
     state.current = { pitch, clef };
 
