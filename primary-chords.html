@@ -1352,10 +1352,14 @@
       btn.className = 'choice-btn';
       btn.dataset.idx = idx;
       // Chord labels carry ♯/♭ glyphs → style the accidental; numbers/names render plain.
+      // Accidental sits right after the root letter, e.g. "F♯ major" → "F" + styled "♯" + " major".
       if (/[♯♭𝄪𝄫]/.test(choice.label)) {
-        const letter = choice.label.replace(/[♯♭𝄪𝄫]/, '');
-        const acc = choice.label.match(/[♯♭𝄪𝄫]/)[0];
-        btn.innerHTML = letter + `<span class="choice-acc">${acc}</span>`;
+        const m = choice.label.match(/^([A-G])([♯♭𝄪𝄫]+)(.*)/);
+        if (m) {
+          btn.innerHTML = m[1] + `<span class="choice-acc">${m[2]}</span>` + m[3];
+        } else {
+          btn.textContent = choice.label;
+        }
       } else {
         btn.textContent = choice.label;
       }
