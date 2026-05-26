@@ -1176,7 +1176,8 @@
     const pitch = parsePitch(pick);
     let clef = state.settings.clef;
     if (clef === 'both') {
-      const d = diatonicStep(pitch.letter, pitch.octave) - clefBottomStep('treble');
+      var step = NH.music.diatonicStep;
+      var d = step(pitch.letter, pitch.octave) - step('E', 4);
       clef = (d <= -2 || d >= 10) ? 'treble' : 'bass';
     }
     state.current = { pitch, clef };
