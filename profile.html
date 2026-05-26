@@ -638,6 +638,20 @@ footer .sep { margin: 0 8px; }
   <!-- ─────────────────────────────────────────────────────────
        VIEW — Reset device (wipe ALL data on this device)
        ───────────────────────────────────────────────────────── -->
+  <section class="view" id="view-cap-reached">
+    <div class="view-head">
+      <h1 class="view-title">Profile limit reached</h1>
+      <p class="view-sub">You can have up to 5 profiles on this device. To add a new one, remove an existing profile first.</p>
+    </div>
+    <div class="confirm-card">
+      <div style="font-size:48px;margin-bottom:12px;">👥</div>
+      <div class="confirm-stats">5 of 5 profiles in use</div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="cap-back">Back to profiles</button>
+    </div>
+  </section>
+
   <section class="view" id="view-reset">
     <div class="view-head">
       <h1 class="view-title">Reset all data?</h1>
@@ -824,6 +838,10 @@ footer .sep { margin: 0 8px; }
   }
 
   document.getElementById('switcher-add').addEventListener('click', function () {
+    if (!QN.profile.account.canAddProfile()) {
+      showView('cap-reached');
+      return;
+    }
     startAddFlow();
   });
 
@@ -969,7 +987,7 @@ footer .sep { margin: 0 8px; }
       color:    state.draftColor
     });
     if (!created) {
-      alert('Could not create profile. Please try again.');
+      showView('cap-reached');
       return;
     }
     // Send them straight into modules
@@ -1090,6 +1108,9 @@ footer .sep { margin: 0 8px; }
       showView('reset');
     });
   }
+  var capBack = document.getElementById('cap-back');
+  if (capBack) capBack.addEventListener('click', function () { showView('switcher'); });
+
   var resetCancel = document.getElementById('reset-cancel');
   if (resetCancel) resetCancel.addEventListener('click', function () { showView('switcher'); });
 
