@@ -192,56 +192,44 @@
      Stay in your module's namespace: .{{MODULE_SLUG}}-* selectors.
      Animations: @keyframes {{moduleSlug}}Pop, etc.
      ============================================================ */
-  /* Bravura Text symbol display */
-  .er-symbol {
-    font-family: 'Bravura Text', serif;
-    font-size: 140px;
-    line-height: 1.4;
-    color: var(--ink);
-    user-select: none;
+  /* Ear: Rhythm — listen prompt */
+  .er-prompt {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: transform 200ms cubic-bezier(.5,1.6,.6,1);
+    gap: 12px;
+    user-select: none;
   }
-  .er-symbol.pop {
-    animation: erPop 240ms cubic-bezier(.5,1.6,.6,1);
-  }
+  .er-prompt.pop { animation: erPop 240ms cubic-bezier(.5,1.6,.6,1); }
   @keyframes erPop {
     0% { transform: scale(0.6); opacity: 0; }
     60% { transform: scale(1.1); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
-  /* Ear: Rhythm — audio question placeholder (no notation shown). */
-  .er-symbol .er-listen-emoji {
-    font-size: 96px;
+  .er-listen-emoji {
+    font-size: 72px;
     line-height: 1;
     animation: erPulse 1800ms ease-in-out infinite;
-    margin-bottom: 16px;
   }
   @keyframes erPulse {
     0%, 100% { transform: scale(1); opacity: 0.92; }
     50%      { transform: scale(1.08); opacity: 1; }
   }
-  .er-symbol .er-listen-btn {
+  .er-listen-btn {
     font-family: 'Fredoka', sans-serif;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--teal-dk);
     background: var(--teal-lt);
     border: 2px solid var(--teal);
     border-radius: 999px;
-    padding: 8px 20px;
+    padding: 8px 18px;
     cursor: pointer;
-    transition: transform 120ms, box-shadow 120ms;
   }
-  .er-symbol .er-listen-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px -4px rgba(31,184,168,0.4);
-  }
-  .er-symbol .er-listen-btn:active {
-    transform: translateY(0);
-  }
+  .er-listen-btn:active { transform: translateY(1px); }
+  /* Pattern SVG in choice buttons */
+  .choice-btn svg { width: 100%; height: 42px; display: block; }
 
   /* Explosion FX layer — full-screen overlay (Ear: Rhythm exploding symbols) */
   .er-fx-layer {
@@ -675,7 +663,7 @@
 
   <div class="play-body">
     <div class="card staff-card">
-      <div class="staff-label">What note value is this?</div>
+      <div class="staff-label">Which rhythm did you hear?</div>
       <div class="staff-svg-wrap" id="staff-wrap"></div>
       <div class="toast" id="toast"></div>
     </div>
@@ -780,265 +768,242 @@
 </footer>
 
 <script>
-// ============ QuizNote Ear: Rhythm — Music Helpers ============
-// NH.music namespace (letter/step parsing, MIDI conversion).
-// NH.audio is provided externally by qn-audio.js.
+// ============ QuizNote Ear: Rhythm — Pattern Matching Engine ============
 (function () {
-  const NH = window.NH = window.NH || {};
-  const LETTER_STEP = { C: 0, D: 1, E: 2, F: 3, G: 4, A: 5, B: 6 };
-  const STEP_LETTER = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-  const LETTER_SEMI = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  var ER = window.ER = window.ER || {};
 
-  function diatonicStep(letter, octave) { return octave * 7 + LETTER_STEP[letter]; }
-  function toMidi(letter, accidental, octave) {
-    const acc = accidental === '#' ? 1 : accidental === 'b' ? -1 : 0;
-    return 12 * (octave + 1) + LETTER_SEMI[letter] + acc;
-  }
-  function parsePitch(s) {
-    const m = /^([A-G])([#b]?)(-?\d+)$/.exec(s);
-    if (!m) throw new Error('bad pitch ' + s);
-    const letter = m[1], accidental = m[2], octave = parseInt(m[3], 10);
-    return { letter, accidental, octave, midi: toMidi(letter, accidental, octave), name: s };
-  }
-  function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
-  function displayName(pitch) {
-    const acc = pitch.accidental === '#' ? '♯' : pitch.accidental === 'b' ? '♭' : '';
-    return pitch.letter + acc;
-  }
-  function midiEquals(a, b) { return a === b; }
-  NH.music = { LETTER_STEP, STEP_LETTER, LETTER_SEMI, diatonicStep, toMidi, parsePitch, midiToFreq, displayName, midiEquals };
-
-  // NH.audio is provided by qn-audio.js (loaded above with defer).
-  // Exposes: ensureCtx, setMuted, isMuted, playMidi, playBoop,
-  //          playTick, playChime, playFanfare, midiToFreq.
-})();
-</script>
-
-
-
-<script>
-// ============ QuizNote Ear: Rhythm — Symbol Renderer + Explosion Engine ============
-(function () {
-  const ER = window.ER = window.ER || {};
-
-  // Note values for Ear: Rhythm. Notes-only in v1 (rests deferred \u2014 silence-
-  // duration UX adds little at this level). beats = duration in quarter-beats
-  // at the locked 60 BPM tempo (1 quarter = 1 second of audio).
-  const SYMBOLS = {
-    'whole-note':     { label: 'Whole note',     char: '\uE1D2', beats: 4    },
-    'half-note':      { label: 'Half note',      char: '\uE1D3', beats: 2    },
-    'quarter-note':   { label: 'Quarter note',   char: '\uE1D5', beats: 1    },
-    'eighth-note':    { label: 'Eighth note',    char: '\uE1D7', beats: 0.5  },
-    'sixteenth-note': { label: 'Sixteenth note', char: '\uE1D9', beats: 0.25 },
+  var PATTERNS = {
+    'qqqq':    { notes: [1,1,1,1] },
+    'hh':      { notes: [2,2] },
+    'hqq':     { notes: [2,1,1] },
+    'qqh':     { notes: [1,1,2] },
+    'w':       { notes: [4] },
+    'qhq':     { notes: [1,2,1] },
+    'qqeeq':   { notes: [1,1,0.5,0.5,1] },
+    'eeqqq':   { notes: [0.5,0.5,1,1,1] },
+    'qeeh':    { notes: [1,0.5,0.5,2] },
+    'heeq':    { notes: [2,0.5,0.5,1] },
+    'eeeeh':   { notes: [0.5,0.5,0.5,0.5,2] },
+    'qeeqq':   { notes: [1,0.5,0.5,1,1] },
+    'eqqe':    { notes: [0.5,0.5,1,1,0.5,0.5] },
+    'qeqe':    { notes: [1,0.5,0.5,1,0.5,0.5] },
+    'heee':    { notes: [2,0.5,0.5,0.5,0.5] },
+    'eeqh':    { notes: [0.5,0.5,1,2] },
+    'eeqeeq':  { notes: [0.5,0.5,1,0.5,0.5,1] },
+    'qeeeeq':  { notes: [1,0.5,0.5,0.5,0.5,1] },
+    'eeeeeeee':{ notes: [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5] },
+    'hqee':    { notes: [2,1,0.5,0.5] },
+    'eeeeqq':  { notes: [0.5,0.5,0.5,0.5,1,1] },
+    'qqeeee':  { notes: [1,1,0.5,0.5,0.5,0.5] },
+    'eehee':   { notes: [0.5,0.5,2,0.5,0.5] },
+    'qeeeee':  { notes: [1,0.5,0.5,0.5,0.5,0.5,0.5] },
+    'eeeeqe':  { notes: [0.5,0.5,0.5,0.5,1,0.5,0.5] },
   };
 
-  const TEMPO_BPM = 60;
-  const QUERY_PITCH_MIDI = 69; // A4
-  // Track latest play timer so we can cancel on round teardown.
-  let _playTimers = [];
+  var TEMPO_BPM = 80;
+  var PITCH_MIDI = 69;
+  var _timers = [];
   function cancelPlay() {
-    _playTimers.forEach(function (t) { clearTimeout(t); });
-    _playTimers = [];
+    _timers.forEach(function(t){ clearTimeout(t); });
+    _timers = [];
   }
 
-  // Plays 2 lead-in metronome ticks at the locked tempo, then sustains a
-  // pitched tone (A4) for the note's duration. Total cue = ~2 ticks + dur.
-  function playRhythm(key) {
-    const sym = SYMBOLS[key];
-    if (!sym || !window.NH || !NH.audio) return;
+  function playPattern(key) {
+    var p = PATTERNS[key];
+    if (!p || !window.NH || !NH.audio) return;
     cancelPlay();
-    const beatMs = 60000 / TEMPO_BPM; // 1000ms at 60 BPM
-    _playTimers.push(setTimeout(function () { NH.audio.playTick(); }, 0));
-    _playTimers.push(setTimeout(function () { NH.audio.playTick(); }, beatMs));
-    _playTimers.push(setTimeout(function () {
-      NH.audio.playMidi(QUERY_PITCH_MIDI, (sym.beats * beatMs) / 1000);
-    }, beatMs * 2));
+    var beatMs = 60000 / TEMPO_BPM;
+    var t = 0;
+    _timers.push(setTimeout(function(){ NH.audio.playTick(); }, t));
+    t += beatMs;
+    _timers.push(setTimeout(function(){ NH.audio.playTick(); }, t));
+    t += beatMs;
+    for (var i = 0; i < p.notes.length; i++) {
+      (function(dur, offset){
+        _timers.push(setTimeout(function(){
+          NH.audio.playMidi(PITCH_MIDI, (dur * beatMs) / 1000);
+        }, offset));
+      })(p.notes[i], t);
+      t += p.notes[i] * beatMs;
+    }
   }
 
-  function renderSymbol(container, key) {
-    const sym = SYMBOLS[key];
-    if (!sym) return;
+  function patternSVG(notes) {
+    var w = 160, h = 48, cy = 16, stemH = 22;
+    var rx = 5.5, ry = 4, tilt = -14, ink = '#2A2A3E';
+    var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
+    var totalBeats = 0;
+    for (var i=0;i<notes.length;i++) totalBeats += notes[i];
+    var pad = 16, span = w - pad*2, x = pad;
+    var positions = [];
+    for (var i=0;i<notes.length;i++) {
+      var b = notes[i], nw = (b/totalBeats)*span;
+      positions.push({ b: b, cx: x + nw/2, nw: nw });
+      x += nw;
+    }
+    for (var i=0;i<positions.length;i++) {
+      var p = positions[i], filled = p.b < 2;
+      svg += '<ellipse cx="'+p.cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+tilt+' '+p.cx+' '+cy+')" fill="'+(filled?ink:'none')+'" stroke="'+ink+'" stroke-width="'+(filled?'1':'2')+'"/>';
+      if (p.b < 4) {
+        var sx = p.cx - rx*0.7;
+        svg += '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="1.8"/>';
+      }
+    }
+    var i = 0;
+    while (i < positions.length) {
+      if (positions[i].b < 1) {
+        var groupStart = i;
+        while (i < positions.length && positions[i].b < 1) i++;
+        var groupEnd = i - 1;
+        if (groupEnd > groupStart) {
+          var x1 = positions[groupStart].cx - rx*0.7;
+          var x2 = positions[groupEnd].cx - rx*0.7;
+          svg += '<line x1="'+x1+'" y1="'+(cy+stemH)+'" x2="'+x2+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
+        } else {
+          var sx = positions[groupStart].cx - rx*0.7;
+          svg += '<path d="M'+sx+','+(cy+stemH)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+        }
+      } else {
+        i++;
+      }
+    }
+    svg += '</svg>';
+    return svg;
+  }
+
+  function renderPrompt(container, key) {
     container.innerHTML =
-      '<div class="er-symbol">' +
-        '<div class="er-listen-emoji">\uD83C\uDFA7</div>' +
+      '<div class="er-prompt">' +
+        '<div class="er-listen-emoji">\uD83C\uDFB6</div>' +
         '<button type="button" class="er-listen-btn" id="er-listen-btn">\u25B6 Hear it again</button>' +
       '</div>';
-    const btn = container.querySelector('#er-listen-btn');
-    if (btn) btn.addEventListener('click', function () { playRhythm(key); });
-    // Auto-play the cue when the question renders.
-    playRhythm(key);
+    var btn = container.querySelector('#er-listen-btn');
+    if (btn) btn.addEventListener('click', function(){ playPattern(key); });
+    playPattern(key);
   }
 
-  function animateSymbol(container, kind) {
-    const el = container.querySelector('.er-symbol');
+  function animatePrompt(container, kind) {
+    var el = container.querySelector('.er-prompt');
     if (!el) return;
     el.classList.remove('pop');
     void el.offsetWidth;
     if (kind === 'pop') el.classList.add('pop');
   }
 
-  function recolorSymbol(container, color) {
-    const el = container.querySelector('.er-listen-emoji');
+  function recolorPrompt(container, color) {
+    var el = container.querySelector('.er-listen-emoji');
     if (el) el.style.color = color;
   }
 
   // ============ EXPLOSION ENGINE ============
-  function explode(symbolKey, originX, originY, streak) {
-    const fx = document.getElementById('er-fx-layer');
+  function explode(patternKey, originX, originY, streak) {
+    var fx = document.getElementById('er-fx-layer');
     if (!fx) return;
-    const sym = SYMBOLS[symbolKey];
-    if (!sym) return;
-
-    let count, sizeRange, distance, includeStreakChars;
-    if (streak >= 10) {
-      count = 30; sizeRange = [50, 100]; distance = 500; includeStreakChars = true;
-    } else if (streak >= 5) {
-      count = 20; sizeRange = [45, 80]; distance = 380; includeStreakChars = true;
-    } else if (streak >= 3) {
-      count = 14; sizeRange = [40, 70]; distance = 280; includeStreakChars = false;
-    } else {
-      count = 8; sizeRange = [35, 60]; distance = 220; includeStreakChars = false;
+    var chars = ['\u266A','\u266B','\u2669','\uD83C\uDFB5'];
+    var count = streak >= 10 ? 30 : streak >= 5 ? 20 : streak >= 3 ? 14 : 8;
+    var distance = streak >= 10 ? 500 : streak >= 5 ? 380 : streak >= 3 ? 280 : 220;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('div');
+      p.className = 'er-fx-particle';
+      var size = 35 + Math.random() * 40;
+      p.style.fontSize = size + 'px';
+      p.textContent = (streak >= 5 && Math.random() < 0.15) ? '\uD83D\uDD25' : chars[i % chars.length];
+      p.style.left = originX + 'px';
+      p.style.top = originY + 'px';
+      fx.appendChild(p);
+      var angle = (i/count)*Math.PI*2 + (Math.random()-0.5)*0.6;
+      var speed = distance*(0.5+Math.random()*0.5);
+      var dx = Math.cos(angle)*speed, dy = Math.sin(angle)*speed - 60;
+      var rot = (Math.random()-0.5)*720, dur = 800+Math.random()*500;
+      p.animate([
+        { transform: 'translate(-50%,-50%) rotate(0) scale(0.3)', opacity: 1 },
+        { transform: 'translate(calc(-50% + '+dx*0.4+'px), calc(-50% + '+(dy*0.4-40)+'px)) rotate('+rot*0.4+'deg) scale(1.1)', opacity: 1, offset: 0.2 },
+        { transform: 'translate(calc(-50% + '+dx+'px), calc(-50% + '+(dy+200)+'px)) rotate('+rot+'deg) scale(0.8)', opacity: 0 }
+      ], { duration: dur, easing: 'cubic-bezier(0.2,0.6,0.4,1)', fill: 'forwards' });
+      setTimeout(function(el){ return function(){ el.remove(); }; }(p), dur+100);
     }
-
-    for (let i = 0; i < count; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'er-fx-particle';
-      const size = sizeRange[0] + Math.random() * (sizeRange[1] - sizeRange[0]);
-      particle.style.fontSize = size + 'px';
-      if (includeStreakChars && Math.random() < 0.15) {
-        particle.textContent = '🔥';
-      } else {
-        particle.textContent = sym.char;
-      }
-      particle.style.left = originX + 'px';
-      particle.style.top = originY + 'px';
-      particle.style.transform = 'translate(-50%, -50%)';
-      fx.appendChild(particle);
-
-      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-      const speed = distance * (0.5 + Math.random() * 0.5);
-      const dx = Math.cos(angle) * speed;
-      const dy = Math.sin(angle) * speed - 60;
-      const rotation = (Math.random() - 0.5) * 720;
-      const duration = 800 + Math.random() * 500;
-
-      particle.animate([
-        { transform: 'translate(-50%, -50%) rotate(0deg) scale(0.3)', opacity: 1 },
-        { transform: 'translate(calc(-50% + ' + (dx * 0.4) + 'px), calc(-50% + ' + (dy * 0.4 - 40) + 'px)) rotate(' + (rotation * 0.4) + 'deg) scale(1.1)', opacity: 1, offset: 0.2 },
-        { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 200) + 'px)) rotate(' + rotation + 'deg) scale(0.8)', opacity: 0 }
-      ], { duration: duration, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)', fill: 'forwards' });
-
-      setTimeout(() => particle.remove(), duration + 100);
-    }
-
     if (streak >= 3) {
-      const banner = document.getElementById('er-streak-banner');
+      var banner = document.getElementById('er-streak-banner');
       if (banner) {
-        if (streak >= 10)      banner.textContent = '🔥 ' + streak + ' ON FIRE!';
-        else if (streak >= 5)  banner.textContent = '🔥 ' + streak + ' IN A ROW!';
-        else                   banner.textContent = streak + ' IN A ROW!';
-        banner.classList.remove('show');
-        void banner.offsetWidth;
-        banner.classList.add('show');
+        banner.textContent = streak >= 10 ? '\uD83D\uDD25 '+streak+' ON FIRE!' : streak >= 5 ? '\uD83D\uDD25 '+streak+' IN A ROW!' : streak+' IN A ROW!';
+        banner.classList.remove('show'); void banner.offsetWidth; banner.classList.add('show');
       }
     }
-
     if (streak >= 10) {
-      document.body.classList.remove('er-shake');
-      void document.body.offsetWidth;
+      document.body.classList.remove('er-shake'); void document.body.offsetWidth;
       document.body.classList.add('er-shake');
-      setTimeout(() => document.body.classList.remove('er-shake'), 400);
+      setTimeout(function(){ document.body.classList.remove('er-shake'); }, 400);
     }
   }
 
-  ER.SYMBOLS = SYMBOLS;
-  ER.playRhythm = playRhythm;
+  ER.PATTERNS = PATTERNS;
+  ER.playPattern = playPattern;
   ER.cancelPlay = cancelPlay;
-  ER.render = { renderSymbol, animateSymbol, recolorSymbol };
-  ER.fx = { explode };
+  ER.patternSVG = patternSVG;
+  ER.render = { renderSymbol: renderPrompt, animateSymbol: animatePrompt, recolorSymbol: recolorPrompt };
+  ER.fx = { explode: explode };
 })();
 
   // ============ QNM contract adapter ============
-  // Expose Ear: Rhythm' API to the generic game loop via window.QNM.
-  // The game loop calls QNM.* and never references ER.* directly.
-
-  // Tier pools: progressive duration range. Notes-only (no rests in v1).
-  const POOLS = {
-    easy:   ['whole-note', 'half-note', 'quarter-note'],
-    medium: ['whole-note', 'half-note', 'quarter-note', 'eighth-note'],
-    tricky: ['whole-note', 'half-note', 'quarter-note', 'eighth-note', 'sixteenth-note'],
+  var POOLS = {
+    easy:   ['qqqq','hh','hqq','qqh','qhq'],
+    medium: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh'],
+    tricky: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee','eehee','qeeeee','eeeeqe'],
   };
 
-  // Distractors: prefer adjacent durations (shorter + longer neighbor).
-  // Pools are small (3-5 items) so we always get the full tier as candidates
-  // and trim to 3 — but ordering biases toward immediate neighbors first
-  // so the choice set highlights the discrimination skill the tier teaches.
-  function buildChoices(correctKey, pool, difficulty) {
-    const SYMBOLS = window.ER.SYMBOLS;
-    const correctBeats = SYMBOLS[correctKey].beats;
-    function dist(k) { return Math.abs(SYMBOLS[k].beats - correctBeats); }
-    const candidates = pool.filter(function (k) { return k !== correctKey; });
-    candidates.sort(function (a, b) { return dist(a) - dist(b); });
-    const distractors = candidates.slice(0, 3);
-    // If tier pool < 4, fill from the global SYMBOLS map.
+  function buildChoices(correctKey, pool) {
+    var P = window.ER.PATTERNS;
+    var correctNotes = P[correctKey].notes;
+    function similarity(k) {
+      var n = P[k].notes;
+      if (n.length === correctNotes.length) return 0;
+      return Math.abs(n.length - correctNotes.length);
+    }
+    var candidates = pool.filter(function(k){ return k !== correctKey; });
+    candidates.sort(function(a,b){ return similarity(a) - similarity(b); });
+    var distractors = candidates.slice(0, 3);
     if (distractors.length < 3) {
-      const allKeys = Object.keys(SYMBOLS);
-      for (let i = 0; i < allKeys.length && distractors.length < 3; i++) {
-        if (allKeys[i] !== correctKey && distractors.indexOf(allKeys[i]) === -1) {
-          distractors.push(allKeys[i]);
-        }
+      var allKeys = Object.keys(P);
+      for (var i=0; i<allKeys.length && distractors.length<3; i++) {
+        if (allKeys[i] !== correctKey && distractors.indexOf(allKeys[i]) === -1) distractors.push(allKeys[i]);
       }
     }
-    const all = [correctKey].concat(distractors);
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
+    var all = [correctKey].concat(distractors);
+    for (var i=all.length-1; i>0; i--) {
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = all[i]; all[i] = all[j]; all[j] = tmp;
     }
     return all;
   }
 
   function encouragingLine(score, total) {
-    const pct = score / total;
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-    if (pct >= 1)   return pick(['GOLDEN EARS! Perfect rhythm round 🎯','Flawless — every duration caught! 🌟','Your ears are dialed in! 🎶']);
-    if (pct >= 0.8) return pick(["Strong ears — almost perfect!","So close to flawless! ⭐","Great listening!"]);
-    if (pct >= 0.5) return pick(["Nice round! Those durations are clicking 🎶","Good work — your ear is sharpening!","Solid round! Keep listening 🎵"]);
-    return pick(["Ears take practice — keep going 🌱","Every round trains the ear 🎵","Music takes time — listen again, you'll get it!"]);
+    var pct = score / total;
+    var pick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+    if (pct >= 1)   return pick(['GOLDEN EARS! Perfect pattern round \uD83C\uDFAF','Every rhythm matched! \uD83C\uDF1F','Your ears are dialed in! \uD83C\uDFB6']);
+    if (pct >= 0.8) return pick(["Strong ears \u2014 almost perfect!","So close to flawless! \u2B50","Great listening!"]);
+    if (pct >= 0.5) return pick(["Nice round! Those patterns are clicking \uD83C\uDFB6","Good work \u2014 your ear is sharpening!","Solid round! Keep listening \uD83C\uDFB5"]);
+    return pick(["Ears take practice \u2014 keep going \uD83C\uDF31","Every round trains the ear \uD83C\uDFB5","Music takes time \u2014 listen again!"]);
   }
 
   window.QNM = {
     slug:      'ear-rhythm',
     namespace: 'ER',
-
-    buildPool: function (tier) { return POOLS[tier].slice(); },
+    buildPool: function(tier) { return POOLS[tier].slice(); },
     buildChoices: buildChoices,
-    labelFor: function (key) {
-      const sym = window.ER.SYMBOLS[key];
-      return sym ? sym.label : key;
+    labelFor: function(key) {
+      return window.ER.patternSVG(window.ER.PATTERNS[key].notes);
     },
-
     render: {
-      renderQuestion: function (container, key) {
-        window.ER.render.renderSymbol(container, key);
-      },
-      animateQuestionIn: function (container, key) {
-        window.ER.render.animateSymbol(container, 'pop');
-      },
-      recolorAfterAnswer: function (container, correct) {
-        const color = correct === true  ? 'var(--teal)'
-                    : correct === false ? 'var(--coral)'
-                    : '';
+      renderQuestion: function(container, key) { window.ER.render.renderSymbol(container, key); },
+      animateQuestionIn: function(container) { window.ER.render.animateSymbol(container, 'pop'); },
+      recolorAfterAnswer: function(container, correct) {
+        var color = correct === true ? 'var(--teal)' : correct === false ? 'var(--coral)' : '';
         window.ER.render.recolorSymbol(container, color);
-        if (correct === true) {
-          window.ER.render.animateSymbol(container, 'pop');
-        }
+        if (correct === true) window.ER.render.animateSymbol(container, 'pop');
       },
     },
-
-    explode: function (correct, x, y, streak) {
-      window.ER.fx.explode(correct, x, y, streak);
-    },
-
+    explode: function(correct, x, y, streak) { window.ER.fx.explode(correct, x, y, streak); },
     encouragingLine: encouragingLine,
   };
 </script>
@@ -1186,7 +1151,7 @@
     state.currentChoices.forEach(key => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
-      btn.textContent = M.labelFor(key);
+      btn.innerHTML = M.labelFor(key);
       btn.dataset.key = key;
       btn.addEventListener('click', () => handleAnswer(key, btn));
       grid.appendChild(btn);
@@ -1649,7 +1614,7 @@
     const missedKeys = new Set();
     state.history.forEach(h => {
       if (!h.correct) {
-        const label = M.labelFor(h.key) || h.key;
+        const label = h.key.replace(/q/g,'♩').replace(/h/g,'𝅗𝅥').replace(/w/g,'𝅝').replace(/e/g,'♪') || h.key;
         counts[label] = (counts[label] || 0) + 1;
         missedKeys.add(h.key);
       }
