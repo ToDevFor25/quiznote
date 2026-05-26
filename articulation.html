@@ -202,18 +202,12 @@
   /* Word-tile (long-text) choices — used for meaning + change types. */
   .choices-grid.choices-wordy .choice-btn {
     font-size: clamp(13px, 3.5vw, 16px);
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 600;
     line-height: 1.2;
     padding: 10px 8px;
     min-height: 60px;
   }
   /* Term-tile (italic serif) choices — used for metronome type. */
   .choices-grid.choices-terms .choice-btn {
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
     font-size: clamp(17px, 4.5vw, 22px);
   }
 
@@ -831,7 +825,7 @@
       var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
       var ay = above ? (cy - 30) : (cy + 28);
       var g = GLYPH[opts.articulation] || '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="26" text-anchor="middle" fill="#2A2A3E">' + g + '</text>';
+      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="34" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="0.5">' + g + '</text>';
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
@@ -1000,10 +994,10 @@
     // discriminate (tie vs slur)
     var samePitch = Math.random() < 0.5;
     var correctD = samePitch ? 'Tie' : 'Slur';
-    var choicesD = shuffle([
+    var choicesD = [
       { label: 'Tie', correct: correctD === 'Tie' },
       { label: 'Slur', correct: correctD === 'Slur' },
-    ]);
+    ];
     return {
       type: 'discriminate', skill: 'discriminate',
       prompt: 'Is this a tie or a slur?',

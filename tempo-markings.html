@@ -199,18 +199,12 @@
   /* Word-tile (long-text) choices — used for meaning + change types. */
   .choices-grid.choices-wordy .choice-btn {
     font-size: clamp(13px, 3.5vw, 16px);
-    font-family: 'Nunito', sans-serif;
-    font-style: normal;
-    font-weight: 600;
     line-height: 1.2;
     padding: 10px 8px;
     min-height: 60px;
   }
   /* Term-tile (italic serif) choices — used for metronome type. */
   .choices-grid.choices-terms .choice-btn {
-    font-family: 'Libre Caslon Text', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
     font-size: clamp(17px, 4.5vw, 22px);
   }
 
@@ -968,15 +962,16 @@
       var aKey = sorted[iA], bKey = sorted[iB];
       var pair = [TERMS[aKey].name, TERMS[bKey].name];
       // Correct = whichever is faster.
-      var faster = TERMS[aKey].mid > TERMS[bKey].mid ? TERMS[aKey].name : TERMS[bKey].name;
-      var choices2 = shuffle(pair.map(function(lbl){
-        return { label: lbl, correct: lbl === faster };
-      }));
+      var aIsFaster = TERMS[aKey].mid > TERMS[bKey].mid;
+      var choices2 = [
+        { label: 'A', correct: aIsFaster },
+        { label: 'B', correct: !aIsFaster },
+      ];
       return {
         type: 'ordering', skill: 'ordering',
         prompt: 'Which is faster?',
         display: null, pair: pair,
-        choices: choices2, answer: faster
+        choices: choices2, answer: (aIsFaster ? 'A' : 'B')
       };
     }
 

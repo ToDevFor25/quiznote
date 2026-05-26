@@ -847,7 +847,7 @@
       inner += t.svg + b.svg;
       wrap.innerHTML = `<svg viewBox="0 0 ${width + 50} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
     } else {
-      const width = 360, lineGap = 16, bottomY = 130, height = 200;
+      const width = 360, lineGap = 16, bottomY = 185, height = 310;
       const { svg } = buildStaff({ clef, pitch: p, width, lineGap, bottomY });
       wrap.innerHTML = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${svg}</svg>`;
     }
