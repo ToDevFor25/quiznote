@@ -806,8 +806,8 @@
   // Build a short 5-line staff SVG with a single notehead at (cx, cy) and
   // optional articulation glyph above/below.
   function buildSingleNote(opts) {
-    var w = 220, h = 160;
-    var midY = 70, gap = 9;  // staff bottom at midY + 2*gap; notehead near middle line
+    var w = 220, h = 180;
+    var midY = 90, gap = 9;  // staff bottom at midY + 2*gap; notehead near middle line
     var lines = '';
     for (var i = 0; i < 5; i++) {
       var y = midY - 2*gap + i*gap;
