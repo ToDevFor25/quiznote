@@ -213,12 +213,12 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* Tied pair: two glyphs side-by-side with an arc above. */
+  /* Tied pair: two glyphs side-by-side with an arc below (opposite stems). */
   .dn-symbol.dn-tied {
     position: relative;
     flex-direction: row;
     gap: 0;
-    padding-top: 18px;       /* room for the tie arc above */
+    padding-bottom: 18px;    /* room for the tie arc below */
   }
   .dn-symbol.dn-tied .dn-glyph {
     font-family: inherit;
@@ -230,17 +230,15 @@
     display: inline-block;
     width: 30px;
   }
-  /* The tie arc — drawn as a half-pill with the bottom open, positioned
-     above the two noteheads. Uses currentColor so it recolors with the symbol. */
   .dn-symbol.dn-tied .dn-tie-arc {
     position: absolute;
-    top: 38px;
+    bottom: 38px;
     left: 32%;
     width: 36%;
     height: 22px;
     border: 3px solid currentColor;
-    border-bottom: 0;
-    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    border-top: 0;
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
     pointer-events: none;
   }
 
@@ -864,7 +862,7 @@
     if (frac === 0) text = String(whole);
     else if (whole === 0) text = FRAC[String(frac)] || String(frac);
     else text = whole + (FRAC[String(frac)] || ('+' + frac));
-    return text + (b === 1 ? ' beat' : ' beats');
+    return text + (b <= 1 ? ' beat' : ' beats');
   }
 
   const AUG_DOT = '\uE1E7';
@@ -874,11 +872,11 @@
     if (!sym) return;
     if (sym.kind === 'tied') {
       const parts = sym.parts.map(function (p) {
-        return '<span class="dn-glyph">' + p.char + (p.dotted ? '\u2009' + AUG_DOT : '') + '</span>';
+        return '<span class="dn-glyph">' + p.char + (p.dotted ? AUG_DOT : '') + '</span>';
       }).join('<span class="dn-tie-gap"></span>');
       container.innerHTML = '<div class="dn-symbol dn-tied">' + parts + '<span class="dn-tie-arc"></span></div>';
     } else {
-      const dot = sym.dotted ? '\u2009' + AUG_DOT : '';
+      const dot = sym.dotted ? AUG_DOT : '';
       container.innerHTML = '<div class="dn-symbol">' + sym.char + dot + '</div>';
     }
   }

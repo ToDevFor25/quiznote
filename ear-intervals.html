@@ -715,8 +715,8 @@
 
   function ledgers(d) {
     const out = [];
-    if (d <= -2) { const eMin = (d % 2 === 0) ? d : d - 1; for (let e = -2; e >= eMin; e -= 2) out.push(e); }
-    else if (d >= 10) { const eMin = (d % 2 === 0) ? d : d + 1; for (let e = 10; e <= eMin; e += 2) out.push(e); }
+    if (d <= -2) { const eMin = (d % 2 === 0) ? d : d + 1; for (let e = -2; e >= eMin; e -= 2) out.push(e); }
+    else if (d >= 10) { const eMin = (d % 2 === 0) ? d : d - 1; for (let e = 10; e <= eMin; e += 2) out.push(e); }
     return out;
   }
 
