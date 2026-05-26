@@ -1171,8 +1171,12 @@
     let clef = state.settings.clef;
     if (clef === 'both') {
       var step = NH.music.diatonicStep;
-      var d = step(pitch.letter, pitch.octave) - step('E', 4);
-      clef = (d <= -2 || d >= 10) ? 'treble' : 'bass';
+      var ps = step(pitch.letter, pitch.octave);
+      var dt = ps - step('E', 4);
+      var db = ps - step('G', 2);
+      var tL = (dt <= -2) ? -dt : (dt >= 10) ? dt - 8 : 0;
+      var bL = (db <= -2) ? -db : (db >= 10) ? db - 8 : 0;
+      clef = tL <= bL ? 'treble' : 'bass';
     }
     state.current = { pitch, clef };
 
