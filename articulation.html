@@ -806,7 +806,7 @@
   // Build a short 5-line staff SVG with a single notehead at (cx, cy) and
   // optional articulation glyph above/below.
   function buildSingleNote(opts) {
-    var w = 220, h = 130;
+    var w = 220, h = 160;
     var midY = 70, gap = 9;  // staff bottom at midY + 2*gap; notehead near middle line
     var lines = '';
     for (var i = 0; i < 5; i++) {
@@ -823,9 +823,9 @@
       // Most marks go below the notehead (since stem is up). Fermata and
       // breath mark go above.
       var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var ay = above ? (cy - 34) : (cy + 36);
+      var ay = above ? (cy - 38) : (cy + 40);
       var g = GLYPH[opts.articulation] || '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="42" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="0.8">' + g + '</text>';
+      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="56" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1">' + g + '</text>';
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
