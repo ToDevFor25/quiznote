@@ -1293,6 +1293,7 @@
     <div class="promo-trust">No ads. Free during beta.</div>
 
     <a href="play.html" class="btn teal huge promo-cta">Explore the full app →</a>
+    <button class="btn ghost promo-replay" id="promo-replay">↻ Play again</button>
   </div>
 </div>
 
@@ -2901,6 +2902,12 @@
       A.playFanfare(tier);
       QN_FX.fire(tier);
     }, 700);
+
+    // Auto-show promo modal after celebration settles
+    setTimeout(function () {
+      var ov = document.getElementById('promo-overlay');
+      if (ov) ov.hidden = false;
+    }, 2500);
   }
 
   function scoreToStars(score, total) {
@@ -3007,6 +3014,12 @@
     var promoClose = document.getElementById('promo-close');
     if (promoClose) promoClose.addEventListener('click', () => {
       document.getElementById('promo-overlay').hidden = true;
+    });
+    var promoReplay = document.getElementById('promo-replay');
+    if (promoReplay) promoReplay.addEventListener('click', () => {
+      document.getElementById('promo-overlay').hidden = true;
+      startRound();
+      showScreen('play');
     });
   }
 
