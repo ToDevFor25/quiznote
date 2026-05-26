@@ -977,13 +977,14 @@
     });
 
     // Accidental — Bravura SMuFL (only drawn for harmonic/melodic minor raises etc.)
-    if (drawAccidental && pitch.accidental) {
-      const ax = x - lineGap * 1.0;
+    if (drawAccidental) {
       let sym = '';
       if (pitch.accidental === '#') sym = '\uE262';        // sharp
       else if (pitch.accidental === 'b') sym = '\uE260';   // flat
       else if (pitch.accidental === '##') sym = '\uE263';  // double sharp
       else if (pitch.accidental === 'bb') sym = '\uE264';  // double flat
+      else sym = '\uE261';                                  // natural (cancels key-sig accidental)
+      const ax = x - lineGap * 1.0;
       const aySize = lineGap * 4;
       // Anchor at note y, shift down by calibrated accidental offset
       const ay = ny + 1.625 * lineGap;
