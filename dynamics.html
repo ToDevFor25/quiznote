@@ -804,12 +804,18 @@
 (function () {
   const NH = window.NH = window.NH || {};
 
-  // Bravura dynamic-letter PUA codepoints. Compose marks by concatenation:
-  // mf = m + f, sfz = s + f + z.
+  // Bravura pre-composed dynamic glyphs (no spacing gaps).
   const GLYPH = {
     p: '\uE520', m: '\uE521', f: '\uE522', r: '\uE523', s: '\uE524', z: '\uE525'
   };
+  const COMPOSED = {
+    ppp: '\uE52A', pp: '\uE52B', p: '\uE520',
+    mp: '\uE52C', mf: '\uE52D',
+    f: '\uE522', ff: '\uE52F', fff: '\uE530',
+    fp: '\uE534', sfz: '\uE539'
+  };
   function compose(spelling) {
+    if (COMPOSED[spelling]) return COMPOSED[spelling];
     return spelling.split('').map(c => GLYPH[c] || c).join('');
   }
 
