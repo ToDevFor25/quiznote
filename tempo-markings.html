@@ -1161,6 +1161,40 @@
       if (state.settings.timer.enabled) showStartTimerModal();
       else startRound();
     });
+    // Settings card — Hints row
+    var savedHints = localStorage.getItem('tempo-markings_hints');
+    if (savedHints !== null) {
+      state.settings.hints = savedHints !== 'false';
+    } else {
+      var _prof = typeof QN !== 'undefined' && QN.profile ? QN.profile.getActive() : null;
+      if (_prof && _prof.hintsEnabled === false) state.settings.hints = false;
+    }
+    syncPill(els['hints-pill-state'], state.settings.hints);
+
+    els['hints-row'].addEventListener('click', function() {
+      var on = !state.settings.hints;
+      state.settings.hints = on;
+      syncPill(els['hints-pill-state'], on);
+      try { localStorage.setItem('tempo-markings_hints', String(on)); } catch(e) {}
+    });
+
+    // Settings card — Sound row
+    syncPill(els['sound-pill-state'], !A.isMuted());
+    els['sound-row'].addEventListener('click', function() {
+      var nowMuted = !A.isMuted();
+      saveMutedPreference(nowMuted);
+    });
+
+    // Hint card handlers
+    els['hint-got-it'].addEventListener('click', function() { hideHintCard(); });
+    els['hint-dismiss'].addEventListener('click', function() {
+      state.settings.hints = false;
+      syncPill(els['hints-pill-state'], false);
+      try { localStorage.setItem('tempo-markings_hints', 'false'); } catch(e) {}
+      hideHintCard();
+    });
+
+
 
     // Settings card — Timer row
     els['timer-row'].addEventListener('click', function() {

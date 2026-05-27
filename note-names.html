@@ -1133,7 +1133,12 @@
     syncPill(els['sound-pill-state'], !savedMuted);
 
     var savedHints = localStorage.getItem('note-names_hints');
-    if (savedHints === 'false') state.settings.hints = false;
+    if (savedHints !== null) {
+      state.settings.hints = savedHints !== 'false';
+    } else {
+      var _prof = typeof QN !== 'undefined' && QN.profile ? QN.profile.getActive() : null;
+      if (_prof && _prof.hintsEnabled === false) state.settings.hints = false;
+    }
     syncPill(els['hints-pill-state'], state.settings.hints);
 
     // Primary tile selectors

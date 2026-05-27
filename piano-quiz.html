@@ -1610,20 +1610,47 @@
     });
 
     els['start-btn'].addEventListener('click', () => {
-      const muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
-      saveMutedPreference(muted);
-
-      // This click is the user gesture that unlocks audio, after settings are chosen.
-      // If the user chose Start muted, keep the round silent and do not force audio on.
-      if (!muted) {
+      if (!A.isMuted()) {
         try { A.ensureCtx(); } catch (err) { console.warn('Audio unlock skipped:', err); }
       }
-
       if (state.settings.timer.enabled) {
         showStartTimerModal();
       } else {
         startRound();
       }
+    });
+
+    // Settings card — Hints row
+    var savedHints = localStorage.getItem('piano-quiz_hints');
+    if (savedHints !== null) {
+      state.settings.hints = savedHints !== 'false';
+    } else {
+      var _prof = typeof QN !== 'undefined' && QN.profile ? QN.profile.getActive() : null;
+      if (_prof && _prof.hintsEnabled === false) state.settings.hints = false;
+    }
+    syncPill(els['hints-pill-state'], state.settings.hints);
+
+    els['hints-row'].addEventListener('click', function() {
+      var on = !state.settings.hints;
+      state.settings.hints = on;
+      syncPill(els['hints-pill-state'], on);
+      try { localStorage.setItem('piano-quiz_hints', String(on)); } catch(e) {}
+    });
+
+    // Settings card — Sound row
+    syncPill(els['sound-pill-state'], !A.isMuted());
+    els['sound-row'].addEventListener('click', function() {
+      var nowMuted = !A.isMuted();
+      saveMutedPreference(nowMuted);
+    });
+
+    // Hint card handlers
+    els['hint-got-it'].addEventListener('click', function() { hideHintCard(); });
+    els['hint-dismiss'].addEventListener('click', function() {
+      state.settings.hints = false;
+      syncPill(els['hints-pill-state'], false);
+      try { localStorage.setItem('piano-quiz_hints', 'false'); } catch(e) {}
+      hideHintCard();
     });
 
     els['timer-toggle'].addEventListener('click', () => {
