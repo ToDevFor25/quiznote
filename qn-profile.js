@@ -473,6 +473,22 @@
     },
 
     /**
+     * Touch lastActiveAt on the currently active profile.
+     */
+    touchActive: function () {
+      var active = this.getActive();
+      if (!active) return;
+      var profiles = readStorage(STORAGE_KEYS.PROFILES, []);
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].id === active.id) {
+          profiles[i].lastActiveAt = Date.now();
+          break;
+        }
+      }
+      writeStorage(STORAGE_KEYS.PROFILES, profiles);
+    },
+
+    /**
      * Update fields on an existing profile.
      * Only nickname, level, and color can be updated.
      * Returns the updated profile, or null if not found.
@@ -681,6 +697,8 @@
       // event, mis-fired the guest "save your scores?" prompt for a
       // well-established profile.)
       if (active) {
+        // Touch lastActiveAt so the profile picker shows real recency
+        profileAPI.touchActive();
         // Drain any stranded pending events — they are meaningless once a
         // profile is active, and left lying around they keep pendingCount()
         // > 0, which is half of what mis-triggered the guest prompt.
