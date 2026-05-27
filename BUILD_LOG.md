@@ -1,5 +1,148 @@
 ---
 
+### Session 3 — Teaching hints layer + settings card redesign — May 2026
+
+**Session type:** Feature build + UX redesign. Largest cross-cutting
+feature since the shared-CSS extraction. Touched all 32 module files,
+profile.html, qn-profile.js, and qn-theme.css.
+
+**Major deliverables:**
+
+1. **Teaching hints engine (all 32 modules).** When a student answers
+   wrong, a contextual teaching hint card appears before the retry
+   attempt. Pop-up modal on all screen sizes (mobile and desktop —
+   the desktop inline banner variant was prototyped and rejected in
+   favor of consistency). Hint explains WHY the answer is wrong, not
+   just WHAT the correct answer is. Student taps "Got it" then gets
+   their second try with that knowledge fresh. Timer pauses during
+   hint display. Same hint never shown twice per round (frequency cap
+   via `shownHints` Set). Graceful fallback: if no hint exists for the
+   current question type, falls through to plain retry.
+
+2. **Teaching hint content authored for all 32 modules.** 2-3 hints per
+   question type per module. Foundations: staff reading mnemonics,
+   duration arithmetic, meter rules, accidental definitions, Italian
+   tempo/dynamics terms, articulation effects (including tie vs slur),
+   navigation markings, ornament identification. Reading: key signature
+   rules, scale interval patterns, scale degree names, mode
+   characteristics, interval quality/counting, ear training strategies.
+   Theory: chord quality by interval structure, Roman numeral conventions,
+   inversions, seventh chords, progressions, cadences, ear training for
+   harmony. All hints follow the music theory accuracy rules.
+
+3. **2-try retry extended to all 32 modules.** The 8 modules that
+   previously went straight from wrong to reveal (Note Values, Dotted
+   Notes, Time Signatures, Key Signatures, Chromatic Scale, Scale
+   Modes, Ear: Rhythm, Ear: Scales) now have the same retry mechanic
+   as the other 24. Every module: wrong → hint card → second try →
+   reveal on second miss.
+
+4. **Settings card redesign (all 32 modules).** Replaced the separate
+   timer toggle pill + hints toggle pill + muted checkbox with a single
+   grouped settings card containing three rows: Timer, Teaching hints,
+   Sound. Uses pill-state indicators (on/off). Timer row expands the
+   30s/45s/60s pills inline when toggled on. Design chosen from a
+   4-option mockup (Option C: grouped card + pill states). Industry
+   standard pattern — groups secondary preferences into a visually
+   quiet cluster below the primary tile selectors and above the CTA.
+   Mockup at `_mockups/start-screen-settings.html`.
+
+5. **Onboarding interactive toggles.** Level selection now shows
+   interactive difficulty (Easy/Med/Tricky) and teaching hints (On/Off)
+   pill toggles when a level is selected. Defaults change based on
+   level: "Just starting" = Easy + hints on, "I know some notes" =
+   Medium + hints on, "I've been playing a while" = Tricky + hints off.
+   Users can override defaults before continuing. Values stored on the
+   profile as `defaultDifficulty` and `hintsEnabled`.
+
+6. **Profile-wide defaults.** Two new additive fields on the profile
+   object: `defaultDifficulty` (easy/medium/tricky) and `hintsEnabled`
+   (boolean). Set during onboarding, consumed by all modules at startup.
+   Per-module toggle cascade: per-module localStorage override >
+   profile default > true. Modules read the active profile's defaults
+   via `QN.profile.getActive()` and pre-select the matching difficulty
+   tile + hint toggle state.
+
+7. **Sound toggle bug fix.** The settings card Sound row toggled the
+   muted boolean but never initialized the AudioContext. Web browsers
+   require a user gesture to create an AudioContext — the Sound row tap
+   IS that gesture but wasn't using it. Fixed: now calls `ensureCtx()`
+   when unmuting. Same fix applied to all 32 modules.
+
+8. **Feature spec.** Full spec at `specs/teaching-hints-spec.md`
+   covering the flow, visual design, toggle cascade, hint data model,
+   authoring guidelines, implementation phases, and autonomy guide.
+   Updated during implementation to reflect design decisions (pop-up
+   everywhere, settings card, onboarding toggles).
+
+**Design decisions made:**
+
+- **Pop-up modal on all screen sizes** (not inline on desktop). Tested
+  both; pop-up is better because it forces the student to read the hint
+  before retrying. Consistent with the quit dialog pattern.
+- **Settings card (Option C)** from a 4-option mockup. Grouped card
+  with pill states. Timer/hints/sound as peer rows. Industry standard
+  for pre-activity configuration (Duolingo, Quizlet, Headspace).
+- **"I've been playing a while" defaults to Tricky** (was Medium).
+  If someone self-reports as experienced, starting on Medium undersells
+  their assessment.
+- **Sound toggle replaces muted checkbox.** Same functionality, better
+  visual integration. Lives inside the settings card as a peer of
+  timer and hints.
+- **Hint content keyed by question type.** Each module's HINTS object
+  uses keys matching the module's natural sub-skill axis. Fallback is
+  graceful — missing keys just skip the hint.
+
+**Architecture notes:**
+
+- Teaching hints are NOT a separate system — they live inside each
+  module's game loop, using the existing retry flow as the integration
+  point. No new shared files created (hint CSS added to qn-theme.css,
+  hint functions added inline per module).
+- Profile schema changes are additive — `defaultDifficulty` and
+  `hintsEnabled` absent = `'medium'` and `true` respectively. No
+  migration needed. Existing profiles work unchanged.
+- The `applyProfileDefaults()` function reads the active profile at
+  module startup and pre-selects the difficulty tile if the current
+  selection is still the hardcoded default (Medium). Path handoff
+  takes priority (one-shot, already implemented).
+
+**Files modified:**
+- All 32 module HTML files (settings card DOM, hint overlay DOM,
+  HINTS content, hint engine JS, settings card event handlers,
+  retry mechanic where missing, profile defaults reading)
+- `qn-theme.css` — settings card styles (.settings-card, .setting-row,
+  .pill-state) + hint card styles (.hint-overlay, .hint-card,
+  .hint-header, .hint-body, .hint-actions, .hint-dismiss-link)
+- `qn-profile.js` — `defaultDifficulty` and `hintsEnabled` fields on
+  profile create
+- `profile.html` — interactive level toggles (.lpill, .level-detail,
+  .level-setting), draftDifficulty/draftHints state
+- New: `specs/teaching-hints-spec.md`
+- New: `_mockups/start-screen-settings.html`
+
+**Still open / next:**
+- **Visual QA on real devices** — structural verification passed (all
+  32 modules parse clean, all DOM elements present, all JS functions
+  exist). Pixel-level QA on phone/tablet still owed. Key spots: settings
+  card layout, hint pop-up appearance, sound toggle, onboarding toggles.
+- **Hint content refinement** — v1 content is authored; may need
+  tuning after real-student feedback. Particular attention to modules
+  where the question type axis doesn't perfectly match the hint keys
+  (scales family uses mode names as keys, but getHint picks randomly
+  from available keys — may want context-aware selection like Note
+  Names has).
+- **Build log / project doc / spec updates** — this entry covers the
+  build log. QUIZNOTE_PROJECT_DOC.md §3b, §4, §5, §6, §12 need
+  updates to reflect: teaching hints as a shipped feature, settings
+  card as the new start-screen pattern, retry mechanic now universal,
+  profile defaults. CLAUDE.md "Current in-progress state" section
+  needs the teaching layer added.
+- Standing build queue unchanged: Circle of Fifths (#6), Chord
+  Function (#7), Transposition (#8).
+
+---
+
 ### Session 2 — QA fixes, ear training rebuild, anti-memorization — May 2026
 
 **Session type:** QA-driven bug fixes, module rebuilds, UX improvements,
