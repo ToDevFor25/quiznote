@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Time Signature Position Calibrator</title>
+<style>
+  :root { --ink: #2A2A3E; --bg: #FBF7ED; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 20px; color: #6b6b7a; font-size: 14px; }
+
+  .controls {
+    background: #fff; border: 2px solid var(--ink); border-radius: 14px;
+    padding: 16px 20px; margin-bottom: 24px;
+    display: grid; grid-template-columns: 1fr; gap: 14px; max-width: 680px;
+  }
+  .row { display: grid; grid-template-columns: 180px 1fr 70px; align-items: center; gap: 12px; }
+  .row label { font-weight: 600; font-size: 14px; }
+  .row input[type=range] { width: 100%; }
+  .row .val { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+
+  .readout {
+    background: var(--ink); color: #fff; border-radius: 10px;
+    padding: 12px 16px; font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 13px; line-height: 1.7; white-space: pre; margin-top: 4px;
+  }
+  .copy-hint { font-size: 12px; color: #6b6b7a; margin-top: 8px; }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .cell {
+    background: #fff; border: 2px solid var(--ink); border-radius: 14px;
+    padding: 10px; text-align: center;
+  }
+  .cell .label { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .cell svg { width: 100%; height: auto; display: block; }
+  .staff-line { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+  .timesig { fill: var(--ink); }
+</style>
+</head>
+<body>
+  <h1>Time Signature Position Calibrator</h1>
+  <p class="sub">Drag the sliders until <strong>all ten</strong> time signatures look right at once. Then copy the values from the dark box into chat. Staff lines are real; clef is omitted (we're calibrating digit position relative to the staff, which is all that matters).</p>
+
+  <div class="controls">
+    <div class="row">
+      <label for="fontSize">fontSize (× lineGap)</label>
+      <input type="range" id="fontSize" min="1.5" max="3.5" step="0.05" value="2.3" />
+      <span class="val" id="fontSize-val">2.30</span>
+    </div>
+    <div class="row">
+      <label for="topOffset">top digit ↑↓ (× lineGap)</label>
+      <input type="range" id="topOffset" min="0.4" max="1.6" step="0.02" value="1.10" />
+      <span class="val" id="topOffset-val">1.10</span>
+    </div>
+    <div class="row">
+      <label for="botOffset">bottom digit ↑↓ (× lineGap)</label>
+      <input type="range" id="botOffset" min="0.4" max="1.6" step="0.02" value="1.10" />
+      <span class="val" id="botOffset-val">1.10</span>
+    </div>
+    <div class="row">
+      <label for="yShift">whole stack ↑↓ (× lineGap)</label>
+      <input type="range" id="yShift" min="-0.8" max="0.8" step="0.02" value="0.00" />
+      <span class="val" id="yShift-val">0.00</span>
+    </div>
+    <div class="row">
+      <label for="digitWidth">digitWidth (× lineGap)</label>
+      <input type="range" id="digitWidth" min="0.7" max="1.8" step="0.02" value="1.15" />
+      <span class="val" id="digitWidth-val">1.15</span>
+    </div>
+    <div class="readout" id="readout"></div>
+    <div class="copy-hint">topOffset = distance of top digit center ABOVE the middle line. botOffset = distance of bottom digit center BELOW the middle line. Lower both to pull the digits toward the middle; raise them to push toward the outer lines. When it looks right, copy the values into chat.</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+<script>
+  // All ten time signatures from the spec
+  const SIGS = [
+    ['2','4'], ['3','4'], ['4','4'],
+    ['6','8'], ['3','8'], ['2','2'],
+    ['9','8'], ['12','8'], ['5','4'], ['7','8'],
+  ];
+
+  // Staff geometry (matches qn-staff.js conventions)
+  const W = 220, H = 130;
+  const lineGap = 16;
+  const bottomY = 95;            // y of bottom staff line
+  const tsX = 150;               // x center of the time signature in this preview
+
+  const params = { fontSize: 2.3, topOffset: 1.10, botOffset: 1.10, yShift: 0.00, digitWidth: 1.15 };
+
+  function buildStaffLines() {
+    let s = '';
+    for (let i = 0; i < 5; i++) {
+      const y = bottomY - i * lineGap;
+      s += `<line class="staff-line" x1="8" y1="${y}" x2="${W - 8}" y2="${y}"/>`;
+    }
+    return s;
+  }
+
+  function buildTimeSig(top, bottom) {
+    const fontSize = lineGap * params.fontSize;
+    const digitWidth = lineGap * params.digitWidth;
+    const topOffset = lineGap * params.topOffset;
+    const botOffset = lineGap * params.botOffset;
+    const yShift = lineGap * params.yShift;
+
+    const midY = bottomY - 2 * lineGap;   // middle staff line
+    const topY = midY - topOffset + yShift;
+    const botY = midY + botOffset + yShift;
+
+    function stack(numStr, y) {
+      const totalWidth = numStr.length * digitWidth;
+      const startX = tsX - totalWidth / 2 + digitWidth / 2;
+      let out = '';
+      for (let i = 0; i < numStr.length; i++) {
+        const dx = startX + i * digitWidth;
+        out += `<text class="timesig" x="${dx}" y="${y}" font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="${fontSize}" text-anchor="middle" dominant-baseline="central">${numStr[i]}</text>`;
+      }
+      return out;
+    }
+    return stack(top, topY) + stack(bottom, botY);
+  }
+
+  function render() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    SIGS.forEach(([t, b]) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.innerHTML =
+        `<div class="label">${t}/${b}</div>` +
+        `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">` +
+        buildStaffLines() + buildTimeSig(t, b) +
+        `</svg>`;
+      grid.appendChild(cell);
+    });
+    updateReadout();
+  }
+
+  function updateReadout() {
+    const r = document.getElementById('readout');
+    r.textContent =
+`const fontSize   = lineGap * ${params.fontSize.toFixed(2)};
+const digitWidth = lineGap * ${params.digitWidth.toFixed(2)};
+const topOffset  = lineGap * ${params.topOffset.toFixed(2)};
+const botOffset  = lineGap * ${params.botOffset.toFixed(2)};
+const yShift     = lineGap * ${params.yShift.toFixed(2)};`;
+  }
+
+  ['fontSize','topOffset','botOffset','yShift','digitWidth'].forEach(id => {
+    const slider = document.getElementById(id);
+    const valEl = document.getElementById(id + '-val');
+    slider.addEventListener('input', () => {
+      params[id] = parseFloat(slider.value);
+      valEl.textContent = params[id].toFixed(2);
+      render();
+    });
+  });
+
+  render();
+</script>
+</body>
+</html>
