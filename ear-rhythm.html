@@ -772,39 +772,57 @@
 (function () {
   var ER = window.ER = window.ER || {};
 
-  var PATTERNS = {
-    'qqqq':    { notes: [1,1,1,1] },
-    'hh':      { notes: [2,2] },
-    'hqq':     { notes: [2,1,1] },
-    'qqh':     { notes: [1,1,2] },
-    'w':       { notes: [4] },
-    'qhq':     { notes: [1,2,1] },
-    'qqeeq':   { notes: [1,1,0.5,0.5,1] },
-    'eeqqq':   { notes: [0.5,0.5,1,1,1] },
-    'qeeh':    { notes: [1,0.5,0.5,2] },
-    'heeq':    { notes: [2,0.5,0.5,1] },
-    'eeeeh':   { notes: [0.5,0.5,0.5,0.5,2] },
-    'qeeqq':   { notes: [1,0.5,0.5,1,1] },
-    'eqqe':    { notes: [0.5,0.5,1,1,0.5,0.5] },
-    'qeqe':    { notes: [1,0.5,0.5,1,0.5,0.5] },
-    'heee':    { notes: [2,0.5,0.5,0.5,0.5] },
-    'eeqh':    { notes: [0.5,0.5,1,2] },
-    'eeqeeq':  { notes: [0.5,0.5,1,0.5,0.5,1] },
-    'qeeeeq':  { notes: [1,0.5,0.5,0.5,0.5,1] },
-    'eeeeeeee':{ notes: [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5] },
-    'hqee':    { notes: [2,1,0.5,0.5] },
-    'eeeeqq':  { notes: [0.5,0.5,0.5,0.5,1,1] },
-    'qqeeee':  { notes: [1,1,0.5,0.5,0.5,0.5] },
-    'eehee':   { notes: [0.5,0.5,2,0.5,0.5] },
-    'qeeeee':  { notes: [1,0.5,0.5,0.5,0.5,0.5,0.5] },
-    'eeeeqe':  { notes: [0.5,0.5,0.5,0.5,1,0.5,0.5] },
-    'ssssq':   { notes: [0.25,0.25,0.25,0.25,1,1,1] },
-    'qssssq':  { notes: [1,0.25,0.25,0.25,0.25,1,1] },
-    'qqssss':  { notes: [1,1,1,0.25,0.25,0.25,0.25] },
-    'sssseeq': { notes: [0.25,0.25,0.25,0.25,0.5,0.5,1,1] },
-    'esssse':  { notes: [0.5,0.5,0.25,0.25,0.25,0.25,0.5,0.5,1] },
-    'hssssee': { notes: [2,0.25,0.25,0.25,0.25,0.5,0.5] },
+  var TIER_VALUES = {
+    easy:   [1, 2, 4],
+    medium: [0.5, 1, 2],
+    tricky: [0.25, 0.5, 1, 2],
   };
+  var TARGET_BEATS = 4;
+  var MAX_NOTES = 12;
+
+  function generatePattern(tier) {
+    var values = TIER_VALUES[tier] || TIER_VALUES.medium;
+    var notes = [];
+    var remaining = TARGET_BEATS;
+    for (var safety = 0; safety < 50 && remaining > 0; safety++) {
+      var valid = values.filter(function(v) { return v <= remaining; });
+      if (valid.length === 0) break;
+      var pick = valid[Math.floor(Math.random() * valid.length)];
+      notes.push(pick);
+      remaining = Math.round((remaining - pick) * 100) / 100;
+      if (notes.length >= MAX_NOTES) break;
+    }
+    if (notes.length < 2 || Math.abs(remaining) > 0.01) return generatePattern(tier);
+    if (notes.length === 1) return generatePattern(tier);
+    return notes;
+  }
+
+  function patternKey(notes) {
+    return notes.map(function(n) {
+      if (n >= 4) return 'w';
+      if (n >= 2) return 'h';
+      if (n >= 1) return 'q';
+      if (n >= 0.5) return 'e';
+      return 's';
+    }).join('');
+  }
+
+  function generateUniquePatterns(tier, count) {
+    var patterns = [];
+    var seen = {};
+    for (var i = 0; i < 500 && patterns.length < count; i++) {
+      var notes = generatePattern(tier);
+      var key = patternKey(notes);
+      if (!seen[key]) {
+        seen[key] = true;
+        patterns.push({ key: key, notes: notes });
+      }
+    }
+    return patterns;
+  }
+
+  var PATTERNS = {};
+  ER.generateUniquePatterns = generateUniquePatterns;
 
   var TEMPO_BPM = 80;
   var PITCH_MIDI = 69;
@@ -968,32 +986,49 @@
 })();
 
   // ============ QNM contract adapter ============
-  var POOLS = {
-    easy:   ['qqqq','hh','hqq','qqh','qhq'],
-    medium: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh'],
-    tricky: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee','eehee','qeeeee','eeeeqe','ssssq','qssssq','qqssss','sssseeq','esssse','hssssee'],
-  };
+  var _tierMap = { easy: 'easy', medium: 'medium', tricky: 'tricky' };
+  var _roundPatterns = [];
 
-  function buildChoices(correctKey, pool) {
+  function buildGeneratedPool(tier) {
+    var gen = window.ER.generateUniquePatterns;
+    var P = window.ER.PATTERNS;
+    var items = gen(tier, 20);
+    var keys = [];
+    for (var i = 0; i < items.length; i++) {
+      P[items[i].key] = { notes: items[i].notes };
+      keys.push(items[i].key);
+    }
+    _roundPatterns = keys;
+    return keys;
+  }
+
+  function buildChoices(correctKey) {
     var P = window.ER.PATTERNS;
     var correctNotes = P[correctKey].notes;
-    function similarity(k) {
-      var n = P[k].notes;
-      if (n.length === correctNotes.length) return 0;
-      return Math.abs(n.length - correctNotes.length);
-    }
-    var candidates = pool.filter(function(k){ return k !== correctKey; });
-    candidates.sort(function(a,b){ return similarity(a) - similarity(b); });
-    var distractors = candidates.slice(0, 3);
-    if (distractors.length < 3) {
-      var allKeys = Object.keys(P);
-      for (var i=0; i<allKeys.length && distractors.length<3; i++) {
-        if (allKeys[i] !== correctKey && distractors.indexOf(allKeys[i]) === -1) distractors.push(allKeys[i]);
+    var tier = _tierMap[window._erTier] || 'medium';
+    var gen = window.ER.generateUniquePatterns;
+    var extras = gen(tier, 10);
+    var candidates = [];
+    var seen = {};
+    seen[correctKey] = true;
+    for (var i = 0; i < extras.length; i++) {
+      if (!seen[extras[i].key] && extras[i].key !== correctKey) {
+        seen[extras[i].key] = true;
+        P[extras[i].key] = { notes: extras[i].notes };
+        candidates.push(extras[i].key);
       }
     }
+    for (var i = 0; i < _roundPatterns.length; i++) {
+      var k = _roundPatterns[i];
+      if (!seen[k]) { seen[k] = true; candidates.push(k); }
+    }
+    candidates.sort(function(a, b) {
+      return Math.abs(P[a].notes.length - correctNotes.length) - Math.abs(P[b].notes.length - correctNotes.length);
+    });
+    var distractors = candidates.slice(0, 3);
     var all = [correctKey].concat(distractors);
-    for (var i=all.length-1; i>0; i--) {
-      var j = Math.floor(Math.random()*(i+1));
+    for (var i = all.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
       var tmp = all[i]; all[i] = all[j]; all[j] = tmp;
     }
     return all;
@@ -1011,7 +1046,7 @@
   window.QNM = {
     slug:      'ear-rhythm',
     namespace: 'ER',
-    buildPool: function(tier) { return POOLS[tier].slice(); },
+    buildPool: function(tier) { window._erTier = tier; return buildGeneratedPool(tier); },
     buildChoices: buildChoices,
     labelFor: function(key) {
       return window.ER.patternSVG(window.ER.PATTERNS[key].notes);
@@ -1636,7 +1671,7 @@
     const missedKeys = new Set();
     state.history.forEach(h => {
       if (!h.correct) {
-        const label = h.key.replace(/q/g,'♩').replace(/h/g,'𝅗𝅥').replace(/w/g,'𝅝').replace(/e/g,'♪') || h.key;
+        const label = h.key.replace(/s/g,'♬').replace(/q/g,'♩').replace(/h/g,'𝅗𝅥').replace(/w/g,'𝅝').replace(/e/g,'♪') || h.key;
         counts[label] = (counts[label] || 0) + 1;
         missedKeys.add(h.key);
       }
