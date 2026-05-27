@@ -285,19 +285,49 @@ footer .sep { margin: 0 8px; }
   width: 100%;
 }
 .level-detail {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--teal-dk, #0F8A7E);
   max-height: 0;
   overflow: hidden;
   opacity: 0;
-  transition: max-height 200ms ease, opacity 150ms ease, margin-top 200ms ease;
+  transition: max-height 250ms ease, opacity 150ms ease, margin-top 250ms ease;
   margin-top: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .level-option.selected .level-detail {
-  max-height: 30px;
+  max-height: 100px;
   opacity: 1;
-  margin-top: 8px;
+  margin-top: 12px;
+}
+.level-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.level-setting-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.level-pills {
+  display: flex;
+  gap: 4px;
+}
+.lpill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.05);
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: background 150ms, color 150ms;
+}
+.lpill.on {
+  background: rgba(31, 184, 168, 0.15);
+  color: var(--teal-dk, #0F8A7E);
 }
 .level-option:hover { border-color: var(--teal); background: rgba(31, 184, 168, 0.04); }
 .level-option:active { transform: scale(0.98); }
@@ -584,17 +614,65 @@ footer .sep { margin: 0 8px; }
       <p class="view-sub">This helps us pick a good starting difficulty. You can change it anytime.</p>
     </div>
     <div class="level-options">
-      <button class="level-option" data-level="starting" type="button">
+      <button class="level-option" data-level="starting" data-diff="easy" data-hints="true" type="button">
         <span class="level-main">Just starting out <span class="level-tag">Beginner</span></span>
-        <span class="level-detail">Starts on Easy · Teaching hints on</span>
+        <div class="level-detail">
+          <div class="level-setting">
+            <span class="level-setting-label">Difficulty</span>
+            <span class="level-pills" data-setting="diff">
+              <span class="lpill on" data-val="easy">Easy</span>
+              <span class="lpill" data-val="medium">Med</span>
+              <span class="lpill" data-val="tricky">Tricky</span>
+            </span>
+          </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Teaching hints</span>
+            <span class="level-pills" data-setting="hints">
+              <span class="lpill on" data-val="on">On</span>
+              <span class="lpill" data-val="off">Off</span>
+            </span>
+          </div>
+        </div>
       </button>
-      <button class="level-option" data-level="some" type="button">
+      <button class="level-option" data-level="some" data-diff="medium" data-hints="true" type="button">
         <span class="level-main">I know some notes <span class="level-tag">Intermediate</span></span>
-        <span class="level-detail">Starts on Medium · Teaching hints on</span>
+        <div class="level-detail">
+          <div class="level-setting">
+            <span class="level-setting-label">Difficulty</span>
+            <span class="level-pills" data-setting="diff">
+              <span class="lpill" data-val="easy">Easy</span>
+              <span class="lpill on" data-val="medium">Med</span>
+              <span class="lpill" data-val="tricky">Tricky</span>
+            </span>
+          </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Teaching hints</span>
+            <span class="level-pills" data-setting="hints">
+              <span class="lpill on" data-val="on">On</span>
+              <span class="lpill" data-val="off">Off</span>
+            </span>
+          </div>
+        </div>
       </button>
-      <button class="level-option" data-level="while" type="button">
+      <button class="level-option" data-level="while" data-diff="tricky" data-hints="false" type="button">
         <span class="level-main">I've been playing a while <span class="level-tag">Advanced</span></span>
-        <span class="level-detail">Starts on Medium · Teaching hints off</span>
+        <div class="level-detail">
+          <div class="level-setting">
+            <span class="level-setting-label">Difficulty</span>
+            <span class="level-pills" data-setting="diff">
+              <span class="lpill" data-val="easy">Easy</span>
+              <span class="lpill" data-val="medium">Med</span>
+              <span class="lpill on" data-val="tricky">Tricky</span>
+            </span>
+          </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Teaching hints</span>
+            <span class="level-pills" data-setting="hints">
+              <span class="lpill" data-val="on">On</span>
+              <span class="lpill on" data-val="off">Off</span>
+            </span>
+          </div>
+        </div>
       </button>
     </div>
     <div class="btn-row" style="margin-top:28px;">
@@ -734,6 +812,8 @@ footer .sep { margin: 0 8px; }
   var state = {
     draftNickname: '',
     draftLevel:    null,
+    draftDifficulty: 'medium',
+    draftHints:    true,
     draftColor:    'teal',
     editingId:     null   // when editing/deleting an existing profile
   };
@@ -969,11 +1049,36 @@ footer .sep { margin: 0 8px; }
     }
   }
 
+  function syncLevelPills(option) {
+    var diffPills = option.querySelectorAll('[data-setting="diff"] .lpill');
+    var hintPills = option.querySelectorAll('[data-setting="hints"] .lpill');
+    diffPills.forEach(function(p) { p.classList.toggle('on', p.dataset.val === state.draftDifficulty); });
+    hintPills.forEach(function(p) {
+      p.classList.toggle('on', (p.dataset.val === 'on') === state.draftHints);
+    });
+  }
+
   for (var i = 0; i < levelOptions.length; i++) {
-    levelOptions[i].addEventListener('click', function () {
+    levelOptions[i].addEventListener('click', function (e) {
+      // Check if a pill was clicked
+      var pill = e.target.closest('.lpill');
+      if (pill) {
+        e.stopPropagation();
+        var setting = pill.parentElement.dataset.setting;
+        if (setting === 'diff') {
+          state.draftDifficulty = pill.dataset.val;
+        } else if (setting === 'hints') {
+          state.draftHints = pill.dataset.val === 'on';
+        }
+        syncLevelPills(this);
+        return;
+      }
       for (var j = 0; j < levelOptions.length; j++) levelOptions[j].classList.remove('selected');
       this.classList.add('selected');
       state.draftLevel = this.getAttribute('data-level');
+      state.draftDifficulty = this.dataset.diff;
+      state.draftHints = this.dataset.hints === 'true';
+      syncLevelPills(this);
     });
   }
 
@@ -1014,7 +1119,9 @@ footer .sep { margin: 0 8px; }
     var created = QN.profile.create({
       nickname: state.draftNickname,
       level:    state.draftLevel,
-      color:    state.draftColor
+      color:    state.draftColor,
+      defaultDifficulty: state.draftDifficulty,
+      hintsEnabled: state.draftHints
     });
     if (!created) {
       showView('cap-reached');
