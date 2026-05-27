@@ -910,9 +910,9 @@
 
   // Lower-note pools per clef and tier
   const TREBLE_LOWER_BASE   = ['C4','D4','E4','F4','G4','A4','B4','C5','D5'];
-  const BASS_LOWER_BASE     = ['A2','B2','C3','D3','E3','F3'];
+  const BASS_LOWER_BASE     = ['A3','B3','C3','D3','E3','F3'];
   const TREBLE_LOWER_TRICKY = ['C4','D4','Eb4','E4','F4','F#4','G4','Ab4','A4','Bb4','B4','C5','D5'];
-  const BASS_LOWER_TRICKY   = ['A2','Bb2','B2','C3','D3','Eb3','E3','F3','F#3','G3'];
+  const BASS_LOWER_TRICKY   = ['A3','Bb3','B3','C3','D3','Eb3','E3','F3','F#3','G3'];
 
   function classifyInterval(lower, upper) {
     const sizeIdx = NH.music.diatonicStep(upper.letter, upper.octave) - NH.music.diatonicStep(lower.letter, lower.octave);
