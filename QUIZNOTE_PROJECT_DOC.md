@@ -38,6 +38,85 @@ What QuizNote does that competitors don't, in roughly the order users will notic
 - Concept explainers before drills (short, skippable after first view).
 - Privacy-respecting, ad-free, cheap when monetized.
 
+## 3a. Competitive landscape (May 2026 analysis)
+
+### Direct competitors
+
+**Tenuto (musictheory.net) — $3.99 one-time.** 24 exercises, pairs with
+free musictheory.net lessons. No ear training audio. Dated UI. QuizNote
+wins on breadth (31 modules), UI quality, and ear training. Tenuto wins
+on built-in lesson content — users can learn AND practice in one place.
+
+**Perfect Ear — freemium, ~$50/year.** Ear training + theory + rhythm.
+Adaptive difficulty via spaced repetition. Microphone input for singing
+intervals. Has: spaced repetition engine, mic-based exercises, detailed
+progress analytics with charts over time.
+
+**EarMaster — $60/year or $200 lifetime.** Desktop + mobile, 2500+
+exercises. Microphone + MIDI input. University-aligned curriculum.
+Institutional licensing. Way more depth but more intimidating.
+
+**Teoria.com — Free.** Web-based like QuizNote. Exercises + tutorials +
+reference. Looks like 2004. QuizNote is the modern version of this.
+
+**MyMusicTheory — ~$30/year.** ABRSM/RCM exam prep. Lesson + drill +
+mock exams. Parents buy it because it says "ABRSM" on the tin.
+
+### Where QuizNote genuinely wins
+
+- **UI/UX quality.** Best-looking music theory drill app in the category.
+- **Zero friction.** No download, no account required, any device.
+- **Module breadth.** 31 modules is competitive with Tenuto, better than
+  most free options.
+- **Family profiles.** Most competitors don't have multi-learner support.
+
+### Gaps vs competitors (honest assessment)
+
+1. **No teaching — only testing.** Every competitor that charges includes
+   "here's what this IS" before "now identify it." Explainer cards (3
+   per module) are a start but thin. At $39 users expect to LEARN.
+2. **No spaced repetition / adaptive difficulty.** Perfect Ear and
+   EarMaster adapt to what you get wrong. QuizNote randomizes.
+3. **No progress visualization.** Users paying $39 want to SEE
+   improvement — per-module progress bars, accuracy trends, streaks.
+4. **No offline / PWA.** Practice on the bus needs WiFi currently.
+5. **No microphone input.** Cool but complex. Skip for v1 monetization.
+
+### What QuizNote does NOT need
+
+- MIDI instrument input (niche, complex, wrong audience)
+- University-level content (audience is beginner–intermediate)
+- Desktop-only features (browser-first is correct)
+- Social/leaderboards (nice-to-have, not a blocker)
+
+### Pricing position
+
+At $39 lifetime, competing with Tenuto ($3.99) and free options.
+Positioning: "The modern Tenuto with ear training, family profiles, and
+no install required." Defensible at $39 WITH the three pre-monetization
+additions below. Without them, hard sell against Tenuto at $3.99.
+
+## 3b. Pre-monetization priorities
+
+Three highest-ROI additions before charging $39 lifetime. In order:
+
+**1. Progress dashboard.** Shows value of the subscription. Per-module
+progress bars, accuracy trends over time, weekly practice chart. The
+profile system already has the data — needs a dashboard.html upgrade.
+Medium effort, high perceived value.
+
+**2. PWA offline.** Makes it feel like a real app. manifest.json, service
+worker, Apple touch icons. Already planned (CLAUDE.md). Students
+practice on the bus — "works on any device" rings hollow without WiFi.
+
+**3. Richer teaching content.** Expand explainer cards from 3→6-8 per
+module with illustrated concept breakdowns. Closes the "practice only,
+no teaching" gap. Large scope but highest impact on retention. Could
+be phased — start with Foundations modules.
+
+These three convert QuizNote from a beautiful practice tool into a
+learning system — the difference between $3.99 and $39.
+
 ## 4. Architecture
 
 ### Current state
