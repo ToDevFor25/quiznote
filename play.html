@@ -659,21 +659,17 @@
           <div class="ltile-art bg-coral">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
-                @keyframes erBounce1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-                @keyframes erBounce2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-                @keyframes erBounce3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-                .er-n1 { animation: erBounce1 1.2s ease-in-out infinite; }
-                .er-n2 { animation: erBounce2 1.2s ease-in-out 0.15s infinite; }
-                .er-n3 { animation: erBounce3 1.2s ease-in-out 0.3s infinite; }
-                @keyframes erWiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(5deg)} 75%{transform:rotate(-5deg)} }
-                .er-ear { animation: erWiggle 2s ease-in-out infinite; transform-origin: 50px 50px; }
+                @keyframes erB1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+                @keyframes erB2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+                @keyframes erB3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                .er-n1 { animation: erB1 1.2s ease-in-out infinite; }
+                .er-n2 { animation: erB2 1.2s ease-in-out 0.15s infinite; }
+                .er-n3 { animation: erB3 1.2s ease-in-out 0.3s infinite; }
               </style>
-              <!-- Ear -->
-              <text class="er-ear" x="42" y="72" font-size="44">👂</text>
-              <!-- Bouncing notes -->
-              <text class="er-n1" x="100" y="62" font-family="-apple-system, system-ui, sans-serif" font-size="36" text-anchor="middle">🎵</text>
-              <text class="er-n2" x="132" y="55" font-family="-apple-system, system-ui, sans-serif" font-size="28" text-anchor="middle">🎶</text>
-              <text class="er-n3" x="158" y="68" font-family="-apple-system, system-ui, sans-serif" font-size="22" text-anchor="middle">🎵</text>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="er-n1" x="70" y="68" font-size="38" text-anchor="middle">🎵</text>
+              <text class="er-n2" x="108" y="58" font-size="30" text-anchor="middle">🎶</text>
+              <text class="er-n3" x="140" y="72" font-size="24" text-anchor="middle">🎵</text>
               <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">listen + match</text>
             </svg>
           </div>
@@ -1091,24 +1087,24 @@
           </div>
         </a>
 
-        <!-- Ear: Intervals : headphones + two-note gap -->
+        <!-- Ear: Intervals -->
         <a class="ltile" href="ear-intervals.html">
-          <div class="ltile-art bg-pink">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- headphone band -->
-              <path d="M38 70 C38 26, 122 26, 122 70" stroke="#2A2A3E" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-              <!-- left ear cup -->
-              <rect x="26" y="62" width="22" height="36" rx="7" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="2.4"/>
-              <!-- right ear cup -->
-              <rect x="112" y="62" width="22" height="36" rx="7" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="2.4"/>
-              <!-- two heard notes at different heights -->
-              <text x="66" y="86" font-family="Bravura Text" font-size="22" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-              <text x="94" y="56" font-family="Bravura Text" font-size="22" fill="#1FB8A8" text-anchor="middle" class="anim-pulse" style="animation-delay: 200ms">&#xE1D5;</text>
-              <!-- dashed arc showing the interval gap -->
-              <path d="M72 80 Q80 62 88 50" stroke="#FFB627" stroke-width="2.5" fill="none" stroke-dasharray="4 3" stroke-linecap="round"/>
-              <!-- ? chip -->
-              <rect x="63" y="30" width="34" height="26" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="80" y="49" font-family="Fredoka" font-weight="700" font-size="18" fill="white" text-anchor="middle">?</text>
+          <div class="ltile-art bg-coral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes eiPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+                .ei-lo { animation: eiPulse 1.6s ease-in-out infinite; }
+                .ei-hi { animation: eiPulse 1.6s ease-in-out 0.4s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="ei-lo" cx="68" cy="72" r="14" fill="#5B3FE4" opacity="0.8"/>
+              <text x="68" y="78" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">C</text>
+              <path d="M86 66 Q100 44 114 42" stroke="#FFB627" stroke-width="2.5" fill="none" stroke-dasharray="5 3" stroke-linecap="round"/>
+              <circle class="ei-hi" cx="132" cy="42" r="14" fill="#1FB8A8" opacity="0.8"/>
+              <text x="132" y="48" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">G</text>
+              <rect x="88" y="48" width="24" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="1.5"/>
+              <text x="100" y="63" font-family="Fredoka" font-weight="700" font-size="13" fill="#2A2A3E" text-anchor="middle">P5</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the gap</text>
             </svg>
           </div>
           <div class="ltile-body">
@@ -1117,28 +1113,30 @@
           </div>
         </a>
 
-        <!-- Ear: Scales : speaker + ascending staircase notes -->
+        <!-- Ear: Scales -->
         <a class="ltile" href="ear-scales.html">
-          <div class="ltile-art bg-grape">
-            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
-              <!-- small speaker at bottom-left -->
-              <path d="M10 60 L22 60 L36 48 L36 84 L22 72 L10 72 Z"
-                    fill="#FFB627" stroke="#2A2A3E" stroke-width="2" stroke-linejoin="round"/>
-              <!-- sound wave from speaker -->
-              <path d="M42 58 Q50 66 42 74" stroke="#1FB8A8" stroke-width="2.2" fill="none" stroke-linecap="round" class="anim-wave" style="animation-delay: 0ms; transform-origin: 42px 66px"/>
-              <!-- ascending scale notes (staircase) -->
-              <g font-family="Bravura Text" text-anchor="middle">
-                <text x="56"  y="86" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
-                <text x="72"  y="74" font-size="18" fill="white" opacity="0.85" class="anim-pulse" style="animation-delay: 120ms">&#xE1D5;</text>
-                <text x="88"  y="62" font-size="18" fill="#FFB627" class="anim-pulse" style="animation-delay: 240ms">&#xE1D5;</text>
-                <text x="104" y="50" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
-                <text x="120" y="38" font-size="18" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 480ms">&#xE1D5;</text>
-              </g>
-              <!-- subtle ascending guide -->
-              <path d="M56 80 L72 68 L88 56 L104 44 L120 32" stroke="white" stroke-width="1.6" fill="none" stroke-dasharray="3 4" opacity="0.25"/>
-              <!-- ? chip at top-right -->
-              <rect x="128" y="20" width="28" height="24" rx="7" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="142" y="38" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">?</text>
+          <div class="ltile-art bg-coral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes esRise { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+                .es-d1 { animation: esRise 1.5s ease-in-out infinite; }
+                .es-d2 { animation: esRise 1.5s ease-in-out 0.15s infinite; }
+                .es-d3 { animation: esRise 1.5s ease-in-out 0.3s infinite; }
+                .es-d4 { animation: esRise 1.5s ease-in-out 0.45s infinite; }
+                .es-d5 { animation: esRise 1.5s ease-in-out 0.6s infinite; }
+                .es-d6 { animation: esRise 1.5s ease-in-out 0.75s infinite; }
+                .es-d7 { animation: esRise 1.5s ease-in-out 0.9s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="es-d1" cx="36"  cy="82" r="7" fill="#5B3FE4"/>
+              <circle class="es-d2" cx="56"  cy="72" r="7" fill="#5B3FE4"/>
+              <circle class="es-d3" cx="76"  cy="62" r="7" fill="#1FB8A8"/>
+              <circle class="es-d4" cx="96"  cy="52" r="7" fill="#1FB8A8"/>
+              <circle class="es-d5" cx="116" cy="42" r="7" fill="#FFB627"/>
+              <circle class="es-d6" cx="136" cy="32" r="7" fill="#FFB627"/>
+              <circle class="es-d7" cx="156" cy="22" r="7" fill="#FF6B6B"/>
+              <path d="M36 82 L56 72 L76 62 L96 52 L116 42 L136 32 L156 22" stroke="white" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3 4"/>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the scale</text>
             </svg>
           </div>
           <div class="ltile-body">
@@ -1237,20 +1235,20 @@
 
         <a class="ltile" href="cadences.html"><div class="ltile-art bg-teal"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="30" y="35" width="36" height="36" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="48" y="58" font-size="16">V</text><text x="80" y="58" font-size="20" fill="#bbb">→</text><rect x="94" y="35" width="36" height="36" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/><text x="112" y="58" font-size="16" fill="white">I</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Cadences</div><div class="ltile-blurb">How phrases end. V→I or something else?</div></div></a>
 
-        <!-- Ear: Chord Quality — ear with sound rings + major/minor labels -->
+        <!-- Ear: Chord Quality -->
         <a class="ltile" href="ear-chords.html">
           <div class="ltile-art bg-coral">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
-                @keyframes ecPulse { 0%,100%{transform:scale(1);opacity:0.4} 50%{transform:scale(1.1);opacity:0.15} }
-                .ec-r1 { animation: ecPulse 2s ease-in-out infinite; transform-origin: 100px 50px; }
-                .ec-r2 { animation: ecPulse 2s ease-in-out 0.5s infinite; transform-origin: 100px 50px; }
+                @keyframes ecFade { 0%,45%{opacity:1} 50%,95%{opacity:0.3} 100%{opacity:1} }
+                .ec-maj { animation: ecFade 3s ease-in-out infinite; }
+                .ec-min { animation: ecFade 3s ease-in-out 1.5s infinite; }
               </style>
-              <text x="100" y="68" font-size="46" text-anchor="middle">👂</text>
-              <circle class="ec-r1" cx="100" cy="50" r="40" fill="none" stroke="#FF6B6B" stroke-width="2.5"/>
-              <circle class="ec-r2" cx="100" cy="50" r="54" fill="none" stroke="#FF6B6B" stroke-width="1.5"/>
-              <text x="52" y="30" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" opacity="0.6" text-anchor="middle">maj</text>
-              <text x="148" y="30" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" opacity="0.6" text-anchor="middle">min</text>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="ec-maj" x="70" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#1FB8A8" text-anchor="middle">Major</text>
+              <text x="100" y="62" font-family="Fredoka" font-weight="700" font-size="20" fill="#5a5a6e" text-anchor="middle" opacity="0.4">or</text>
+              <text class="ec-min" x="140" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#5B3FE4" text-anchor="middle">Minor</text>
+              <text x="100" y="86" font-size="24" text-anchor="middle">🤔</text>
               <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the quality</text>
             </svg>
           </div>
@@ -1260,20 +1258,20 @@
           </div>
         </a>
 
-        <!-- Ear: Cadences — two chord blocks with arrow + ear -->
+        <!-- Ear: Cadences -->
         <a class="ltile" href="ear-cadences.html">
           <div class="ltile-art bg-coral">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
-                @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.8;transform:translateX(3px)} }
-                .ed-arrow { animation: edSlide 1.5s ease-in-out infinite; }
+                @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.9;transform:translateX(3px)} }
+                .ed-arr { animation: edSlide 1.5s ease-in-out infinite; }
               </style>
-              <rect x="30" y="28" width="48" height="48" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="54" y="60" font-family="Fredoka" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle">V</text>
-              <text class="ed-arrow" x="100" y="58" font-size="20" fill="#5a5a6e" text-anchor="middle">→</text>
-              <rect x="122" y="28" width="48" height="48" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
-              <text x="146" y="60" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">I</text>
-              <text x="40" y="22" font-size="20">👂</text>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <rect x="42" y="32" width="42" height="42" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="63" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle">V</text>
+              <text class="ed-arr" x="100" y="58" font-size="18" fill="#5a5a6e" text-anchor="middle">→</text>
+              <rect x="116" y="32" width="42" height="42" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="137" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">I</text>
               <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">name the ending</text>
             </svg>
           </div>
@@ -1283,23 +1281,22 @@
           </div>
         </a>
 
-        <!-- Ear: Progressions — chain of chord pills + bouncing ear -->
+        <!-- Ear: Progressions -->
         <a class="ltile" href="ear-progressions.html">
           <div class="ltile-art bg-coral">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
-                @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-                .ep-ear { animation: epBob 1.8s ease-in-out infinite; }
-                .ep-c1 { animation: epBob 1.4s ease-in-out infinite; }
-                .ep-c2 { animation: epBob 1.4s ease-in-out 0.2s infinite; }
-                .ep-c3 { animation: epBob 1.4s ease-in-out 0.4s infinite; }
-                .ep-c4 { animation: epBob 1.4s ease-in-out 0.6s infinite; }
+                @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+                .ep-1 { animation: epBob 1.4s ease-in-out infinite; }
+                .ep-2 { animation: epBob 1.4s ease-in-out 0.2s infinite; }
+                .ep-3 { animation: epBob 1.4s ease-in-out 0.4s infinite; }
+                .ep-4 { animation: epBob 1.4s ease-in-out 0.6s infinite; }
               </style>
-              <text class="ep-ear" x="100" y="30" font-size="24" text-anchor="middle">👂</text>
-              <g class="ep-c1"><rect x="22" y="48" width="34" height="30" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="39" y="69" font-family="Fredoka" font-weight="700" font-size="14" fill="#2A2A3E" text-anchor="middle">I</text></g>
-              <g class="ep-c2"><rect x="64" y="48" width="34" height="30" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="81" y="69" font-family="Fredoka" font-weight="700" font-size="14" fill="#2A2A3E" text-anchor="middle">IV</text></g>
-              <g class="ep-c3"><rect x="106" y="48" width="34" height="30" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="123" y="69" font-family="Fredoka" font-weight="700" font-size="14" fill="#2A2A3E" text-anchor="middle">V</text></g>
-              <g class="ep-c4"><rect x="148" y="48" width="34" height="30" rx="8" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/><text x="165" y="69" font-family="Fredoka" font-weight="700" font-size="14" fill="white" text-anchor="middle">I</text></g>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <g class="ep-1"><rect x="22" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="39" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">I</text></g>
+              <g class="ep-2"><rect x="64" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="81" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">IV</text></g>
+              <g class="ep-3"><rect x="106" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="123" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">V</text></g>
+              <g class="ep-4"><rect x="148" y="42" width="34" height="32" rx="8" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/><text x="165" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="white" text-anchor="middle">I</text></g>
               <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">follow the chords</text>
             </svg>
           </div>
