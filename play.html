@@ -658,7 +658,22 @@
         <a class="ltile" href="ear-rhythm.html">
           <div class="ltile-art bg-coral">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-              <text x="100" y="78" font-family="-apple-system, system-ui, sans-serif" font-size="58" text-anchor="middle">🎶</text>
+              <style>
+                @keyframes erBounce1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                @keyframes erBounce2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+                @keyframes erBounce3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+                .er-n1 { animation: erBounce1 1.2s ease-in-out infinite; }
+                .er-n2 { animation: erBounce2 1.2s ease-in-out 0.15s infinite; }
+                .er-n3 { animation: erBounce3 1.2s ease-in-out 0.3s infinite; }
+                @keyframes erWiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(5deg)} 75%{transform:rotate(-5deg)} }
+                .er-ear { animation: erWiggle 2s ease-in-out infinite; transform-origin: 50px 50px; }
+              </style>
+              <!-- Ear -->
+              <text class="er-ear" x="42" y="72" font-size="44">👂</text>
+              <!-- Bouncing notes -->
+              <text class="er-n1" x="100" y="62" font-family="-apple-system, system-ui, sans-serif" font-size="36" text-anchor="middle">🎵</text>
+              <text class="er-n2" x="132" y="55" font-family="-apple-system, system-ui, sans-serif" font-size="28" text-anchor="middle">🎶</text>
+              <text class="er-n3" x="158" y="68" font-family="-apple-system, system-ui, sans-serif" font-size="22" text-anchor="middle">🎵</text>
               <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">listen + match</text>
             </svg>
           </div>
