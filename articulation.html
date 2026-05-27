@@ -820,22 +820,50 @@
                '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + headRX + '" ry="' + headRY + '" transform="rotate(' + tilt + ' ' + cx + ' ' + cy + ')" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8"/>';
     var art = '';
     if (opts.articulation) {
-      var MARK = {
-        staccato:      { fs: 44, below: headRY + gap * 0.6,  above: headRY + gap * 0.6,  sw: 0 },
-        staccatissimo: { fs: 48, below: headRY + gap * 0.6,  above: headRY + gap * 0.6,  sw: 0.5 },
-        tenuto:        { fs: 48, below: headRY + gap * 0.5,  above: headRY + gap * 0.5,  sw: 0.8 },
-        accent:        { fs: 48, below: headRY + gap * 0.7,  above: headRY + gap * 0.7,  sw: 0.5 },
-        marcato:       { fs: 46, below: headRY + gap * 0.8,  above: headRY + gap * 0.8,  sw: 0.5 },
-        fermata:       { fs: 50, below: headRY + gap * 1.2,  above: headRY + gap * 1.5,  sw: 0 },
-        breath:        { fs: 44, below: headRY + gap * 1.0,  above: headRY + gap * 1.5,  sw: 0 },
-        caesura:       { fs: 44, below: headRY + gap * 1.0,  above: headRY + gap * 1.5,  sw: 0 },
-      };
+      var ink = '#2A2A3E';
+      var d = gap * 0.6;
       var isAbove = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var m = MARK[opts.articulation] || { fs: 48, below: headRY + gap, above: headRY + gap, sw: 0.5 };
-      var ay = isAbove ? (cy - m.above) : (cy + m.below);
-      var g = GLYPH[opts.articulation] || '';
-      var strokeAttr = m.sw > 0 ? ' stroke="#2A2A3E" stroke-width="' + m.sw + '"' : '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="' + m.fs + '" text-anchor="middle" fill="#2A2A3E"' + strokeAttr + '>' + g + '</text>';
+      var my = isAbove ? (cy - headRY - d) : (cy + headRY + d);
+
+      switch (opts.articulation) {
+        case 'staccato':
+          art = '<circle cx="' + cx + '" cy="' + my + '" r="2.8" fill="' + ink + '"/>';
+          break;
+        case 'staccatissimo':
+          var sh = 7;
+          var sy = isAbove ? my - sh/2 : my - sh/2;
+          art = '<path d="M' + (cx-2) + ',' + (sy+sh) + ' L' + cx + ',' + sy + ' L' + (cx+2) + ',' + (sy+sh) + ' Z" fill="' + ink + '"/>';
+          break;
+        case 'tenuto':
+          var tw = headRX * 1.6;
+          art = '<line x1="' + (cx-tw) + '" y1="' + my + '" x2="' + (cx+tw) + '" y2="' + my + '" stroke="' + ink + '" stroke-width="2.2" stroke-linecap="round"/>';
+          break;
+        case 'accent':
+          var aw = 7, ah = 5;
+          var ay = isAbove ? my - ah : my;
+          art = '<path d="M' + (cx-aw) + ',' + (ay+ah) + ' L' + (cx+aw) + ',' + ay + ' L' + (cx-aw) + ',' + (ay-ah+ah) + '" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+          break;
+        case 'marcato':
+          var mw = 5, mh = 8;
+          var mTop = isAbove ? my - mh : my;
+          art = '<path d="M' + (cx-mw) + ',' + (mTop+mh) + ' L' + cx + ',' + mTop + ' L' + (cx+mw) + ',' + (mTop+mh) + '" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+          break;
+        case 'fermata':
+          var fy = cy - headRY - gap * 1.5;
+          var fr = 9;
+          art = '<path d="M' + (cx-fr) + ',' + fy + ' A' + fr + ',' + (fr*0.7) + ' 0 0,1 ' + (cx+fr) + ',' + fy + '" stroke="' + ink + '" stroke-width="2" fill="none"/>' +
+                '<circle cx="' + cx + '" cy="' + fy + '" r="1.8" fill="' + ink + '"/>';
+          break;
+        case 'breath':
+          var by = cy - headRY - gap * 1.2;
+          art = '<path d="M' + (cx-3) + ',' + (by+6) + ' Q' + (cx+1) + ',' + (by-2) + ' ' + (cx+5) + ',' + (by+6) + '" stroke="' + ink + '" stroke-width="1.8" fill="none"/>';
+          break;
+        case 'caesura':
+          var csy = cy - headRY - gap * 1.2;
+          art = '<line x1="' + (cx-3) + '" y1="' + (csy+8) + '" x2="' + (cx+1) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2"/>' +
+                '<line x1="' + (cx+1) + '" y1="' + (csy+8) + '" x2="' + (cx+5) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2"/>';
+          break;
+      }
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
