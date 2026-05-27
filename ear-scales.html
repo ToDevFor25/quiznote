@@ -1548,30 +1548,8 @@
   }
 
   function makeChoices(correctScale) {
-    const pool = getPool(state.settings.difficulty, state.settings.scaleType);
+    const ALL = [...MAJOR_SCALES, ...NATURAL_MINOR_SCALES, ...HARMONIC_MINOR_SCALES, ...MELODIC_MINOR_SCALES, ...MAJOR_PENTATONIC_SCALES, ...MINOR_PENTATONIC_SCALES];
     const correctName = correctScale.name;
-    // Pick 3 distractors. Prefer same mode (more confusable), then any other.
-    const sameMode = pool.filter(s => s.mode === correctScale.mode && s.name !== correctName);
-    const others = pool.filter(s => s.name !== correctName);
-
-    // For majors, also add the relative minor as a tempting distractor when available.
-    let tempting = [];
-    if (correctScale.mode === 'major') {
-      const relMinor = pool.find(s => s.ks === correctScale.ks && s.mode === 'minor-natural');
-      if (relMinor) tempting.push(relMinor);
-    } else if (correctScale.mode.startsWith('minor')) {
-      const relMajor = pool.find(s => s.ks === correctScale.ks && s.mode === 'major');
-      if (relMajor) tempting.push(relMajor);
-      const otherMinors = pool.filter(s => s.tonic === correctScale.tonic && s.mode !== correctScale.mode && s.mode.startsWith('minor'));
-      tempting.push(...otherMinors);
-    } else if (correctScale.mode === 'pentatonic-major') {
-      const relMinorPent = pool.find(s => s.ks === correctScale.ks && s.mode === 'pentatonic-minor');
-      if (relMinorPent) tempting.push(relMinorPent);
-    } else if (correctScale.mode === 'pentatonic-minor') {
-      const relMajorPent = pool.find(s => s.ks === correctScale.ks && s.mode === 'pentatonic-major');
-      if (relMajorPent) tempting.push(relMajorPent);
-    }
-
     const distractors = [];
     const seen = new Set([correctName]);
     function addUnique(s) {
@@ -1579,8 +1557,15 @@
       seen.add(s.name);
       distractors.push(s);
     }
-    tempting.sort(() => Math.random() - 0.5).forEach(addUnique);
-    sameMode.sort(() => Math.random() - 0.5).forEach(addUnique);
+    // Priority 1: same tonic, different type (tests ear for interval pattern)
+    var sameTonic = ALL.filter(s => s.tonic === correctScale.tonic && s.name !== correctName);
+    sameTonic.sort(() => Math.random() - 0.5).forEach(addUnique);
+    // Priority 2: relative key (same key sig, different mode)
+    var relKey = ALL.filter(s => s.ks === correctScale.ks && s.tonic !== correctScale.tonic && s.name !== correctName);
+    relKey.sort(() => Math.random() - 0.5).forEach(addUnique);
+    // Priority 3: any remaining from the current pool
+    var pool = getPool(state.settings.difficulty, state.settings.scaleType);
+    var others = pool.filter(s => s.name !== correctName);
     others.sort(() => Math.random() - 0.5).forEach(addUnique);
 
     const picks = [correctScale, ...distractors.slice(0, 3)];
