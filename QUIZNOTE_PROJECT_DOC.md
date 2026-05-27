@@ -1,6 +1,6 @@
 # QuizNote — Project Doc (v2)
 
-_Last revised: May 2026 — **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
+_Last revised: May 2026 — **All 32 modules live (Phases 1–5A complete). Teaching hints layer shipped across all 32 modules (May 2026): in-game contextual hints on wrong answers, settings card redesign, onboarding interactive toggles, profile-wide defaults. 2-try retry universal.** Prior: **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
 
 ---
 
@@ -72,11 +72,15 @@ mock exams. Parents buy it because it says "ABRSM" on the tin.
 
 ### Gaps vs competitors (honest assessment)
 
-1. **No teaching — only testing.** Every competitor that charges includes
-   "here's what this IS" before "now identify it." Explainer cards (3
-   per module) are a start but thin. At $39 users expect to LEARN.
+1. ~~**No teaching — only testing.**~~ **CLOSED (May 2026).** Teaching
+   hints layer shipped: contextual hint cards on wrong answers across
+   all 32 modules. Not a full lesson system, but bridges the gap
+   between "wrong" and "try again" with real pedagogical guidance.
+   Concept explainer cards (3 per module) remain as pre-game teaching.
 2. **No spaced repetition / adaptive difficulty.** Perfect Ear and
-   EarMaster adapt to what you get wrong. QuizNote randomizes.
+   EarMaster adapt to what you get wrong. QuizNote has a weak-spot
+   recommender (module-level) but doesn't adapt question difficulty
+   within a round.
 3. **No progress visualization.** Users paying $39 want to SEE
    improvement — per-module progress bars, accuracy trends, streaks.
 4. **No offline / PWA.** Practice on the bus needs WiFi currently.
@@ -109,13 +113,19 @@ Medium effort, high perceived value.
 worker, Apple touch icons. Already planned (CLAUDE.md). Students
 practice on the bus — "works on any device" rings hollow without WiFi.
 
-**3. Richer teaching content.** Expand explainer cards from 3→6-8 per
-module with illustrated concept breakdowns. Closes the "practice only,
-no teaching" gap. Large scope but highest impact on retention. Could
-be phased — start with Foundations modules.
+**3. ~~Richer teaching content.~~** **SHIPPED (May 2026) as teaching
+hints layer.** In-game contextual hints on wrong answers across all
+32 modules. 2-3 hints per question type, explaining WHY the answer
+is wrong before the retry attempt. Pop-up modal, toggle cascade
+(profile default → per-module → in-game dismiss), frequency cap.
+Not a full lesson system — it's a coach's whisper at the moment of
+confusion. Concept explainer cards (3 per module, pre-game) remain
+as a separate lighter system. Spec: `specs/teaching-hints-spec.md`.
 
 These three convert QuizNote from a beautiful practice tool into a
-learning system — the difference between $3.99 and $39.
+learning system — the difference between $3.99 and $39. Items 1
+(progress dashboard) and 2 (PWA) remain the open pre-monetization
+priorities.
 
 ## 4. Architecture
 
@@ -215,6 +225,7 @@ qn_events         Array<Event>     append-only round log
 
 Profile = {
   id, nickname, level, color,
+  defaultDifficulty, hintsEnabled,
   createdAt, lastActiveAt, syncedAt
 }
 
@@ -372,6 +383,28 @@ Each module gets a short explainer surfaced before the first practice session an
 
 This is light, not heavy. It's not a textbook. The bar is "a learner who has never seen a key signature can do the Easy tier after reading this."
 
+### Teaching hints (shipped May 2026)
+
+In-game teaching layer across all 32 modules. When a student answers wrong, a contextual hint card appears (pop-up modal on all screen sizes) explaining WHY the answer is wrong — not restating the correct answer, but teaching the underlying rule. The student taps "Got it" then retries with that knowledge fresh.
+
+**The flow:** wrong answer → hint card (timer pauses) → "Got it" → second try → correct or reveal. Same hint never shown twice per round. If no hint exists for the current question type, falls through to plain retry.
+
+**Hint content:** per-module `HINTS` object keyed by question type. 2-3 hints per key. Authored following the music theory accuracy rules. Text-only in v1 — no diagrams inside hint cards.
+
+**Toggle cascade:** profile-wide `hintsEnabled` default (set in onboarding) → per-module start-screen toggle → in-game "Don't show hints" dismiss. Per-module override stored in `<slug>_hints` localStorage key.
+
+**2-try retry:** universal across all 32 modules (was 24 of 32 before May 2026). Every module now has: wrong → hint → second try → reveal on second miss.
+
+**Spec:** `specs/teaching-hints-spec.md` (covers flow, design, data model, authoring guidelines, autonomy guide).
+
+### Settings card (shipped May 2026)
+
+The module start screen's secondary preferences (timer, teaching hints, sound) are grouped into a single white card with three rows. Each row has a label left and a pill-state indicator right (on/off or time value). The timer row expands the 30s/45s/60s pills inline when toggled on.
+
+Replaces the previous separate timer toggle pill + hints toggle + muted checkbox. Design chosen from a 4-option mockup (`_mockups/start-screen-settings.html`); Option C (grouped card + pill states) won.
+
+Shared CSS in `qn-theme.css`: `.settings-card`, `.setting-row`, `.setting-left`, `.setting-icon`, `.pill-state`. All 32 modules use this pattern.
+
 ### Audio
 
 Three tiers, in order of when they apply:
@@ -384,14 +417,13 @@ Audio engine lives in `qn-audio.js` once extracted. Modules call it; they don't 
 
 ### Onboarding
 
-A new profile lands on a 4-screen onboarding:
+A new profile lands on a 3-screen onboarding:
 
-1. Nickname + color (already built).
-2. Self-reported level: "Just starting" / "I know some" / "I've been at this a while" (already a field on profile).
-3. Optional placement check (skip-able). Adjusts the starting point in the learning path.
-4. First session in the recommended module, with sound on, ready to go.
+1. Nickname (already built).
+2. Self-reported level: "Just starting" / "I know some" / "I've been playing a while". **Each level option expands on selection to show interactive toggles (shipped May 2026):** Difficulty (Easy / Med / Tricky) and Teaching hints (On / Off) pills with defaults pre-set by the level choice. Users can override before continuing. Defaults: Just starting = Easy + hints on; I know some = Medium + hints on; I've been playing a while = Tricky + hints off. Stored on the profile as `defaultDifficulty` and `hintsEnabled` (additive fields, no migration). All modules read these at startup and pre-select the matching difficulty tile and hints toggle.
+3. Color picker → start practicing.
 
-Placement-check failure or skip routes to the path's first module at Easy tier.
+Placement-check (upfront test) remains a v2 feature. The v1 version: let people play anything and let their performance advance the path via the weak-spot recommender.
 
 **Identity surface (convention).** The profile chip is the persistent identity anchor — it shows who's active and is the way to switch. On hub pages (play, dashboard) it opens a small dropdown menu (Switch profile, Progress); on module pages it links straight to the switcher. The menu is an extension point for future low-stakes nav (settings, help/FAQ). **Destructive or rare actions stay OUT of everyday menus** — the device-wide "Reset all data" lives only on profile.html (the manage-data page) behind a two-step confirm (scope statement + count preview + explicit second tap), never adjacent to frequent actions like profile-switch. Implementation: the chip itself is `QN.ui.chip` (renders a plain link, JS-free fallback); the dropdown is an additive `QNMenu` layer the hub pages opt into.
 
@@ -528,6 +560,9 @@ Phases are sequenced; each unblocks the next. Inside a phase, modules can be bui
 - **Tier-3 monetization buildout (sequenced):** module promise-copy pass → Apple/Google sign-in (calls `linkAuth`) → Stripe + paywall (calls `startTrial`) → server-authoritative entitlement → parent-consent gate (COPPA/GDPR-K/UK-AADC — lawyer territory) → backend migration via `syncedAt`/`accountId` hooks.
 - **Consolidation pass (in progress):** ✓ **Clef rendering consolidated** — all six staff modules call `NH.staff.buildClef()`. ✓ **Play-staff accidental glyphs consolidated** — `NH.staff.buildNoteAccidental()` (qn-staff.js v1.2.0), used by the five staff modules. ✓ **`qn-music.js` created (v1.0.0, forward-looking)** — superset pitch helpers; NEW modules use `NH.music`; existing modules keep inline copies until edited (option A). ✓ **`qn-theme.css` created (v1.0.0, May 2026) — first shared CSS file.** Design tokens + canonical question prompt + answer-tile system extracted; all 9 modules migrated (link added, duplicated rules stripped). The question prompt was standardized to the "quiet A" look (sentence-case, centered, 22px, fixed-height zone so the staff never jumps) and prompt wording normalized to question form across modules. ✓ **CSS extraction — all 6 of 6 clusters done (May 2026):** summary, start screen, play-screen chassis, modal, chunky buttons (incl. `.btn:disabled` lifted from scales as superset), and page chrome (cards / screens / brand / site-header / site-footer) extracted to `qn-theme.css` (~620 lines). All deployed and QA'd live. ✓ **Feedback toast rolled out to 8 of 9 modules** (scales kept its different model by design — 40px correct, `.toast.wrong`, no retry/reveal); Option-2 placement (praise 46% / retry-reveal 64%). ✓ **`QN.ui.confirm` rolled out to all 9 modules** — per-module `showConfirm` definitions retired; hardcoded-modal markup ids swapped on key-signatures + scales so ghost-left=`modal-cancel` matches the component convention. ✓ **Start-timer "Ready, set…" modal in all 9** (was 5-of-9). ✓ **Modal arrangement unified** — all 9 quit dialogs show Option 1 (Quit ghost/left, Keep green/right). ✓ **Key-sig clef-clearance made proportional** — `qn-staff.js` `buildAccidentals`/`buildStaff` startX changed from fixed 72/70 to `lineGap * 4.5/4.4` (clef width scales with lineGap); fixed a flats-overlapping-clef bug in scale-degrees, key-signatures unchanged, time-signatures key sig shifts +18px (pin-able via new `accStartX` override — QA-driven, not yet applied). **Module-specific holdouts left inline (genuinely-different, not flattened):** time-signatures' absolute-positioned `.staff-label` (needs separate prompt-layout conversion via a slider harness); scales' `.choice-btn` desktop 24px (pending wrap-as-designed tile reconciliation); piano-quiz's `.brand .brand-logo`; scales' `body.playing .site-footer { display: none }`; every module's `@media .btn` responsive shrink; scales' inline feedback-toast block (different model). ✓ **Clef-picker tile centralization (May 2026)** — new shared file `qn-ui.js` v1.0.0 with `QN.ui.clefTile({clef})` (canonical SVG) + `QN.ui.mountClefTiles(scope?)` (auto-mount on DOMContentLoaded). 14 modules (note-names, piano-quiz, piano-keyboard, ledger-lines, accidentals, intervals, ear-intervals, scale-degrees, primary-chords, roman-numerals, triads, triad-inversions, seventh-chords, pianoquiz-demo) had drifted into 3 distinct visual variants per clef; all now strip their inline tile-clef SVG and let `qn-ui.js` inject the canonical Bravura SMuFL tile. **The calibration pattern** lives in `_clef-calibrator.html` (untracked, prefix-`_` convention): §1 shows current-state variants in the wild, §2 has a live editor with sliders + preset buttons matching each shipping variant, §3 outputs a copy-paste JS snippet. This is the proven template for the remaining visual-calibration holdouts. **Still pending:** (1) sampled-piano audio (Tier 2); (2) notehead rendering in `qn-staff.js` (blocks retiring Note Names / Piano Quiz per-module note positioning); (3) the 2 visual-calibration holdouts above (time-sigs prompt-layout + scales tile) — clone the clef-calibrator pattern when these are tackled.
 - ✓ **`schemaVersion` migration hook — installed** (qn-profile.js v1.8.0, May 2026 finishing session). Single global stamp at `qn_schemaVersion` (absent ⇒ 0); `migrations[N]` keyed by FROM version, must be idempotent; `runMigrations()` at module init writes the new version ONLY after a step completes (so a thrown migration halts with previous version intact). Today's data IS v1, so 0→1 is a no-op stamp — the HOOK is the value. Future breaking shape changes (rename / retype / restructure of stored records) bump `SCHEMA_VERSION` and add a `migrations[N]` entry; additive changes still don't need a version bump. `window.QN.schemaVersion` exposed for diagnostics.
+- ✓ **Teaching hints layer (May 2026)** — in-game contextual hints on wrong answers, all 32 modules. Pop-up modal (all screen sizes), `HINTS` object per module keyed by question type, toggle cascade (profile → module → in-game dismiss). 2-try retry mechanic extended to all 32 (was 24). Hint engine functions (`syncPill`, `getHint`, `showHintCard`, `hideHintCard`) inline per module. Shared CSS in `qn-theme.css` (`.hint-overlay`, `.hint-card`, `.hint-header`, `.hint-body`, `.hint-actions`, `.hint-dismiss-link`). Spec: `specs/teaching-hints-spec.md`.
+- ✓ **Settings card (May 2026)** — start-screen timer toggle + muted checkbox replaced with a grouped settings card (`.settings-card` → `.setting-row` × 3: Timer, Teaching hints, Sound). Pill-state indicators. Timer row expands time pills inline. Shared CSS in `qn-theme.css`. All 32 modules. Mockup: `_mockups/start-screen-settings.html`.
+- ✓ **Onboarding interactive toggles (May 2026)** — level selection expands to show Difficulty + Hints pill toggles. Defaults per level: Just starting = Easy + hints on; I know some = Medium + hints on; I've been playing a while = Tricky + hints off. Stored as `defaultDifficulty` + `hintsEnabled` on profile (additive, no migration). All modules read via `applyProfileDefaults()`.
 - **Landing/terms/privacy:** accuracy pass + final legal language before non-beta launch.
 
 ## 13. Keeping this doc alive

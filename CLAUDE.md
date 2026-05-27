@@ -320,8 +320,31 @@ For any future CSS work:
   Ear: Intervals and Ear: Scales moved Theory→Reading per the
   "ear modules sit with their visual partner" pedagogy. Theory now
   contains only harmony modules + the chord ear training.
+- **Teaching hints layer: SHIPPED (May 2026).** In-game teaching system
+  across all 32 modules. On wrong answer, a contextual hint card (pop-up
+  modal on all screen sizes) explains WHY, then the student retries.
+  2-try retry mechanic now universal (was 24 of 32). Hint content authored
+  for all 32 modules, keyed by question type. Toggle cascade: profile
+  default (set in onboarding) → per-module start-screen toggle → in-game
+  "Don't show hints" dismiss. Spec at `specs/teaching-hints-spec.md`.
+- **Settings card redesign: SHIPPED (May 2026).** Start screen timer
+  toggle + muted checkbox replaced with a grouped settings card (3 rows:
+  Timer, Teaching hints, Sound) using pill-state indicators. All 32
+  modules. Shared CSS in `qn-theme.css` (`.settings-card`, `.setting-row`,
+  `.pill-state`). Mockup at `_mockups/start-screen-settings.html`.
+- **Onboarding interactive toggles: SHIPPED (May 2026).** Level selection
+  shows difficulty + hints pills when selected. "Just starting" = Easy +
+  hints on, "I know some" = Medium + hints on, "I've been playing a
+  while" = Tricky + hints off. Overridable before continuing. Stored as
+  `defaultDifficulty` and `hintsEnabled` on profile (additive, no
+  migration).
+- **Profile-wide defaults: SHIPPED (May 2026).** All 32 modules read
+  `defaultDifficulty` and `hintsEnabled` from the active profile at
+  startup. Per-module override wins over profile default.
 - **Next priorities (no longer curriculum builds — see BUILD_LOG.md for
   detail):**
+    - **Visual QA on real devices** for the teaching hints + settings card
+      + onboarding changes (structural verification passed; pixel QA owed).
     - **PWA install on the landing page** (own session). Manifest.json,
       Apple touch icons + meta tags across every module HTML,
       `beforeinstallprompt` button on landing for Android, Share →

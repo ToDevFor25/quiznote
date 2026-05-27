@@ -1,10 +1,21 @@
 # Feature Spec — Teaching Hints (In-Game Learning Layer)
 
+**Status: SHIPPED (May 2026).** All 32 modules wired, hint content authored,
+settings card deployed, onboarding toggles live, profile defaults active.
+
 **Type:** Feature (not a module). Cross-cutting enhancement to the game loop
 across all 32 modules.
 **ROI rank:** Highest pre-monetization priority. Closes the #1 competitive gap
 ("no teaching — only testing"). Converts QuizNote from a practice tool into a
 learning system — the difference between $3.99 and $39.
+
+**Implementation notes (post-ship):** The spec below reflects the original
+design. Key changes during implementation: (1) Desktop inline banner was
+prototyped and rejected — pop-up modal on all screen sizes for consistency.
+(2) Timer/hints/sound grouped into a settings card (Option C from mockup)
+instead of separate toggles. (3) "I've been playing a while" defaults to
+Tricky (was Medium in the original spec). (4) Onboarding shows interactive
+difficulty + hints pill toggles, not static text.
 
 ---
 
