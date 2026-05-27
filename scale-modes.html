@@ -1273,7 +1273,7 @@
     missed: [],
     current: null,
     currentChoices: [],
-    answered: false,
+    answered: false, attempts: 0,
     timerInterval: null,
     timerRemaining: 0,
     seqController: null,
@@ -1432,7 +1432,7 @@
       return;
     }
     state.current = state.queue[state.qIndex];
-    state.answered = false;
+    state.answered = false; state.attempts = 0;
     state.currentChoices = makeChoices(state.current);
     renderQuestion();
   }
@@ -1537,50 +1537,70 @@
 
   function onAnswer(choice, btn) {
     if (state.answered) return;
-    state.answered = true;
-    // Stop any in-progress playback so lingering timeouts don't paint onto the next question's staff.
     A.cancelSequence();
-    const correct = choice.name === state.current.name;
-    const buttons = els['choices-grid'].querySelectorAll('.choice-btn');
-    buttons.forEach(b => b.disabled = true);
+    var correct = choice.name === state.current.name;
+    var buttons = els['choices-grid'].querySelectorAll('.choice-btn');
 
-    // Sub-skill tally by scale mode (major / minor-natural / -harmonic / -melodic)
     var _mode = state.current.mode || 'unknown';
     if (!state.skillTally[_mode]) state.skillTally[_mode] = { c: 0, t: 0 };
     state.skillTally[_mode].t++;
-    if (correct) state.skillTally[_mode].c++;
 
     if (correct) {
-      btn.classList.add('correct');
-      state.score++;
-      state.streak++;
-      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      state.lastResults.push('correct');
-      showToast('correct', randomPraise());
-      A.playChime(60, state.streak);
-      fireConfetti();
-    } else {
-      btn.classList.add('wrong');
-      // Reveal correct
-      buttons.forEach(b => {
-        if (b.textContent === formatScaleName(state.current.name)) {
-          b.classList.add('reveal-correct');
-        }
-      });
-      state.streak = 0;
-      state.lastResults.push('wrong');
-      state.missed.push(state.current);
-      showToast('wrong', 'Not quite');
-      A.playBoop();
-      document.body.classList.add('shake');
-      setTimeout(() => document.body.classList.remove('shake'), 420);
-    }
-    updatePlayUI();
+      state.answered = true;
+      state.attempts++;
+      var cleanFirstTry = state.attempts === 1;
+      buttons.forEach(function(b) { b.disabled = true; });
+    if (state.skillTally) { var _m = state.current.mode || 'unknown'; if (state.skillTally[_m]) state.skillTally[_m].c++; }
 
-    setTimeout(() => {
-      state.qIndex++;
-      nextQuestion();
-    }, correct ? 1100 : 1600);
+      btn.classList.add('correct');
+      if (cleanFirstTry) {
+        state.score++;
+        state.streak++;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+        state.lastResults.push('correct');
+        showToast('correct', randomPraise());
+        A.playChime(60, state.streak);
+        fireConfetti();
+      } else {
+        state.streak = 0;
+        state.lastResults.push('retry');
+        showToast('correct', 'Got it!');
+        A.playChime(60, 0);
+      }
+      updatePlayUI();
+      setTimeout(function() { state.qIndex++; nextQuestion(); }, cleanFirstTry ? 1100 : 900);
+    } else {
+      state.attempts++;
+      state.streak = 0;
+      btn.classList.add('wrong');
+      A.playBoop();
+
+      if (state.attempts >= 2) {
+        state.answered = true;
+        buttons.forEach(function(b) { b.disabled = true; });
+        buttons.forEach(function(b) {
+          if (b.textContent === formatScaleName(state.current.name)) b.classList.add('reveal-correct');
+        });
+        state.lastResults.push('wrong');
+        state.missed.push(state.current);
+        showToast('wrong', 'Not quite');
+        document.body.classList.add('shake');
+        setTimeout(function() { document.body.classList.remove('shake'); }, 420);
+        updatePlayUI();
+        setTimeout(function() { state.qIndex++; nextQuestion(); }, 1600);
+      } else {
+        var hint = getHint();
+        if (hint) {
+          state.answered = true;
+          buttons.forEach(function(b) { b.disabled = true; });
+          setTimeout(function() { showHintCard(hint); }, 500);
+        } else {
+          setTimeout(function() {
+            btn.classList.remove('wrong');
+          }, 900);
+        }
+      }
+    }
   }
 
   function randomPraise() {
@@ -1631,7 +1651,9 @@
     if (grid) [...grid.children].forEach(function(b) { b.classList.remove('wrong'); });
     if (typeof hideToast === 'function') hideToast();
     else { var t = els['toast']; if (t) t.classList.remove('show'); }
-    state.answered = false;
+    state.answered = false; state.attempts = 1;
+    var btns = els['choices-grid'].querySelectorAll('.choice-btn');
+    btns.forEach(function(b) { b.disabled = false; });
     resumeTimer();
   }
 

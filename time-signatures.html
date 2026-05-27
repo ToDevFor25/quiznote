@@ -1160,7 +1160,7 @@
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },
     pool: [], deck: [], drillPool: [],
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
-    history: [], current: null, locked: false,
+    history: [], current: null, locked: false, attempts: 0,
     shownHints: new Set(),
     timeLeft: 0, timerInterval: null, timedOut: false,
     startedAt: 0, timerWasRunning: false, endedRound: false,
@@ -1247,7 +1247,7 @@
     state.streak = 0;
     state.bestStreak = 0;
     state.history = [];
-    state.locked = false;
+    state.locked = false; state.attempts = 0;
     state.timedOut = false;
     state.endedRound = false;
     state.total = state.settings.total;
@@ -1295,44 +1295,69 @@
 
   function handleAnswer(pickedKey, buttonEl) {
     if (state.locked) return;
-    state.locked = true;
-    const correct = state.current.key;
-    const isCorrect = (pickedKey === correct);
+    var correct = state.current.key;
+    var isCorrect = (pickedKey === correct);
 
     if (isCorrect) {
-      state.score++;
-      state.streak++;
-      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      state.history.push({ key: correct, correct: true });
+      state.locked = true;
+      state.attempts++;
+      var cleanFirstTry = state.attempts === 1;
+      if (cleanFirstTry) {
+        state.score++;
+        state.streak++;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      } else {
+        state.streak = 0;
+      }
+      state.history.push({ key: correct, correct: cleanFirstTry, picked: pickedKey });
       buttonEl.classList.add('correct');
       if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], true);
       if (R.animateQuestionIn) R.animateQuestionIn(els['staff-wrap'], correct);
       A.playChime(60, state.streak);
-
-      // Explosion at the staff symbol location
-      const stage = els['staff-wrap'];
-      const r = stage.getBoundingClientRect();
+      var stage = els['staff-wrap'];
+      var r = stage.getBoundingClientRect();
       if (M.explode) M.explode(correct, r.left + r.width / 2, r.top + r.height / 2, state.streak);
+      updateStreakBadge();
+      updateProgressAndStats();
+      renderLastDots();
+      setTimeout(function() {
+        state.q++;
+        if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
+        nextQuestion();
+      }, 700);
     } else {
+      state.attempts++;
       state.streak = 0;
-      state.history.push({ key: correct, correct: false, picked: pickedKey });
-      buttonEl.classList.add('wrong');
-      // Highlight correct answer
-      const correctBtn = [...els['choices-grid'].children].find(b => b.dataset.key === correct);
-      if (correctBtn) correctBtn.classList.add('correct');
-      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], false);
+      updateStreakBadge();
       A.playBoop();
+      buttonEl.classList.add('wrong');
+      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], false);
+
+      if (state.attempts >= 2) {
+        state.locked = true;
+        state.history.push({ key: correct, correct: false, picked: pickedKey });
+        var correctBtn = [...els['choices-grid'].children].find(function(b) { return b.dataset.key === correct; });
+        if (correctBtn) correctBtn.classList.add('correct');
+        renderLastDots();
+        updateProgressAndStats();
+        setTimeout(function() {
+          state.q++;
+          if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
+          nextQuestion();
+        }, 1400);
+      } else {
+        var hint = getHint();
+        if (hint) {
+          state.locked = true;
+          setTimeout(function() { showHintCard(hint); }, 500);
+        } else {
+          setTimeout(function() {
+            buttonEl.classList.remove('wrong');
+            if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
+          }, 900);
+        }
+      }
     }
-
-    updateStreakBadge();
-    updateProgressAndStats();
-    renderLastDots();
-
-    setTimeout(() => {
-      state.q++;
-      if (R.recolorAfterAnswer) R.recolorAfterAnswer(els['staff-wrap'], null);
-      nextQuestion();
-    }, isCorrect ? 700 : 1200);
   }
 
   function updateStreakBadge() {
