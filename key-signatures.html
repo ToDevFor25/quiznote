@@ -1171,7 +1171,13 @@
     return Math.random() < 0.7 ? 'treble' : 'bass';
   }
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Sharps follow the order F\u266f\u2013C\u266f\u2013G\u266f\u2013D\u266f\u2013A\u266f\u2013E\u266f\u2013B\u266f. Go up a half step from the last sharp to find the major key.',
+      'Flats follow B\u266d\u2013E\u266d\u2013A\u266d\u2013D\u266d\u2013G\u266d\u2013C\u266d\u2013F\u266d. With two or more flats, the major key is the second-to-last flat.',
+      'Every major key has a relative minor three half steps below it. They share the same key signature.',
+    ],
+  };
 
   const state = {
     settings: { keyMode: 'major', difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

@@ -774,7 +774,12 @@
 
   // ============ Game state ============
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Authentic cadence (V\u2192I) sounds conclusive and final. Plagal (IV\u2192I) sounds gentler, like "Amen."',
+      'Half cadence (ending on V) sounds unfinished and expectant. Deceptive (V\u2192vi) surprises by avoiding the expected I.',
+    ],
+  };
 
   var state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

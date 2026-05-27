@@ -881,7 +881,12 @@
 
   // ============ Game state ============
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Count the chords and listen to the emotional arc. I\u2013V\u2013vi\u2013IV has a rising-then-falling feel.',
+      'Listen for the final chord. If the progression ends with a strong resolution to I, it is likely a ii\u2013V\u2013I or I\u2013IV\u2013V\u2013I.',
+    ],
+  };
 
   var state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

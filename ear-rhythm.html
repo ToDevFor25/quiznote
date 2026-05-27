@@ -1111,7 +1111,12 @@
   // Convenience local for readability at call sites.
   const R = M.render;
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Count the length of the sustained tone against the lead-in clicks. Each click = 1 beat.',
+      'Shorter notes need less counting time. If it sounds brief, think quarter or eighth. If it lingers, think half or whole.',
+    ],
+  };
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

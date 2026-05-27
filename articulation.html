@@ -1076,7 +1076,18 @@
     };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    name: [
+      'Dot below the note = staccato (short, detached). Line = tenuto (held full value). Wedge = accent (emphasize).',
+      'Fermata (bird\u2019s eye) = hold the note longer than written. The performer decides how long.',
+    ],
+    effect: [
+      'Staccato shortens the note. Tenuto sustains it. Accent adds force to the attack. Marcato is an even stronger accent.',
+    ],
+    discriminate: [
+      'A tie connects two notes of the SAME pitch \u2014 add their durations. A slur connects DIFFERENT pitches \u2014 play smoothly.',
+    ],
+  };
 
   // Game state
   const state = {

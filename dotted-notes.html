@@ -1200,7 +1200,12 @@
   // Convenience local for readability at call sites.
   const R = M.render;
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'A dot adds half the note\u2019s own value. Dotted half = 2 + 1 = 3 beats. Dotted quarter = 1 + \u00bd = 1\u00bd beats.',
+      'A tie connects two notes of the same pitch into one longer sound. Add their durations: half + quarter = 3 beats.',
+    ],
+  };
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

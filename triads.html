@@ -814,7 +814,13 @@
 
   // ============ Game state ============
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Major triad = major 3rd + minor 3rd (4 + 3 half steps). Minor = minor 3rd + major 3rd (3 + 4).',
+      'Diminished = two minor 3rds stacked (3 + 3). Augmented = two major 3rds stacked (4 + 4).',
+      'Look at the bottom interval first. If the lower 3rd is major, the triad is major or augmented. If minor, it is minor or diminished.',
+    ],
+  };
 
   var state = {
     settings: { clef: 'treble', difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

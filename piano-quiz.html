@@ -1454,7 +1454,16 @@
     return base;
   }
 
-  const HINTS = {};
+  const HINTS = {
+    treble: [
+      'In treble clef, middle C sits just below the staff on its own ledger line. Notes climb the alphabet from there — D, E, F, G.',
+      'White keys follow A through G, repeating. Find C first — it sits just left of the group of two black keys.',
+    ],
+    bass: [
+      'In bass clef, middle C sits just above the staff on its own ledger line. Notes descend as you go down — B, A, G, F.',
+      'The bass clef dots frame the F line. Count up or down from F to find nearby notes.',
+    ],
+  };
 
   // Game state
   const state = {

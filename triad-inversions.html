@@ -733,7 +733,13 @@
   }
 
   // ============ Game state ============
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Root position: root on the bottom. 1st inversion: 3rd on the bottom. 2nd inversion: 5th on the bottom.',
+      'In root position the notes are stacked in 3rds. In inversions, the widest gap reveals which note moved to the top.',
+      'Find the note that does not fit a simple stack of 3rds \u2014 that note is the one that was moved up by inversion.',
+    ],
+  };
 
   var state = {
     settings: { clef: 'treble', difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

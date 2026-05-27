@@ -1042,7 +1042,16 @@
     return arr;
   }
 
-  const HINTS = {};
+  const HINTS = {
+    quality: [
+      'Perfect intervals are the unison, 4th, 5th, and octave. They do not come in major or minor \u2014 only perfect, augmented, or diminished.',
+      'A major interval is one half step larger than its minor version. C to E = major 3rd (4 half steps). C to E\u266d = minor 3rd (3 half steps).',
+    ],
+    name: [
+      'Count the letter names inclusively to find the interval number. C to E = C, D, E = a 3rd.',
+      'Then check the quality by counting half steps. A 3rd can be major (4), minor (3), diminished (2), or augmented (5).',
+    ],
+  };
 
   // Game state
   const state = {

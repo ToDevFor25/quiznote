@@ -1125,7 +1125,13 @@
     };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'A sharp (\u266f) raises a note by one half step. A flat (\u266d) lowers it by one half step. The letter name stays the same.',
+      'A natural (\u266e) cancels a sharp or flat, returning the note to its unaltered pitch on the white key.',
+      'Double sharp (\ud834\udd2a) raises by two half steps. Double flat lowers by two. They appear in keys with many accidentals.',
+    ],
+  };
 
   // Game state
   const state = {

@@ -656,7 +656,12 @@
   }
 
   // ============ Game state ============
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Listen to the last two chords. Does it feel finished (authentic), gentle (plagal), suspended (half), or surprising (deceptive)?',
+      'Authentic and plagal both end on I but feel different \u2014 authentic has more finality because V has stronger tension than IV.',
+    ],
+  };
 
   var state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

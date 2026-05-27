@@ -1258,6 +1258,14 @@
 
   // ============ State ============
   const NS = 'sm_'; // localStorage namespace
+  const HINTS = {
+    general: [
+      'Each mode starts on a different degree of a major scale, using the same notes. Dorian starts on the 2nd degree, Phrygian on the 3rd.',
+      'Ionian = major scale. Aeolian = natural minor. These two connections help anchor the others.',
+      'Modes with a major 3rd sound bright (Ionian, Lydian, Mixolydian). Modes with a minor 3rd sound darker (Dorian, Phrygian, Aeolian, Locrian).',
+    ],
+  };
+
   let state = {
     settings: {
       difficulty: 'medium',

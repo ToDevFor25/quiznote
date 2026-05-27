@@ -1027,7 +1027,13 @@
   // Convenience local for readability at call sites.
   const R = M.render;
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Whole = 4 beats (open notehead, no stem). Half = 2 beats (open, with stem). Quarter = 1 beat (filled, with stem).',
+      'Each flag or beam halves the duration. Eighth = half a beat. Sixteenth = quarter of a beat.',
+      'Rests have the same duration as their matching note. A quarter rest (zigzag shape) = 1 silent beat.',
+    ],
+  };
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

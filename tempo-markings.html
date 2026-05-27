@@ -1047,7 +1047,20 @@
     };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    meaning: [
+      'Italian tempo terms describe speed. Adagio = slow. Andante = walking pace. Allegro = fast. Presto = very fast.',
+    ],
+    ordering: [
+      'From slow to fast: Grave, Largo, Adagio, Andante, Moderato, Allegretto, Allegro, Vivace, Presto.',
+    ],
+    metronome: [
+      'A metronome marking like \u2669 = 120 means 120 beats per minute. Higher number = faster tempo.',
+    ],
+    change: [
+      'Accelerando = gradually speed up. Ritardando = gradually slow down. A tempo = return to the original speed.',
+    ],
+  };
 
   // Game state
   const state = {

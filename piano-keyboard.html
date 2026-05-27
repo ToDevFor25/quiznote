@@ -1111,7 +1111,13 @@
     return all;
   }
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'The musical alphabet runs A through G, then repeats. Every C sits just left of the two-black-key group.',
+      'Black keys sit between white keys. Going up, they are sharps. Going down, they are flats. F\u266f and G\u266d are the same key.',
+      'Each octave starts on C. The keyboard shows C3 through C6 — find the C labels to orient yourself.',
+    ],
+  };
 
   // Game state
   const state = {

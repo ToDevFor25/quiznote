@@ -1374,6 +1374,24 @@
 
   // ============ State ============
   const NS = 'sc_'; // localStorage namespace
+  const HINTS = {
+    major: [
+      'A major scale follows whole–whole–half–whole–whole–whole–half (W–W–H–W–W–W–H).',
+    ],
+    natural: [
+      'Natural minor: W–H–W–W–H–W–W. Same notes as its relative major, starting three half steps lower.',
+    ],
+    harmonic: [
+      'Harmonic minor raises the 7th degree, creating a leading tone. This produces the distinctive augmented 2nd between degrees 6 and 7.',
+    ],
+    melodic: [
+      'Melodic minor raises both 6th and 7th ascending to smooth out the augmented 2nd. Descending, it reverts to natural minor.',
+    ],
+    pentatonic: [
+      'Pentatonic scales use only 5 notes — remove the half steps. Major pentatonic drops degrees 4 and 7. Minor pentatonic drops degrees 2 and 6.',
+    ],
+  };
+
   let state = {
     settings: {
       scaleType: 'all',

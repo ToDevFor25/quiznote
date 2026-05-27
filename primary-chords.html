@@ -1147,7 +1147,13 @@
              showNote: null, pitch: null, choices, answer };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'The three primary chords \u2014 I (tonic), IV (subdominant), V (dominant) \u2014 are always major in a major key.',
+      'In minor keys, the V chord is MAJOR. The raised 7th from harmonic minor gives V its major 3rd and dominant pull.',
+      'I feels like home. V creates tension that wants to resolve to I. IV provides contrast.',
+    ],
+  };
 
   // Game state
   const state = {

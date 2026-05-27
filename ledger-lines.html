@@ -990,7 +990,16 @@
     return all;
   }
 
-  const HINTS = {};
+  const HINTS = {
+    treble: [
+      'Above the treble staff: first ledger-line note is A. Below: first ledger-line note is middle C.',
+      'Count up from the top line (F5) or down from the bottom line (E4) using the musical alphabet.',
+    ],
+    bass: [
+      'Above the bass staff: first ledger-line note is middle C. Below: first ledger-line note is C2.',
+      'Count up from the top line (A3) or down from the bottom line (G2) using the musical alphabet.',
+    ],
+  };
 
   // Game state
   const state = {

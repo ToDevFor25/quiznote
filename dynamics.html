@@ -1084,7 +1084,21 @@
     };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    meaning: [
+      'p = piano (soft). f = forte (loud). More letters = more extreme: pp is very soft, ff is very loud.',
+      'Mezzo means moderately. mp = moderately soft, mf = moderately loud.',
+    ],
+    ordering: [
+      'From softest to loudest: ppp, pp, p, mp, mf, f, ff, fff.',
+    ],
+    direction: [
+      'A hairpin opening outward (\u003c) is a crescendo \u2014 get louder. Closing inward (\u003e) is a diminuendo \u2014 get softer.',
+    ],
+    accent: [
+      'Sforzando (sfz) = a sudden strong accent on one note. Fortepiano (fp) = loud attack, then immediately soft.',
+    ],
+  };
 
   // Game state
   const state = {

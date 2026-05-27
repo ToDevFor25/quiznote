@@ -1172,7 +1172,13 @@
              showNote: null, choices, answer };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Uppercase Roman numeral = major chord. Lowercase = minor. A \u00b0 symbol = diminished.',
+      'In major: I, ii, iii, IV, V, vi, vii\u00b0. The pattern is the same in every major key.',
+      'In harmonic minor: i, ii\u00b0, III+, iv, V, VI, vii\u00b0. V is major because of the raised leading tone.',
+    ],
+  };
 
   // Game state
   const state = {

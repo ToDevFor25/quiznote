@@ -1261,6 +1261,13 @@
 
   // ============ State ============
   const NS = 'ch_'; // localStorage namespace (chromatic-scale)
+  const HINTS = {
+    general: [
+      'A chromatic scale moves entirely in half steps — 12 notes before reaching the octave. Every adjacent pair is one half step apart.',
+      'Ascending chromatic scales are spelled with sharps. Descending scales use flats. The tonic note stays natural either way.',
+    ],
+  };
+
   let state = {
     settings: {
       difficulty: 'medium',

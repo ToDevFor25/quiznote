@@ -1154,7 +1154,23 @@
   // Convenience local for readability at call sites.
   const R = M.render;
 
-  const HINTS = {};
+  const HINTS = {
+    label: [
+      'The top number is how many beats per bar. The bottom number is which note value gets one beat.',
+    ],
+    top: [
+      'Common top numbers: 2 (duple), 3 (triple), 4 (quadruple). 6, 9, and 12 are compound meters.',
+    ],
+    bottom: [
+      'Bottom 4 = quarter note gets the beat. Bottom 8 = eighth note gets the beat. Bottom 2 = half note gets the beat.',
+    ],
+    whichBeats: [
+      'In simple meter (2/4, 3/4, 4/4), the beat count equals the top number. In compound (6/8, 9/8), divide the top by 3.',
+    ],
+    whichUnit: [
+      'The bottom number directly names the beat unit: 4 = quarter, 8 = eighth, 2 = half.',
+    ],
+  };
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

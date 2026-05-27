@@ -1065,7 +1065,19 @@
     };
   }
 
-  const HINTS = {};
+  const HINTS = {
+    name: [
+      'A trill (tr) = rapidly alternate between the written note and the note above it.',
+      'A turn = a quick four-note figure: note above, main note, note below, main note.',
+    ],
+    effect: [
+      'Upper mordent: main note, note above, back to main. Lower mordent: main note, note below, back to main.',
+      'Tremolo (slashes on the stem) = repeat the note rapidly. More slashes = faster repetition.',
+    ],
+    discriminate: [
+      'Acciaccatura has a slash through the stem \u2014 crushed, as fast as possible. Appoggiatura has no slash \u2014 it takes time from the main note.',
+    ],
+  };
 
   // Game state
   const state = {

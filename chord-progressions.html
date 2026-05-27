@@ -849,7 +849,12 @@
 
   // ============ Game state ============
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'I\u2013V\u2013vi\u2013IV is the most common pop progression. ii\u2013V\u2013I is the backbone of jazz harmony.',
+      'Listen for the bass movement \u2014 it usually follows the chord roots. A falling 5th (V\u2192I) signals a strong resolution.',
+    ],
+  };
 
   var state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

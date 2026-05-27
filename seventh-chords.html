@@ -777,7 +777,13 @@
 
 
   // ============ Game State ============
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'A 7th chord is a triad plus one more 3rd on top. The quality of both the triad and the 7th determine the chord type.',
+      'Dominant 7th (most common) = major triad + minor 7th. It has a strong pull to resolve.',
+      'Major 7th sounds bright and jazzy. Minor 7th sounds warm. Half-diminished sounds searching. Fully diminished sounds very tense.',
+    ],
+  };
 
   var state = {
     settings: { clef: 'treble', difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

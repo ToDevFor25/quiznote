@@ -793,7 +793,12 @@
 
   // ============ Game state ============
 
-  const HINTS = {};
+  const HINTS = {
+    general: [
+      'Major sounds bright and stable. Minor sounds darker but still stable. Diminished sounds tense. Augmented sounds bright but restless.',
+      'Focus on the middle note (the 3rd). A lower 3rd = minor feel. A higher 3rd = major feel.',
+    ],
+  };
 
   var state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },
