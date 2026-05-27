@@ -1,5 +1,108 @@
 ---
 
+### Session 2 — QA fixes, ear training rebuild, anti-memorization — May 2026
+
+**Session type:** QA-driven bug fixes, module rebuilds, UX improvements,
+and anti-memorization upgrades. Marathon session covering notation,
+gameplay, landing page, legal pages, and module library depth.
+
+**Major deliverables:**
+
+1. **Ear: Rhythm rebuilt as pattern matching.** Replaced single-note-
+   duration format (guessing game) with 1-bar rhythm pattern matching.
+   SVG renderer draws stems-down beamed notation (industry standard).
+   Algorithmic pattern generator gives infinite variety — no two rounds
+   are the same. Easy: quarter/half/whole. Medium: +eighths. Tricky:
+   +sixteenths with double beams.
+
+2. **Ear: Scales distractor rework.** Distractors now prioritize same-
+   tonic different-type (C Major vs C Minor vs C Harmonic Minor) instead
+   of same-type different-root. Tests interval pattern recognition, not
+   absolute pitch. Fixed biased shuffle (Array.sort random → Fisher-Yates).
+
+3. **Ear: Progressions algorithmic generator.** Replaced 5 static
+   progressions with rule-based generator. Weighted voice-leading
+   transitions, 6 random keys, 18 unique patterns per round.
+   Easy: I/IV/V. Medium: +ii/vi. Tricky: +iii/viio/V/V.
+
+4. **Ear: Intervals bass floor raised to A3.** Notes below A3 (220 Hz)
+   removed — indistinguishable on phone speakers.
+
+5. **Anti-memorization audit.** Analyzed all 31 modules for pool sizes.
+   Fixed: time-signatures easy (3→5, added 6/8 + 2/2), accidentals
+   (note position now varies randomly across staff range per question).
+
+6. **Articulation marks — SVG hand-drawn.** Replaced Bravura font glyphs
+   with deterministic SVG shapes (circle, line, path). Per-mark calibrated
+   values for size, offset, stroke. Fermata/breath/caesura positioned
+   well above staff. Calibrator built and shipped to `_calibrators/`.
+
+7. **Dynamics pre-composed glyphs.** fp, sfz, pp, ff, etc. now use single
+   SMuFL pre-composed codepoints instead of letter-by-letter composition
+   (fixed visible gaps).
+
+8. **Ornaments/Dynamics/Tempo A/B question UX.** Answer buttons changed
+   from term names to A/B (matching visual layout). Removed shuffle so
+   A always left, B always right. Font consistency: removed italic serif
+   overrides from all Phase 5 modules.
+
+9. **Ledger Lines fixes.** 3-ledger-line cap (was 4). Both-mode routing
+   picks staff with fewer ledger lines AND requires at least 1 ledger
+   line. ViewBox expanded for deep notes.
+
+10. **Dotted Notes — tie arc rebuilt as SVG bezier.** CSS border-radius
+    approach replaced with JS-measured SVG quadratic bezier path. Symbol
+    size reduced 140→80px. Per-note dot offsets. Beat label grammar
+    (½ beat not ½ beats).
+
+11. **Landing page polish.** Removed "all ages" language. Hero stats:
+    30+ Modules / 3 Skill tiers / Any Device. Pillar cards reduced
+    from 4 to 2 (No filler + Curriculum-aligned). Footer taglines
+    aligned. "Not [name]? Switch →" on returning user banner.
+
+12. **Legal pages.** Sticky nav → static header with "← Back to
+    QuizNote". Collapsible TOC on mobile. No marketing CTAs.
+
+13. **Demo flow.** Promo modal auto-shows 2.5s after round. "Play again"
+    button on modal. "Leave" redirects to landing page.
+
+14. **Ear training tile redesign.** All 6 ear modules: coral background +
+    🎧 badge in top-left (instant category recognition) + unique
+    animated art per module.
+
+15. **Profile lastActiveAt.** Now updates on every round completion via
+    `touchActive()`, not just profile switches. Picker shows real recency.
+
+16. **Profile limit UX.** "Could not create" alert replaced with themed
+    "Profile limit reached" view (5/5 in use, remove one first).
+
+17. **Key signatures.** Fixed F♭ treble position (step 8→1). Flat order
+    now matches BEADGCF standard.
+
+18. **Scales accidentals.** Natural signs now render when raised degrees
+    cancel key-signature flats (harmonic/melodic minor).
+
+19. **Primary chords labels.** "G major ♯" → "G♯ major" — accidental
+    after root letter, before quality.
+
+20. **Dotted sixteenth removed** from dotted-notes tricky pool (rarely
+    used in practice).
+
+**Calibrator pattern established.** `_calibrators/` folder on Dev houses
+internal tuning tools. Underscore-prefix convention. Current calibrators:
+articulation, clef, treble, time-signature, time-signature weight.
+
+**Still open / next:**
+- Summary screen "All modules" button alignment (minor).
+- Ear: Rhythm patterns could benefit from dotted note values in
+  medium/tricky tiers.
+- Full browser verification pass across all 31 modules still owed.
+- PWA offline, progress dashboard, richer teaching content — the three
+  highest-ROI additions before monetization (see competitive analysis
+  in this session).
+
+---
+
 ### Landing page + legal pages polish — May 2026
 
 **Session type:** Copy + UX polish (continuation of the notation-fixes
