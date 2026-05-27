@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuizNote — Clef Tile Calibrator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="qn-theme.css">
+<style>
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2');
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--cream, #fffbe9);
+    color: var(--ink, #2A2A3E);
+    font-family: 'Nunito', system-ui, sans-serif;
+    line-height: 1.4;
+  }
+  h1 { font-family: 'Fredoka', sans-serif; font-size: 28px; margin: 0 0 8px; }
+  h2 { font-family: 'Fredoka', sans-serif; font-size: 20px; margin: 32px 0 12px; border-bottom: 2px solid #2A2A3E; padding-bottom: 4px; }
+  h3 { font-family: 'Fredoka', sans-serif; font-size: 16px; margin: 16px 0 8px; color: #5a5a6e; }
+  .intro { font-size: 14px; color: #5a5a6e; max-width: 800px; }
+
+  /* Bravura load indicator */
+  .bravura-check {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Bravura Text', monospace;
+    font-size: 28px;
+    background: white;
+    border: 2px solid #2A2A3E;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  .bravura-check::before { content: '\E050  \E062'; }
+
+  /* Variant comparison grid */
+  .variant-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .variant-card {
+    background: white;
+    border: 2px solid #2A2A3E;
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .variant-card h4 {
+    font-family: 'Fredoka', sans-serif;
+    margin: 0 0 8px;
+    font-size: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .variant-card h4 .badge {
+    background: #5B3FE4; color: white;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .variant-card .renders {
+    display: flex; align-items: end; gap: 16px;
+    background: #fff8e6;
+    border-radius: 8px;
+    padding: 12px;
+    justify-content: center;
+    min-height: 180px;
+  }
+  .variant-card .render-block {
+    text-align: center;
+  }
+  .variant-card .render-block .label {
+    font-size: 11px; color: #5a5a6e; margin-top: 4px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+  }
+  .variant-card svg.tile-clef { display: block; }
+  .variant-card .modules-list {
+    font-size: 12px; color: #5a5a6e; margin-top: 10px;
+    line-height: 1.5;
+  }
+  .variant-card .params {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: #f3f0ff;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 8px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* Editor */
+  .editor {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 24px;
+    background: white;
+    border: 2px solid #2A2A3E;
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .preview-pane {
+    display: flex; flex-direction: column; gap: 18px;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .preview-pane .preview-row {
+    display: flex; gap: 20px; align-items: end;
+    background: #fff8e6;
+    padding: 18px;
+    border-radius: 10px;
+    width: 100%;
+    justify-content: center;
+  }
+  .preview-block { text-align: center; }
+  .preview-block .label {
+    font-size: 13px; color: #5a5a6e; margin-top: 6px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+  }
+  .actual-size-note {
+    font-size: 12px; color: #5a5a6e; margin-top: 4px;
+  }
+
+  .controls {
+    display: flex; flex-direction: column;
+    gap: 4px;
+    max-height: 720px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .controls fieldset {
+    border: 1px solid #d4cfe8;
+    border-radius: 8px;
+    padding: 8px 10px 10px;
+    margin: 4px 0;
+  }
+  .controls legend {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    padding: 0 6px;
+    color: #5B3FE4;
+    font-size: 13px;
+  }
+  .control-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 56px;
+    gap: 6px; align-items: center;
+    font-size: 12px;
+    margin: 4px 0;
+  }
+  .control-row label {
+    font-weight: 600; color: #5a5a6e;
+  }
+  .control-row input[type=range] {
+    width: 100%;
+  }
+  .control-row input[type=number] {
+    width: 100%;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    padding: 3px 4px;
+    border: 1px solid #d4cfe8;
+    border-radius: 4px;
+  }
+
+  .preset-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0;
+  }
+  .preset-row button {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12px;
+    background: white;
+    border: 2px solid #2A2A3E;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .preset-row button:hover { background: #fffbe9; }
+
+  /* Output */
+  .output-card {
+    background: #2A2A3E;
+    color: #d4d4d4;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 20px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .output-card .key { color: #FFB627; }
+  .output-card .val { color: #1FB8A8; }
+  .output-card .str { color: #FF8FB1; }
+
+  .copy-btn {
+    background: #5B3FE4; color: white;
+    border: none; border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .copy-btn.copied { background: #1FB8A8; }
+</style>
+</head>
+<body>
+
+<h1>QuizNote — Clef Tile Calibrator
+  <span class="bravura-check" title="If you see two clef shapes here, Bravura is loaded. If you see squares, it hasn't loaded yet."></span>
+</h1>
+<p class="intro">
+  14 modules have treble / bass / both clef-picker tiles. Today, they fall into 3 distinct visual variants
+  for each clef (the top section shows them at actual size and 2× scale). The bottom section is a live
+  editor — adjust the sliders until the canonical tile looks right; the values + a copy-paste-ready
+  snippet appear at the bottom. Once locked, those numbers go into <code>qn-ui.js</code> (or a similar
+  shared helper) and every clef-picker module pulls from that single source.
+</p>
+
+<h2>1 · Current variants in the wild</h2>
+
+<div id="current-variants"></div>
+
+<h2>2 · Canonical target (live editor)</h2>
+
+<div class="preset-row">
+  <strong style="font-family:Fredoka,sans-serif;font-size:13px;padding:6px 4px;">Load preset:</strong>
+  <button onclick="loadPreset('clean')">Clean Bravura (defaults)</button>
+  <button onclick="loadPreset('v1')">Match variant 1 (serif, 7 modules)</button>
+  <button onclick="loadPreset('v2')">Match variant 2 (Bravura, 5 modules)</button>
+  <button onclick="loadPreset('v3')">Match variant 3 (Bravura, 2 modules)</button>
+</div>
+
+<div class="editor">
+  <div class="preview-pane">
+    <div class="preview-row">
+      <div class="preview-block">
+        <div id="preview-treble"></div>
+        <div class="label">Treble</div>
+        <div class="actual-size-note">actual tile size</div>
+      </div>
+      <div class="preview-block">
+        <div id="preview-bass"></div>
+        <div class="label">Bass</div>
+        <div class="actual-size-note">actual tile size</div>
+      </div>
+      <div class="preview-block">
+        <div id="preview-both"></div>
+        <div class="label">Both</div>
+        <div class="actual-size-note">actual tile size</div>
+      </div>
+    </div>
+    <div class="preview-row" style="background:white;border:1px dashed #d4cfe8;">
+      <div class="preview-block">
+        <div id="preview-treble-2x"></div>
+        <div class="label">Treble (2× scale, for inspection)</div>
+      </div>
+      <div class="preview-block">
+        <div id="preview-bass-2x"></div>
+        <div class="label">Bass (2×)</div>
+      </div>
+      <div class="preview-block">
+        <div id="preview-both-2x"></div>
+        <div class="label">Both (2×)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <fieldset>
+      <legend>Glyph system</legend>
+      <div class="control-row">
+        <label>Font</label>
+        <select id="ctl-font" style="grid-column:span 2;font-size:12px;padding:4px;">
+          <option value="bravura">Bravura SMuFL (recommended)</option>
+          <option value="serif">Serif Unicode</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Staff (single, used in Treble / Bass tiles)</legend>
+      <div class="control-row"><label>viewBox W</label><input type="range" id="ctl-vbw" min="60" max="120" value="80"><input type="number" id="ctl-vbw-n" value="80"></div>
+      <div class="control-row"><label>viewBox H</label><input type="range" id="ctl-vbh" min="40" max="90" value="60"><input type="number" id="ctl-vbh-n" value="60"></div>
+      <div class="control-row"><label>line left x</label><input type="range" id="ctl-lx" min="0" max="20" value="6"><input type="number" id="ctl-lx-n" value="6"></div>
+      <div class="control-row"><label>line right x</label><input type="range" id="ctl-rx" min="60" max="120" value="74"><input type="number" id="ctl-rx-n" value="74"></div>
+      <div class="control-row"><label>top line y</label><input type="range" id="ctl-ty" min="6" max="30" value="14"><input type="number" id="ctl-ty-n" value="14"></div>
+      <div class="control-row"><label>line spacing</label><input type="range" id="ctl-gap" min="6" max="16" value="10" step="0.5"><input type="number" id="ctl-gap-n" value="10" step="0.5"></div>
+      <div class="control-row"><label>stroke width</label><input type="range" id="ctl-sw" min="0.5" max="3" value="1.5" step="0.1"><input type="number" id="ctl-sw-n" value="1.5" step="0.1"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Treble clef glyph</legend>
+      <div class="control-row"><label>font-size</label><input type="range" id="ctl-tfs" min="20" max="60" value="40" step="0.5"><input type="number" id="ctl-tfs-n" value="40" step="0.5"></div>
+      <div class="control-row"><label>x</label><input type="range" id="ctl-tx" min="0" max="40" value="12" step="0.5"><input type="number" id="ctl-tx-n" value="12" step="0.5"></div>
+      <div class="control-row"><label>y (baseline)</label><input type="range" id="ctl-ty2" min="30" max="70" value="51.5" step="0.25"><input type="number" id="ctl-ty2-n" value="51.5" step="0.25"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Bass clef glyph</legend>
+      <div class="control-row"><label>font-size</label><input type="range" id="ctl-bfs" min="20" max="60" value="40" step="0.5"><input type="number" id="ctl-bfs-n" value="40" step="0.5"></div>
+      <div class="control-row"><label>x</label><input type="range" id="ctl-bx" min="0" max="40" value="14" step="0.5"><input type="number" id="ctl-bx-n" value="14" step="0.5"></div>
+      <div class="control-row"><label>y (baseline)</label><input type="range" id="ctl-by" min="20" max="60" value="47.75" step="0.25"><input type="number" id="ctl-by-n" value="47.75" step="0.25"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>"Both" tile — extra params</legend>
+      <div class="control-row"><label>top line y</label><input type="range" id="ctl-bothTopY" min="2" max="20" value="8"><input type="number" id="ctl-bothTopY-n" value="8"></div>
+      <div class="control-row"><label>treble→bass gap</label><input type="range" id="ctl-bothGap" min="2" max="20" value="8"><input type="number" id="ctl-bothGap-n" value="8"></div>
+      <div class="control-row"><label>line spacing</label><input type="range" id="ctl-bothLg" min="3" max="10" value="6" step="0.25"><input type="number" id="ctl-bothLg-n" value="6" step="0.25"></div>
+      <div class="control-row"><label>line stroke</label><input type="range" id="ctl-bothSw" min="0.5" max="2.5" value="1.2" step="0.1"><input type="number" id="ctl-bothSw-n" value="1.2" step="0.1"></div>
+      <div class="control-row"><label>treble fs</label><input type="range" id="ctl-bothTfs" min="14" max="36" value="24" step="0.5"><input type="number" id="ctl-bothTfs-n" value="24" step="0.5"></div>
+      <div class="control-row"><label>treble x</label><input type="range" id="ctl-bothTx" min="0" max="30" value="10" step="0.5"><input type="number" id="ctl-bothTx-n" value="10" step="0.5"></div>
+      <div class="control-row"><label>treble y</label><input type="range" id="ctl-bothTy" min="10" max="50" value="30.5" step="0.25"><input type="number" id="ctl-bothTy-n" value="30.5" step="0.25"></div>
+      <div class="control-row"><label>bass fs</label><input type="range" id="ctl-bothBfs" min="14" max="36" value="24" step="0.5"><input type="number" id="ctl-bothBfs-n" value="24" step="0.5"></div>
+      <div class="control-row"><label>bass x</label><input type="range" id="ctl-bothBx" min="0" max="30" value="10" step="0.5"><input type="number" id="ctl-bothBx-n" value="10" step="0.5"></div>
+      <div class="control-row"><label>bass y</label><input type="range" id="ctl-bothBy" min="30" max="70" value="54.25" step="0.25"><input type="number" id="ctl-bothBy-n" value="54.25" step="0.25"></div>
+    </fieldset>
+  </div>
+</div>
+
+<h2>3 · Output (copy this into the shared helper)</h2>
+<button class="copy-btn" id="copy-btn" onclick="copyOutput()">📋 Copy JS snippet</button>
+<div class="output-card" id="output"></div>
+
+<script id="variants-data">
+// Auto-generated from the current state of all 14 clef-picker modules.
+</script>
+<script>
+const CURRENT_VARIANTS = {"treble": [{"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <text class=\"clef\" x=\"12\" y=\"50\" font-family=\"serif\" font-size=\"44\" fill=\"#2A2A3E\">\ud834\udd1e</text> </svg>", "modules": ["accidentals.html", "ledger-lines.html", "roman-numerals.html", "note-names.html", "piano-keyboard.html", "primary-chords.html", "scale-degrees.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <text class=\"clef\" x=\"12\" y=\"51.5\" font-family=\"Bravura Text\" font-size=\"40\" fill=\"#2A2A3E\">&#xE050;</text> </svg>", "modules": ["ear-intervals.html", "intervals.html", "seventh-chords.html", "triads.html", "triad-inversions.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <!-- Bravura gClef: lineGap=10, G4=44, y = 44 + 0.75*10 = 51.5 --> <text class=\"clef\" x=\"14\" y=\"51.5\" font-family=\"Bravura Text\" font-size=\"40\" fill=\"#2A2A3E\">&#xE050;</text> </svg>", "modules": ["pianoquiz-demo.html", "piano-quiz.html"]}], "bass": [{"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <text class=\"clef\" x=\"14\" y=\"34\" font-family=\"serif\" font-size=\"32\" fill=\"#2A2A3E\">\ud834\udd22</text> </svg>", "modules": ["accidentals.html", "ledger-lines.html", "roman-numerals.html", "note-names.html", "piano-keyboard.html", "primary-chords.html", "scale-degrees.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <text class=\"clef\" x=\"14\" y=\"47.75\" font-family=\"Bravura Text\" font-size=\"40\" fill=\"#2A2A3E\">&#xE062;</text> </svg>", "modules": ["ear-intervals.html", "intervals.html", "seventh-chords.html", "triads.html", "triad-inversions.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.5\" fill=\"none\"> <line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/><line x1=\"6\" y1=\"24\" x2=\"74\" y2=\"24\"/> <line x1=\"6\" y1=\"34\" x2=\"74\" y2=\"34\"/><line x1=\"6\" y1=\"44\" x2=\"74\" y2=\"44\"/> <line x1=\"6\" y1=\"54\" x2=\"74\" y2=\"54\"/> </g> <!-- Bravura fClef: lineGap=10, F3=24, y = 24 + 2.375*10 = 47.75 --> <text class=\"clef\" x=\"14\" y=\"47.75\" font-family=\"Bravura Text\" font-size=\"40\" fill=\"#2A2A3E\">&#xE062;</text> </svg>", "modules": ["pianoquiz-demo.html", "piano-quiz.html"]}], "both": [{"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.2\" fill=\"none\"> <line x1=\"6\" y1=\"8\" x2=\"74\" y2=\"8\"/><line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/> <line x1=\"6\" y1=\"20\" x2=\"74\" y2=\"20\"/><line x1=\"6\" y1=\"26\" x2=\"74\" y2=\"26\"/> <line x1=\"6\" y1=\"32\" x2=\"74\" y2=\"32\"/> <line x1=\"6\" y1=\"40\" x2=\"74\" y2=\"40\"/><line x1=\"6\" y1=\"46\" x2=\"74\" y2=\"46\"/> <line x1=\"6\" y1=\"52\" x2=\"74\" y2=\"52\"/><line x1=\"6\" y1=\"58\" x2=\"74\" y2=\"58\"/> </g> <text class=\"clef\" x=\"10\" y=\"30\" font-family=\"serif\" font-size=\"26\" fill=\"#2A2A3E\">\ud834\udd1e</text> <text class=\"clef\" x=\"10\" y=\"54\" font-family=\"serif\" font-size=\"22\" fill=\"#2A2A3E\">\ud834\udd22</text> </svg>", "modules": ["accidentals.html", "ledger-lines.html", "roman-numerals.html", "note-names.html", "piano-keyboard.html", "primary-chords.html", "scale-degrees.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.2\" fill=\"none\"> <line x1=\"6\" y1=\"8\" x2=\"74\" y2=\"8\"/><line x1=\"6\" y1=\"14\" x2=\"74\" y2=\"14\"/> <line x1=\"6\" y1=\"20\" x2=\"74\" y2=\"20\"/><line x1=\"6\" y1=\"26\" x2=\"74\" y2=\"26\"/> <line x1=\"6\" y1=\"32\" x2=\"74\" y2=\"32\"/> <line x1=\"6\" y1=\"40\" x2=\"74\" y2=\"40\"/><line x1=\"6\" y1=\"46\" x2=\"74\" y2=\"46\"/> <line x1=\"6\" y1=\"52\" x2=\"74\" y2=\"52\"/><line x1=\"6\" y1=\"58\" x2=\"74\" y2=\"58\"/> </g> <text class=\"clef\" x=\"10\" y=\"30.5\" font-family=\"Bravura Text\" font-size=\"24\" fill=\"#2A2A3E\">&#xE050;</text> <text class=\"clef\" x=\"10\" y=\"54.25\" font-family=\"Bravura Text\" font-size=\"24\" fill=\"#2A2A3E\">&#xE062;</text> </svg>", "modules": ["ear-intervals.html", "intervals.html", "seventh-chords.html", "triads.html", "triad-inversions.html"]}, {"svg": "<svg class=\"tile-clef\" viewBox=\"0 0 80 60\"> <g class=\"staff-line\" stroke=\"#2A2A3E\" stroke-width=\"1.2\" fill=\"none\"> <!-- Treble staff: 5 lines, lineGap=5, bottomY=27 --> <line x1=\"6\" y1=\"7\" x2=\"74\" y2=\"7\"/><line x1=\"6\" y1=\"12\" x2=\"74\" y2=\"12\"/> <line x1=\"6\" y1=\"17\" x2=\"74\" y2=\"17\"/><line x1=\"6\" y1=\"22\" x2=\"74\" y2=\"22\"/> <line x1=\"6\" y1=\"27\" x2=\"74\" y2=\"27\"/> <!-- Bass staff: 5 lines, lineGap=5, bottomY=55 --> <line x1=\"6\" y1=\"35\" x2=\"74\" y2=\"35\"/><line x1=\"6\" y1=\"40\" x2=\"74\" y2=\"40\"/> <line x1=\"6\" y1=\"45\" x2=\"74\" y2=\"45\"/><line x1=\"6\" y1=\"50\" x2=\"74\" y2=\"50\"/> <line x1=\"6\" y1=\"55\" x2=\"74\" y2=\"55\"/> </g> <!-- Treble Bravura gClef: G4=22, y = 22 + 0.75*5 = 25.75, font = 5*4 = 20 --> <text class=\"clef\" x=\"10\" y=\"25.75\" font-family=\"Bravura Text\" font-size=\"20\" fill=\"#2A2A3E\">&#xE050;</text> <!-- Bass Bravura fClef: F3=40, y = 40 + 2.375*5 = 51.875, font = 20 --> <text class=\"clef\" x=\"10\" y=\"51.875\" font-family=\"Bravura Text\" font-size=\"20\" fill=\"#2A2A3E\">&#xE062;</text> </svg>", "modules": ["pianoquiz-demo.html", "piano-quiz.html"]}]};
+
+// ============ Render the "current variants" comparison grid ============
+function renderCurrent() {
+  const container = document.getElementById('current-variants');
+  const clefs = ['treble', 'bass', 'both'];
+  let html = '';
+  for (const clef of clefs) {
+    html += `<h3>${clef[0].toUpperCase()+clef.slice(1)} clef &mdash; ${CURRENT_VARIANTS[clef].length} variants across ${CURRENT_VARIANTS[clef].reduce((n,v)=>n+v.modules.length,0)} modules</h3>`;
+    html += '<div class="variant-grid">';
+    CURRENT_VARIANTS[clef].forEach((variant, i) => {
+      // Extract the params from the SVG for display
+      const textMatches = [...variant.svg.matchAll(/<text[^>]*x="([^"]+)"[^>]*y="([^"]+)"[^>]*font-family="([^"]+)"[^>]*font-size="([^"]+)"[^>]*>([^<]+)<\/text>/g)];
+      const paramsLines = textMatches.map((m, j) => {
+        const glyph = m[5].length > 1 ? m[5].codePointAt(0).toString(16).toUpperCase() : m[5];
+        return `text ${j+1}: font="${m[3]}" size=${m[4]} x=${m[1]} y=${m[2]} glyph="${glyph}"`;
+      }).join('\n');
+      // 2x by wrapping the svg in a container that scales it
+      const svg2x = variant.svg.replace(/<svg ([^>]*)>/, '<svg $1 style="width:160px;height:120px;">');
+      const svg1x = variant.svg.replace(/<svg ([^>]*)>/, '<svg $1 style="width:80px;height:60px;">');
+      html += `<div class="variant-card">
+        <h4>Variant ${i+1}<span class="badge">${variant.modules.length} modules</span></h4>
+        <div class="renders">
+          <div class="render-block">${svg1x}<div class="label">actual (80×60)</div></div>
+          <div class="render-block">${svg2x}<div class="label">2× scale</div></div>
+        </div>
+        <div class="modules-list">${variant.modules.join(', ')}</div>
+        <div class="params">${paramsLines}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  container.innerHTML = html;
+}
+
+// ============ Build the canonical tile SVG from current control values ============
+function readCtl(id, isFloat) {
+  const v = document.getElementById('ctl-' + id).value;
+  return isFloat ? parseFloat(v) : parseInt(v, 10);
+}
+function getConfig() {
+  return {
+    font: document.getElementById('ctl-font').value,
+    vbw: readCtl('vbw'), vbh: readCtl('vbh'),
+    lx: readCtl('lx'), rx: readCtl('rx'),
+    ty: readCtl('ty'), gap: readCtl('gap', true),
+    sw: readCtl('sw', true),
+    treble: { fs: readCtl('tfs', true), x: readCtl('tx', true), y: readCtl('ty2', true) },
+    bass:   { fs: readCtl('bfs', true), x: readCtl('bx', true), y: readCtl('by', true) },
+    both: {
+      topY: readCtl('bothTopY'), gap: readCtl('bothGap'),
+      lineGap: readCtl('bothLg', true), sw: readCtl('bothSw', true),
+      treble: { fs: readCtl('bothTfs', true), x: readCtl('bothTx', true), y: readCtl('bothTy', true) },
+      bass:   { fs: readCtl('bothBfs', true), x: readCtl('bothBx', true), y: readCtl('bothBy', true) },
+    }
+  };
+}
+function glyphForFont(font, kind) {
+  if (font === 'bravura') return kind === 'treble' ? '&#xE050;' : '&#xE062;';
+  return kind === 'treble' ? '𝄞' : '𝄢';
+}
+function fontFamilyAttr(font) { return font === 'bravura' ? 'Bravura Text' : 'serif'; }
+
+function buildSingleClefTile(cfg, kind) {
+  const ff = fontFamilyAttr(cfg.font);
+  const g = glyphForFont(cfg.font, kind);
+  const k = kind === 'treble' ? cfg.treble : cfg.bass;
+  let lines = '';
+  for (let i = 0; i < 5; i++) {
+    const y = cfg.ty + i * cfg.gap;
+    lines += `<line x1="${cfg.lx}" y1="${y}" x2="${cfg.rx}" y2="${y}"/>`;
+  }
+  return `<svg class="tile-clef" viewBox="0 0 ${cfg.vbw} ${cfg.vbh}" xmlns="http://www.w3.org/2000/svg">
+    <g class="staff-line" stroke="#2A2A3E" stroke-width="${cfg.sw}" fill="none">${lines}</g>
+    <text class="clef" x="${k.x}" y="${k.y}" font-family="${ff}" font-size="${k.fs}" fill="#2A2A3E">${g}</text>
+  </svg>`;
+}
+function buildBothClefTile(cfg) {
+  const ff = fontFamilyAttr(cfg.font);
+  const t = glyphForFont(cfg.font, 'treble');
+  const b = glyphForFont(cfg.font, 'bass');
+  const B = cfg.both;
+  let lines = '';
+  // Treble staff: 5 lines from topY
+  for (let i = 0; i < 5; i++) {
+    const y = B.topY + i * B.lineGap;
+    lines += `<line x1="${cfg.lx}" y1="${y}" x2="${cfg.rx}" y2="${y}"/>`;
+  }
+  // Bass staff: 5 lines starting topY + 4*lineGap + gap
+  const bassTop = B.topY + 4 * B.lineGap + B.gap;
+  for (let i = 0; i < 5; i++) {
+    const y = bassTop + i * B.lineGap;
+    lines += `<line x1="${cfg.lx}" y1="${y}" x2="${cfg.rx}" y2="${y}"/>`;
+  }
+  return `<svg class="tile-clef" viewBox="0 0 ${cfg.vbw} ${cfg.vbh}" xmlns="http://www.w3.org/2000/svg">
+    <g class="staff-line" stroke="#2A2A3E" stroke-width="${B.sw}" fill="none">${lines}</g>
+    <text class="clef" x="${B.treble.x}" y="${B.treble.y}" font-family="${ff}" font-size="${B.treble.fs}" fill="#2A2A3E">${t}</text>
+    <text class="clef" x="${B.bass.x}" y="${B.bass.y}" font-family="${ff}" font-size="${B.bass.fs}" fill="#2A2A3E">${b}</text>
+  </svg>`;
+}
+
+function renderPreview() {
+  const cfg = getConfig();
+  const t = buildSingleClefTile(cfg, 'treble');
+  const b = buildSingleClefTile(cfg, 'bass');
+  const bb = buildBothClefTile(cfg);
+  // 1x: 80x60
+  const set1 = svg => svg.replace(/<svg ([^>]*)>/, `<svg $1 style="width:${cfg.vbw}px;height:${cfg.vbh}px;">`);
+  // 2x: scaled
+  const set2 = svg => svg.replace(/<svg ([^>]*)>/, `<svg $1 style="width:${cfg.vbw*2}px;height:${cfg.vbh*2}px;">`);
+  document.getElementById('preview-treble').innerHTML = set1(t);
+  document.getElementById('preview-bass').innerHTML = set1(b);
+  document.getElementById('preview-both').innerHTML = set1(bb);
+  document.getElementById('preview-treble-2x').innerHTML = set2(t);
+  document.getElementById('preview-bass-2x').innerHTML = set2(b);
+  document.getElementById('preview-both-2x').innerHTML = set2(bb);
+  renderOutput(cfg);
+}
+
+function renderOutput(cfg) {
+  // Build a clean JS helper snippet that, given a clef, returns the SVG markup.
+  const ff = fontFamilyAttr(cfg.font);
+  const trebleGlyph = cfg.font === 'bravura' ? "'\\uE050'" : "'\\u{1D11E}'";
+  const bassGlyph   = cfg.font === 'bravura' ? "'\\uE062'" : "'\\u{1D122}'";
+  const snippet = `// Canonical clef-picker tile renderer. Source of truth for treble/bass/both
+// start-screen tiles. Generated by _clef-calibrator.html.
+// Place this in qn-ui.js (or similar shared helper); each clef-picker module
+// calls QN.ui.clefTile({clef: 'treble'|'bass'|'both'}) instead of inlining its
+// own SVG.
+
+(window.QN = window.QN || {}).ui = window.QN.ui || {};
+QN.ui.clefTile = function (opts) {
+  const clef = opts.clef;  // 'treble' | 'bass' | 'both'
+  const VBW = ${cfg.vbw}, VBH = ${cfg.vbh};
+  const FF  = ${JSON.stringify(ff)};
+  const T   = ${trebleGlyph};
+  const B   = ${bassGlyph};
+
+  // Single-staff layout (treble or bass)
+  const SINGLE = {
+    lx: ${cfg.lx}, rx: ${cfg.rx}, topY: ${cfg.ty}, gap: ${cfg.gap}, sw: ${cfg.sw},
+    treble: { fs: ${cfg.treble.fs}, x: ${cfg.treble.x}, y: ${cfg.treble.y} },
+    bass:   { fs: ${cfg.bass.fs},   x: ${cfg.bass.x},   y: ${cfg.bass.y} }
+  };
+
+  // Two-staff "both" layout
+  const BOTH = {
+    topY: ${cfg.both.topY}, gap: ${cfg.both.gap},
+    lineGap: ${cfg.both.lineGap}, sw: ${cfg.both.sw},
+    treble: { fs: ${cfg.both.treble.fs}, x: ${cfg.both.treble.x}, y: ${cfg.both.treble.y} },
+    bass:   { fs: ${cfg.both.bass.fs},   x: ${cfg.both.bass.x},   y: ${cfg.both.bass.y} }
+  };
+
+  function lines(left, right, ys, sw) {
+    return '<g class="staff-line" stroke="#2A2A3E" stroke-width="' + sw + '" fill="none">' +
+      ys.map(y => '<line x1="' + left + '" y1="' + y + '" x2="' + right + '" y2="' + y + '"/>').join('') +
+    '</g>';
+  }
+  function glyph(g, k) {
+    return '<text class="clef" x="' + k.x + '" y="' + k.y + '" font-family="' + FF + '" font-size="' + k.fs + '" fill="#2A2A3E">' + g + '</text>';
+  }
+
+  if (clef === 'treble' || clef === 'bass') {
+    const ys = [0,1,2,3,4].map(i => SINGLE.topY + i * SINGLE.gap);
+    const g = clef === 'treble' ? glyph(T, SINGLE.treble) : glyph(B, SINGLE.bass);
+    return '<svg class="tile-clef" viewBox="0 0 ' + VBW + ' ' + VBH + '" xmlns="http://www.w3.org/2000/svg">' +
+      lines(SINGLE.lx, SINGLE.rx, ys, SINGLE.sw) + g + '</svg>';
+  }
+  // both
+  const tYs = [0,1,2,3,4].map(i => BOTH.topY + i * BOTH.lineGap);
+  const bassTop = BOTH.topY + 4 * BOTH.lineGap + BOTH.gap;
+  const bYs = [0,1,2,3,4].map(i => bassTop + i * BOTH.lineGap);
+  return '<svg class="tile-clef" viewBox="0 0 ' + VBW + ' ' + VBH + '" xmlns="http://www.w3.org/2000/svg">' +
+    lines(SINGLE.lx, SINGLE.rx, tYs.concat(bYs), BOTH.sw) +
+    glyph(T, BOTH.treble) + glyph(B, BOTH.bass) +
+  '</svg>';
+};`;
+  // Syntax highlight (very lightweight)
+  const escaped = snippet.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  document.getElementById('output').innerHTML = escaped
+    .replace(/\b(const|var|let|function|return|if|new)\b/g, '<span class="key">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b/g, '<span class="val">$1</span>');
+}
+
+function copyOutput() {
+  const txt = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.classList.add('copied');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋 Copy JS snippet'; }, 1400);
+  });
+}
+
+// ============ Presets ============
+const PRESETS = {
+  clean: { font: 'bravura', vbw: 80, vbh: 60, lx: 6, rx: 74, ty: 14, gap: 10, sw: 1.5,
+    tfs: 40, tx: 12, ty2: 51.5,
+    bfs: 40, bx: 14, by: 47.75,
+    bothTopY: 8, bothGap: 8, bothLg: 6, bothSw: 1.2,
+    bothTfs: 24, bothTx: 10, bothTy: 30.5,
+    bothBfs: 24, bothBx: 10, bothBy: 54.25,
+  },
+  v1: { font: 'serif', vbw: 80, vbh: 60, lx: 6, rx: 74, ty: 14, gap: 10, sw: 1.5,
+    tfs: 44, tx: 12, ty2: 50,
+    bfs: 32, bx: 14, by: 34,
+    bothTopY: 8, bothGap: 8, bothLg: 6, bothSw: 1.2,
+    bothTfs: 26, bothTx: 10, bothTy: 30,
+    bothBfs: 22, bothBx: 10, bothBy: 54,
+  },
+  v2: { font: 'bravura', vbw: 80, vbh: 60, lx: 6, rx: 74, ty: 14, gap: 10, sw: 1.5,
+    tfs: 40, tx: 12, ty2: 51.5,
+    bfs: 40, bx: 14, by: 47.75,
+    bothTopY: 8, bothGap: 8, bothLg: 6, bothSw: 1.2,
+    bothTfs: 24, bothTx: 10, bothTy: 30.5,
+    bothBfs: 24, bothBx: 10, bothBy: 54.25,
+  },
+  v3: { font: 'bravura', vbw: 80, vbh: 60, lx: 6, rx: 74, ty: 14, gap: 10, sw: 1.5,
+    tfs: 40, tx: 14, ty2: 51.5,
+    bfs: 40, bx: 14, by: 47.75,
+    bothTopY: 8, bothGap: 8, bothLg: 6, bothSw: 1.2,
+    bothTfs: 20, bothTx: 10, bothTy: 25.75,
+    bothBfs: 20, bothBx: 10, bothBy: 51.875,
+  },
+};
+function loadPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  document.getElementById('ctl-font').value = p.font;
+  Object.keys(p).forEach(k => {
+    if (k === 'font') return;
+    const slider = document.getElementById('ctl-' + k);
+    const num = document.getElementById('ctl-' + k + '-n');
+    if (slider) slider.value = p[k];
+    if (num) num.value = p[k];
+  });
+  renderPreview();
+}
+
+// Wire up slider ↔ number-input two-way binding
+function wireControls() {
+  document.querySelectorAll('.controls input[type=range]').forEach(slider => {
+    const num = document.getElementById(slider.id + '-n');
+    slider.addEventListener('input', () => {
+      if (num) num.value = slider.value;
+      renderPreview();
+    });
+    if (num) {
+      num.addEventListener('input', () => {
+        slider.value = num.value;
+        renderPreview();
+      });
+    }
+  });
+  document.getElementById('ctl-font').addEventListener('change', renderPreview);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCurrent();
+  wireControls();
+  renderPreview();
+});
+</script>
+
+</body>
+</html>
