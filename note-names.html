@@ -472,6 +472,14 @@
       </div>
     </div>
 
+    <div class="q-block" id="hints-block">
+      <button class="timer-toggle" id="hints-toggle" type="button" aria-pressed="true">
+        <span class="t-icon">💡</span>
+        <span class="t-label">Teaching hints</span>
+        <span class="t-state" id="hints-toggle-state">on</span>
+      </button>
+    </div>
+
     <div class="start-cta">
       <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
         <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
@@ -515,6 +523,21 @@
       <div class="card stat-card last-dots-card">
         <div class="stat-label">Last answers</div>
         <div class="last-dots" id="last-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teaching hint (mobile: modal, desktop: inline banner) -->
+  <div class="hint-overlay" id="hint-overlay" hidden>
+    <div class="hint-card">
+      <div class="hint-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--sun-dk)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 4 12.7V17H8v-2.3A7 7 0 0 1 12 2z"/></svg>
+        Hint
+      </div>
+      <div class="hint-body" id="hint-text"></div>
+      <div class="hint-actions">
+        <button class="btn teal" id="hint-got-it" style="min-width:120px;">Got it</button>
+        <button class="hint-dismiss-link" id="hint-dismiss">Don't show hints</button>
       </div>
     </div>
   </div>
@@ -983,12 +1006,31 @@
     return all;
   }
 
+  // Teaching hints — keyed by context (clef or accidental)
+  const HINTS = {
+    treble: [
+      'The lines of the treble staff, bottom to top, are E–G–B–D–F. Try "Every Good Bird Does Fly."',
+      'The spaces of the treble staff spell F–A–C–E from bottom to top.',
+      'The treble clef curls around the second line — that’s G. Notes above it go up the alphabet; notes below go down.',
+    ],
+    bass: [
+      'The lines of the bass staff, bottom to top, are G–B–D–F–A. Try "Good Birds Don’t Fly Away."',
+      'The spaces of the bass staff, bottom to top, are A–C–E–G. Try "All Cows Eat Grass."',
+      'The two dots of the bass clef frame the F line (second from top). Notes move up and down the alphabet from there.',
+    ],
+    accidental: [
+      'A sharp (♯) raises a note by one half step — one key to the right on the piano. The letter name stays the same.',
+      'A flat (♭) lowers a note by one half step — one key to the left on the piano. The letter name stays the same.',
+    ],
+  };
+
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', hints: true, timer: { enabled: false, seconds: 60 } },
     pool: [], deck: [], drillPool: [],
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
     history: [], current: null, attempts: 0, locked: false,
+    shownHints: new Set(),
     lastPitch: null, timeLeft: 0, timerInterval: null,
     timedOut: false, startedAt: 0, timerWasRunning: false,
     endedRound: false, toastCycle: 0, currentChoices: [],
@@ -1009,11 +1051,13 @@
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
+     'summary-speed','mute-btn','start-muted-toggle',
+     'hints-toggle','hints-toggle-state','hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => { els[id] = $(id); });
   }
 
   function showScreen(name) {
     if (name !== 'play') stopTimer();
+    if (els['hint-overlay']) els['hint-overlay'].hidden = true;
     ['start','play','summary'].forEach(s => {
       document.getElementById(s + '-screen').classList.toggle('active', s === name);
     });
@@ -1138,6 +1182,38 @@
       t.classList.add('on'); state.settings.timer.seconds = parseInt(t.dataset.secs, 10);
       if (state.settings.timer.enabled) els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
     });
+
+    // Teaching hints toggle
+    var savedHints = localStorage.getItem('note-names_hints');
+    if (savedHints === 'false') {
+      state.settings.hints = false;
+      els['hints-toggle'].classList.remove('on');
+      els['hints-toggle'].setAttribute('aria-pressed', 'false');
+      els['hints-toggle-state'].textContent = 'off';
+    } else {
+      els['hints-toggle'].classList.add('on');
+    }
+
+    els['hints-toggle'].addEventListener('click', () => {
+      var on = !state.settings.hints;
+      state.settings.hints = on;
+      els['hints-toggle'].classList.toggle('on', on);
+      els['hints-toggle'].setAttribute('aria-pressed', on ? 'true' : 'false');
+      els['hints-toggle-state'].textContent = on ? 'on' : 'off';
+      try { localStorage.setItem('note-names_hints', String(on)); } catch(e) {}
+    });
+
+    // Hint card handlers
+    els['hint-got-it'].addEventListener('click', () => hideHintCard());
+
+    els['hint-dismiss'].addEventListener('click', () => {
+      state.settings.hints = false;
+      els['hints-toggle'].classList.remove('on');
+      els['hints-toggle'].setAttribute('aria-pressed', 'false');
+      els['hints-toggle-state'].textContent = 'off';
+      try { localStorage.setItem('note-names_hints', 'false'); } catch(e) {}
+      hideHintCard();
+    });
   }
 
   function startRound() {
@@ -1146,6 +1222,7 @@
     state.total = state.settings.total;
     state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
     state.history = []; state.lastPitch = null;
+    state.shownHints = new Set();
     state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
     state.startedAt = Date.now();
 
@@ -1297,11 +1374,18 @@
         nextQuestion();
       }, 1400);
     } else {
-      showToast('Try once more!', 'retry');
-      setTimeout(() => {
-        btn.classList.remove('wrong');
-        hideToast();
-      }, 900);
+      var hint = getHint();
+      if (hint) {
+        state.locked = true;
+        showToast('Try once more!', 'retry');
+        setTimeout(() => showHintCard(hint), 500);
+      } else {
+        showToast('Try once more!', 'retry');
+        setTimeout(() => {
+          btn.classList.remove('wrong');
+          hideToast();
+        }, 900);
+      }
     }
   }
 
@@ -1352,6 +1436,35 @@
   }
 
   function hideToast() { els['toast'].classList.remove('show'); }
+
+  function getHint() {
+    if (!state.settings.hints) return null;
+    const clef = state.current.clef;
+    const pitch = state.current.pitch;
+    const isAcc = pitch.accidental === '#' || pitch.accidental === 'b';
+    var category = isAcc && HINTS.accidental && Math.random() < 0.5 ? 'accidental' : clef;
+    var pool = (HINTS[category] || []).filter(h => !state.shownHints.has(h));
+    if (pool.length === 0 && category !== clef) pool = (HINTS[clef] || []).filter(h => !state.shownHints.has(h));
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
+    state.shownHints.add(hint);
+    return hint;
+  }
+
+  function showHintCard(text) {
+    pauseTimer();
+    els['hint-text'].textContent = text;
+    els['hint-overlay'].hidden = false;
+  }
+
+  function hideHintCard() {
+    els['hint-overlay'].hidden = true;
+    var grid = els['choices-grid'];
+    [...grid.children].forEach(b => b.classList.remove('wrong'));
+    hideToast();
+    state.locked = false;
+    resumeTimer();
+  }
 
   function jiggleStreak() {
     const b = els['streak-badge'];
@@ -1890,6 +2003,7 @@
       state.total = Math.min(state.pool.length * 2, 10);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
       state.history = []; state.lastPitch = null;
+      state.shownHints = new Set();
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
       state.startedAt = Date.now();
       document.querySelectorAll('.of').forEach(el => { el.textContent = ' / ' + state.total; });
