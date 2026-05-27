@@ -1344,6 +1344,42 @@
     if (els['timer-badge']) els['timer-badge'].hidden = true;
   }
 
+  function syncPill(el, on) {
+    el.classList.toggle('on', on);
+    el.textContent = on ? 'on' : 'off';
+  }
+
+  function getHint() {
+    if (!state.settings.hints || !HINTS) return null;
+    var keys = Object.keys(HINTS);
+    if (keys.length === 0) return null;
+    var key = keys[Math.floor(Math.random() * keys.length)];
+    var pool = (HINTS[key] || []).filter(function(h) { return !state.shownHints.has(h); });
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
+    state.shownHints.add(hint);
+    return hint;
+  }
+
+  function showHintCard(text) {
+    if (state.timerInterval) { clearInterval(state.timerInterval); state._timerWasRunning = true; }
+    els['hint-text'].textContent = text;
+    els['hint-overlay'].hidden = false;
+  }
+
+  function hideHintCard() {
+    els['hint-overlay'].hidden = true;
+    var grid = els['choices-grid'];
+    if (grid) [...grid.children].forEach(function(b) { b.classList.remove('wrong'); });
+    var t = els['toast']; if (t) t.classList.remove('show');
+    state.locked = false;
+    if (state._timerWasRunning && state.timeLeft > 0) {
+      state.timerInterval = setInterval(tickTimer, 1000);
+      state._timerWasRunning = false;
+    }
+  }
+
+
   function showStartTimerModal() {
     const secs = state.settings.timer.seconds, n = state.settings.total;
     QN.ui.confirm({

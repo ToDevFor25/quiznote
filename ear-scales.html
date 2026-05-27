@@ -1366,7 +1366,7 @@
   // ============ DOM elements ============
   const els = {};
   ['start-screen','play-screen','summary-screen',
-   'type-tiles','diff-tiles','length-tiles','timer-toggle','timer-pills','timer-toggle-state',
+   'type-tiles','diff-tiles','length-tiles','timer-row','timer-pill-state','timer-pills','hints-row','hints-pill-state','sound-row','sound-pill-state','hint-overlay','hint-text','hint-got-it','hint-dismiss',
    'start-btn',
    'exit-btn','mute-btn','timer-badge','timer-num','progress-fill','streak-num',
    'staff-wrap','replay-btn','toast','q-num','score-num','last-dots','choices-grid',
@@ -1452,13 +1452,13 @@
     if (state.settings.timer.enabled) {
       els['timer-toggle'].classList.add('on');
       els['timer-toggle'].setAttribute('aria-pressed', 'true');
-      els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
+      els['timer-pill-state'].textContent = state.settings.timer.seconds + 's';
       els['timer-pills'].hidden = false;
       els['timer-pills'].querySelectorAll('.tpill').forEach(p => {
         p.classList.toggle('on', parseInt(p.dataset.secs, 10) === state.settings.timer.seconds);
       });
     }
-    els['start-muted-toggle'].checked = loadMuted();
+    A.setMuted(loadMuted());
 
     els['type-tiles'].addEventListener('click', e => {
       const t = e.target.closest('.tpill');
@@ -1485,13 +1485,19 @@
       state.settings.total = parseInt(t.dataset.len, 10);
       saveSettings();
     });
-    els['timer-toggle'].addEventListener('click', () => {
-      const on = !els['timer-toggle'].classList.contains('on');
-      els['timer-toggle'].classList.toggle('on', on);
-      els['timer-toggle'].setAttribute('aria-pressed', on ? 'true' : 'false');
-      els['timer-pills'].hidden = !on;
+    // Settings card — Timer row
+    els['timer-row'].addEventListener('click', function() {
+      var on = !state.settings.timer.enabled;
       state.settings.timer.enabled = on;
-      els['timer-toggle-state'].textContent = on ? state.settings.timer.seconds + 's' : 'off';
+      var pill = els['timer-pill-state'];
+      if (on) {
+        pill.classList.add('on');
+        pill.textContent = state.settings.timer.seconds + 's';
+      } else {
+        pill.classList.remove('on');
+        pill.textContent = 'off';
+      }
+      els['timer-pills'].hidden = !on;
       saveSettings();
     });
     els['timer-pills'].addEventListener('click', e => {
@@ -1500,15 +1506,11 @@
       els['timer-pills'].querySelectorAll('.tpill').forEach(x => x.classList.remove('on'));
       p.classList.add('on');
       state.settings.timer.seconds = parseInt(p.dataset.secs, 10);
-      els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
+      els['timer-pill-state'].textContent = state.settings.timer.seconds + 's';
       saveSettings();
     });
     els['start-btn'].addEventListener('click', () => {
-      const wantMuted = els['start-muted-toggle'].checked;
-      saveMuted(wantMuted);
-      A.setMuted(wantMuted);
-      updateMuteBtn();
-      A.ensureCtx();
+      if (!A.isMuted()) A.ensureCtx();
       if (state.settings.timer.enabled) showStartTimerModal();
       else startRound();
     });
@@ -1749,6 +1751,40 @@
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 900);
   }
+
+  function syncPill(el, on) {
+    el.classList.toggle('on', on);
+    el.textContent = on ? 'on' : 'off';
+  }
+
+  function getHint() {
+    if (!state.settings.hints || !HINTS) return null;
+    var keys = Object.keys(HINTS);
+    if (keys.length === 0) return null;
+    var key = keys[Math.floor(Math.random() * keys.length)];
+    var pool = (HINTS[key] || []).filter(function(h) { return !state.shownHints.has(h); });
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
+    state.shownHints.add(hint);
+    return hint;
+  }
+
+  function showHintCard(text) {
+    pauseTimer();
+    els['hint-text'].textContent = text;
+    els['hint-overlay'].hidden = false;
+  }
+
+  function hideHintCard() {
+    els['hint-overlay'].hidden = true;
+    var grid = els['choices-grid'];
+    if (grid) [...grid.children].forEach(function(b) { b.classList.remove('wrong'); });
+    if (typeof hideToast === 'function') hideToast();
+    else { var t = els['toast']; if (t) t.classList.remove('show'); }
+    state.answered = false;
+    resumeTimer();
+  }
+
 
   // Streak-tiered explosion (ported from Key Signatures). Particles are ♯ and ♭
   // Bravura glyphs based on what's in the scale's key signature. Tiered by streak:
@@ -2294,6 +2330,7 @@
     const m = A.isMuted();
     els['mute-btn'].textContent = m ? '🔇' : '🔊';
     els['mute-btn'].classList.toggle('muted', m);
+      if (els['sound-pill-state']) syncPill(els['sound-pill-state'], !A.isMuted());
   }
 
   function initWiring() {
