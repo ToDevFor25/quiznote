@@ -1887,6 +1887,7 @@ function setupSettings() {
     syncPill(els["sound-pill-state"], !A.isMuted());
     els["sound-row"].addEventListener("click", function() {
       var nowMuted = !A.isMuted();
+      if (!nowMuted) { try { A.ensureCtx(); } catch(e) {} }
       saveMutedPreference(nowMuted);
     });
 

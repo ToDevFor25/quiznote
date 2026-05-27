@@ -1231,8 +1231,8 @@
     // Settings card — Sound row
     els['sound-row'].addEventListener('click', () => {
       var nowMuted = !A.isMuted();
+      if (!nowMuted) { try { A.ensureCtx(); } catch(e) {} }
       saveMutedPreference(nowMuted);
-      syncPill(els['sound-pill-state'], !nowMuted);
     });
 
     // Hint card handlers

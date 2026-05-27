@@ -1417,10 +1417,10 @@
     syncPill(els['sound-pill-state'], !A.isMuted());
     els['sound-row'].addEventListener('click', function() {
       var nowMuted = !A.isMuted();
+      if (!nowMuted) { try { A.ensureCtx(); } catch(e) {} }
       saveMuted(nowMuted);
       A.setMuted(nowMuted);
       updateMuteBtn();
-      syncPill(els['sound-pill-state'], !nowMuted);
     });
 
     // Hint card handlers
