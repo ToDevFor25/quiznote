@@ -798,6 +798,12 @@
     'eehee':   { notes: [0.5,0.5,2,0.5,0.5] },
     'qeeeee':  { notes: [1,0.5,0.5,0.5,0.5,0.5,0.5] },
     'eeeeqe':  { notes: [0.5,0.5,0.5,0.5,1,0.5,0.5] },
+    'ssssq':   { notes: [0.25,0.25,0.25,0.25,1,1,1] },
+    'qssssq':  { notes: [1,0.25,0.25,0.25,0.25,1,1] },
+    'qqssss':  { notes: [1,1,1,0.25,0.25,0.25,0.25] },
+    'sssseeq': { notes: [0.25,0.25,0.25,0.25,0.5,0.5,1,1] },
+    'esssse':  { notes: [0.5,0.5,0.25,0.25,0.25,0.25,0.5,0.5,1] },
+    'hssssee': { notes: [2,0.25,0.25,0.25,0.25,0.5,0.5] },
   };
 
   var TEMPO_BPM = 80;
@@ -859,10 +865,26 @@
         if (groupEnd > groupStart) {
           var x1 = positions[groupStart].cx - rx*0.7;
           var x2 = positions[groupEnd].cx - rx*0.7;
-          svg += '<line x1="'+x1+'" y1="'+(cy+stemH)+'" x2="'+x2+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
+          var beamY = cy + stemH;
+          svg += '<line x1="'+x1+'" y1="'+beamY+'" x2="'+x2+'" y2="'+beamY+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
+          for (var j = groupStart; j <= groupEnd; j++) {
+            if (positions[j].b <= 0.25) {
+              var sx = positions[j].cx - rx*0.7;
+              var sx2 = (j < groupEnd && positions[j+1].b <= 0.25) ? positions[j+1].cx - rx*0.7 : sx + 6;
+              if (j > groupStart && positions[j-1].b <= 0.25) continue;
+              var endX = sx;
+              var k = j;
+              while (k <= groupEnd && positions[k].b <= 0.25) { endX = positions[k].cx - rx*0.7; k++; }
+              svg += '<line x1="'+sx+'" y1="'+(beamY+3.5)+'" x2="'+endX+'" y2="'+(beamY+3.5)+'" stroke="'+ink+'" stroke-width="2" stroke-linecap="round"/>';
+            }
+          }
         } else {
           var sx = positions[groupStart].cx - rx*0.7;
+          var flagCount = positions[groupStart].b <= 0.25 ? 2 : 1;
           svg += '<path d="M'+sx+','+(cy+stemH)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+          if (flagCount >= 2) {
+            svg += '<path d="M'+sx+','+(cy+stemH-4)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+          }
         }
       } else {
         i++;
@@ -949,7 +971,7 @@
   var POOLS = {
     easy:   ['qqqq','hh','hqq','qqh','qhq'],
     medium: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh'],
-    tricky: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee','eehee','qeeeee','eeeeqe'],
+    tricky: ['qqqq','hh','hqq','qqh','qhq','w','qqeeq','eeqqq','qeeh','heeq','eeeeh','qeeqq','eqqe','qeqe','heee','eeqh','eeqeeq','qeeeeq','eeeeeeee','hqee','eeeeqq','qqeeee','eehee','qeeeee','eeeeqe','ssssq','qssssq','qqssss','sssseeq','esssse','hssssee'],
   };
 
   function buildChoices(correctKey, pool) {
