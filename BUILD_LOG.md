@@ -1,5 +1,112 @@
 ---
 
+### Progress dashboard strategy conversation — May 2026
+
+**Session type:** Strategic planning (no code). Conversation about
+upgrading dashboard.html from basic stats to a competitive progress
+visualization system, plus downstream considerations.
+
+**Current state of dashboard.html:** Functional but basic. Shows per-module
+round counts, best scores, weakest sub-skills breakdown. "Here's what
+you've done," not "here's how you've grown."
+
+**Target state (discussed, not yet specced):**
+
+1. **Hero stat row** — current streak (days), total practice time, modules
+   mastered. The three numbers a parent screenshots and sends to a teacher.
+2. **Accuracy trend chart** — weekly accuracy across modules, showing
+   improvement over time. Visual proof the app works. Sparkline or simple
+   bar chart per module.
+3. **Module mastery grid** — 32 modules as cards with progress rings
+   (untouched → Easy cleared → Medium cleared → Tricky mastered).
+   Color-coded: gray/teal/gold.
+4. **Streak calendar** — GitHub-style contribution grid or simple "X days
+   this week" view.
+5. **Weak spots card** — recommender's weak-spot data surfaced visually
+   ("Focus areas: Key Signatures 62%, Intervals 71%").
+
+**Key insight:** All data already exists in `qn_events`. Every round's
+module, tier, score, duration, timestamp, and sub-skill breakdown are
+collected. The recommender already computes weak spots. The dashboard
+is pure UI work on top of existing data — no schema changes needed.
+
+**Build cost:** Medium. Single-file redesign of `dashboard.html`, no
+shared file changes, no module changes. Probably one solid session.
+
+**Downstream items flagged (not yet actioned):**
+
+**Landing page marketing update (queued).** Once the dashboard ships,
+the landing page should surface the progress visualization as a selling
+point. The teaching hints layer and the progress dashboard together
+close the two biggest competitive gaps (no teaching, no visible progress).
+Landing copy should reflect both. Own task, not bundled with the
+dashboard build.
+
+**Terms and privacy update (Tier 3, lawyer territory).** When cloud
+storage ships and we start persisting user progress server-side, the
+terms and privacy policy need updating to cover: what learning data
+we collect, how we use it (to improve the product, surface progress,
+power recommendations), what we DON'T do (sell it, share it with
+third parties, use it for advertising). This is especially sensitive
+for child profiles under COPPA/GDPR-K/UK-AADC. The current privacy
+policy drafts (privacy.html, terms.html) were written for the
+localStorage-only era. Cloud sync + analytics = a material scope
+change for the legal docs. **Gate:** lawyer review before any
+cloud-synced learning data goes live.
+
+**"Share with your teacher" — the AVS model (Tier 3, flagged for
+future spec).** Rather than building teacher accounts (which opens
+a massive can of privacy worms — FERPA, institutional data agreements,
+role-based access, multi-tenancy), build a **learner-initiated share
+button** that generates a printable/shareable progress summary. Model:
+the AVS (After Visit Summary) in medicine — the patient gets a
+document they can hand to anyone they choose. The learner (or parent)
+decides what to share and with whom.
+
+Possible formats:
+- **Print-friendly summary page** — "Emma's QuizNote Progress" with
+  mastery grid, accuracy trends, practice time, streak. Styled for
+  paper. The learner taps "Share my progress," gets a clean printable
+  view they can screenshot, print, or save as PDF.
+- **Social media share card** — a generated image (canvas → PNG) with
+  the hero stats and mastery grid. "I've mastered 12 of 32 modules
+  on QuizNote!" Share to Instagram/Twitter/etc.
+- **Teacher share** — same summary, framed as "show this to your
+  teacher." No teacher account needed. The teacher sees a static
+  snapshot, not a live dashboard. No ongoing data access.
+
+**Privacy considerations for share features:**
+- Learner-initiated = no FERPA concern (the student/parent is choosing
+  to share, not the platform pushing data to a teacher).
+- Social media share must not include the learner's real name unless
+  they explicitly type it — use the nickname by default.
+- Child profiles (under 13) should require parent approval for any
+  share action. This aligns with the existing adult-owner/child-profile
+  schema in `qn-cloud.js`.
+- Generated share images should not include device identifiers,
+  profile IDs, or any data beyond what's visible on-screen.
+- **Lawyer review needed** before any share feature ships for child
+  profiles. Adult-only share could ship without legal gate.
+
+**Teacher accounts — explicitly deferred.** A "teacher dashboard"
+that shows a class of students' progress would require: FERPA
+compliance (US), institutional data processing agreements, role-based
+access control, multi-tenancy, teacher onboarding flow, class/roster
+management, and ongoing data access consent from parents. This is a
+separate product track, not a feature. Deferred indefinitely — the
+AVS-model share button gets 80% of the value at 5% of the complexity.
+
+**Still open / next:**
+- Spec the progress dashboard (single file: dashboard.html redesign)
+- After dashboard ships: landing page marketing update
+- After cloud sync ships: terms + privacy update (lawyer-gated)
+- Share button: spec after dashboard ships (depends on what data
+  is visualized)
+- Standing build queue unchanged: Circle of Fifths (#6), Chord
+  Function (#7), Transposition (#8)
+
+---
+
 ### Session 3 — Teaching hints layer + settings card redesign — May 2026
 
 **Session type:** Feature build + UX redesign. Largest cross-cutting
