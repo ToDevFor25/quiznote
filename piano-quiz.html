@@ -614,27 +614,33 @@
         </button>
       </div>
     </div>
-
-    <div class="q-block" id="timer-block">
-      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
-        <span class="t-icon">⏱</span>
-        <span class="t-label">Add a timer</span>
-        <span class="t-state" id="timer-toggle-state">off</span>
-      </button>
+    <div class="settings-card" id="settings-card">
+      <div class="setting-row" id="timer-row">
+        <div class="setting-left">
+          <span class="setting-icon">⏱</span> Timer
+        </div>
+        <span class="pill-state" id="timer-pill-state">off</span>
+      </div>
       <div class="timer-pills" id="timer-pills" hidden>
-        
         <button class="tpill" data-secs="30">30s</button>
         <button class="tpill" data-secs="45">45s</button>
         <button class="tpill on" data-secs="60">60s</button>
       </div>
+      <div class="setting-row" id="hints-row">
+        <div class="setting-left">
+          <span class="setting-icon">💡</span> Teaching hints
+        </div>
+        <span class="pill-state on" id="hints-pill-state">on</span>
+      </div>
+      <div class="setting-row" id="sound-row">
+        <div class="setting-left">
+          <span class="setting-icon">🔊</span> Sound
+        </div>
+        <span class="pill-state on" id="sound-pill-state">on</span>
+      </div>
     </div>
 
     <div class="start-cta">
-
-      <label class="start-muted-row" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
-        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
-        🔇 Start muted
-      </label>
       <button class="btn sun huge" id="start-btn">Start Game →</button>
     </div>
   </div>
@@ -1448,9 +1454,11 @@
     return base;
   }
 
+  const HINTS = {};
+
   // Game state
   const state = {
-    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', timer: { enabled: false, seconds: 60 } },
+    settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', hints: true, timer: { enabled: false, seconds: 60 } },
     pool: [],
     deck: [],
     drillPool: [],
@@ -1464,6 +1472,7 @@
     current: null,
     attempts: 0,
     locked: false,
+    shownHints: new Set(),
     revealing: false,
     lastPitch: null,
     timeLeft: 0,
@@ -1490,13 +1499,16 @@
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => {
+     'summary-speed','mute-btn',
+     'timer-row','timer-pill-state','hints-row','hints-pill-state','sound-row','sound-pill-state',
+     'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => {
       els[id] = document.getElementById(id);
     });
   }
 
   function showScreen(name) {
     if (name !== 'play') stopTimer();
+    if (els['hint-overlay']) els['hint-overlay'].hidden = true;
     ['start','play','summary'].forEach(s => {
       document.getElementById(s + '-screen').classList.toggle('active', s === name);
     });
@@ -2463,6 +2475,7 @@
       state.total = Math.min(pool.length * 2, 10);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
       state.history = []; state.lastPitch = null;
+    state.shownHints = new Set();
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
       state.startedAt = Date.now();
       state.hints = 2;

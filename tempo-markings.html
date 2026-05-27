@@ -488,25 +488,33 @@
         </button>
       </div>
     </div>
-
-    <div class="q-block" id="timer-block">
-      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
-        <span class="t-icon">⏱</span>
-        <span class="t-label">Add a timer</span>
-        <span class="t-state" id="timer-toggle-state">off</span>
-      </button>
+    <div class="settings-card" id="settings-card">
+      <div class="setting-row" id="timer-row">
+        <div class="setting-left">
+          <span class="setting-icon">⏱</span> Timer
+        </div>
+        <span class="pill-state" id="timer-pill-state">off</span>
+      </div>
       <div class="timer-pills" id="timer-pills" hidden>
         <button class="tpill" data-secs="30">30s</button>
         <button class="tpill" data-secs="45">45s</button>
         <button class="tpill on" data-secs="60">60s</button>
       </div>
+      <div class="setting-row" id="hints-row">
+        <div class="setting-left">
+          <span class="setting-icon">💡</span> Teaching hints
+        </div>
+        <span class="pill-state on" id="hints-pill-state">on</span>
+      </div>
+      <div class="setting-row" id="sound-row">
+        <div class="setting-left">
+          <span class="setting-icon">🔊</span> Sound
+        </div>
+        <span class="pill-state on" id="sound-pill-state">on</span>
+      </div>
     </div>
 
     <div class="start-cta">
-      <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
-        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
-        🔇 Start muted
-      </label>
       <button class="btn sun huge" id="start-btn">Start Game →</button>
     </div>
   </div>
@@ -549,7 +557,22 @@
     </div>
   </div>
 
-  <div class="card choices-card">
+  <!-- Teaching hint (pop-up modal on all screen sizes) -->
+  <div class="hint-overlay" id="hint-overlay" hidden>
+    <div class="hint-card">
+      <div class="hint-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--sun-dk)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 1 4 12.7V17H8v-2.3A7 7 0 0 1 12 2z"/></svg>
+        Hint
+      </div>
+      <div class="hint-body" id="hint-text"></div>
+      <div class="hint-actions">
+        <button class="btn teal" id="hint-got-it" style="min-width:120px;">Got it</button>
+        <button class="hint-dismiss-link" id="hint-dismiss">Don't show hints</button>
+      </div>
+    </div>
+  </div>
+
+    <div class="card choices-card">
     <div class="choices-grid" id="choices-grid">
       <!-- buttons injected by JS -->
     </div>
@@ -1024,11 +1047,14 @@
     };
   }
 
+  const HINTS = {};
+
   // Game state
   const state = {
-    settings: { difficulty: 'medium', total: 10, timer: { enabled: false, seconds: 60 } },
+    settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },
     q: 0, total: 10, score: 0, streak: 0, bestStreak: 0,
     history: [], current: null, attempts: 0, locked: false,
+    shownHints: new Set(),
     timeLeft: 0, timerInterval: null,
     timedOut: false, startedAt: 0, timerWasRunning: false,
     endedRound: false, toastCycle: 0, currentChoices: [],
@@ -1049,11 +1075,14 @@
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
      'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed','mute-btn','start-muted-toggle'].forEach(id => { els[id] = $(id); });
+     'summary-speed','mute-btn',
+     'timer-row','timer-pill-state','hints-row','hints-pill-state','sound-row','sound-pill-state',
+     'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => { els[id] = $(id); });
   }
 
   function showScreen(name) {
     if (name !== 'play') stopTimer();
+    if (els['hint-overlay']) els['hint-overlay'].hidden = true;
     ['start','play','summary'].forEach(s => {
       document.getElementById(s + '-screen').classList.toggle('active', s === name);
     });
