@@ -1314,6 +1314,23 @@
   }
 
   // ============ Start screen wiring ============
+  
+  function applyProfileDefaults() {
+    var prof = typeof QN !== 'undefined' && QN.profile ? QN.profile.getActive() : null;
+    if (!prof || !prof.defaultDifficulty) return;
+    var diff = prof.defaultDifficulty;
+    if (['easy','medium','tricky'].indexOf(diff) === -1) return;
+    var tiles = els['diff-tiles'];
+    if (!tiles) return;
+    var already = tiles.querySelector('.tile.on');
+    if (already && already.dataset.diff === 'medium') {
+      state.settings.difficulty = diff;
+      [...tiles.children].forEach(function(t) {
+        t.classList.toggle('on', t.dataset.diff === diff);
+      });
+    }
+  }
+
   function initStartScreen() {
     loadSettings();
     // Apply settings to UI
@@ -2277,6 +2294,7 @@
 
   // ============ Boot ============
   initStartScreen();
+    applyProfileDefaults();
   initWiring();
   // qn-nav.js is deferred, so it may not have executed when this bare
   // inline IIFE runs. Defer the mount to DOMContentLoaded (fires after

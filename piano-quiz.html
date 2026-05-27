@@ -1536,6 +1536,23 @@
   //    pre-seeded `piano-quiz_settings`, applies tier/length/clef, syncs the
   //    start-screen .on highlights, then clears the key (handoff is for this
   //    launch only). clef included for future clef-aware recommender.
+  
+  function applyProfileDefaults() {
+    var prof = typeof QN !== 'undefined' && QN.profile ? QN.profile.getActive() : null;
+    if (!prof || !prof.defaultDifficulty) return;
+    var diff = prof.defaultDifficulty;
+    if (['easy','medium','tricky'].indexOf(diff) === -1) return;
+    var tiles = els['diff-tiles'];
+    if (!tiles) return;
+    var already = tiles.querySelector('.tile.on');
+    if (already && already.dataset.diff === 'medium') {
+      state.settings.difficulty = diff;
+      [...tiles.children].forEach(function(t) {
+        t.classList.toggle('on', t.dataset.diff === diff);
+      });
+    }
+  }
+
   function applyPathHandoff() {
     var raw;
     try { raw = localStorage.getItem('piano-quiz_settings'); } catch (e) { return; }
@@ -2643,6 +2660,7 @@
     if (window.QNNav) { QNNav.mount({ current: null }); }
     setupStart();
     applyPathHandoff();
+    applyProfileDefaults();
     setupActions();
     injectLogo();
 

@@ -1792,7 +1792,24 @@
   }
 
   // ===== Wire up settings =====
-  function setupSettings() {
+  
+  function applyProfileDefaults() {
+    var prof = typeof QN !== "undefined" && QN.profile ? QN.profile.getActive() : null;
+    if (!prof || !prof.defaultDifficulty) return;
+    var diff = prof.defaultDifficulty;
+    if (["easy","medium","tricky"].indexOf(diff) === -1) return;
+    var tiles = els["diff-tiles"];
+    if (!tiles) return;
+    var already = tiles.querySelector(".tile.on");
+    if (already && already.dataset.diff === "medium") {
+      state.settings.difficulty = diff;
+      [...tiles.children].forEach(function(t) {
+        t.classList.toggle("on", t.dataset.diff === diff);
+      });
+    }
+  }
+
+function setupSettings() {
     // Difficulty tiles
     if (els['diff-tiles']) {
       els['diff-tiles'].addEventListener('click', e => {
@@ -1961,6 +1978,7 @@
     A.setMuted(muted);
     syncMuteUI(muted);
     setupSettings();
+    applyProfileDefaults();
     // Load PBs
     try {
       const pbKey = M.slug + '_pb_' + state.settings.difficulty;
