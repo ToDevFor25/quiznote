@@ -682,39 +682,3 @@ animation: modalFade 200ms ease-out;
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Desktop: inline banner */
-@media (min-width: 760px) {
-  .hint-overlay {
-    position: relative; inset: auto;
-    background: none;
-    z-index: auto;
-    display: block;
-    animation: none;
-    margin: 0 0 4px;
-  }
-  .hint-overlay[hidden] { display: none; }
-
-  .hint-card {
-    max-width: 100%; width: 100%;
-    flex-direction: row; align-items: center;
-    gap: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    border: 1.5px solid rgba(255,182,39,0.3);
-    padding: 14px 20px;
-    border-radius: 14px;
-    animation: hintSlideDown 200ms ease-out;
-  }
-
-  .hint-body { flex: 1; font-size: 16px; }
-
-  .hint-actions {
-    flex-direction: row; gap: 14px;
-    flex-shrink: 0;
-  }
-
-  .hint-dismiss-link { white-space: nowrap; }
-}
-@keyframes hintSlideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
