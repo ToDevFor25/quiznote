@@ -19,9 +19,9 @@
      Time Signatures         e.g. "Note Values"
      See the meter. Name it.       e.g. "See the symbol. Name it. Fast."
      Easy      e.g. "Easy"
-     2/4, 3/4, 4/4        e.g. "whole, half<br/>quarter"
+     2/4, 3/4, 4/4, 6/8, 2/2        e.g. "whole, half<br/>quarter"
      Medium    e.g. "Medium"
-     + 6/8, 3/8, 2/2      e.g. "+ eighth<br/>notes & rests"
+     + 3/8      e.g. "+ eighth<br/>notes & rests"
      Tricky    e.g. "Tricky"
      + 9/8, 12/8<br/>5/4, 7/8      e.g. "+ sixteenth<br/>notes & rests"
      What is this?  e.g. "What is this?"
@@ -613,12 +613,12 @@
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
           <div class="tile-title">Easy</div>
-          <div class="tile-sub">2/4, 3/4, 4/4</div>
+          <div class="tile-sub">2/4, 3/4, 4/4, 6/8, 2/2</div>
         </button>
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">+ 6/8, 3/8, 2/2</div>
+          <div class="tile-sub">+ 3/8</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
@@ -864,7 +864,7 @@
 
   // ─── Difficulty pools ────────────────────────────────────
   const TIER_SIGS = {
-    easy:   ['2-4', '3-4', '4-4'],
+    easy:   ['2-4', '3-4', '4-4', '6-8', '2-2'],
     medium: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2'],
     tricky: ['2-4', '3-4', '4-4', '6-8', '3-8', '2-2', '9-8', '12-8', '5-4', '7-8'],
   };
@@ -987,11 +987,11 @@
       distractors = shuffle(allUnits.filter(u => u !== q.answer)).slice(0, 3);
     }
 
-    // Use only real distractors. When a tier can't supply 3 (e.g. easy
-    // 'label' has just 3 signatures total → 2 distractors), we return 3
-    // tiles instead of padding with a placeholder; the choices grid lays
-    // 3 out cleanly (see .choices-grid.count-3). Dedupe defensively so a
-    // distractor can never collide with the correct answer's label.
+    // Use only real distractors. When a tier can't supply 3 distractors
+    // we return fewer tiles instead of padding with a placeholder; the
+    // choices grid lays 3 out cleanly (see .choices-grid.count-3). Dedupe
+    // defensively so a distractor can never collide with the correct
+    // answer's label.
     const correctLabel = labelFor(correctKey);
     const seen = {};
     seen[correctLabel] = true;
@@ -1248,11 +1248,10 @@
   function renderChoices() {
     const grid = els['choices-grid'];
     grid.innerHTML = '';
-    // Count-aware layout: most rounds have 4 tiles (2×2). Some tiers can
-    // only produce 3 valid choices (e.g. easy 'label' has just 3 signatures
-    // total). Tag the grid with the count so CSS lays 3 out cleanly —
-    // stacked on mobile, row-of-three on wider screens — instead of leaving
-    // a hole in the 2×2.
+    // Count-aware layout: most rounds have 4 tiles (2×2). Some edge cases
+    // may produce only 3 valid choices. Tag the grid with the count so CSS
+    // lays 3 out cleanly — stacked on mobile, row-of-three on wider
+    // screens — instead of leaving a hole in the 2×2.
     grid.classList.remove('count-3', 'count-4');
     grid.classList.add('count-' + (state.currentChoices.length === 3 ? '3' : '4'));
     state.currentChoices.forEach(key => {
