@@ -346,17 +346,17 @@
         <button class="tile" data-diff="easy">
           <div class="tile-emoji">🐢</div>
           <div class="tile-title">Easy</div>
-          <div class="tile-sub">Two progressions<br/>I-IV-V-I &amp; I-V-vi-IV</div>
+          <div class="tile-sub">I, IV, V chords<br/>fresh every round</div>
         </button>
         <button class="tile on" data-diff="medium">
           <div class="tile-emoji">🐰</div>
           <div class="tile-title">Medium</div>
-          <div class="tile-sub">+ ii-V-I &amp;<br/>I-vi-IV-V</div>
+          <div class="tile-sub">+ ii, vi chords<br/>more variety</div>
         </button>
         <button class="tile" data-diff="tricky">
           <div class="tile-emoji">🐆</div>
           <div class="tile-title">Tricky</div>
-          <div class="tile-sub">+ IV-V-I<br/>all five progressions</div>
+          <div class="tile-sub">+ iii, vii°, V/V<br/>all the chords</div>
         </button>
       </div>
     </div>
@@ -535,99 +535,290 @@
     }
   });
 
-  // ============ Progression data ============
-  // Each progression variant: { name, type, chords: [{ midi:[...] }, ...] }
+  // ============ Algorithmic Progression Generator ============
+  //
+  // Generates valid 4-chord progressions from music theory rules.
+  // Each chord is a root-position triad rendered as 3 MIDI notes.
+  // Keys are chosen randomly from C, D, Eb, F, G, A, Bb to vary timbre.
 
-  var PROGRESSIONS = {
-    'I-IV-V-I': {
-      name: 'I – IV – V – I',
-      variants: [
-        { key: 'C', chords: [{midi:[60,64,67]},{midi:[53,57,60]},{midi:[55,59,62]},{midi:[60,64,67]}] },
-        { key: 'G', chords: [{midi:[55,59,62]},{midi:[60,64,67]},{midi:[62,66,69]},{midi:[55,59,62]}] },
-        { key: 'F', chords: [{midi:[53,57,60]},{midi:[58,62,65]},{midi:[60,64,67]},{midi:[53,57,60]}] }
-      ]
-    },
-    'I-V-vi-IV': {
-      name: 'I – V – vi – IV',
-      variants: [
-        { key: 'C', chords: [{midi:[60,64,67]},{midi:[55,59,62]},{midi:[57,60,64]},{midi:[53,57,60]}] },
-        { key: 'G', chords: [{midi:[55,59,62]},{midi:[62,66,69]},{midi:[64,67,71]},{midi:[60,64,67]}] },
-        { key: 'F', chords: [{midi:[53,57,60]},{midi:[60,64,67]},{midi:[62,65,69]},{midi:[58,62,65]}] }
-      ]
-    },
-    'ii-V-I': {
-      name: 'ii – V – I',
-      variants: [
-        { key: 'C', chords: [{midi:[62,65,69]},{midi:[55,59,62]},{midi:[60,64,67]}] },
-        { key: 'G', chords: [{midi:[57,60,64]},{midi:[62,66,69]},{midi:[55,59,62]}] },
-        { key: 'F', chords: [{midi:[55,58,62]},{midi:[60,64,67]},{midi:[53,57,60]}] }
-      ]
-    },
-    'I-vi-IV-V': {
-      name: 'I – vi – IV – V',
-      variants: [
-        { key: 'C', chords: [{midi:[60,64,67]},{midi:[57,60,64]},{midi:[53,57,60]},{midi:[55,59,62]}] },
-        { key: 'G', chords: [{midi:[55,59,62]},{midi:[64,67,71]},{midi:[60,64,67]},{midi:[62,66,69]}] }
-      ]
-    },
-    'IV-V-I': {
-      name: 'IV – V – I',
-      variants: [
-        { key: 'C', chords: [{midi:[53,57,60]},{midi:[55,59,62]},{midi:[60,64,67]}] },
-        { key: 'G', chords: [{midi:[60,64,67]},{midi:[62,66,69]},{midi:[55,59,62]}] }
-      ]
+  // --- Chord-quality definitions (semitone intervals from root) ---
+  var QUALITY = {
+    maj: [0, 4, 7],    // major triad
+    min: [0, 3, 7],    // minor triad
+    dim: [0, 3, 6],    // diminished triad
+    aug: [0, 4, 8]     // augmented triad (for secondary dominants)
+  };
+
+  // --- Key roots (MIDI of root in octave 3, i.e. C3=48..B3=59) ---
+  // We pick from keys that sound good on piano and avoid extreme registers.
+  var KEY_ROOTS = [
+    { name: 'C',  midi: 48 },
+    { name: 'D',  midi: 50 },
+    { name: 'Eb', midi: 51 },
+    { name: 'F',  midi: 53 },
+    { name: 'G',  midi: 55 },
+    { name: 'A',  midi: 57 },
+    { name: 'Bb', midi: 58 }
+  ];
+
+  // --- Scale-degree definitions in a major key ---
+  // Semitone offset from key root, quality, Roman numeral label
+  var DEGREE_DEFS = {
+    'I':    { offset: 0,  q: 'maj', label: 'I' },
+    'ii':   { offset: 2,  q: 'min', label: 'ii' },
+    'iii':  { offset: 4,  q: 'min', label: 'iii' },
+    'IV':   { offset: 5,  q: 'maj', label: 'IV' },
+    'V':    { offset: 7,  q: 'maj', label: 'V' },
+    'vi':   { offset: 9,  q: 'min', label: 'vi' },
+    'viio': { offset: 11, q: 'dim', label: 'vii°' },
+    // Secondary dominants — major triads built on the 5th of ii, IV, V, vi
+    'V/ii':  { offset: 9,  q: 'maj', label: 'V/ii' },   // A major in C (= borrow from D major)
+    'V/IV':  { offset: 0,  q: 'maj', label: 'V/IV' },   // C major acts as V/IV (= I, but context differs)
+    'V/V':   { offset: 2,  q: 'maj', label: 'V/V' },    // D major in C
+    'V/vi':  { offset: 4,  q: 'maj', label: 'V/vi' }    // E major in C
+  };
+
+  // --- Build a MIDI triad for a degree in a given key root ---
+  function buildMidiTriad(keyRoot, degreeName) {
+    var def = DEGREE_DEFS[degreeName];
+    if (!def) return null;
+    var root = keyRoot + def.offset;
+    var intervals = QUALITY[def.q];
+    // Place triads in the C3-C5 range for a warm, clear sound.
+    // Root position; shift octave so root sits between keyRoot and keyRoot+12.
+    if (root < keyRoot) root += 12;
+    return { midi: [root, root + intervals[1], root + intervals[2]] };
+  }
+
+  // --- Display name for a progression: e.g. "I – IV – V – I" ---
+  function progressionDisplayName(degrees) {
+    return degrees.map(function (d) {
+      var def = DEGREE_DEFS[d];
+      return def ? def.label : d;
+    }).join(' – ');
+  }
+
+  // --- Progression key string: e.g. "I-IV-V-I" ---
+  function progressionKey(degrees) {
+    return degrees.join('-');
+  }
+
+  // --- Tier-specific allowed chords ---
+  var TIER_CHORDS = {
+    easy:   ['I', 'IV', 'V'],
+    medium: ['I', 'ii', 'IV', 'V', 'vi'],
+    tricky: ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'viio', 'V/V']
+  };
+
+  // --- Voice-leading transition table ---
+  // Maps each chord to a weighted list of plausible next chords.
+  // Weights are relative; higher = more likely. This encodes common
+  // tonal practice: predominant→dominant→tonic, circle-of-fifths motion,
+  // deceptive resolution, etc.
+  var TRANSITIONS = {
+    'I':    { 'ii': 3, 'iii': 1, 'IV': 5, 'V': 4, 'vi': 3, 'viio': 1, 'V/V': 2, 'V/ii': 1, 'V/vi': 1 },
+    'ii':   { 'V': 6, 'viio': 2, 'IV': 1, 'iii': 1, 'V/V': 2 },
+    'iii':  { 'IV': 4, 'vi': 3, 'ii': 2, 'V': 1 },
+    'IV':   { 'V': 6, 'I': 3, 'ii': 2, 'viio': 1, 'vi': 1, 'V/V': 2 },
+    'V':    { 'I': 7, 'vi': 3, 'IV': 1 },
+    'vi':   { 'IV': 5, 'ii': 4, 'V': 2, 'iii': 1, 'I': 1, 'V/ii': 2 },
+    'viio': { 'I': 6, 'vi': 2 },
+    'V/V':  { 'V': 8, 'viio': 1 },
+    'V/ii': { 'ii': 8 },
+    'V/IV': { 'IV': 8 },
+    'V/vi': { 'vi': 8 }
+  };
+
+  // --- Weighted random pick from a {option: weight} map, filtered to allowed set ---
+  function weightedPick(transMap, allowed) {
+    if (!transMap) return allowed[Math.floor(Math.random() * allowed.length)];
+    var candidates = [];
+    var totalWeight = 0;
+    for (var i = 0; i < allowed.length; i++) {
+      var w = transMap[allowed[i]] || 0;
+      if (w > 0) {
+        candidates.push({ chord: allowed[i], w: w });
+        totalWeight += w;
+      }
     }
-  };
+    if (candidates.length === 0) {
+      // No weighted transitions available — uniform random over allowed
+      return allowed[Math.floor(Math.random() * allowed.length)];
+    }
+    var r = Math.random() * totalWeight;
+    for (var j = 0; j < candidates.length; j++) {
+      r -= candidates[j].w;
+      if (r <= 0) return candidates[j].chord;
+    }
+    return candidates[candidates.length - 1].chord;
+  }
 
-  // Tier pools
-  var TIER_TYPES = {
-    easy:   ['I-IV-V-I', 'I-V-vi-IV'],
-    medium: ['I-IV-V-I', 'I-V-vi-IV', 'ii-V-I', 'I-vi-IV-V'],
-    tricky: ['I-IV-V-I', 'I-V-vi-IV', 'ii-V-I', 'I-vi-IV-V', 'IV-V-I']
-  };
+  // --- Generate one valid 4-chord progression ---
+  // Rules: starts on I, ends on I or V, no adjacent repeats,
+  // follows weighted voice-leading transitions.
+  function generateOneProgression(allowed, maxAttempts) {
+    maxAttempts = maxAttempts || 80;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      var prog = ['I'];
+      var valid = true;
+      // Build chords 2 and 3 (indices 1-2)
+      for (var step = 1; step <= 2; step++) {
+        var prev = prog[step - 1];
+        // Filter allowed chords: exclude the previous chord (no adjacent repeats)
+        var opts = [];
+        for (var a = 0; a < allowed.length; a++) {
+          if (allowed[a] !== prev) opts.push(allowed[a]);
+        }
+        if (opts.length === 0) { valid = false; break; }
+        var next = weightedPick(TRANSITIONS[prev], opts);
+        prog.push(next);
+      }
+      if (!valid) continue;
+      // Chord 4 (index 3): must be I or V, must differ from chord 3
+      var prev3 = prog[2];
+      var endings = [];
+      if (prev3 !== 'I') endings.push('I');
+      if (prev3 !== 'V' && allowed.indexOf('V') !== -1) endings.push('V');
+      if (endings.length === 0) {
+        // Only possible if chord 3 is both I and V simultaneously (impossible), but safeguard
+        continue;
+      }
+      // Weight the ending choice using transition table
+      var lastChord = weightedPick(TRANSITIONS[prev3], endings);
+      prog.push(lastChord);
+      return prog;
+    }
+    // Absolute fallback
+    return ['I', 'IV', 'V', 'I'];
+  }
+
+  // --- Generate a round's worth of unique progressions ---
+  // Returns an array of { type, name, degrees, chords, key } objects.
+  // Each round gets 15-20 unique progression patterns, each assigned a
+  // random key so even if the same pattern repeats it sounds different.
+  function generateProgressionPool(diff, count) {
+    count = count || 18;
+    var allowed = TIER_CHORDS[diff] || TIER_CHORDS.easy;
+    var seen = {};
+    var pool = [];
+    var maxIter = count * 8;
+    var iter = 0;
+    while (pool.length < count && iter < maxIter) {
+      iter++;
+      var degrees = generateOneProgression(allowed);
+      var key = progressionKey(degrees);
+      if (seen[key]) continue;
+      seen[key] = true;
+      // Assign a random key
+      var kr = KEY_ROOTS[Math.floor(Math.random() * KEY_ROOTS.length)];
+      var chords = [];
+      for (var c = 0; c < degrees.length; c++) {
+        chords.push(buildMidiTriad(kr.midi, degrees[c]));
+      }
+      pool.push({
+        type: key,
+        name: progressionDisplayName(degrees),
+        degrees: degrees,
+        chords: chords,
+        key: kr.name
+      });
+    }
+    // If we couldn't fill the pool (unlikely), pad with re-keyed duplicates
+    if (pool.length < 4) {
+      var fallbacks = [['I','IV','V','I'],['I','V','vi','IV'],['I','ii','V','I'],['I','vi','IV','V']];
+      for (var fi = 0; fi < fallbacks.length && pool.length < count; fi++) {
+        var fd = fallbacks[fi];
+        var fk = KEY_ROOTS[Math.floor(Math.random() * KEY_ROOTS.length)];
+        var fc = [];
+        for (var fci = 0; fci < fd.length; fci++) fc.push(buildMidiTriad(fk.midi, fd[fci]));
+        pool.push({ type: progressionKey(fd), name: progressionDisplayName(fd), degrees: fd, chords: fc, key: fk.name });
+      }
+    }
+    return pool;
+  }
+
+  // --- Round pool: regenerated each round ---
+  var roundPool = [];
+  var roundPoolIdx = 0;
 
   /**
-   * Pick a progression question. Returns { progression, type, name }.
+   * Pick a progression question. Returns { type, name, chords, key }.
+   * Draws from a pre-generated pool of 18 unique progressions.
    * Avoids repeating the same type back-to-back.
    */
   function pickProgression(diff, lastType) {
-    var types = TIER_TYPES[diff] || TIER_TYPES.easy;
-    for (var attempt = 0; attempt < 40; attempt++) {
-      var type = types[Math.floor(Math.random() * types.length)];
-      if (type === lastType && attempt < 35) continue;
-      var prog = PROGRESSIONS[type];
-      var variant = prog.variants[Math.floor(Math.random() * prog.variants.length)];
-      return { type: type, name: prog.name, chords: variant.chords, key: variant.key };
+    // If pool is exhausted or empty, regenerate
+    if (roundPool.length === 0 || roundPoolIdx >= roundPool.length) {
+      roundPool = generateProgressionPool(diff, 18);
+      // Shuffle the pool
+      for (var i = roundPool.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = roundPool[i]; roundPool[i] = roundPool[j]; roundPool[j] = tmp;
+      }
+      roundPoolIdx = 0;
     }
-    // fallback
-    var fb = PROGRESSIONS[types[0]];
-    return { type: types[0], name: fb.name, chords: fb.variants[0].chords, key: fb.variants[0].key };
+
+    // Try to avoid back-to-back same type
+    var startIdx = roundPoolIdx;
+    for (var attempt = 0; attempt < Math.min(5, roundPool.length - roundPoolIdx); attempt++) {
+      var candidate = roundPool[roundPoolIdx + attempt];
+      if (candidate.type !== lastType || attempt >= 4) {
+        // Swap this candidate to the current position and advance
+        if (attempt > 0) {
+          var t = roundPool[roundPoolIdx];
+          roundPool[roundPoolIdx] = roundPool[roundPoolIdx + attempt];
+          roundPool[roundPoolIdx + attempt] = t;
+        }
+        roundPoolIdx++;
+        return { type: candidate.type, name: candidate.name, chords: candidate.chords, key: candidate.key };
+      }
+    }
+    // Fallback: just take the next one
+    var fb = roundPool[roundPoolIdx];
+    roundPoolIdx++;
+    return { type: fb.type, name: fb.name, chords: fb.chords, key: fb.key };
   }
 
   /**
-   * Build choice labels for the given difficulty.
-   * Always includes the correct progression name.
+   * Build 4 choice labels for the given difficulty.
+   * Generates plausible distractor progressions that are different from the
+   * correct answer but use the same tier-appropriate chords.
    */
   function buildChoices(correctType, diff) {
-    var types = TIER_TYPES[diff] || TIER_TYPES.easy;
-    var correctName = PROGRESSIONS[correctType].name;
+    var correctName = null;
+    // Find the correct display name from the round pool or generate it
+    for (var p = 0; p < roundPool.length; p++) {
+      if (roundPool[p].type === correctType) { correctName = roundPool[p].name; break; }
+    }
+    if (!correctName) {
+      // Derive from type string
+      correctName = progressionDisplayName(correctType.split('-'));
+    }
     var all = [correctName];
+    var usedTypes = {};
+    usedTypes[correctType] = true;
 
-    // Add other progression names as distractors
-    for (var i = 0; i < types.length; i++) {
-      var n = PROGRESSIONS[types[i]].name;
-      if (n !== correctName && all.length < 4) {
-        all.push(n);
+    // First, pull other distinct progression names from the round pool
+    for (var i = 0; i < roundPool.length && all.length < 4; i++) {
+      if (!usedTypes[roundPool[i].type]) {
+        all.push(roundPool[i].name);
+        usedTypes[roundPool[i].type] = true;
       }
     }
 
-    // If we still need more (easy has only 2), pad from full set
-    var allTypes = Object.keys(PROGRESSIONS);
-    var padIdx = 0;
-    while (all.length < 4 && padIdx < allTypes.length) {
-      var pn = PROGRESSIONS[allTypes[padIdx]].name;
-      if (all.indexOf(pn) === -1) all.push(pn);
-      padIdx++;
+    // If we still need more distractors (very unlikely), generate some
+    if (all.length < 4) {
+      var allowed = TIER_CHORDS[diff] || TIER_CHORDS.easy;
+      var extraAttempts = 0;
+      while (all.length < 4 && extraAttempts < 30) {
+        extraAttempts++;
+        var deg = generateOneProgression(allowed);
+        var dk = progressionKey(deg);
+        if (!usedTypes[dk]) {
+          usedTypes[dk] = true;
+          all.push(progressionDisplayName(deg));
+        }
+      }
     }
 
     // Shuffle
@@ -799,6 +990,10 @@
     state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
     state.startedAt = Date.now();
     state.playingAudio = false;
+
+    // Generate a fresh pool of unique progressions for this round
+    roundPool = generateProgressionPool(state.settings.difficulty, 18);
+    roundPoolIdx = 0;
 
     document.querySelectorAll('.of').forEach(function (el) { el.textContent = ' / ' + state.total; });
     showScreen('play');
