@@ -965,6 +965,44 @@
   const FLAT_LETTERS   = ['D','E','G','A','B'];
   const ALL_LETTERS    = ['A','B','C','D','E','F','G'];
 
+  // \u2500\u2500 Note pools per clef/difficulty for staff variety \u2500\u2500
+  // Each entry is { letter, octave }. Ranges mirror note-names.html so notes
+  // appear across the full staff (lines, spaces, ledger lines) instead of
+  // sitting in a single octave band. The pool is filtered at question time
+  // to match the accidental type (sharp-safe vs flat-safe letters).
+  const STAFF_NOTES = {
+    treble: {
+      easy:   [{l:'E',o:4},{l:'F',o:4},{l:'G',o:4},{l:'A',o:4},{l:'B',o:4},
+               {l:'C',o:5},{l:'D',o:5},{l:'E',o:5},{l:'F',o:5}],
+      medium: [{l:'C',o:4},{l:'D',o:4},{l:'E',o:4},{l:'F',o:4},{l:'G',o:4},{l:'A',o:4},{l:'B',o:4},
+               {l:'C',o:5},{l:'D',o:5},{l:'E',o:5},{l:'F',o:5},{l:'G',o:5},{l:'A',o:5}],
+      tricky: [{l:'A',o:3},{l:'B',o:3},{l:'C',o:4},{l:'D',o:4},{l:'E',o:4},{l:'F',o:4},{l:'G',o:4},{l:'A',o:4},{l:'B',o:4},
+               {l:'C',o:5},{l:'D',o:5},{l:'E',o:5},{l:'F',o:5},{l:'G',o:5},{l:'A',o:5},{l:'B',o:5},{l:'C',o:6}],
+    },
+    bass: {
+      easy:   [{l:'G',o:2},{l:'A',o:2},{l:'B',o:2},{l:'C',o:3},{l:'D',o:3},
+               {l:'E',o:3},{l:'F',o:3},{l:'G',o:3},{l:'A',o:3}],
+      medium: [{l:'E',o:2},{l:'F',o:2},{l:'G',o:2},{l:'A',o:2},{l:'B',o:2},
+               {l:'C',o:3},{l:'D',o:3},{l:'E',o:3},{l:'F',o:3},{l:'G',o:3},{l:'A',o:3},{l:'B',o:3},{l:'C',o:4}],
+      tricky: [{l:'C',o:2},{l:'D',o:2},{l:'E',o:2},{l:'F',o:2},{l:'G',o:2},{l:'A',o:2},{l:'B',o:2},
+               {l:'C',o:3},{l:'D',o:3},{l:'E',o:3},{l:'F',o:3},{l:'G',o:3},{l:'A',o:3},{l:'B',o:3},{l:'C',o:4}],
+    },
+  };
+
+  // Return a filtered subset of the staff-note pool whose letters are
+  // compatible with the given accidental key (sharp/flat/natural/dsharp/dflat).
+  function staffPoolFor(clef, diff, accKey) {
+    var pool = STAFF_NOTES[clef][diff];
+    if (accKey === 'sharp' || accKey === 'dsharp') {
+      return pool.filter(function(n){ return SHARP_LETTERS.indexOf(n.l) >= 0; });
+    }
+    if (accKey === 'flat' || accKey === 'dflat') {
+      return pool.filter(function(n){ return FLAT_LETTERS.indexOf(n.l) >= 0; });
+    }
+    // natural \u2014 any letter is fine
+    return pool;
+  }
+
   function whichAccidentals(diff) {
     if (diff === 'easy')   return ['sharp','flat','natural'];
     if (diff === 'medium') return ['sharp','flat','natural','dsharp','dflat'];
@@ -997,13 +1035,13 @@
     var weights = typeWeights(diff);
     var type = pickWeighted(weights);
     var clef = clefFor(diff);
-    var octave = clef === 'treble' ? 4 : 3;
 
     if (type === 'effect') {
       var accKey = rand(whichAccidentals(diff));
-      var letter = accKey === 'sharp' || accKey === 'dsharp' ? rand(SHARP_LETTERS)
-                 : accKey === 'flat'  || accKey === 'dflat'  ? rand(FLAT_LETTERS)
-                 : rand(ALL_LETTERS);
+      var candidates = staffPoolFor(clef, diff, accKey);
+      var note = rand(candidates);
+      var letter = note.l;
+      var octave = note.o;
       var symFor = { sharp:'#', flat:'b', natural:'n', dsharp:'x', dflat:'bb' }[accKey];
       var correct = EFFECT_OF[accKey];
       var distractors = [OPP_EFFECT[accKey]];
@@ -1021,7 +1059,10 @@
 
     if (type === 'name') {
       var sharpKey = Math.random() < 0.5;
-      var ltr = sharpKey ? rand(SHARP_LETTERS) : rand(FLAT_LETTERS);
+      var namePool = staffPoolFor(clef, diff, sharpKey ? 'sharp' : 'flat');
+      var picked = rand(namePool);
+      var ltr = picked.l;
+      var octave = picked.o;
       var accSym = sharpKey ? '\u266F' : '\u266D';
       var accChar = sharpKey ? '#' : 'b';
       var correctName = ltr + accSym;
