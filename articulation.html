@@ -820,12 +820,22 @@
                '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + headRX + '" ry="' + headRY + '" transform="rotate(' + tilt + ' ' + cx + ' ' + cy + ')" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8"/>';
     var art = '';
     if (opts.articulation) {
-      // Most marks go below the notehead (since stem is up). Fermata and
-      // breath mark go above.
-      var above = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var ay = above ? (cy - 38) : (cy + 44);
+      var MARK = {
+        staccato:      { fs: 44, below: headRY + gap * 0.6,  above: headRY + gap * 0.6,  sw: 0 },
+        staccatissimo: { fs: 48, below: headRY + gap * 0.6,  above: headRY + gap * 0.6,  sw: 0.5 },
+        tenuto:        { fs: 48, below: headRY + gap * 0.5,  above: headRY + gap * 0.5,  sw: 0.8 },
+        accent:        { fs: 48, below: headRY + gap * 0.7,  above: headRY + gap * 0.7,  sw: 0.5 },
+        marcato:       { fs: 46, below: headRY + gap * 0.8,  above: headRY + gap * 0.8,  sw: 0.5 },
+        fermata:       { fs: 50, below: headRY + gap * 1.2,  above: headRY + gap * 1.5,  sw: 0 },
+        breath:        { fs: 44, below: headRY + gap * 1.0,  above: headRY + gap * 1.5,  sw: 0 },
+        caesura:       { fs: 44, below: headRY + gap * 1.0,  above: headRY + gap * 1.5,  sw: 0 },
+      };
+      var isAbove = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
+      var m = MARK[opts.articulation] || { fs: 48, below: headRY + gap, above: headRY + gap, sw: 0.5 };
+      var ay = isAbove ? (cy - m.above) : (cy + m.below);
       var g = GLYPH[opts.articulation] || '';
-      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="56" text-anchor="middle" fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1">' + g + '</text>';
+      var strokeAttr = m.sw > 0 ? ' stroke="#2A2A3E" stroke-width="' + m.sw + '"' : '';
+      art = '<text x="' + cx + '" y="' + ay + '" font-family="Bravura Text" font-size="' + m.fs + '" text-anchor="middle" fill="#2A2A3E"' + strokeAttr + '>' + g + '</text>';
     }
     return '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="max-width:340px;max-height:160px;width:100%;">' +
              lines + note + art +
