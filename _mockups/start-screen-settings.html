@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Start Screen Settings — Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #2A2A3E;
+    --ink-soft: #6B6B80;
+    --ink-faint: #B0B0C0;
+    --cream: #FFF8F0;
+    --teal: #1FB8A8;
+    --teal-dk: #0F8A7E;
+    --sun: #FFB627;
+    --sun-dk: #E09800;
+    --grape: #5B3FE4;
+    --shadow-cool: #E8E8F0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--grape);
+    border-bottom: 2px solid var(--grape);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+
+  .section { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── Current layout (for comparison) ── */
+
+  .current-timer-toggle {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #fff;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 999px;
+    padding: 12px 22px;
+    font-family: inherit; font-weight: 700; font-size: 16px;
+    color: var(--ink);
+    cursor: pointer;
+    margin: 0 auto;
+  }
+  .current-hints-toggle {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--teal);
+    border: 1.5px solid var(--teal);
+    border-radius: 999px;
+    padding: 12px 22px;
+    font-family: inherit; font-weight: 700; font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+  }
+  .current-state {
+    font-size: 13px; font-weight: 700;
+    background: rgba(0,0,0,0.08);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .current-hints-toggle .current-state {
+    background: rgba(255,255,255,0.25);
+  }
+  .current-muted {
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px; font-weight: 700; color: var(--ink-soft);
+    cursor: pointer; user-select: none;
+  }
+  .current-muted input { width: 20px; height: 20px; accent-color: var(--teal); }
+
+  /* ── Proposed: grouped settings card ── */
+
+  .settings-card {
+    background: #fff;
+    border: 1.5px solid var(--shadow-cool);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: background 100ms;
+    user-select: none;
+  }
+  .setting-row:hover { background: rgba(31, 184, 168, 0.03); }
+  .setting-row + .setting-row { border-top: 1px solid var(--shadow-cool); }
+
+  .setting-left {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 16px; color: var(--ink);
+  }
+  .setting-icon { font-size: 18px; width: 24px; text-align: center; }
+
+  /* iOS-style toggle track */
+  .toggle-track {
+    width: 48px; height: 28px;
+    background: var(--ink-faint);
+    border-radius: 999px;
+    position: relative;
+    transition: background 200ms;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--teal); }
+  .toggle-knob {
+    width: 22px; height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 3px;
+    transition: left 200ms;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle-track.on .toggle-knob { left: 23px; }
+
+  /* Pill-style alternative */
+  .pill-state {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.02em;
+    border-radius: 999px;
+    padding: 4px 12px;
+    background: rgba(0,0,0,0.06);
+    color: var(--ink-soft);
+    transition: background 200ms, color 200ms;
+  }
+  .pill-state.on {
+    background: rgba(31, 184, 168, 0.15);
+    color: var(--teal-dk);
+  }
+
+  /* ── Shared CTA ── */
+
+  .cta {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700; font-size: 22px;
+    color: var(--ink);
+    background: var(--sun);
+    border: none;
+    border-radius: 18px;
+    padding: 18px 32px;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 4px 0 var(--sun-dk);
+  }
+
+  .divider {
+    height: 2px;
+    background: var(--shadow-cool);
+    margin: 10px 0;
+  }
+
+  .label {
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  /* ── Option B: same-line pills ── */
+
+  .pills-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .pill-toggle {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--ink-faint);
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-family: inherit; font-weight: 700; font-size: 15px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 140ms, background 140ms;
+    flex: 1;
+    justify-content: center;
+  }
+  .pill-toggle.on {
+    border-color: var(--teal);
+    background: rgba(31, 184, 168, 0.06);
+  }
+  .pill-toggle .pill-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+    transition: background 200ms;
+  }
+  .pill-toggle.on .pill-dot { background: var(--teal); }
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════ -->
+<div>
+  <h2>A. Current layout</h2>
+  <div class="section">
+    <div style="text-align:center;">
+      <button class="current-timer-toggle">
+        <span>&#9201;</span> Add a timer <span class="current-state">off</span>
+      </button>
+    </div>
+    <div>
+      <button class="current-hints-toggle">
+        <span>&#128161;</span> Teaching hints <span class="current-state">on</span>
+      </button>
+    </div>
+    <label class="current-muted">
+      <input type="checkbox" /> &#128263; Start muted
+    </label>
+    <button class="cta">Start Game &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<div>
+  <h2>B. Grouped card + iOS toggles</h2>
+  <div class="section">
+    <div class="settings-card">
+      <div class="setting-row" onclick="this.querySelector('.toggle-track').classList.toggle('on')">
+        <div class="setting-left">
+          <span class="setting-icon">&#9201;</span> Timer
+        </div>
+        <div class="toggle-track">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="setting-row" onclick="this.querySelector('.toggle-track').classList.toggle('on')">
+        <div class="setting-left">
+          <span class="setting-icon">&#128161;</span> Teaching hints
+        </div>
+        <div class="toggle-track on">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="setting-row" onclick="this.querySelector('.toggle-track').classList.toggle('on')">
+        <div class="setting-left">
+          <span class="setting-icon">&#128263;</span> Sound
+        </div>
+        <div class="toggle-track on">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+    <button class="cta">Start Game &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<div>
+  <h2>C. Grouped card + pill states</h2>
+  <div class="section">
+    <div class="settings-card">
+      <div class="setting-row" onclick="var p=this.querySelector('.pill-state'); p.classList.toggle('on'); p.textContent=p.classList.contains('on')?'on':'off';">
+        <div class="setting-left">
+          <span class="setting-icon">&#9201;</span> Timer
+        </div>
+        <span class="pill-state">off</span>
+      </div>
+      <div class="setting-row" onclick="var p=this.querySelector('.pill-state'); p.classList.toggle('on'); p.textContent=p.classList.contains('on')?'on':'off';">
+        <div class="setting-left">
+          <span class="setting-icon">&#128161;</span> Teaching hints
+        </div>
+        <span class="pill-state on">on</span>
+      </div>
+      <div class="setting-row" onclick="var p=this.querySelector('.pill-state'); p.classList.toggle('on'); p.textContent=p.classList.contains('on')?'on':'off';">
+        <div class="setting-left">
+          <span class="setting-icon">&#128263;</span> Sound
+        </div>
+        <span class="pill-state on">on</span>
+      </div>
+    </div>
+    <button class="cta">Start Game &rarr;</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════ -->
+<div>
+  <h2>D. Same-line pills (no card)</h2>
+  <div class="section">
+    <div class="pills-row">
+      <button class="pill-toggle" onclick="this.classList.toggle('on')">
+        <span class="pill-dot"></span> &#9201; Timer
+      </button>
+      <button class="pill-toggle on" onclick="this.classList.toggle('on')">
+        <span class="pill-dot"></span> &#128161; Hints
+      </button>
+      <button class="pill-toggle on" onclick="this.classList.toggle('on')">
+        <span class="pill-dot"></span> &#128263; Sound
+      </button>
+    </div>
+    <button class="cta">Start Game &rarr;</button>
+  </div>
+</div>
+
+<div style="height: 40px;"></div>
+
+</body>
+</html>
