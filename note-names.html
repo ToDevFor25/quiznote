@@ -459,32 +459,33 @@
       </div>
     </div>
 
-    <div class="q-block" id="timer-block">
-      <button class="timer-toggle" id="timer-toggle" type="button" aria-pressed="false">
-        <span class="t-icon">⏱</span>
-        <span class="t-label">Add a timer</span>
-        <span class="t-state" id="timer-toggle-state">off</span>
-      </button>
+    <div class="settings-card" id="settings-card">
+      <div class="setting-row" id="timer-row">
+        <div class="setting-left">
+          <span class="setting-icon">⏱</span> Timer
+        </div>
+        <span class="pill-state" id="timer-pill-state">off</span>
+      </div>
       <div class="timer-pills" id="timer-pills" hidden>
         <button class="tpill" data-secs="30">30s</button>
         <button class="tpill" data-secs="45">45s</button>
         <button class="tpill on" data-secs="60">60s</button>
       </div>
-    </div>
-
-    <div class="q-block" id="hints-block">
-      <button class="timer-toggle" id="hints-toggle" type="button" aria-pressed="true">
-        <span class="t-icon">💡</span>
-        <span class="t-label">Teaching hints</span>
-        <span class="t-state" id="hints-toggle-state">on</span>
-      </button>
+      <div class="setting-row" id="hints-row">
+        <div class="setting-left">
+          <span class="setting-icon">💡</span> Teaching hints
+        </div>
+        <span class="pill-state on" id="hints-pill-state">on</span>
+      </div>
+      <div class="setting-row" id="sound-row">
+        <div class="setting-left">
+          <span class="setting-icon">🔊</span> Sound
+        </div>
+        <span class="pill-state on" id="sound-pill-state">on</span>
+      </div>
     </div>
 
     <div class="start-cta">
-      <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 0 6px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;">
-        <input type="checkbox" id="start-muted-toggle" style="width:20px;height:20px;accent-color:var(--teal);" />
-        🔇 Start muted
-      </label>
       <button class="btn sun huge" id="start-btn">Start Game →</button>
     </div>
   </div>
@@ -1050,9 +1051,10 @@
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
-     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
-     'summary-speed','mute-btn','start-muted-toggle',
-     'hints-toggle','hints-toggle-state','hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => { els[id] = $(id); });
+     'timer-row','timer-pill-state','timer-pills','timer-badge','timer-num',
+     'summary-speed','mute-btn',
+     'hints-row','hints-pill-state','sound-row','sound-pill-state',
+     'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => { els[id] = $(id); });
   }
 
   function showScreen(name) {
@@ -1066,12 +1068,12 @@
   }
 
   function syncMuteUI(muted) {
-    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
     if (els['mute-btn']) {
       els['mute-btn'].textContent = muted ? '🔇' : '🔊';
       els['mute-btn'].classList.toggle('muted', muted);
       els['mute-btn'].setAttribute('aria-pressed', String(muted));
     }
+    if (els['sound-pill-state']) syncPill(els['sound-pill-state'], !muted);
   }
 
   function saveMutedPreference(muted) {
@@ -1119,15 +1121,22 @@
     }
   }
 
+  function syncPill(el, on) {
+    el.classList.toggle('on', on);
+    el.textContent = on ? 'on' : 'off';
+  }
+
   function setupStart() {
+    // Load saved preferences
     const savedMuted = localStorage.getItem('pq_muted') === 'true';
     saveMutedPreference(savedMuted);
-    if (els['start-muted-toggle']) {
-      els['start-muted-toggle'].addEventListener('change', () => {
-        saveMutedPreference(els['start-muted-toggle'].checked);
-      });
-    }
+    syncPill(els['sound-pill-state'], !savedMuted);
 
+    var savedHints = localStorage.getItem('note-names_hints');
+    if (savedHints === 'false') state.settings.hints = false;
+    syncPill(els['hints-pill-state'], state.settings.hints);
+
+    // Primary tile selectors
     els['clef-tiles'].addEventListener('click', e => {
       const t = e.target.closest('.tile'); if (!t) return;
       A.ensureCtx();
@@ -1157,21 +1166,26 @@
       t.classList.add('on'); state.settings.total = parseInt(t.dataset.len, 10);
     });
 
+    // Start button
     els['start-btn'].addEventListener('click', () => {
-      const muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
-      saveMutedPreference(muted);
-      if (!muted) { try { A.ensureCtx(); } catch(e) {} }
+      if (!A.isMuted()) { try { A.ensureCtx(); } catch(e) {} }
       if (state.settings.timer.enabled) showStartTimerModal();
       else startRound();
     });
 
-    els['timer-toggle'].addEventListener('click', () => {
+    // Settings card — Timer row
+    els['timer-row'].addEventListener('click', () => {
       A.ensureCtx();
-      const enabled = !state.settings.timer.enabled;
+      var enabled = !state.settings.timer.enabled;
       state.settings.timer.enabled = enabled;
-      els['timer-toggle'].classList.toggle('on', enabled);
-      els['timer-toggle'].setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      els['timer-toggle-state'].textContent = enabled ? state.settings.timer.seconds + 's' : 'off';
+      var pill = els['timer-pill-state'];
+      if (enabled) {
+        pill.classList.add('on');
+        pill.textContent = state.settings.timer.seconds + 's';
+      } else {
+        pill.classList.remove('on');
+        pill.textContent = 'off';
+      }
       els['timer-pills'].hidden = !enabled;
     });
 
@@ -1179,28 +1193,24 @@
       const t = e.target.closest('.tpill'); if (!t) return;
       A.ensureCtx();
       [...els['timer-pills'].children].forEach(c => c.classList.remove('on'));
-      t.classList.add('on'); state.settings.timer.seconds = parseInt(t.dataset.secs, 10);
-      if (state.settings.timer.enabled) els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
+      t.classList.add('on');
+      state.settings.timer.seconds = parseInt(t.dataset.secs, 10);
+      els['timer-pill-state'].textContent = state.settings.timer.seconds + 's';
     });
 
-    // Teaching hints toggle
-    var savedHints = localStorage.getItem('note-names_hints');
-    if (savedHints === 'false') {
-      state.settings.hints = false;
-      els['hints-toggle'].classList.remove('on');
-      els['hints-toggle'].setAttribute('aria-pressed', 'false');
-      els['hints-toggle-state'].textContent = 'off';
-    } else {
-      els['hints-toggle'].classList.add('on');
-    }
-
-    els['hints-toggle'].addEventListener('click', () => {
+    // Settings card — Hints row
+    els['hints-row'].addEventListener('click', () => {
       var on = !state.settings.hints;
       state.settings.hints = on;
-      els['hints-toggle'].classList.toggle('on', on);
-      els['hints-toggle'].setAttribute('aria-pressed', on ? 'true' : 'false');
-      els['hints-toggle-state'].textContent = on ? 'on' : 'off';
+      syncPill(els['hints-pill-state'], on);
       try { localStorage.setItem('note-names_hints', String(on)); } catch(e) {}
+    });
+
+    // Settings card — Sound row
+    els['sound-row'].addEventListener('click', () => {
+      var nowMuted = !A.isMuted();
+      saveMutedPreference(nowMuted);
+      syncPill(els['sound-pill-state'], !nowMuted);
     });
 
     // Hint card handlers
@@ -1208,9 +1218,7 @@
 
     els['hint-dismiss'].addEventListener('click', () => {
       state.settings.hints = false;
-      els['hints-toggle'].classList.remove('on');
-      els['hints-toggle'].setAttribute('aria-pressed', 'false');
-      els['hints-toggle-state'].textContent = 'off';
+      syncPill(els['hints-pill-state'], false);
       try { localStorage.setItem('note-names_hints', 'false'); } catch(e) {}
       hideHintCard();
     });
