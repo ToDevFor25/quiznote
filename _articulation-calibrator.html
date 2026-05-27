@@ -37,8 +37,8 @@ var DEFAULTS = {
   marcato:       { mw: 5, mh: 8, sw: 2, yOff: 0.8, xOff: 0 },
   staccatissimo: { bw: 2, bh: 7, yOff: 0.6, xOff: 0 },
   fermata:       { fr: 9, yOff: 1.5, xOff: 0 },
-  breath:        { yOff: 1.2, xOff: 0 },
-  caesura:       { yOff: 1.2, ch: 8, xOff: -15 },
+  breath:        { yOff: 1.2, xOff: 0, bh: 8, bw: 3 },
+  caesura:       { yOff: 1.2, ch: 8, xOff: -15, csw: 2.5 },
 };
 
 function drawStaff(w, h, midY) {
@@ -81,11 +81,13 @@ function drawMark(mark, cx, cy, params) {
              '<circle cx="'+cx+'" cy="'+fy+'" r="1.8" fill="'+ink+'"/>';
     case 'breath':
       var by = cy - headRY - params.yOff * gap;
-      return '<path d="M'+(cx-3)+','+(by+6)+' Q'+(cx+1)+','+(by-2)+' '+(cx+5)+','+(by+6)+'" stroke="'+ink+'" stroke-width="1.8" fill="none"/>';
+      var bh = params.bh || 8, bw = params.bw || 3;
+      return '<path d="M'+cx+','+(by+bh)+' Q'+(cx+bw)+','+by+' '+cx+','+(by-1)+'" stroke="'+ink+'" stroke-width="2" fill="none" stroke-linecap="round"/>';
     case 'caesura':
       var csy = cy - headRY - params.yOff * gap;
-      return '<line x1="'+(cx-3)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+1)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="2"/>' +
-             '<line x1="'+(cx+1)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+5)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="2"/>';
+      var csw = params.csw || 2.5;
+      return '<line x1="'+(cx-3)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+1)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="'+csw+'" stroke-linecap="round"/>' +
+             '<line x1="'+(cx+3)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+7)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="'+csw+'" stroke-linecap="round"/>';
   }
   return '';
 }
@@ -106,7 +108,8 @@ function buildUI() {
       var min = key === 'yOff' ? 0 : 0;
       var max = key === 'yOff' ? 3 : (key === 'r' ? 8 : (key === 'fr' ? 16 : 20));
       var step = key === 'yOff' ? 0.1 : (key === 'sw' ? 0.1 : 0.5);
-      if (key === 'xOff') { min = -30; max = 30; step = 1; }
+      if (key === 'xOff') { min = -50; max = 30; step = 1; }
+      if (key === 'yOff') { min = 0; max = 5; step = 0.1; }
       if (key === 'r') { min = 1; max = 6; step = 0.2; }
       if (key === 'tw') { min = 0.5; max = 3; step = 0.1; }
       if (key === 'sw') { min = 0.5; max = 4; step = 0.1; }
