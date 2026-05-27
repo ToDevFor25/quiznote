@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuizNote — Treble Clef Calibrator (dev)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Bravura Text — the SAME font the modules load, so this calibration is exact */
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal; font-weight: 400; font-display: block;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root { --ink:#2A2A3E; --teal:#1FB8A8; --teal-dk:#0e8475; --cream:#FBF7ED; --line:#d8d6cc; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:24px; background:var(--cream); color:var(--ink); font-family:'Nunito',sans-serif; }
+  h1 { font-family:'Fredoka',sans-serif; font-size:1.4rem; margin:0 0 4px; }
+  .sub { color:#8a8472; font-size:14px; margin:0 0 20px; max-width:760px; }
+  .wrap { max-width:1000px; margin:0 auto; }
+  .stage-row { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px; }
+  .stage { background:white; border:2px solid var(--ink); border-radius:16px; padding:16px; flex:1; min-width:320px; }
+  .stage h2 { font-family:'Fredoka',sans-serif; font-size:1rem; margin:0 0 10px; }
+  .stage svg { width:100%; height:auto; display:block; }
+  .controls { background:white; border:2px solid var(--ink); border-radius:16px; padding:18px 20px; margin-bottom:20px; }
+  .ctrl { margin-bottom:18px; }
+  .ctrl:last-child { margin-bottom:0; }
+  .ctrl label { display:flex; justify-content:space-between; font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; margin-bottom:6px; }
+  .ctrl label .val { color:var(--teal-dk); font-variant-numeric:tabular-nums; }
+  .ctrl input[type=range] { width:100%; }
+  .hint { font-size:12px; color:#8a8472; margin-top:4px; }
+  .out { background:var(--ink); color:#dfffe9; border-radius:14px; padding:16px 18px; font-family:'SF Mono',ui-monospace,Menlo,monospace; font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .ref-toggle { font-family:'Fredoka',sans-serif; font-size:13px; cursor:pointer; user-select:none; display:inline-flex; align-items:center; gap:6px; }
+  .copybtn { margin-top:10px; background:var(--teal); color:white; border:2px solid var(--ink); border-radius:999px; font-family:'Fredoka',sans-serif; font-weight:700; padding:8px 16px; cursor:pointer; }
+  .copybtn:active { transform:translateY(1px); }
+  .legend { font-size:12px; color:#8a8472; margin:10px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Treble Clef Calibrator <span style="font-size:13px;color:#8a8472;font-weight:400;">· dev-only · Bravura G-clef</span></h1>
+  <p class="sub">Renders the <strong>real Bravura</strong> treble glyph (<code>\uE050</code>) the way all six staff modules now do. Starts at the current shipped values (offset <code>0.75</code>, size <code>×4</code>). Dial it in, then paste the two values back into every module's <code>buildStaff</code> treble branch (and <code>OFFSET.trebleClef</code> in key-signatures). The dashed teal line is the <strong>G line</strong> (2nd from bottom) — the G-clef's spiral should curl around it.</p>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label for="toff">Treble clef Y offset &nbsp;<span style="font-weight:400;color:#8a8472">(staff-spaces down from the G line)</span> <span class="val" id="toff-val"></span></label>
+      <input type="range" id="toff" min="-1.5" max="3" step="0.025" value="0.75">
+      <div class="hint">Production formula: <code>cy = (bottomY - 1*lineGap) + OFFSET*lineGap</code>. Bravura glyphs render upward from their SVG y-anchor, so a larger offset moves the clef DOWN. Current shipped value: <code>0.75</code>.</div>
+    </div>
+    <div class="ctrl">
+      <label for="tsize">Treble clef font-size &nbsp;<span style="font-weight:400;color:#8a8472">(× lineGap)</span> <span class="val" id="tsize-val"></span></label>
+      <input type="range" id="tsize" min="2" max="7" step="0.1" value="4">
+      <div class="hint">The G-clef should span roughly the whole staff plus a little below. Current shipped value: <code>×4</code>.</div>
+    </div>
+    <label class="ref-toggle"><input type="checkbox" id="showref" checked> Show reference guide (G line, 2nd from bottom)</label>
+  </div>
+
+  <div class="stage-row">
+    <div class="stage">
+      <h2>Treble (calibrate this)</h2>
+      <div id="treble-stage"></div>
+    </div>
+    <div class="stage">
+      <h2>Bass (reference — already calibrated, leave as-is)</h2>
+      <div id="bass-stage"></div>
+    </div>
+  </div>
+
+  <div class="out" id="out"></div>
+  <button class="copybtn" id="copy">Copy the treble values</button>
+  <p class="legend">When the G-clef's spiral wraps the dashed G line and the whole glyph sits centered on the staff like the bass reference, you're done. Locked values get pasted into all six modules' treble branch; key-signatures uses the named <code>OFFSET.trebleClef</code> constant.</p>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// REAL Bravura staff render, copied verbatim from the modules,
+// with the treble offset + font-size turned into live params.
+// Bass branch uses the shipped, calibrated values (read-only here).
+// ──────────────────────────────────────────────────────────────
+const LETTER_STEP = { C:0, D:1, E:2, F:3, G:4, A:5, B:6 };
+function diatonicStep(letter, octave) { return octave * 7 + LETTER_STEP[letter]; }
+
+let TOFF = 0.75, TSIZE = 4;          // live-tunable treble params
+const BASS_OFF = 2.375, BASS_SIZE = 4; // shipped bass values (reference)
+
+function buildStaff(opts) {
+  const { clef, width = 360, lineGap = 16, bottomY, xOffset = 0 } = opts;
+  let svg = '';
+  for (let i = 0; i < 5; i++) {
+    const y = bottomY - i * lineGap;
+    svg += `<line x1="${xOffset + 8}" y1="${y}" x2="${xOffset + width - 8}" y2="${y}" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>`;
+  }
+  if (clef === 'treble') {
+    const cy = (bottomY - 1 * lineGap) + TOFF * lineGap;
+    svg += `<text x="${xOffset + 14}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * TSIZE}" fill="#2A2A3E">\uE050</text>`;
+  } else {
+    const cy = (bottomY - 3 * lineGap) + BASS_OFF * lineGap;
+    svg += `<text x="${xOffset + 14}" y="${cy}" font-family="Bravura Text" font-size="${lineGap * BASS_SIZE}" fill="#2A2A3E">\uE062</text>`;
+  }
+  return svg;
+}
+
+// reference dashed line: treble→G line (i=1), bass→F line (i=3)
+function refLine(clef, width, lineGap, bottomY, xOffset) {
+  const i = clef === 'treble' ? 1 : 3;
+  const y = bottomY - i * lineGap;
+  return `<line x1="${xOffset + 4}" y1="${y}" x2="${xOffset + width - 4}" y2="${y}" stroke="#1FB8A8" stroke-width="2" stroke-dasharray="5 5" opacity="0.9"/>`;
+}
+
+const W = 360, LG = 16, BY = 130, H = 200;
+
+function render() {
+  const showRef = document.getElementById('showref').checked;
+
+  const tref = showRef ? refLine('treble', W, LG, BY, 0) : '';
+  document.getElementById('treble-stage').innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${tref}${buildStaff({clef:'treble', width:W, lineGap:LG, bottomY:BY})}</svg>`;
+
+  const bref = showRef ? refLine('bass', W, LG, BY, 0) : '';
+  document.getElementById('bass-stage').innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${bref}${buildStaff({clef:'bass', width:W, lineGap:LG, bottomY:BY})}</svg>`;
+
+  const offStr = TOFF.toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+  const sizeStr = TSIZE.toFixed(1);
+  const line =
+`// five modules (literal):
+const cy = (bottomY - 1 * lineGap) + ${offStr} * lineGap;
+... font-size="\${lineGap * ${sizeStr}}" ... \\uE050
+
+// key-signatures (named constant):
+trebleClef: ${offStr},   // OFFSET.trebleClef
+clefFontSize uses lineGap * ${sizeStr}`;
+  window._line = `treble offset = ${offStr}, font-size = lineGap * ${sizeStr}`;
+  document.getElementById('out').textContent = line;
+}
+
+function bind(id, fmt, set) {
+  const el = document.getElementById(id), val = document.getElementById(id+'-val');
+  const upd = () => { const v = parseFloat(el.value); set(v); val.textContent = fmt(v); render(); };
+  el.addEventListener('input', upd); upd();
+}
+bind('toff', v=>v.toFixed(3).replace(/0+$/,'').replace(/\.$/,''), v=>TOFF=v);
+bind('tsize', v=>'×'+v.toFixed(1), v=>TSIZE=v);
+document.getElementById('showref').addEventListener('change', render);
+document.getElementById('copy').addEventListener('click', () => {
+  navigator.clipboard.writeText(window._line).then(()=>{
+    const b=document.getElementById('copy'), t=b.textContent;
+    b.textContent='Copied ✓'; setTimeout(()=>b.textContent=t,1200);
+  });
+});
+render();
+</script>
+</body>
+</html>
