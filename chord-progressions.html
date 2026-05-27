@@ -875,7 +875,7 @@
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
-     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
+     'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
      'timer-row','timer-pill-state','hints-row','hints-pill-state','sound-row','sound-pill-state',
      'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(function (id) { els[id] = $(id); });
@@ -892,13 +892,13 @@
   }
 
   function syncMuteUI(muted) {
-    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
     if (els['mute-btn']) {
       els['mute-btn'].textContent = muted ? '🔇' : '🔊';
       els['mute-btn'].classList.toggle('muted', muted);
       els['mute-btn'].setAttribute('aria-pressed', String(muted));
     }
   }
+    if (els['sound-pill-state']) syncPill(els['sound-pill-state'], !muted);
 
   function saveMutedPreference(muted) {
     localStorage.setItem('cp_muted', String(muted));
@@ -959,9 +959,7 @@
     });
 
     els['start-btn'].addEventListener('click', function () {
-      var muted = !!(els['start-muted-toggle'] && els['start-muted-toggle'].checked);
-      saveMutedPreference(muted);
-      if (!muted) { try { A.ensureCtx(); } catch(e) {} }
+      if (!A.isMuted()) { try { A.ensureCtx(); } catch(e) {} }
       if (state.settings.timer.enabled) showStartTimerModal();
       else startRound();
     });
@@ -982,7 +980,7 @@
       var kids = els['timer-pills'].children;
       for (var i = 0; i < kids.length; i++) kids[i].classList.remove('on');
       t.classList.add('on'); state.settings.timer.seconds = parseInt(t.dataset.secs, 10);
-      if (state.settings.timer.enabled) els['timer-toggle-state'].textContent = state.settings.timer.seconds + 's';
+      els['timer-pill-state'].textContent = state.settings.timer.seconds + 's';
     });
   }
 
@@ -1175,6 +1173,39 @@
   }
 
   function hideToast() { els['toast'].classList.remove('show'); }
+
+  function syncPill(el, on) {
+    el.classList.toggle('on', on);
+    el.textContent = on ? 'on' : 'off';
+  }
+
+  function getHint() {
+    if (!state.settings.hints || !HINTS) return null;
+    var keys = Object.keys(HINTS);
+    if (keys.length === 0) return null;
+    var key = keys[Math.floor(Math.random() * keys.length)];
+    var pool = (HINTS[key] || []).filter(function(h) { return !state.shownHints.has(h); });
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
+    state.shownHints.add(hint);
+    return hint;
+  }
+
+  function showHintCard(text) {
+    pauseTimer();
+    els['hint-text'].textContent = text;
+    els['hint-overlay'].hidden = false;
+  }
+
+  function hideHintCard() {
+    els['hint-overlay'].hidden = true;
+    var grid = els['choices-grid'];
+    if (grid) [...grid.children].forEach(function(b) { b.classList.remove('wrong'); });
+    hideToast();
+    state.locked = false;
+    resumeTimer();
+  }
+
 
   function jiggleStreak() {
     var b = els['streak-badge'];

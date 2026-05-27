@@ -1181,7 +1181,7 @@
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
      'save-scores-prompt',
-     'timer-toggle','timer-toggle-state','timer-pills','timer-badge','timer-num',
+     'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
      'timer-row','timer-pill-state','hints-row','hints-pill-state','sound-row','sound-pill-state',
      'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => { els[id] = $(id); });
@@ -1199,13 +1199,13 @@
   }
 
   function syncMuteUI(muted) {
-    if (els['start-muted-toggle']) els['start-muted-toggle'].checked = muted;
     if (els['mute-btn']) {
       els['mute-btn'].textContent = muted ? '🔇' : '🔊';
       els['mute-btn'].classList.toggle('muted', muted);
       els['mute-btn'].setAttribute('aria-pressed', String(muted));
     }
   }
+    if (els['sound-pill-state']) syncPill(els['sound-pill-state'], !muted);
 
   function saveMutedPreference(muted) {
     localStorage.setItem(M.slug + '_muted', String(muted));
