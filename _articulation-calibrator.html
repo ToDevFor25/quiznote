@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Articulation Mark Calibrator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #f5f0e8; padding: 20px; max-width: 900px; margin: 0 auto; }
+h1 { font-size: 20px; margin-bottom: 8px; }
+h3 { font-size: 14px; margin: 20px 0 6px; color: #555; font-weight: 700; }
+.row { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0; }
+.card { background: #fff; border: 3px solid #2a2a3e; border-radius: 16px; padding: 12px; width: 260px; text-align: center; }
+.card-label { font-weight: 700; font-size: 13px; color: #888; margin-bottom: 8px; }
+.controls { display: grid; grid-template-columns: 100px 1fr 40px; gap: 4px 8px; font-size: 12px; align-items: center; margin-top: 10px; }
+.controls label { font-weight: 600; }
+.controls .val { font-family: monospace; text-align: right; }
+.output { background: #1e1e2e; color: #a6e3a1; font-family: monospace; font-size: 11px; padding: 14px; border-radius: 10px; white-space: pre-wrap; margin: 16px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Articulation Mark Calibrator</h1>
+<p style="font-size:13px;color:#666;margin-bottom:16px;">Each mark rendered as SVG on a staff. Adjust per-mark parameters.</p>
+
+<div class="row" id="previews"></div>
+<h3>Output</h3>
+<div class="output" id="output"></div>
+
+<script>
+var MARKS = ['staccato','tenuto','accent','marcato','staccatissimo','fermata','breath','caesura'];
+var gap = 9, headRX = 8.4, headRY = 6;
+
+var DEFAULTS = {
+  staccato:      { r: 2.8, yOff: 0.6 },
+  tenuto:        { tw: 1.6, sw: 2.2, yOff: 0.6 },
+  accent:        { aw: 7, ah: 5, sw: 2, yOff: 0.7 },
+  marcato:       { mw: 5, mh: 8, sw: 2, yOff: 0.8 },
+  staccatissimo: { bw: 2, bh: 7, yOff: 0.6 },
+  fermata:       { fr: 9, yOff: 1.5 },
+  breath:        { yOff: 1.2 },
+  caesura:       { yOff: 1.2, ch: 8 },
+};
+
+function drawStaff(w, h, midY) {
+  var s = '';
+  for (var i = 0; i < 5; i++) {
+    var y = midY - 2*gap + i*gap;
+    s += '<line x1="14" y1="'+y+'" x2="'+(w-14)+'" y2="'+y+'" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>';
+  }
+  return s;
+}
+
+function drawNote(cx, cy) {
+  var tilt = -16, stemX = cx + headRX * 0.78;
+  return '<line x1="'+stemX+'" y1="'+(cy-1)+'" x2="'+stemX+'" y2="'+(cy-32)+'" stroke="#2A2A3E" stroke-width="2.6" stroke-linecap="round"/>' +
+         '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+headRX+'" ry="'+headRY+'" transform="rotate('+tilt+' '+cx+' '+cy+')" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8"/>';
+}
+
+function drawMark(mark, cx, cy, params) {
+  var ink = '#2A2A3E';
+  var d = params.yOff * gap;
+  var my = cy + headRY + d;
+
+  switch (mark) {
+    case 'staccato':
+      return '<circle cx="'+cx+'" cy="'+my+'" r="'+params.r+'" fill="'+ink+'"/>';
+    case 'tenuto':
+      var tw = headRX * params.tw;
+      return '<line x1="'+(cx-tw)+'" y1="'+my+'" x2="'+(cx+tw)+'" y2="'+my+'" stroke="'+ink+'" stroke-width="'+params.sw+'" stroke-linecap="round"/>';
+    case 'accent':
+      return '<path d="M'+(cx-params.aw)+','+(my+params.ah)+' L'+(cx+params.aw)+','+my+' L'+(cx-params.aw)+','+(my-params.ah)+'" stroke="'+ink+'" stroke-width="'+params.sw+'" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    case 'marcato':
+      return '<path d="M'+(cx-params.mw)+','+(my+params.mh)+' L'+cx+','+my+' L'+(cx+params.mw)+','+(my+params.mh)+'" stroke="'+ink+'" stroke-width="'+params.sw+'" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+    case 'staccatissimo':
+      return '<path d="M'+(cx-params.bw)+','+(my+params.bh)+' L'+cx+','+my+' L'+(cx+params.bw)+','+(my+params.bh)+' Z" fill="'+ink+'"/>';
+    case 'fermata':
+      var fy = cy - headRY - params.yOff * gap;
+      return '<path d="M'+(cx-params.fr)+','+fy+' A'+params.fr+','+(params.fr*0.7)+' 0 0,1 '+(cx+params.fr)+','+fy+'" stroke="'+ink+'" stroke-width="2" fill="none"/>' +
+             '<circle cx="'+cx+'" cy="'+fy+'" r="1.8" fill="'+ink+'"/>';
+    case 'breath':
+      var by = cy - headRY - params.yOff * gap;
+      return '<path d="M'+(cx-3)+','+(by+6)+' Q'+(cx+1)+','+(by-2)+' '+(cx+5)+','+(by+6)+'" stroke="'+ink+'" stroke-width="1.8" fill="none"/>';
+    case 'caesura':
+      var csy = cy - headRY - params.yOff * gap;
+      return '<line x1="'+(cx-3)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+1)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="2"/>' +
+             '<line x1="'+(cx+1)+'" y1="'+(csy+params.ch)+'" x2="'+(cx+5)+'" y2="'+csy+'" stroke="'+ink+'" stroke-width="2"/>';
+  }
+  return '';
+}
+
+function buildUI() {
+  var container = document.getElementById('previews');
+  container.innerHTML = '';
+  MARKS.forEach(function(mark) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<div class="card-label">'+mark+'</div><div id="svg-'+mark+'"></div><div class="controls" id="ctrl-'+mark+'"></div>';
+    container.appendChild(card);
+
+    var ctrl = card.querySelector('.controls');
+    var def = DEFAULTS[mark];
+    Object.keys(def).forEach(function(key) {
+      var val = def[key];
+      var min = key === 'yOff' ? 0 : 0;
+      var max = key === 'yOff' ? 3 : (key === 'r' ? 8 : (key === 'fr' ? 16 : 20));
+      var step = key === 'yOff' ? 0.1 : (key === 'sw' ? 0.1 : 0.5);
+      if (key === 'r') { min = 1; max = 6; step = 0.2; }
+      if (key === 'tw') { min = 0.5; max = 3; step = 0.1; }
+      if (key === 'sw') { min = 0.5; max = 4; step = 0.1; }
+      if (key === 'aw' || key === 'mw' || key === 'bw') { min = 2; max = 12; step = 0.5; }
+      if (key === 'ah' || key === 'mh' || key === 'bh' || key === 'ch') { min = 2; max = 16; step = 0.5; }
+      if (key === 'fr') { min = 5; max = 16; step = 0.5; }
+      ctrl.innerHTML += '<label>'+key+'</label><input type="range" data-mark="'+mark+'" data-key="'+key+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"><span class="val" id="v-'+mark+'-'+key+'">'+val+'</span>';
+    });
+  });
+
+  document.querySelectorAll('input[type=range]').forEach(function(inp) {
+    inp.addEventListener('input', function() { render(); });
+  });
+  render();
+}
+
+function getParams() {
+  var params = {};
+  MARKS.forEach(function(mark) {
+    params[mark] = {};
+    var def = DEFAULTS[mark];
+    Object.keys(def).forEach(function(key) {
+      var inp = document.querySelector('[data-mark="'+mark+'"][data-key="'+key+'"]');
+      var val = inp ? parseFloat(inp.value) : def[key];
+      params[mark][key] = val;
+      var span = document.getElementById('v-'+mark+'-'+key);
+      if (span) span.textContent = val;
+    });
+  });
+  return params;
+}
+
+function render() {
+  var params = getParams();
+  var w = 220, h = 160, midY = 80, cx = w/2, cy = midY;
+
+  MARKS.forEach(function(mark) {
+    var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+    svg += drawStaff(w, h, midY);
+    svg += drawNote(cx, cy);
+    svg += drawMark(mark, cx, cy, params[mark]);
+    svg += '</svg>';
+    document.getElementById('svg-'+mark).innerHTML = svg;
+  });
+
+  var out = '';
+  MARKS.forEach(function(mark) {
+    var p = params[mark];
+    out += mark + ': ' + JSON.stringify(p) + '\n';
+  });
+  document.getElementById('output').textContent = out;
+}
+
+document.getElementById('output').addEventListener('click', function() {
+  navigator.clipboard.writeText(this.textContent);
+});
+
+buildUI();
+</script>
+</body>
+</html>
