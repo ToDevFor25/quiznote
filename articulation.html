@@ -821,47 +821,46 @@
     var art = '';
     if (opts.articulation) {
       var ink = '#2A2A3E';
-      var d = gap * 0.6;
-      var isAbove = (opts.articulation === 'fermata' || opts.articulation === 'breath' || opts.articulation === 'caesura');
-      var my = isAbove ? (cy - headRY - d) : (cy + headRY + d);
 
       switch (opts.articulation) {
         case 'staccato':
-          art = '<circle cx="' + cx + '" cy="' + my + '" r="2.8" fill="' + ink + '"/>';
+          var smy = cy + headRY + gap * 0.9;
+          art = '<circle cx="' + cx + '" cy="' + smy + '" r="2.2" fill="' + ink + '"/>';
           break;
         case 'staccatissimo':
-          var sh = 7;
-          var sy = isAbove ? my - sh/2 : my - sh/2;
-          art = '<path d="M' + (cx-2) + ',' + (sy+sh) + ' L' + cx + ',' + sy + ' L' + (cx+2) + ',' + (sy+sh) + ' Z" fill="' + ink + '"/>';
+          var simy = cy + headRY + gap * 0.5;
+          art = '<path d="M' + (cx-2) + ',' + (simy+6) + ' L' + cx + ',' + simy + ' L' + (cx+2) + ',' + (simy+6) + ' Z" fill="' + ink + '"/>';
           break;
         case 'tenuto':
-          var tw = headRX * 1.6;
-          art = '<line x1="' + (cx-tw) + '" y1="' + my + '" x2="' + (cx+tw) + '" y2="' + my + '" stroke="' + ink + '" stroke-width="2.2" stroke-linecap="round"/>';
+          var tmy = cy + headRY + gap * 0.9;
+          var tw = headRX * 0.8;
+          art = '<line x1="' + (cx-tw) + '" y1="' + tmy + '" x2="' + (cx+tw) + '" y2="' + tmy + '" stroke="' + ink + '" stroke-width="2.5" stroke-linecap="round"/>';
           break;
         case 'accent':
-          var aw = 7, ah = 5;
-          var ay = isAbove ? my - ah : my;
-          art = '<path d="M' + (cx-aw) + ',' + (ay+ah) + ' L' + (cx+aw) + ',' + ay + ' L' + (cx-aw) + ',' + (ay-ah+ah) + '" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+          var amy = cy + headRY + gap * 0.9;
+          var acx = cx + 1;
+          art = '<path d="M' + (acx-5) + ',' + (amy+4) + ' L' + (acx+5) + ',' + amy + ' L' + (acx-5) + ',' + (amy-4) + '" stroke="' + ink + '" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
           break;
         case 'marcato':
-          var mw = 5, mh = 8;
-          var mTop = isAbove ? my - mh : my;
-          art = '<path d="M' + (cx-mw) + ',' + (mTop+mh) + ' L' + cx + ',' + mTop + ' L' + (cx+mw) + ',' + (mTop+mh) + '" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+          var mmy = cy + headRY + gap * 0.4;
+          art = '<path d="M' + (cx-4.5) + ',' + (mmy+9) + ' L' + cx + ',' + mmy + ' L' + (cx+4.5) + ',' + (mmy+9) + '" stroke="' + ink + '" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
           break;
         case 'fermata':
-          var fy = cy - headRY - gap * 1.5;
-          var fr = 9;
+          var fy = cy - headRY - gap * 3.9;
+          var fr = 8;
           art = '<path d="M' + (cx-fr) + ',' + fy + ' A' + fr + ',' + (fr*0.7) + ' 0 0,1 ' + (cx+fr) + ',' + fy + '" stroke="' + ink + '" stroke-width="2" fill="none"/>' +
                 '<circle cx="' + cx + '" cy="' + fy + '" r="1.8" fill="' + ink + '"/>';
           break;
         case 'breath':
-          var by = cy - headRY - gap * 1.2;
-          art = '<path d="M' + (cx-3) + ',' + (by+6) + ' Q' + (cx+1) + ',' + (by-2) + ' ' + (cx+5) + ',' + (by+6) + '" stroke="' + ink + '" stroke-width="1.8" fill="none"/>';
+          var bcx = cx - 5;
+          var by = cy - headRY - gap * 3.9;
+          art = '<path d="M' + bcx + ',' + (by+7.5) + ' Q' + (bcx+4) + ',' + by + ' ' + bcx + ',' + (by-1) + '" stroke="' + ink + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
           break;
         case 'caesura':
-          var csy = cy - headRY - gap * 1.2;
-          art = '<line x1="' + (cx-3) + '" y1="' + (csy+8) + '" x2="' + (cx+1) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2"/>' +
-                '<line x1="' + (cx+1) + '" y1="' + (csy+8) + '" x2="' + (cx+5) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2"/>';
+          var ccx = cx - 15;
+          var csy = cy - headRY - gap * 3.9;
+          art = '<line x1="' + (ccx-3) + '" y1="' + (csy+8) + '" x2="' + (ccx+1) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2" stroke-linecap="round"/>' +
+                '<line x1="' + (ccx+3) + '" y1="' + (csy+8) + '" x2="' + (ccx+7) + '" y2="' + csy + '" stroke="' + ink + '" stroke-width="2" stroke-linecap="round"/>';
           break;
       }
     }
