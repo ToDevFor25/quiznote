@@ -1521,16 +1521,22 @@
     nextQuestion();
   }
 
-  function sampleQueue(pool, n) {
-    // Sample without replacement when possible; if n > pool.length, allow repeats but spread out.
-    if (n <= pool.length) {
-      const shuffled = pool.slice().sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, n);
+  function fisherYates(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
     }
-    const out = [];
-    let bag = pool.slice().sort(() => Math.random() - 0.5);
+    return arr;
+  }
+
+  function sampleQueue(pool, n) {
+    if (n <= pool.length) {
+      return fisherYates(pool.slice()).slice(0, n);
+    }
+    var out = [];
+    var bag = fisherYates(pool.slice());
     while (out.length < n) {
-      if (bag.length === 0) bag = pool.slice().sort(() => Math.random() - 0.5);
+      if (bag.length === 0) bag = fisherYates(pool.slice());
       out.push(bag.shift());
     }
     return out;
