@@ -549,16 +549,18 @@
     aug: [0, 4, 8]     // augmented triad (for secondary dominants)
   };
 
-  // --- Key roots (MIDI of root in octave 3, i.e. C3=48..B3=59) ---
-  // We pick from keys that sound good on piano and avoid extreme registers.
+  // --- Key roots (MIDI of tonic) ---
+  // Range Bb3–Eb4 chosen so that with the compact voicing strategy (IV-viio
+  // placed one octave below the tonic), all triads sit within MIDI 46–74
+  // (roughly Bb2–D5) — the piano's warmest register. Keys below Bb3 put
+  // subdominant chords too low; keys above Eb4 push upper degrees too high.
   var KEY_ROOTS = [
-    { name: 'C',  midi: 48 },
-    { name: 'D',  midi: 50 },
-    { name: 'Eb', midi: 51 },
-    { name: 'F',  midi: 53 },
-    { name: 'G',  midi: 55 },
-    { name: 'A',  midi: 57 },
-    { name: 'Bb', midi: 58 }
+    { name: 'Bb', midi: 58 },   // Bb3
+    { name: 'B',  midi: 59 },   // B3
+    { name: 'C',  midi: 60 },   // C4
+    { name: 'Db', midi: 61 },   // Db4
+    { name: 'D',  midi: 62 },   // D4
+    { name: 'Eb', midi: 63 }    // Eb4
   ];
 
   // --- Scale-degree definitions in a major key ---
@@ -579,14 +581,19 @@
   };
 
   // --- Build a MIDI triad for a degree in a given key root ---
+  // Uses compact keyboard voicing: degrees with offset >= 5 (IV, V, vi, viio)
+  // are placed in the octave BELOW the tonic to keep everything within a
+  // ~1-octave range. This matches the original hand-coded voicings
+  // (e.g. in C: I=[60,64,67], IV=[53,57,60], V=[55,59,62]).
   function buildMidiTriad(keyRoot, degreeName) {
     var def = DEGREE_DEFS[degreeName];
     if (!def) return null;
     var root = keyRoot + def.offset;
     var intervals = QUALITY[def.q];
-    // Place triads in the C3-C5 range for a warm, clear sound.
-    // Root position; shift octave so root sits between keyRoot and keyRoot+12.
-    if (root < keyRoot) root += 12;
+    // Compact voicing: degrees 4+ (offset >= 5) go below the tonic
+    if (def.offset >= 5) {
+      root -= 12;
+    }
     return { midi: [root, root + intervals[1], root + intervals[2]] };
   }
 
