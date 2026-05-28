@@ -46,14 +46,16 @@ anything. This is the handshake — it catches stale docs before they cause dama
   `qn-music.js`, `qn-theme.css`, `qn-ui.js`. Flat repo at root — do NOT
   introduce folders, a bundler, or a build step. The flat static structure
   is correct and deliberate.
-- **32 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster
-  shipped (May 2026).** 14 Foundations + 8 Reading + 10 Theory. The 27 → 32
-  expansion was a deliberate Tier 3 scope decision approved in the May 2026
-  curriculum gap analysis (BUILD_LOG.md) and executed in the Phase 5 Tier A
-  cluster: Tempo Markings, Dynamics, Articulation, Score Navigation,
-  Ornaments. See QUIZNOTE_PROJECT_DOC.md §5 for the per-module map and §12
-  for the build history. Further growth beyond 32 is still a deliberate
-  scope decision per §5.
+- **33 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster +
+  Phase 5 Tier B #6 Circle of Fifths shipped (May 2026).** 14 Foundations +
+  9 Reading + 10 Theory. The 27 → 32 expansion was a deliberate Tier 3 scope
+  decision approved in the May 2026 curriculum gap analysis (BUILD_LOG.md)
+  and executed in the Phase 5 Tier A cluster: Tempo Markings, Dynamics,
+  Articulation, Score Navigation, Ornaments. Circle of Fifths (Reading,
+  queue #6) shipped next, taking 32 → 33; it carries its own in-module
+  wheel renderer (no shared-file change). See QUIZNOTE_PROJECT_DOC.md §5 for
+  the per-module map and §12 for the build history. Further growth beyond 33
+  is still a deliberate scope decision per §5.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -449,10 +451,11 @@ cluster shipped" for the full session log.
 
 ### Tier B — Reading expansion. Build after the Tier A cluster ships.
 
-6. **Circle of Fifths** — `/specs/circle-of-fifths-spec.md`. Highest
-   single-module ROI outside the cluster. Re-opens the May 2026 §5 cut.
-   Single new circular SVG renderer (~80 lines, lives in the module file,
-   does not touch `qn-staff.js`).
+6. ~~Circle of Fifths~~ — **shipped May 2026** (`circle-of-fifths.html`).
+   Cloned from tempo-markings; in-module wheel renderer + 5-type engine
+   (position/count/neighbor/relative/enharmonic). Four surfaces wired,
+   flagship play-tile (real 12-key wheel + glowing `?` seat). Re-opened
+   the May 2026 §5 cut. Did not touch `qn-staff.js`.
 7. **Chord Function (Tonic/Predominant/Dominant)** — `/specs/chord-function-spec.md`.
    Cheapest meaningful Theory expansion — clone of Roman Numerals with a
    different categorization axis. Adds a new pedagogical skill at the upper

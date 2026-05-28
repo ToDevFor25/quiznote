@@ -260,7 +260,7 @@ localStorage is the right beta persistence layer, but it has known sharp edges. 
 
 Organized by the three user-facing tiers — **Foundations / Reading / Theory**, framed as Levels 1–6. The names that ship on `play.html` and `index.html` are canonical; the older "Beginner core / Intermediate depth / Stretch" framing is retired.
 
-Roster is **32 modules** — 14 Foundations + 8 Reading + 10 Theory. The 27 → 32 expansion was a deliberate Tier 3 scope decision made in the May 2026 curriculum gap analysis (BUILD_LOG.md) and executed in the May 2026 Phase 5 Tier A session, adding the score-literacy cluster (Tempo Markings, Dynamics, Articulation, Score Navigation, Ornaments). Justification: real coverage gap (every method book teaches these from lesson 1; the 27-roster had zero coverage of tempo/dynamics/articulation/navigation/ornaments), not audience expansion. Growing past 32 pushes toward the advanced-theorist / music-school audience that §2 excludes; resist it without another deliberate scope decision. (Earlier framings of "24 modules" and "27 modules" are superseded.)
+Roster is **33 modules** — 14 Foundations + 9 Reading + 10 Theory. The 27 → 32 expansion was a deliberate Tier 3 scope decision made in the May 2026 curriculum gap analysis (BUILD_LOG.md) and executed in the May 2026 Phase 5 Tier A session, adding the score-literacy cluster (Tempo Markings, Dynamics, Articulation, Score Navigation, Ornaments). **Circle of Fifths (Reading, Phase 5 Tier B #6) then shipped May 2026, taking 32 → 33** — it re-opened the §5 cut documented below and carries its own in-module wheel renderer. Justification for the cluster: real coverage gap (every method book teaches these from lesson 1; the 27-roster had zero coverage of tempo/dynamics/articulation/navigation/ornaments), not audience expansion. Growing past 33 pushes toward the advanced-theorist / music-school audience that §2 excludes; resist it without another deliberate scope decision. (Earlier framings of "24 modules", "27 modules", and "32 modules" are superseded.)
 
 Status legend: **Live** = shipped; **Planned** = on the build queue.
 
@@ -324,7 +324,7 @@ Two topics that **were** folded-in but are now standalone (May 2026 redesign):
 ### Dropped from earlier roster framings (May 2026 redesign)
 
 - **Rhythm Reading** (was Foundations #6 in the 24-roster) — folded into Time Signatures' Tricky tier (compound meter, tuplets, syncopation already there) rather than its own tile.
-- **Circle of Fifths** (was Reading #11 in the 24-roster) — cut from the 27 to keep the roster tight, then **re-queued in May 2026** as Phase 5 Tier B #6 (see CLAUDE.md ranked build queue). The May 2026 curriculum gap analysis judged its absence to read as a coverage hole regardless of equivalent content elsewhere. Spec at `/specs/circle-of-fifths-spec.md`.
+- **Circle of Fifths** (was Reading #11 in the 24-roster) — cut from the 27 to keep the roster tight, re-queued in May 2026 as Phase 5 Tier B #6, then **SHIPPED May 2026** (`circle-of-fifths.html`) as the 33rd module. The curriculum gap analysis judged its absence to read as a coverage hole regardless of equivalent content elsewhere. Lives after Key Signatures in Reading. In-module SVG wheel renderer (12 major + 12 relative-minor wedges) + 5-type engine (position/count/neighbor/relative/enharmonic); no `qn-staff.js` change. Spec at `/specs/circle-of-fifths-spec.md`.
 - **Transposition** (was Reading #13 in the 24-roster) — Stretch, dropped from the 27, **re-queued in May 2026** as Phase 5 Tier B #8. Spec at `/specs/transposition-spec.md`.
 - **Melodic Dictation, Rhythmic Dictation, Score Reading** (was Theory #21–23) — Stretch, dropped from the 27. Voice-input dictation is its own engineering track and out of scope per §2.
 
@@ -542,7 +542,7 @@ Unchanged from v1.
 
 The infrastructure phase is **complete**. The template, the five shared script files (`qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`, `qn-ui.js`) plus `qn-music.js`, the shared CSS (`qn-theme.css`), the profile/account layer, the dashboard, the weak-spot tagging (phase 1) and recommender (phase 2) are all shipped. The work now is **further roster expansion per the Phase 5 ranked queue in CLAUDE.md** plus the parallel Tier-3 monetization/legal track.
 
-Current state: **32 of 32 modules live** — Phases 1–4 (27-module floor) plus Phase 5 Tier A score-literacy cluster (5 modules) shipped (May 2026). Remaining curriculum work is Phase 5 Tier B+ (queued, ranked in CLAUDE.md), plus the parallel Tier-3 monetization/legal track and polish items (see "Parallel tracks" below).
+Current state: **33 modules live** — Phases 1–4 (27-module floor) plus Phase 5 Tier A score-literacy cluster (5 modules) and Phase 5 Tier B #6 Circle of Fifths shipped (May 2026). Remaining curriculum work is Phase 5 Tier B #7 Chord Function and #8 Transposition (queued, ranked in CLAUDE.md), plus the parallel Tier-3 monetization/legal track and polish items (see "Parallel tracks" below).
 
 ### Infrastructure — done (May 2026)
 
@@ -600,7 +600,7 @@ Phases are sequenced; each unblocks the next. Inside a phase, modules can be bui
 
 **Pattern reuse:** Tempo Markings was cloned from `accidentals.html` and established the cluster's "term card" renderer + 3- or 4-type question engine. The other four were Python-script clone-and-swap from Tempo Markings (Ornaments cloned from Articulation since both render noteheads on a staff). Boilerplate (audio engine, QN_FX celebration system, game loop, summary, modal) is byte-identical across the five files. No shared-file changes; each module renders its own inline-SVG staff segments. See BUILD_LOG.md "Phase 5 score-literacy cluster shipped" for the session log.
 
-**Phase 5 Tier B+ — queued, ranked in CLAUDE.md.** Tier B (Circle of Fifths, Chord Function, Transposition), Tier C non-module multipliers (Mock Exam Mode, Curriculum Mapping Overlay — Tier 3 / lawyer-gated for the named-method version), and Tier D defensible-but-lower-ROI (C Clefs — Tier 3 renderer-extension required; Construction-mode engineering session — Tier 3; Build-a-X cluster — depends on construction mode; Non-Chord Tones — borderline audience-cap). Build-readiness summary lives in CLAUDE.md "Ranked build queue".
+**Phase 5 Tier B+ — partially shipped; rest queued, ranked in CLAUDE.md.** Tier B: Circle of Fifths ✓ shipped May 2026 (33rd module); Chord Function and Transposition still queued. Tier C non-module multipliers (Mock Exam Mode, Curriculum Mapping Overlay — Tier 3 / lawyer-gated for the named-method version), and Tier D defensible-but-lower-ROI (C Clefs — Tier 3 renderer-extension required; Construction-mode engineering session — Tier 3; Build-a-X cluster — depends on construction mode; Non-Chord Tones — borderline audience-cap). Build-readiness summary lives in CLAUDE.md "Ranked build queue".
 
 ### Parallel tracks (not blockers)
 
