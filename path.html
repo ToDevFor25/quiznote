@@ -345,6 +345,7 @@
     'score-navigation':{ name: 'Score Navigation', tier: 'foundations', sub: 'repeats and jumps' },
     'ornaments':       { name: 'Ornaments',        tier: 'foundations', sub: 'trills, mordents, turns' },
     'key-signatures':  { name: 'Key Signatures',   tier: 'reading',     sub: 'count the sharps & flats' },
+    'circle-of-fifths':{ name: 'Circle of Fifths',  tier: 'reading',     sub: 'the map of every key' },
     'scales':          { name: 'Scales',           tier: 'reading',     sub: 'major & minor' },
     'chromatic-scale': { name: 'Chromatic Scale',  tier: 'reading',     sub: 'half steps all the way' },
     'scale-degrees':   { name: 'Scale Degrees',    tier: 'reading',     sub: 'every note has a job' },
@@ -366,7 +367,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'circle-of-fifths', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -402,6 +403,7 @@
     'ear-rhythm':      'er_',
     'time-signatures': 'ts_',
     'key-signatures':  'ks_',
+    'circle-of-fifths':'cf_',
     'scales':          'sc_',
     'chromatic-scale': 'ch_',
     'scale-degrees':   'sd_',

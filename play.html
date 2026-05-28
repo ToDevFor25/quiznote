@@ -910,6 +910,49 @@
           </div>
         </a>
 
+        <!-- Circle of Fifths : a 12-spoke wheel, C at the top -->
+        <a class="ltile" href="circle-of-fifths.html">
+          <div class="ltile-art bg-teal">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(80,42)">
+                <circle r="34" fill="none" stroke="#1FB8A8" stroke-width="2.4" opacity="0.9"/>
+                <circle r="15" fill="#d6efeb" stroke="#1FB8A8" stroke-width="1.6"/>
+                <!-- 11 outer dots (light) -->
+                <g fill="#9fd9d0">
+                  <circle cx="17.0"  cy="-29.4" r="3"/>
+                  <circle cx="29.4"  cy="-17.0" r="3"/>
+                  <circle cx="34"    cy="0"     r="3"/>
+                  <circle cx="29.4"  cy="17.0"  r="3"/>
+                  <circle cx="17.0"  cy="29.4"  r="3"/>
+                  <circle cx="0"     cy="34"    r="3"/>
+                  <circle cx="-17.0" cy="29.4"  r="3"/>
+                  <circle cx="-29.4" cy="17.0"  r="3"/>
+                  <circle cx="-34"   cy="0"     r="3"/>
+                  <circle cx="-29.4" cy="-17.0" r="3"/>
+                  <circle cx="-17.0" cy="-29.4" r="3"/>
+                </g>
+                <!-- C dot (highlighted, top) -->
+                <circle cx="0" cy="-34" r="5" fill="#1FB8A8" class="anim-pulse"/>
+                <!-- top three labels -->
+                <g font-family="Fredoka" font-weight="700" font-size="11" fill="#127a6e" text-anchor="middle">
+                  <text x="0"   y="-21">C</text>
+                  <text x="13"  y="-17">G</text>
+                  <text x="-13" y="-17">F</text>
+                </g>
+                <text x="0" y="4" font-family="Fredoka" font-weight="700" font-size="11" fill="#127a6e" text-anchor="middle">5ths</text>
+                <!-- pointer marking the top -->
+                <path d="M 0 -45 L -5 -37 L 5 -37 Z" fill="#5B3FE4"/>
+              </g>
+              <rect x="42" y="86" width="76" height="22" rx="8" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="101" font-family="Fredoka" font-weight="600" font-size="13" fill="white" text-anchor="middle">Find the key</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Circle of Fifths</div>
+            <div class="ltile-blurb">The map of every key.</div>
+          </div>
+        </a>
+
         <!-- Scales : 8 notes climbing diagonally -->
         <a class="ltile" href="scales.html">
           <div class="ltile-art bg-green">
