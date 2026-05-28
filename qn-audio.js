@@ -68,14 +68,18 @@
       masterGain.gain.value = muted ? 0 : MASTER_VOL;
       masterGain.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') {
-      ctx.resume().then(function () {
-        var n = document.getElementById('audio-nudge');
-        if (n) n.classList.remove('show');
-      }).catch(function () {
-        var n = document.getElementById('audio-nudge');
-        if (n) n.classList.add('show');
-      });
+    // 'suspended' (autoplay policy) and 'interrupted' (iOS-only, e.g. a
+    // Bluetooth/AirPods route change or an incoming call) both need a resume.
+    if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+      try {
+        ctx.resume().then(function () {
+          var n = document.getElementById('audio-nudge');
+          if (n) n.classList.remove('show');
+        }).catch(function () {
+          var n = document.getElementById('audio-nudge');
+          if (n) n.classList.add('show');
+        });
+      } catch (e) { /* resume() can throw synchronously on some iOS versions */ }
     }
     return ctx;
   }
@@ -362,37 +366,52 @@
     var duration = opts.duration !== undefined ? opts.duration : 1.2;
     var ac = ensureCtx();
     if (!ac || muted) return;
-    var now = ac.currentTime;
-    var perNoteGain = 0.18 / Math.max(1, midiArray.length / 3);
 
-    midiArray.forEach(function (midi, i) {
-      var f = midiToFreq(midi);
-      var t = now + i * arpeggiate;
+    function schedule() {
+      if (muted) return;
+      var now = ac.currentTime;
+      var perNoteGain = 0.18 / Math.max(1, midiArray.length / 3);
 
-      var osc = ac.createOscillator();
-      osc.type = 'triangle';
-      osc.frequency.value = f;
-      var g = ac.createGain();
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(perNoteGain, t + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-      osc.connect(g);
-      g.connect(masterGain);
-      osc.start(t);
-      osc.stop(t + duration + 0.05);
+      midiArray.forEach(function (midi, i) {
+        var f = midiToFreq(midi);
+        var t = now + i * arpeggiate;
 
-      var click = ac.createOscillator();
-      click.type = 'square';
-      click.frequency.value = f * 2;
-      var cg = ac.createGain();
-      cg.gain.setValueAtTime(0.0001, t);
-      cg.gain.exponentialRampToValueAtTime(0.08, t + 0.004);
-      cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
-      click.connect(cg);
-      cg.connect(masterGain);
-      click.start(t);
-      click.stop(t + 0.05);
-    });
+        var osc = ac.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = f;
+        var g = ac.createGain();
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(perNoteGain, t + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+        osc.connect(g);
+        g.connect(masterGain);
+        // Free the nodes once they finish so the graph doesn't accumulate
+        // across a long session (a known iOS Safari slowdown/hang cause).
+        osc.onended = function () { try { osc.disconnect(); g.disconnect(); } catch (e) {} };
+        osc.start(t);
+        osc.stop(t + duration + 0.05);
+
+        var click = ac.createOscillator();
+        click.type = 'square';
+        click.frequency.value = f * 2;
+        var cg = ac.createGain();
+        cg.gain.setValueAtTime(0.0001, t);
+        cg.gain.exponentialRampToValueAtTime(0.08, t + 0.004);
+        cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+        click.connect(cg);
+        cg.connect(masterGain);
+        click.onended = function () { try { click.disconnect(); cg.disconnect(); } catch (e) {} };
+        click.start(t);
+        click.stop(t + 0.05);
+      });
+    }
+
+    // Only schedule into a RUNNING context. On iOS a suspended/interrupted
+    // context has a frozen currentTime; scheduling a chord's many nodes into
+    // it backs up the audio thread and can hang the page. Resume first, then
+    // schedule with a fresh currentTime.
+    if (ac.state === 'running') schedule();
+    else { try { ac.resume().then(schedule).catch(function () {}); } catch (e) {} }
   }
 
   // ─────────────────────────────────────────────────────────────
