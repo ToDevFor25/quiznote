@@ -2465,13 +2465,15 @@
   }
 
   // ============ Boot ============
-  initStartScreen();
-    applyProfileDefaults();
-  initWiring();
-  // qn-nav.js is deferred, so it may not have executed when this bare
-  // inline IIFE runs. Defer the mount to DOMContentLoaded (fires after
-  // all defer scripts), then guard. Timing-safe regardless of order.
+  // qn-audio.js / qn-profile.js / qn-nav.js are DEFERRED, so NH.audio / QN /
+  // QNNav are not available while this inline IIFE runs. initStartScreen()
+  // touches A (NH.audio) — calling it inline threw and aborted all button
+  // wiring. Defer the entire boot to DOMContentLoaded (fires after the defer
+  // scripts) so init can use them.
   document.addEventListener('DOMContentLoaded', function () {
+    initStartScreen();
+    applyProfileDefaults();
+    initWiring();
     if (window.QNNav) { QNNav.mount({ current: null }); }
   });
 })();
