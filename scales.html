@@ -1834,18 +1834,24 @@
 
   function getHint() {
     if (!state.settings.hints || !HINTS) return null;
-    var keys = Object.keys(HINTS);
-    if (keys.length === 0) return null;
-    var available = [];
-    keys.forEach(function(k) {
-      (HINTS[k] || []).forEach(function(h) { if (!state.shownHints.has(h)) available.push(h); });
-    });
-    if (available.length === 0) {
-      state.shownHints.clear();
-      keys.forEach(function(k) { (HINTS[k] || []).forEach(function(h) { available.push(h); }); });
+    var preferred = (typeof hintKeyFor === 'function') ? hintKeyFor() : null;
+    function gather(keyList) {
+      var out = [];
+      keyList.forEach(function(k) {
+        (HINTS[k] || []).forEach(function(h) { if (!state.shownHints.has(h)) out.push(h); });
+      });
+      return out;
     }
-    if (available.length === 0) return null;
-    var hint = available[Math.floor(Math.random() * available.length)];
+    var allKeys = Object.keys(HINTS);
+    if (allKeys.length === 0) return null;
+    var pool = (preferred && HINTS[preferred]) ? gather([preferred]) : [];
+    if (pool.length === 0) pool = gather(allKeys);
+    if (pool.length === 0) {
+      state.shownHints.clear();
+      pool = (preferred && HINTS[preferred]) ? HINTS[preferred].slice() : gather(allKeys);
+    }
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
     state.shownHints.add(hint);
     return hint;
   }

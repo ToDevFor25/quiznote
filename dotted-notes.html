@@ -1201,11 +1201,25 @@
   const R = M.render;
 
   const HINTS = {
-    general: [
+    dotted: [
       'A dot adds half the note\u2019s own value. Dotted half = 2 + 1 = 3 beats. Dotted quarter = 1 + \u00bd = 1\u00bd beats.',
-      'A tie connects two notes of the same pitch into one longer sound. Add their durations: half + quarter = 3 beats.',
+    ],
+    tied: [
+      'A tie joins two notes of the same pitch into one sound \u2014 add their durations. Half + quarter = 3 beats.',
+    ],
+    plain: [
+      'Count the beats: whole = 4, half = 2, quarter = 1, eighth = \u00bd, sixteenth = \u00bc.',
     ],
   };
+
+  function hintKeyFor() {
+    if (!state.current) return null;
+    var sym = SYMBOLS[state.current.key];
+    if (!sym) return null;
+    if (sym.kind === 'tied') return 'tied';
+    if (sym.dotted) return 'dotted';
+    return 'plain';
+  }
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },
@@ -1470,18 +1484,24 @@
 
   function getHint() {
     if (!state.settings.hints || !HINTS) return null;
-    var keys = Object.keys(HINTS);
-    if (keys.length === 0) return null;
-    var available = [];
-    keys.forEach(function(k) {
-      (HINTS[k] || []).forEach(function(h) { if (!state.shownHints.has(h)) available.push(h); });
-    });
-    if (available.length === 0) {
-      state.shownHints.clear();
-      keys.forEach(function(k) { (HINTS[k] || []).forEach(function(h) { available.push(h); }); });
+    var preferred = (typeof hintKeyFor === 'function') ? hintKeyFor() : null;
+    function gather(keyList) {
+      var out = [];
+      keyList.forEach(function(k) {
+        (HINTS[k] || []).forEach(function(h) { if (!state.shownHints.has(h)) out.push(h); });
+      });
+      return out;
     }
-    if (available.length === 0) return null;
-    var hint = available[Math.floor(Math.random() * available.length)];
+    var allKeys = Object.keys(HINTS);
+    if (allKeys.length === 0) return null;
+    var pool = (preferred && HINTS[preferred]) ? gather([preferred]) : [];
+    if (pool.length === 0) pool = gather(allKeys);
+    if (pool.length === 0) {
+      state.shownHints.clear();
+      pool = (preferred && HINTS[preferred]) ? HINTS[preferred].slice() : gather(allKeys);
+    }
+    if (pool.length === 0) return null;
+    var hint = pool[Math.floor(Math.random() * pool.length)];
     state.shownHints.add(hint);
     return hint;
   }
