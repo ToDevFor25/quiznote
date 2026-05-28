@@ -65,12 +65,8 @@
   .cal-cell.lvl-1 { background: #c8ece7; }
   .cal-cell.lvl-2 { background: #7fd6cb; }
   .cal-cell.lvl-3 { background: var(--teal); }
-  .cal-cell.practiced { background: var(--sun); }
-  .cal-cell.both { background: linear-gradient(135deg, var(--teal) 50%, var(--sun) 50%); }
   .cal-cell.today { outline: 2px solid var(--ink); outline-offset: -1px; border-radius: 5px; }
-  .cal-cell.future { background: transparent; pointer-events: none; }
-  .cal-cell.past { cursor: pointer; }
-  .cal-cell.past:hover { outline: 2px solid var(--ink-faint); outline-offset: -1px; }
+  .cal-cell.future { background: transparent; }
   .cal-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; pointer-events: none; }
   .cal-cell:hover .cal-tip, .cal-cell:active .cal-tip { display: block; }
 
@@ -191,23 +187,6 @@
     .site-header .brand-name { font-size: 22px; }
     .cal-grid { gap: 3px; }
   }
-  /* ── Calendar legend + instrument picker ── */
-  .cal-legend { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
-  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--ink-faint); }
-  .cal-legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
-  .cal-inst-picker {
-    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-    background: white; border: 2px solid var(--ink); border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 8px; z-index: 10;
-    display: flex; flex-direction: column; gap: 4px; min-width: 120px;
-  }
-  .cal-inst-btn {
-    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px;
-    color: var(--ink); background: none; border: none; border-radius: 8px;
-    padding: 8px 12px; cursor: pointer; text-align: left; transition: background 100ms;
-  }
-  .cal-inst-btn:hover { background: var(--cream); }
-  .cal-inst-btn.undo { color: var(--coral); }
 
   /* ── Share button + dropdown ── */
   .share-btn {
@@ -777,7 +756,7 @@
     }
 
     // Streak calendar (last 5 weeks)
-    drawCalendar(streak.dayMap, active);
+    drawCalendar(streak.dayMap);
 
     // Weak spots
     if (weakSpots.length > 0) {
@@ -801,18 +780,8 @@
     drawMastery(mastery);
   }
 
-  function drawCalendar(dayMap, active) {
+  function drawCalendar(dayMap) {
     var grid = document.getElementById('cal-grid');
-    var instruments = (active && active.instruments) || [];
-    var profileId = active ? active.id : null;
-
-    var practiceDays = {};
-    if (profileId && QN.practiceLog) {
-      QN.practiceLog.list(profileId).forEach(function(e) {
-        practiceDays[e.date] = true;
-      });
-    }
-
     var days = ['M','T','W','T','F','S','S'];
     days.forEach(function(d) {
       var lbl = document.createElement('div');
@@ -828,103 +797,33 @@
     startDate.setDate(startDate.getDate() - totalCells + 1 - todayDow + 6);
 
     var tk = todayKey();
-
     for (var i = 0; i < totalCells + todayDow + 1; i++) {
       var d = new Date(startDate);
       d.setDate(d.getDate() + i);
       if (i < (totalCells + todayDow + 1 - 7) && (i % 7) >= 7) continue;
       var dk = dateKey(d.getTime());
-      var qnCount = dayMap[dk] || 0;
-      var hasPractice = !!practiceDays[dk];
+      var count = dayMap[dk] || 0;
       var cell = document.createElement('div');
       cell.className = 'cal-cell';
-      cell.dataset.date = dk;
-
       if (dk === tk) cell.classList.add('today');
-      if (d > today) {
-        cell.classList.add('future');
-      } else {
-        cell.classList.add('past');
-        if (qnCount > 0 && hasPractice) cell.classList.add('both');
-        else if (hasPractice) cell.classList.add('practiced');
-        else if (qnCount >= 6) cell.classList.add('lvl-3');
-        else if (qnCount >= 3) cell.classList.add('lvl-2');
-        else if (qnCount >= 1) cell.classList.add('lvl-1');
-      }
+      if (d > today) { cell.classList.add('future'); }
+      else if (count >= 6) cell.classList.add('lvl-3');
+      else if (count >= 3) cell.classList.add('lvl-2');
+      else if (count >= 1) cell.classList.add('lvl-1');
 
-      var tip = document.createElement('div');
-      tip.className = 'cal-tip';
-      var parts = [];
-      if (qnCount > 0) parts.push(qnCount + ' round' + (qnCount !== 1 ? 's' : ''));
-      if (hasPractice) parts.push('Practiced');
-      if (parts.length > 0) {
+      if (count > 0 && d <= today) {
+        var tip = document.createElement('div');
+        tip.className = 'cal-tip';
         var dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        tip.textContent = parts.join(' + ') + ' · ' + dateStr;
+        tip.textContent = count + ' round' + (count !== 1 ? 's' : '') + ' · ' + dateStr;
         cell.appendChild(tip);
       }
-
-      if (d <= today && instruments.length > 0) {
-        (function(cellEl, dateStr, hasPrac) {
-          cellEl.addEventListener('click', function(e) {
-            e.stopPropagation();
-            document.querySelectorAll('.cal-inst-picker').forEach(function(p) { p.remove(); });
-
-            if (instruments.length <= 1 && !hasPrac) {
-              QN.practiceLog.add(profileId, { date: dateStr, instrument: instruments[0] || null });
-              refreshCalendar(dayMap, active);
-            } else if (hasPrac) {
-              QN.practiceLog.remove(profileId, null, dateStr);
-              refreshCalendar(dayMap, active);
-            } else {
-              var picker = document.createElement('div');
-              picker.className = 'cal-inst-picker';
-              instruments.forEach(function(inst) {
-                var btn = document.createElement('button');
-                btn.className = 'cal-inst-btn';
-                btn.textContent = inst;
-                btn.addEventListener('click', function(ev) {
-                  ev.stopPropagation();
-                  QN.practiceLog.add(profileId, { date: dateStr, instrument: inst });
-                  picker.remove();
-                  refreshCalendar(dayMap, active);
-                });
-                picker.appendChild(btn);
-              });
-              cellEl.appendChild(picker);
-            }
-          });
-        })(cell, dk, hasPractice);
-      }
-
       grid.appendChild(cell);
     }
 
-    // Legend
-    var legend = document.createElement('div');
-    legend.className = 'cal-legend';
-    legend.innerHTML = '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#c8ece7;"></div>QuizNote</div>';
-    if (instruments.length > 0) {
-      legend.innerHTML += '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--sun);"></div>Teacher practice</div>';
-      legend.innerHTML += '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:linear-gradient(135deg,var(--teal) 50%,var(--sun) 50%);"></div>Both</div>';
-    }
-    grid.parentElement.appendChild(legend);
-
     var hint = document.getElementById('cal-hint');
-    var activeDays = new Set(Object.keys(dayMap).concat(Object.keys(practiceDays))).size;
-    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' active';
-
-    // Close picker on outside click
-    document.addEventListener('click', function() {
-      document.querySelectorAll('.cal-inst-picker').forEach(function(p) { p.remove(); });
-    });
-  }
-
-  function refreshCalendar(dayMap, active) {
-    var grid = document.getElementById('cal-grid');
-    grid.innerHTML = '';
-    var legend = grid.parentElement.querySelector('.cal-legend');
-    if (legend) legend.remove();
-    drawCalendar(dayMap, active);
+    var activeDays = Object.keys(dayMap).length;
+    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' practiced';
   }
 
   function drawTrend(weekly) {

@@ -435,7 +435,6 @@
         level:         data.level || null,
         defaultDifficulty: data.defaultDifficulty || 'medium',
         hintsEnabled:  data.hintsEnabled !== false,
-        instruments:   data.instruments || [],
         color:         (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0)
                          ? data.color : 'teal',
         createdAt:     now,
@@ -510,9 +509,6 @@
           }
           if (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0) {
             profiles[i].color = data.color;
-          }
-          if (Array.isArray(data.instruments)) {
-            profiles[i].instruments = data.instruments.slice(0, 10);
           }
           writeStorage(STORAGE_KEYS.PROFILES, profiles);
           return profiles[i];
@@ -1242,43 +1238,12 @@
   // EXPOSE GLOBAL NAMESPACE
   // ─────────────────────────────────────────────────────────────
 
-  // ── Practice log (self-reported teacher lesson tracking) ──
-  var practiceLogAPI = {
-    _key: function(profileId) { return 'qn_practice_' + profileId; },
-    list: function(profileId) {
-      return readStorage(this._key(profileId), []);
-    },
-    add: function(profileId, entry) {
-      if (!profileId) return;
-      var log = this.list(profileId);
-      log.push({
-        id: generateId(),
-        date: entry.date || new Date().toISOString().slice(0, 10),
-        note: (entry.note || '').slice(0, 100),
-        instrument: entry.instrument || null,
-        completedAt: Date.now()
-      });
-      if (log.length > 200) log = log.slice(-200);
-      writeStorage(this._key(profileId), log);
-    },
-    remove: function(profileId, entryId, date) {
-      if (!profileId) return;
-      var log = this.list(profileId).filter(function(e) {
-        if (entryId) return e.id !== entryId;
-        if (date) return e.date !== date;
-        return true;
-      });
-      writeStorage(this._key(profileId), log);
-    }
-  };
-
   window.QN = window.QN || {};
   window.QN.account   = accountAPI;
   window.QN.profile   = profileAPI;
   window.QN.events    = eventsAPI;
   window.QN.ui        = uiAPI;
   window.QN.recommend = recommendAPI;
-  window.QN.practiceLog = practiceLogAPI;
 
   // Lightweight diagnostics surface (v1.5.0). During builds, run
   // QN.diagnostics.corruption() in the console to see if any stored key
