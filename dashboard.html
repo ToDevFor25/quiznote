@@ -261,48 +261,82 @@
 
   /* ── Print stylesheet ── */
   @media print {
-    body { background: white; }
+    @page { size: letter; margin: 0.4in 0.55in; }
+    body { background: white; font-size: 11px; }
     .site-header, footer, .back-link, .share-wrap, .next-card, .upnext-card,
-    .device-note, #weak-card, .picker-overlay,
-    .trend-card, .page-title, .page-sub, .cal-legend,
-    .cal-inst-picker, .cal-tip { display: none !important; }
+    .device-note, .picker-overlay, .trend-card, .page-title, .page-sub,
+    .cal-tip { display: none !important; }
     .print-header, .print-footer { display: flex !important; }
     .wrap { max-width: 100%; padding: 0; }
-    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; padding: 12px; }
-    .hero-stats { gap: 8px; margin-bottom: 12px; }
-    .hero-stat { padding: 10px 8px; }
-    .hero-stat .hero-value { animation: none; opacity: 1; font-size: 1.5rem; }
-    .hero-stat .hero-icon { font-size: 16px; margin-bottom: 2px; }
-    .hero-stat .hero-label { font-size: 9px; }
-    .hero-stat .hero-sub { font-size: 9px; }
-    .streak-card { margin-bottom: 12px; padding: 10px; }
-    .streak-card .section-head { font-size: 0.9rem; margin-bottom: 8px; }
-    .cal-grid { gap: 2px; }
-    .cal-cell { border-radius: 2px; }
-    .m-card.gold-shimmer::after { display: none; }
-    .tier-head { cursor: default; font-size: 0.9rem; margin: 8px 0 6px; padding: 4px 0; border-bottom-width: 1px; }
-    .tier-head.collapsed + .mastery-grid { max-height: none; opacity: 1; }
-    .mastery-grid { max-height: none !important; opacity: 1 !important; gap: 4px; grid-template-columns: repeat(4, 1fr); }
-    .m-card { padding: 5px 6px; border-width: 1px; border-radius: 8px; box-shadow: none; }
-    .m-card-top { margin-bottom: 0; gap: 5px; }
-    .m-ring { width: 18px; height: 18px; }
-    .m-ring svg circle { stroke-width: 3; }
-    .m-name { font-size: 9px; }
-    .m-tier-label { font-size: 8px; }
-    .m-detail { display: none; }
-    .mastery-section .section-head { font-size: 0.9rem; margin-bottom: 4px; }
-    .mastery-section { margin-bottom: 8px; }
+
+    /* Header */
     .print-header {
-      display: flex !important; justify-content: space-between; align-items: flex-start;
-      padding-bottom: 12px; margin-bottom: 14px; border-bottom: 3px solid var(--teal);
+      display: flex !important; justify-content: space-between; align-items: flex-end;
+      padding-bottom: 8px; margin-bottom: 10px; border-bottom: 2.5px solid var(--teal);
     }
-    .print-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 24px; }
-    .print-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 12px; color: var(--ink-soft); text-align: right; }
+    .print-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; }
+    .print-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 11px; color: var(--ink-soft); text-align: right; }
     .print-brand span { color: var(--teal); }
-    .print-meta { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+    .print-meta { font-size: 10px; color: var(--ink-soft); font-weight: 600; }
+
+    /* Hero stats — inline row */
+    .hero-stats { display: flex; gap: 16px; margin-bottom: 10px; }
+    .card { border: none; box-shadow: none; padding: 0; }
+    .hero-stat { display: flex; align-items: center; gap: 6px; padding: 0; text-align: left; }
+    .hero-stat .hero-icon { font-size: 16px; margin-bottom: 0; }
+    .hero-stat .hero-value { animation: none; opacity: 1; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; }
+    .hero-stat .hero-label { font-size: 8px; margin-top: 0; }
+    .hero-stat .hero-sub { display: none; }
+
+    /* Two-column layout */
+    #state-data { display: flex; flex-wrap: wrap; gap: 0 20px; }
+    .print-header { flex-basis: 100%; }
+    .hero-stats { flex-basis: 100%; }
+
+    /* Left column: calendar + mastery */
+    .streak-card { flex: 1; margin-bottom: 10px; padding: 0; border: none; box-shadow: none; }
+    .streak-card .section-head { font-size: 11px; margin-bottom: 6px; }
+    .cal-grid { gap: 2px; max-width: 200px; }
+    .cal-cell { border-radius: 2px; }
+
+    /* Mastery */
+    .mastery-section { flex-basis: 100%; margin-bottom: 0; }
+    .mastery-section > .section-head { display: none; }
+    .m-card.gold-shimmer::after { display: none; }
+    .tier-head { cursor: default; font-size: 11px; font-family: 'Fredoka', sans-serif; margin: 6px 0 4px; padding: 2px 0; border-bottom: 1px solid #eee; }
+    .tier-head .tier-caret { display: none; }
+    .tier-head.collapsed + .mastery-grid { max-height: none; opacity: 1; }
+    .mastery-grid { max-height: none !important; opacity: 1 !important; display: flex; flex-wrap: wrap; gap: 3px; }
+    .m-card { display: inline-flex; align-items: center; gap: 3px; padding: 2px 5px; border: 1px solid #eee; border-radius: 4px; box-shadow: none; background: #faf8f3; }
+    .m-card-top { margin-bottom: 0; gap: 3px; }
+    .m-ring { width: 8px; height: 8px; }
+    .m-ring svg { display: none; }
+    .m-ring { border-radius: 50%; border: 2px solid #ddd; }
+    .m-ring-label { display: none; }
+    .m-card .m-ring.gold { border-color: var(--gold); background: rgba(230,180,34,0.2); }
+    .m-card .m-ring.silver { border-color: var(--silver); background: rgba(168,168,176,0.15); }
+    .m-card .m-ring.bronze { border-color: var(--bronze); background: rgba(205,127,50,0.15); }
+    .m-card .m-ring.started { border-color: var(--teal); }
+    .m-name { font-size: 8px; }
+    .m-tier-label { display: none; }
+    .m-detail { display: none; }
+
+    /* Right column: weak spots */
+    #weak-card { flex: 0 0 200px; margin-bottom: 10px; padding: 0; border: none; box-shadow: none; }
+    #weak-card .section-head { font-size: 11px; margin-bottom: 6px; }
+    .weak-row { padding: 4px 0; margin: 0; border-radius: 0; }
+    .weak-row:hover { background: none; margin: 0; padding: 4px 0; }
+    .weak-name { font-size: 11px; }
+    .weak-meta { font-size: 9px; }
+    .weak-acc { font-size: 13px; }
+    .weak-arrow { display: none; }
+    .weak-note { font-size: 9px; }
+
+    /* Footer */
     .print-footer {
-      display: block !important; text-align: center; font-size: 10px; color: var(--ink-faint);
-      font-weight: 600; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 16px;
+      display: block !important; flex-basis: 100%; text-align: center;
+      font-size: 9px; color: var(--ink-faint); font-weight: 600;
+      border-top: 1px solid #eee; padding-top: 6px; margin-top: 8px;
     }
   }
 
@@ -946,7 +980,7 @@
         var ringLabelText = m.level === 'gold' ? '★' : m.level === 'silver' ? '◐' : m.level === 'bronze' ? '◔' : m.level === 'started' ? '·' : '';
 
         card.innerHTML = '<div class="m-card-top">' +
-          '<div class="m-ring"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="18"/>' +
+          '<div class="m-ring ' + ringClass + '"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="18"/>' +
           '<circle class="ring-fill ' + ringClass + '" cx="22" cy="22" r="18" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + offset + '"/>' +
           '</svg><div class="m-ring-label ' + ringClass + '">' + ringLabelText + '</div></div>' +
           '<div><div class="m-name">' + meta.name + '</div>' +
