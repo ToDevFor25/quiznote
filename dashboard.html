@@ -138,6 +138,16 @@
     animation: goldShimmer 3s ease-in-out infinite;
   }
 
+  /* ── Next step card ── */
+  .next-card { margin-bottom: 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 100ms; }
+  .next-card:hover { transform: translateY(-1px); }
+  .next-card:active { transform: translateY(1px); }
+  .next-icon { font-size: 32px; flex-shrink: 0; }
+  .next-body { flex: 1; }
+  .next-module { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px; }
+  .next-reason { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-top: 2px; }
+  .next-go { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; color: white; background: var(--teal); border: none; border-radius: 10px; padding: 8px 16px; cursor: pointer; flex-shrink: 0; }
+
   /* ── Empty / anonymous states ── */
   .empty-state { text-align: center; padding: 48px 24px; }
   .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
@@ -191,8 +201,19 @@
   </section>
 
   <section id="state-data" hidden>
+    <a href="play.html" class="back-link">← All modules</a>
     <h1 class="page-title">Your progress</h1>
     <p class="page-sub">How <b id="who">you</b> are doing across every module.</p>
+
+    <!-- Next step recommendation -->
+    <div class="card next-card" id="next-card" hidden>
+      <div class="next-icon" id="next-icon">🎯</div>
+      <div class="next-body">
+        <div class="next-module" id="next-module"></div>
+        <div class="next-reason" id="next-reason"></div>
+      </div>
+      <button class="next-go" id="next-go">Practice →</button>
+    </div>
 
     <!-- Hero stats -->
     <div class="hero-stats">
@@ -488,6 +509,27 @@
     playChime(523, 0.1);
     playChime(659, 0.3);
     playChime(784, 0.5);
+
+    // Next step recommendation
+    if (QN.recommend && QN.recommend.next) {
+      try {
+        var rec = QN.recommend.next(active.id);
+        if (rec && rec.module) {
+          var recMeta = metaFor(rec.module);
+          var icons = { 'cold-start': '🌱', progress: '🎯', remediation: '📌', review: '🔄' };
+          document.getElementById('next-icon').textContent = icons[rec.kind] || '🎯';
+          document.getElementById('next-module').textContent = recMeta.name + ' · ' + (rec.tier || 'Easy').charAt(0).toUpperCase() + (rec.tier || 'easy').slice(1);
+          document.getElementById('next-reason').textContent = rec.reason || 'Recommended for you';
+          document.getElementById('next-go').addEventListener('click', function() {
+            window.location.href = rec.module + '.html';
+          });
+          document.getElementById('next-card').addEventListener('click', function(e) {
+            if (e.target.id !== 'next-go') window.location.href = rec.module + '.html';
+          });
+          show('next-card');
+        }
+      } catch(e) {}
+    }
 
     // Streak calendar (last 5 weeks)
     drawCalendar(streak.dayMap);
