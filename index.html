@@ -1263,6 +1263,45 @@
     box-shadow: 0 5px 0 var(--teal-dk);
     transform: scale(1.03);
   }
+  .demo-choice.wrong {
+    background: var(--coral);
+    color: white;
+    border-color: var(--coral-dk);
+    box-shadow: 0 5px 0 var(--coral-dk);
+  }
+  /* Scripted teaching-hint card (scoped to the demo card, non-interactive) */
+  .demo-hint {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(42,42,62,0.30);
+    opacity: 0; pointer-events: none;
+    transition: opacity 260ms ease;
+    z-index: 6;
+  }
+  .demo-hint.show { opacity: 1; }
+  .demo-hint-card {
+    background: #fffdf5;
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 0 6px 0 var(--ink);
+    padding: 18px 20px;
+    max-width: 440px;
+    transform: translateY(14px) scale(0.95);
+    transition: transform 300ms cubic-bezier(.4, 1.5, .5, 1);
+  }
+  .demo-hint.show .demo-hint-card { transform: translateY(0) scale(1); }
+  .demo-hint-head {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 15px; color: var(--sun-dk); margin-bottom: 8px;
+  }
+  .demo-hint-body { font-size: 16px; line-height: 1.5; color: var(--ink); }
+  @media (max-width: 760px) {
+    .demo-hint { padding: 16px; }
+    .demo-hint-card { padding: 15px 16px; }
+    .demo-hint-body { font-size: 14px; }
+  }
   .demo-foot {
     display: flex; align-items: center; justify-content: space-between;
     gap: 12px;
@@ -1683,15 +1722,22 @@
     </div>
 
     <div class="demo-choices" id="demo-choices">
+      <button class="demo-choice" type="button">C Major</button>
+      <button class="demo-choice" type="button">F Major</button>
+      <button class="demo-choice" type="button">A Minor</button>
       <button class="demo-choice" type="button">G Major</button>
-      <button class="demo-choice" type="button">D Major</button>
-      <button class="demo-choice" type="button">E Minor</button>
-      <button class="demo-choice" type="button">G Minor</button>
     </div>
 
     <div class="demo-foot">
       <div class="demo-status" id="demo-status">Watching the climb…</div>
       <button class="demo-sound" id="demo-sound" type="button" onclick="event.preventDefault(); event.stopPropagation();">🔊 Sound</button>
+    </div>
+
+    <div class="demo-hint" id="demo-hint" aria-hidden="true">
+      <div class="demo-hint-card">
+        <div class="demo-hint-head">💡 Teaching hint</div>
+        <div class="demo-hint-body" id="demo-hint-body"></div>
+      </div>
     </div>
   </a>
   <p class="demo-note">*Simulation only. The live module may look and behave a little differently during play.</p>
@@ -2169,7 +2215,12 @@
       { letter:'C', staffY:107.5, idx:7, freq:523.25, color:'#1FB8A8', sharp:false, ledger:false }
     ];
     const CHOICES = ['C Major', 'F Major', 'A Minor', 'G Major'];
-    const CORRECT_IDX = 0;
+    const CORRECT_IDX = 0;          // C Major
+    const WRONG_IDX = 3;            // G Major — the scripted first (wrong) guess
+    // Teaching hint shown after the wrong guess. Accurate to C major and to what
+    // the learner just watched: every note landed on a white key (no sharps/flats),
+    // and the one major scale with no sharps or flats is C major. (G major has F♯.)
+    const HINT_TEXT = 'Every note landed on a white key — no sharps or flats. The major scale with no sharps or flats is C major. (G major would have an F♯.)';
 
     const BLACK_KEYS_DATA = [
       { afterIdx: 0, label: 'C#' },
@@ -2187,6 +2238,8 @@
     const choicesEl   = document.getElementById('demo-choices');
     const soundBtn    = document.getElementById('demo-sound');
     const statusEl    = document.getElementById('demo-status');
+    const hintEl      = document.getElementById('demo-hint');
+    const hintBody    = document.getElementById('demo-hint-body');
 
     let audioOn = false;
     let audioCtx = null;
@@ -2603,16 +2656,26 @@
       const buttons = choicesEl.querySelectorAll('.demo-choice');
       buttons.forEach((b, i) => {
         b.textContent = CHOICES[i];
-        b.classList.remove('correct');
+        b.classList.remove('correct', 'wrong');
       });
       choicesEl.classList.remove('show');
     }
-    function showChoices(){
-      choicesEl.classList.add('show');
-      setTimeout(() => {
-        const buttons = choicesEl.querySelectorAll('.demo-choice');
-        buttons[CORRECT_IDX].classList.add('correct');
-      }, 1100);
+    function showChoices(){ choicesEl.classList.add('show'); }
+
+    // ── Scripted teaching-hint sequence: wrong guess → hint → retry → correct ──
+    function pickWrong(){
+      const buttons = choicesEl.querySelectorAll('.demo-choice');
+      buttons[WRONG_IDX].classList.add('wrong');
+      if (audioOn) playPitch(155.56, 0.35); // soft low "not quite" tone
+    }
+    function clearWrong(){
+      choicesEl.querySelectorAll('.demo-choice').forEach(b => b.classList.remove('wrong'));
+    }
+    function showHint(){ hintBody.textContent = HINT_TEXT; hintEl.classList.add('show'); }
+    function hideHint(){ hintEl.classList.remove('show'); }
+    function pickCorrect(){
+      const buttons = choicesEl.querySelectorAll('.demo-choice');
+      buttons[CORRECT_IDX].classList.add('correct');
     }
 
     function reset(){
@@ -2623,6 +2686,7 @@
       keySigLayer.innerHTML = '';
       whiteKeyEls = []; blackKeyEls = {};
       resetChoices();
+      hideHint();
       stage.classList.remove('staff-ready');
       QN_FX.clearLayer();
     }
@@ -2645,21 +2709,44 @@
         SCALE.forEach((note, i) => setTimeout(() => launchComet(note), i * NOTE_DELAY));
       }, START_NOTES);
       const AFTER_NOTES = START_NOTES + (SCALE.length - 1) * NOTE_DELAY + 700;
+      // Reveal the choices.
       setTimeout(() => {
         statusEl.textContent = 'So… which scale?';
         showChoices();
       }, AFTER_NOTES);
+      // 1) The scripted WRONG guess.
       setTimeout(() => {
-        statusEl.textContent = "That's right — C major.";
+        statusEl.textContent = 'Hmm — let’s check that.';
+        pickWrong();
+      }, AFTER_NOTES + 1500);
+      // 2) A teaching hint explains why, accurate to this C-major scale.
+      setTimeout(() => {
+        statusEl.textContent = 'Here’s a hint 💡';
+        showHint();
+      }, AFTER_NOTES + 2300);
+      // 3) Hide the hint and clear the wrong guess — retry.
+      setTimeout(() => {
+        hideHint();
+        clearWrong();
+        statusEl.textContent = 'Now try again…';
+      }, AFTER_NOTES + 6000);
+      // 4) The correct answer.
+      setTimeout(() => {
+        pickCorrect();
+      }, AFTER_NOTES + 6800);
+      // 5) Fanfare (baked-in celebration engine).
+      setTimeout(() => {
+        statusEl.textContent = 'That’s right — C major!';
         QN_FX.fireBig("That's Right!");
         playFanfareAudio();
-      }, AFTER_NOTES + 1400);
+      }, AFTER_NOTES + 7300);
+      // 6) Loop.
       setTimeout(() => {
         isPlaying = false;
         if (inView){
-          loopTimeout = setTimeout(playOnce, 1500);
+          loopTimeout = setTimeout(playOnce, 1800);
         }
-      }, AFTER_NOTES + 6500);
+      }, AFTER_NOTES + 13000);
     }
 
     soundBtn.addEventListener('click', () => {
