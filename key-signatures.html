@@ -1100,6 +1100,7 @@
   const KEYS = KS.KEYS;
   const TIERS = KS.TIERS;
   const R = KS.render;
+  const M = KS.fx;
 
   function buildChoices(correctId, pool) {
     const correct = KEYS[correctId];
@@ -1647,7 +1648,7 @@
 
   function handleAnswer(pickedKey, buttonEl) {
     if (state.locked) return;
-    var correct = state.current.key;
+    var correct = state.current.keyId;
     var isCorrect = (pickedKey === correct);
 
     if (isCorrect) {
@@ -1689,7 +1690,7 @@
         state.locked = true;
         state.history.push({ key: correct, correct: false, picked: pickedKey });
         var correctBtn = [...els['choices-grid'].children].find(function(b) { return b.dataset.key === correct; });
-        if (correctBtn) correctBtn.classList.add('correct');
+        if (correctBtn) correctBtn.classList.add('reveal-correct');
         renderLastDots();
         updateProgressAndStats();
         setTimeout(function() {

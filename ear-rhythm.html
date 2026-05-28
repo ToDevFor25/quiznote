@@ -1293,7 +1293,7 @@
         state.locked = true;
         state.history.push({ key: correct, correct: false, picked: pickedKey });
         var correctBtn = [...els['choices-grid'].children].find(function(b) { return b.dataset.key === correct; });
-        if (correctBtn) correctBtn.classList.add('correct');
+        if (correctBtn) correctBtn.classList.add('reveal-correct');
         renderLastDots();
         updateProgressAndStats();
         setTimeout(function() {
