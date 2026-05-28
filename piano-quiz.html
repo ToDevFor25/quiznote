@@ -1755,9 +1755,11 @@
       saveMutedPreference(nowMuted);
     });
 
-    // Hint card handlers
-    els['hint-got-it'].addEventListener('click', function() { hideHintCard(); });
-    els['hint-dismiss'].addEventListener('click', function() {
+    // Hint card handlers — piano-quiz uses the guided key-find for hints, so
+    // the modal hint card isn't in the DOM here. Guard so a missing element
+    // can't throw and abort the rest of init (X / mute / timer wiring).
+    if (els['hint-got-it']) els['hint-got-it'].addEventListener('click', function() { hideHintCard(); });
+    if (els['hint-dismiss']) els['hint-dismiss'].addEventListener('click', function() {
       state.settings.hints = false;
       syncPill(els['hints-pill-state'], false);
       try { localStorage.setItem('piano-quiz_hints', 'false'); } catch(e) {}
