@@ -227,6 +227,106 @@ self-reported supplement visible only on the dashboard.
 
 ---
 
+### Dashboard polish + streak visualization + hint bug fixes — May 2026
+
+**Session type:** Iteration. Multiple build-test-refine rounds on the
+dashboard, streak visualization, share outputs, calendar, and the
+teaching hints engine.
+
+**Streak visualization (shipped):** Three switchable styles, student
+picks via 📅 ⭕ 🔥 buttons, stored as `streakStyle` on profile:
+- **Calendar** — binary heat grid (teal = practiced, tan = not),
+  calendar-month view, Sunday-start week, + 3 stat cards
+  (streak/week/month) + week dot row.
+- **Rings** — Apple Watch concentric SVG (daily/weekly/monthly),
+  goal-aware fills, center streak count.
+- **Flames** — stacked tier bars (🔥 streak, 🏆 weekly goal,
+  👑 monthly), gradient fills, best-ever streak.
+
+**Practice goal (shipped):** User-set weekly target (3/5/7 days),
+stored as `practiceGoal` on profile. Set in onboarding (beginner = 3,
+others = 5), adjustable inline on the dashboard via "Goal: X days"
+picker. All streak views fill relative to the goal — "4 of 5" not
+"4 of 7." Industry standard (Duolingo/Peloton/Headspace) — nobody in
+music-theory space does this. Goal lives on the dashboard (where the
+data is), not the profile.
+
+**Calendar iterations (resolved):**
+- 4 weeks → calendar-month view (May 1–31) with proper week alignment.
+- Sunday-start week (S M T W T F S) to match Apple Calendar / US
+  convention. firstDow = getDay() directly.
+- Fixed misalignment: grid wasn't cleared between redraws (style
+  switch duplicated labels). Then tried grid-column-start on day 1 —
+  backfired (CSS auto-flow filled empty columns before it). Final fix:
+  pad cells before day 1 + grid clear on each draw.
+- Binary colors only (practiced vs not). Dropped intensity shades and
+  the future-day light treatment — a day either has practice or it
+  doesn't; today's outline marks the boundary.
+
+**Share system rebuilt (shipped):**
+- "Save as PDF" — one-page print stylesheet (Option B from mockups):
+  inline hero stats, calendar, mastery as tiny pill tags. Hides trend/
+  weak-spots/chrome. Branded "Practice Notes by QuizNote."
+- "Share to social" — dark overlay picker, 3 swipeable canvas cards
+  (A light streak-hero, B dark tier-bars, C warm highlights). Exports
+  via navigator.share (mobile) or PNG download. system-ui fonts (no
+  load issues).
+- Share data reads from computed `_shareData` (robust across all
+  views), goal-aware: Card C shows "Goal hit! X of Y" when met.
+- Privacy: device-native share only, no email from app, no recipient
+  PII. One privacy-policy line covers it.
+
+**Dashboard de-duplication (shipped):** Removed "Up next on your path"
+tiles and slimmed the next-step card to a single "Jump back in" CTA.
+path.html owns "what's next"; dashboard owns "how am I doing."
+
+**Naming:** Dashboard page = "My Progress." Shareable export =
+"Practice Notes by QuizNote" (feature name hero, brand as byline).
+
+**Teaching hints — three bugs found and fixed (all 32 modules):**
+1. **attempts never reset per question** (5 note-values-family modules:
+   dotted-notes, note-values, time-signatures, key-signatures,
+   ear-rhythm). nextQuestion reset `locked` but not `attempts`, so
+   after the first answer attempts ≥ 1 and every later wrong answer
+   jumped straight to reveal — no hint. Only Q1 could ever show one.
+   The retry-add script had only patched startGame. Fixed nextQuestion.
+2. **getHint exhausted too early / picked one random key.** Returned
+   null when the random key was used up even if other keys had hints;
+   single-key modules (dotted-notes) went silent after 2 wrong answers.
+   Rewrote to gather across all keys and cycle/reset when exhausted.
+   Also added per-round `shownHints` reset (was missing in 25 modules).
+3. **hints not relevant to the question** (the tie-hint-on-a-single-
+   quarter-note bug). Added context-aware selection: getHint calls an
+   optional `hintKeyFor()` returning the current question's category.
+   Wired for 10 modules where hints describe distinct content:
+   dotted-notes (dotted/tied/plain via SYMBOLS), dynamics/tempo/
+   articulation/ornaments/score-navigation (state.current.type),
+   scale-degrees (type), time-signatures (decodeKey type), scales
+   (mode→key map), note-names (clef). Concept-level modules (intervals,
+   accidentals, roman-numerals, primary-chords, key-signatures, all
+   single-skill) stay general — their hints apply to every question.
+
+**Other:** play.html header shortened to "Ready to practice?". Landing
+pillars expanded 2→4 (added "Teaches, not just tests" + "See your
+progress"). Onboarding level-detail max-height bumped to fit the
+practice-goal row.
+
+**Reverted mid-session (overbuilt):** instrument selector on profile +
+self-reported practice log + interactive tappable calendar. Stripped
+back to a read-only QuizNote-activity calendar. `instruments` field
+and `practiceLog` API removed from qn-profile.js.
+
+**Profile schema (additive, no migration):** `practiceGoal` (default 5),
+`streakStyle` (default 'calendar').
+
+**Still open / next:**
+- Standing build queue: Circle of Fifths (#6), Chord Function (#7),
+  Transposition (#8).
+- PWA offline (last pre-monetization item).
+- Visual QA owned by Jonathan, ongoing.
+
+---
+
 ### Progress dashboard strategy conversation — May 2026
 
 **Session type:** Strategic planning (no code). Conversation about
