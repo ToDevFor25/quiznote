@@ -1172,7 +1172,7 @@
     ],
   };
 
-  function hintKeyFor() { return state.current ? decodeKey(state.current.key).type : null; }
+  function hintKeyFor() { return (state.current && TS.decodeKey) ? TS.decodeKey(state.current.key).type : null; }
 
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

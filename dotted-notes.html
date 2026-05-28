@@ -1214,7 +1214,7 @@
 
   function hintKeyFor() {
     if (!state.current) return null;
-    var sym = SYMBOLS[state.current.key];
+    var sym = window.DN.SYMBOLS[state.current.key];
     if (!sym) return null;
     if (sym.kind === 'tied') return 'tied';
     if (sym.dotted) return 'dotted';
