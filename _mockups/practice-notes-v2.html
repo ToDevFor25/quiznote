@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Notes Export — Redesign Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FFFAF0; --ink: #2A2A3E; --ink-soft: #5a5a6e; --ink-faint: #8a8472;
+    --teal: #1FB8A8; --teal-dk: #0e8475; --teal-lt: #d3f1ec;
+    --sun: #FFB627; --grape: #5B3FE4; --coral: #FF6B6B; --coral-dk: #c2453f;
+    --bronze: #CD7F32; --silver: #A8A8B0; --gold: #E6B422;
+    --shadow-cool: #d8d6cc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #e8e6e0; color: var(--ink); padding: 20px; }
+
+  h2.label { font-family: 'Fredoka', sans-serif; font-size: 22px; font-weight: 700; color: var(--grape); text-align: center; margin: 48px auto 8px; padding-bottom: 8px; border-bottom: 2px solid var(--grape); max-width: 900px; }
+  .desc { text-align: center; color: var(--ink-soft); font-size: 14px; font-weight: 600; margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* ════════════════════════════════════════════════════ */
+  /* PDF — ONE PAGE (8.5 x 11)                          */
+  /* ════════════════════════════════════════════════════ */
+  .pdf {
+    width: 8.5in; height: 11in; background: white;
+    margin: 0 auto 60px; padding: 0.5in 0.65in;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+
+  .pdf-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding-bottom: 14px; margin-bottom: 20px;
+    border-bottom: 3px solid var(--teal);
+  }
+  .pdf-pn { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.01em; }
+  .pdf-by { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--ink-soft); }
+  .pdf-by span { color: var(--teal); }
+  .pdf-meta { font-size: 12px; color: var(--ink-faint); font-weight: 600; margin-top: 2px; }
+
+  /* Hero stats */
+  .pdf-stats { display: flex; gap: 16px; margin-bottom: 22px; }
+  .pdf-stat {
+    flex: 1; background: #faf8f3; border: 1.5px solid #eee9dd;
+    border-radius: 14px; padding: 16px 12px; text-align: center;
+  }
+  .pdf-stat-icon { font-size: 22px; }
+  .pdf-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 36px; line-height: 1.1; }
+  .pdf-stat-lab { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 2px; }
+  .pdf-stat:nth-child(1) .pdf-stat-val { color: var(--coral-dk); }
+  .pdf-stat:nth-child(2) .pdf-stat-val { color: var(--grape); }
+  .pdf-stat:nth-child(3) .pdf-stat-val { color: var(--gold); }
+
+  /* Two-column middle */
+  .pdf-mid { display: flex; gap: 24px; margin-bottom: 22px; }
+  .pdf-mid-left { flex: 1; }
+  .pdf-mid-right { flex: 1; }
+  .pdf-sh { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1.5px solid #eee9dd; }
+
+  /* Mini calendar */
+  .pdf-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; max-width: 210px; }
+  .pdf-cal-lbl { font-size: 8px; font-weight: 700; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+  .pdf-cal-c { aspect-ratio: 1; border-radius: 3px; background: #f0ede4; }
+  .pdf-cal-c.a { background: #c8ece7; }
+  .pdf-cal-c.b { background: #7fd6cb; }
+  .pdf-cal-c.c { background: var(--teal); }
+
+  /* Focus areas */
+  .pdf-focus-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 6px 0; border-bottom: 1px solid #f5f2ea; }
+  .pdf-focus-row:last-child { border-bottom: none; }
+  .pdf-focus-acc { font-family: 'Fredoka', sans-serif; font-weight: 700; color: var(--coral-dk); }
+
+  /* Mastery summary — compact tier rows */
+  .pdf-mastery { flex: 1; }
+  .pdf-tier-row { margin-bottom: 14px; }
+  .pdf-tier-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .pdf-tier-count { font-family: 'Nunito'; font-weight: 700; font-size: 11px; color: var(--ink-faint); }
+  .pdf-mods { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pdf-mod {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; padding: 4px 8px;
+    border-radius: 6px; background: #faf8f3; border: 1px solid #eee9dd;
+  }
+  .pdf-mod-dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid #ddd; }
+  .pdf-mod-dot.bronze { border-color: var(--bronze); background: rgba(205,127,50,0.15); }
+  .pdf-mod-dot.silver { border-color: var(--silver); background: rgba(168,168,176,0.15); }
+  .pdf-mod-dot.gold { border-color: var(--gold); background: rgba(230,180,34,0.2); }
+  .pdf-mod-dot.started { border-color: var(--teal-lt); }
+
+  .pdf-foot {
+    text-align: center; font-size: 10px; color: var(--ink-faint); font-weight: 600;
+    border-top: 1px solid #eee9dd; padding-top: 10px; margin-top: auto;
+  }
+
+  /* ════════════════════════════════════════════════════ */
+  /* SOCIAL CARD A — Clean minimal (1080x1350 / 4:5)    */
+  /* ════════════════════════════════════════════════════ */
+  .social { width: 360px; height: 450px; margin: 0 auto 60px; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.15); overflow: hidden; position: relative; }
+
+  .sc-a {
+    background: linear-gradient(170deg, #f0faf8 0%, #FFFAF0 40%, #fff5e6 100%);
+    padding: 32px 24px 24px; display: flex; flex-direction: column;
+  }
+  .sc-a::before { content: ''; position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; border-radius: 50%; background: rgba(31,184,168,0.08); }
+  .sc-a .sc-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; text-align: center; position: relative; z-index: 1; }
+  .sc-a .sc-date { font-size: 12px; color: var(--ink-faint); font-weight: 600; text-align: center; margin-top: 2px; position: relative; z-index: 1; }
+
+  .sc-a .sc-big-stat { text-align: center; margin: 24px 0 8px; position: relative; z-index: 1; }
+  .sc-a .sc-big-icon { font-size: 32px; }
+  .sc-a .sc-big-num { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 64px; line-height: 1; color: var(--coral-dk); }
+  .sc-a .sc-big-lab { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+
+  .sc-a .sc-row { display: flex; gap: 10px; margin: 16px 0; position: relative; z-index: 1; }
+  .sc-a .sc-mini { flex: 1; background: white; border-radius: 12px; padding: 12px 8px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+  .sc-a .sc-mini-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; }
+  .sc-a .sc-mini-lab { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .sc-a .sc-mini:nth-child(1) .sc-mini-val { color: var(--grape); }
+  .sc-a .sc-mini:nth-child(2) .sc-mini-val { color: var(--gold); }
+
+  .sc-a .sc-rings-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 1; }
+  .sc-a .sc-rings-lab { font-size: 11px; font-weight: 700; color: var(--ink-faint); margin-bottom: 8px; }
+  .sc-a .sc-rings { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; max-width: 280px; }
+  .sc-a .sc-ring { width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid #e0ddd4; }
+  .sc-a .sc-ring.gold { border-color: var(--gold); background: rgba(230,180,34,0.2); }
+  .sc-a .sc-ring.silver { border-color: var(--silver); background: rgba(168,168,176,0.15); }
+  .sc-a .sc-ring.bronze { border-color: var(--bronze); background: rgba(205,127,50,0.15); }
+  .sc-a .sc-ring.started { border-color: var(--teal-lt); }
+
+  .sc-a .sc-brand { text-align: center; margin-top: auto; padding-top: 12px; position: relative; z-index: 1; }
+  .sc-a .sc-brand-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 12px; color: var(--ink-soft); }
+  .sc-a .sc-brand-name span { color: var(--teal); }
+  .sc-a .sc-brand-url { font-size: 10px; color: var(--ink-faint); font-weight: 600; }
+
+  /* ════════════════════════════════════════════════════ */
+  /* SOCIAL CARD B — Bold gradient (1080x1350 / 4:5)    */
+  /* ════════════════════════════════════════════════════ */
+  .sc-b {
+    background: linear-gradient(145deg, #2A2A3E 0%, #1a1a2e 50%, #0e2a28 100%);
+    color: white; padding: 32px 24px 24px; display: flex; flex-direction: column;
+  }
+  .sc-b .sc-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; text-align: center; color: rgba(255,255,255,0.9); }
+  .sc-b .sc-date { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600; text-align: center; margin-top: 2px; }
+
+  .sc-b .sc-big-stat { text-align: center; margin: 20px 0 8px; }
+  .sc-b .sc-big-icon { font-size: 28px; }
+  .sc-b .sc-big-num { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 72px; line-height: 1; background: linear-gradient(135deg, #FF6B6B, #FFB627); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .sc-b .sc-big-lab { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); }
+
+  .sc-b .sc-row { display: flex; gap: 10px; margin: 14px 0; }
+  .sc-b .sc-mini { flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 8px; text-align: center; }
+  .sc-b .sc-mini-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; color: var(--teal); }
+  .sc-b .sc-mini-lab { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); }
+
+  .sc-b .sc-progress { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .sc-b .sc-bar-wrap { width: 100%; max-width: 280px; }
+  .sc-b .sc-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .sc-b .sc-bar-name { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); width: 80px; text-align: right; }
+  .sc-b .sc-bar { flex: 1; height: 14px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+  .sc-b .sc-bar-fill { height: 100%; border-radius: 999px; }
+  .sc-b .sc-bar-fill.f { background: linear-gradient(90deg, var(--teal), #34d4c2); }
+  .sc-b .sc-bar-fill.r { background: linear-gradient(90deg, var(--grape), #7b5ff5); }
+  .sc-b .sc-bar-fill.t { background: linear-gradient(90deg, var(--sun), #ffc94d); }
+  .sc-b .sc-bar-pct { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 12px; color: rgba(255,255,255,0.6); width: 32px; }
+
+  .sc-b .sc-brand { text-align: center; margin-top: auto; padding-top: 12px; }
+  .sc-b .sc-brand-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 12px; color: rgba(255,255,255,0.5); }
+  .sc-b .sc-brand-name span { color: var(--teal); }
+  .sc-b .sc-brand-url { font-size: 10px; color: rgba(255,255,255,0.3); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h2 class="label">PDF — One Page (8.5 x 11)</h2>
+<p class="desc">Compact, scannable, teacher-ready. Everything fits on a single sheet.</p>
+
+<div class="pdf">
+  <div class="pdf-head">
+    <div>
+      <div class="pdf-pn">Practice Notes</div>
+      <div class="pdf-meta">Emma · May 28, 2026</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="pdf-by">by Quiz<span>Note</span></div>
+      <div class="pdf-meta">quiznote.online</div>
+    </div>
+  </div>
+
+  <div class="pdf-stats">
+    <div class="pdf-stat"><div class="pdf-stat-icon">🔥</div><div class="pdf-stat-val">14</div><div class="pdf-stat-lab">Day streak</div></div>
+    <div class="pdf-stat"><div class="pdf-stat-icon">⏱</div><div class="pdf-stat-val">4h 23m</div><div class="pdf-stat-lab">Practice time</div></div>
+    <div class="pdf-stat"><div class="pdf-stat-icon">★</div><div class="pdf-stat-val">12 / 32</div><div class="pdf-stat-lab">Modules mastered</div></div>
+  </div>
+
+  <div class="pdf-mid">
+    <div class="pdf-mid-left">
+      <div class="pdf-sh">Practice calendar</div>
+      <div class="pdf-cal">
+        <div class="pdf-cal-lbl">M</div><div class="pdf-cal-lbl">T</div><div class="pdf-cal-lbl">W</div><div class="pdf-cal-lbl">T</div><div class="pdf-cal-lbl">F</div><div class="pdf-cal-lbl">S</div><div class="pdf-cal-lbl">S</div>
+        <div class="pdf-cal-c a"></div><div class="pdf-cal-c"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c c"></div><div class="pdf-cal-c"></div><div class="pdf-cal-c a"></div>
+        <div class="pdf-cal-c b"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c"></div><div class="pdf-cal-c c"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c"></div>
+        <div class="pdf-cal-c"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c c"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c a"></div>
+        <div class="pdf-cal-c a"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c c"></div><div class="pdf-cal-c a"></div><div class="pdf-cal-c b"></div><div class="pdf-cal-c"></div><div class="pdf-cal-c a"></div>
+      </div>
+    </div>
+    <div class="pdf-mid-right">
+      <div class="pdf-sh">Focus areas</div>
+      <div class="pdf-focus-row"><span>Key Signatures</span><span class="pdf-focus-acc">62%</span></div>
+      <div class="pdf-focus-row"><span>Intervals (quality)</span><span class="pdf-focus-acc">71%</span></div>
+      <div class="pdf-focus-row"><span>Time Signatures (top)</span><span class="pdf-focus-acc">75%</span></div>
+      <div style="font-size:11px;color:var(--ink-faint);font-weight:600;margin-top:10px;line-height:1.5;">These areas need the most practice. QuizNote's learning path is already drilling them.</div>
+    </div>
+  </div>
+
+  <div class="pdf-mastery">
+    <div class="pdf-sh">Module mastery</div>
+    <div class="pdf-tier-row">
+      <div class="pdf-tier-name">Foundations <span class="pdf-tier-count">7 / 14 mastered</span></div>
+      <div class="pdf-mods">
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Note Names</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Ledger Lines</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Piano Quiz</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Piano & Keyboard</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Note Values</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot bronze"></div>Dotted Notes</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Ear: Rhythm</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Time Sigs</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Accidentals</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Tempo</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot bronze"></div>Dynamics</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot started"></div>Articulation</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Score Nav</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Ornaments</div>
+      </div>
+    </div>
+    <div class="pdf-tier-row">
+      <div class="pdf-tier-name">Reading <span class="pdf-tier-count">3 / 8 mastered</span></div>
+      <div class="pdf-mods">
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Key Sigs</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Scales</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Scale Degrees</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot bronze"></div>Scale Modes</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Intervals</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Ear: Intervals</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot bronze"></div>Ear: Scales</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Chromatic</div>
+      </div>
+    </div>
+    <div class="pdf-tier-row">
+      <div class="pdf-tier-name">Theory <span class="pdf-tier-count">2 / 10 mastered</span></div>
+      <div class="pdf-mods">
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Primary Chords</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot gold"></div>Roman Numerals</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot silver"></div>Triads</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot bronze"></div>Inversions</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>7th Chords</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Progressions</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Cadences</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Ear: Chords</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Ear: Cadences</div>
+        <div class="pdf-mod"><div class="pdf-mod-dot"></div>Ear: Progs</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdf-foot">Practice Notes by QuizNote · quiznote.online · Progress data is saved on the learner's device.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+
+<h2 class="label">Social Card A — Light & Clean</h2>
+<p class="desc">Streak as the hero number. Mastery rings below. Light background, warm feel.</p>
+
+<div class="social sc-a">
+  <div class="sc-name">Emma's Practice Notes</div>
+  <div class="sc-date">May 2026</div>
+  <div class="sc-big-stat">
+    <div class="sc-big-icon">🔥</div>
+    <div class="sc-big-num">14</div>
+    <div class="sc-big-lab">Day streak</div>
+  </div>
+  <div class="sc-row">
+    <div class="sc-mini"><div class="sc-mini-val">4h</div><div class="sc-mini-lab">Practice time</div></div>
+    <div class="sc-mini"><div class="sc-mini-val">12/32</div><div class="sc-mini-lab">Mastered</div></div>
+  </div>
+  <div class="sc-rings-wrap">
+    <div class="sc-rings-lab">Module mastery</div>
+    <div class="sc-rings">
+      <div class="sc-ring gold"></div><div class="sc-ring gold"></div><div class="sc-ring silver"></div><div class="sc-ring gold"></div><div class="sc-ring gold"></div><div class="sc-ring bronze"></div><div class="sc-ring silver"></div><div class="sc-ring gold"></div>
+      <div class="sc-ring gold"></div><div class="sc-ring silver"></div><div class="sc-ring bronze"></div><div class="sc-ring started"></div><div class="sc-ring"></div><div class="sc-ring gold"></div>
+      <div class="sc-ring gold"></div><div class="sc-ring gold"></div><div class="sc-ring silver"></div><div class="sc-ring bronze"></div><div class="sc-ring gold"></div><div class="sc-ring silver"></div><div class="sc-ring bronze"></div><div class="sc-ring"></div>
+      <div class="sc-ring gold"></div><div class="sc-ring gold"></div><div class="sc-ring silver"></div><div class="sc-ring bronze"></div><div class="sc-ring"></div><div class="sc-ring"></div><div class="sc-ring"></div><div class="sc-ring"></div><div class="sc-ring"></div><div class="sc-ring"></div>
+    </div>
+  </div>
+  <div class="sc-brand">
+    <div class="sc-brand-name">Practice Notes by Quiz<span>Note</span></div>
+    <div class="sc-brand-url">quiznote.online</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+
+<h2 class="label">Social Card B — Dark & Bold</h2>
+<p class="desc">Dark background, gradient streak number, progress bars per tier. More dramatic, stands out on social feeds.</p>
+
+<div class="social sc-b">
+  <div class="sc-name">Emma's Practice Notes</div>
+  <div class="sc-date">May 2026</div>
+  <div class="sc-big-stat">
+    <div class="sc-big-icon">🔥</div>
+    <div class="sc-big-num">14</div>
+    <div class="sc-big-lab">Day streak</div>
+  </div>
+  <div class="sc-row">
+    <div class="sc-mini"><div class="sc-mini-val">4h 23m</div><div class="sc-mini-lab">Practice time</div></div>
+    <div class="sc-mini"><div class="sc-mini-val">12 / 32</div><div class="sc-mini-lab">Mastered</div></div>
+  </div>
+  <div class="sc-progress">
+    <div class="sc-bar-wrap">
+      <div class="sc-bar-row"><div class="sc-bar-name">Foundations</div><div class="sc-bar"><div class="sc-bar-fill f" style="width:50%;"></div></div><div class="sc-bar-pct">7/14</div></div>
+      <div class="sc-bar-row"><div class="sc-bar-name">Reading</div><div class="sc-bar"><div class="sc-bar-fill r" style="width:37%;"></div></div><div class="sc-bar-pct">3/8</div></div>
+      <div class="sc-bar-row"><div class="sc-bar-name">Theory</div><div class="sc-bar"><div class="sc-bar-fill t" style="width:20%;"></div></div><div class="sc-bar-pct">2/10</div></div>
+    </div>
+  </div>
+  <div class="sc-brand">
+    <div class="sc-brand-name">Practice Notes by Quiz<span>Note</span></div>
+    <div class="sc-brand-url">quiznote.online</div>
+  </div>
+</div>
+
+</body>
+</html>
