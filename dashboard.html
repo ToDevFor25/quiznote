@@ -73,6 +73,8 @@
   .sv-extras { display: flex; gap: 16px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
 
   /* Calendar view */
+  .cal-month-label { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; color: var(--ink-soft); margin-bottom: 6px; }
+  .cal-cell.pad { background: transparent; }
   .sv-cal-layout { display: flex; gap: 16px; }
   .sv-cal-left { flex: 1; }
   .sv-cal-right { flex: 0 0 100px; display: flex; flex-direction: column; gap: 6px; }
@@ -518,6 +520,7 @@
       <div class="streak-view" id="sv-calendar">
         <div class="sv-cal-layout">
           <div class="sv-cal-left">
+            <div class="cal-month-label" id="cal-month-label"></div>
             <div class="cal-grid" id="cal-grid"></div>
           </div>
           <div class="sv-cal-right">
@@ -1100,24 +1103,27 @@
     });
 
     var today = new Date(); today.setHours(0,0,0,0);
-    var todayDow = (today.getDay() + 6) % 7;
-    var totalCells = 28;
-    var startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - totalCells + 1 - todayDow + 6);
-
+    var year = today.getFullYear();
+    var month = today.getMonth();
+    var firstDay = new Date(year, month, 1);
+    var firstDow = (firstDay.getDay() + 6) % 7;
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
     var tk = todayKey();
-    for (var i = 0; i < totalCells + todayDow + 1; i++) {
-      var d = new Date(startDate);
-      d.setDate(d.getDate() + i);
-      if (i < (totalCells + todayDow + 1 - 7) && (i % 7) >= 7) continue;
+
+    for (var pad = 0; pad < firstDow; pad++) {
+      var empty = document.createElement('div');
+      empty.className = 'cal-cell pad';
+      grid.appendChild(empty);
+    }
+
+    for (var day = 1; day <= daysInMonth; day++) {
+      var d = new Date(year, month, day);
       var dk = dateKey(d.getTime());
       var count = dayMap[dk] || 0;
       var cell = document.createElement('div');
       cell.className = 'cal-cell';
       if (dk === tk) cell.classList.add('today');
       if (d > today) { cell.classList.add('future'); }
-      else if (count >= 6) cell.classList.add('lvl-3');
-      else if (count >= 3) cell.classList.add('lvl-2');
       else if (count >= 1) cell.classList.add('lvl-1');
 
       if (count > 0 && d <= today) {
@@ -1130,9 +1136,9 @@
       grid.appendChild(cell);
     }
 
-    var hint = document.getElementById('cal-hint');
-    var activeDays = Object.keys(dayMap).length;
-    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' practiced';
+    var monthName = today.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    var monthLabel = document.getElementById('cal-month-label');
+    if (monthLabel) monthLabel.textContent = monthName;
   }
 
   function drawTrend(weekly) {
