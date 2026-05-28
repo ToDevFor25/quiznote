@@ -10,186 +10,157 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #FFFAF0;
-    --cream-2: #FFF3DC;
-    --ink: #2A2A3E;
-    --ink-soft: #5a5a6e;
-    --ink-faint: #8a8472;
-    --teal: #1FB8A8;
-    --teal-dk: #0e8475;
-    --teal-lt: #d3f1ec;
-    --sun: #FFB627;
-    --sun-dk: #c98800;
-    --grape: #5B3FE4;
-    --grape-dk: #3d28a8;
-    --coral: #FF6B6B;
-    --coral-dk: #c2453f;
-    --white: #ffffff;
+    --cream: #FFFAF0; --cream-2: #FFF3DC;
+    --ink: #2A2A3E; --ink-soft: #5a5a6e; --ink-faint: #8a8472;
+    --teal: #1FB8A8; --teal-dk: #0e8475; --teal-lt: #d3f1ec;
+    --sun: #FFB627; --sun-dk: #c98800;
+    --grape: #5B3FE4; --grape-dk: #3d28a8;
+    --coral: #FF6B6B; --coral-dk: #c2453f;
     --shadow-cool: #d8d6cc;
+    --bronze: #CD7F32; --silver: #A8A8B0; --gold: #E6B422;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  body { font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; }
 
-  /* ---------- header (matches module pages) ---------- */
-  .site-header {
-    background: white;
-    border-bottom: 2.5px solid var(--ink);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-  }
-  .site-header .brand-name {
-    flex: none;
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 700;
-    font-size: 26px;
-    color: var(--ink);
-    letter-spacing: -0.01em;
-    text-decoration: none;
-  }
+  .site-header { background: white; border-bottom: 2.5px solid var(--ink); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .site-header .brand-name { flex: none; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; color: var(--ink); letter-spacing: -0.01em; text-decoration: none; }
   .site-header .brand-name span { color: var(--teal); }
-  .site-tagline {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--teal-dk);
-    background: var(--teal-lt);
-    border-radius: 999px;
-    padding: 4px 12px;
-    white-space: nowrap;
-  }
   #qn-nav-slot { margin-left: auto; display: inline-flex; align-items: center; }
 
-  /* ---------- layout ---------- */
-  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; flex: 1 0 auto; width: 100%; }
-  .back-link {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
-    color: var(--ink); text-decoration: none;
-    background: white; border: 2px solid var(--ink); border-radius: 12px;
-    padding: 7px 14px 7px 12px; box-shadow: 0 3px 0 var(--ink);
-    transition: transform 120ms, box-shadow 120ms; margin-bottom: 22px;
-  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 28px 20px 64px; flex: 1 0 auto; width: 100%; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; color: var(--ink); text-decoration: none; background: white; border: 2px solid var(--ink); border-radius: 12px; padding: 7px 14px 7px 12px; box-shadow: 0 3px 0 var(--ink); transition: transform 120ms, box-shadow 120ms; margin-bottom: 22px; }
   .back-link:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
   .back-link:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
 
-  .page-title {
-    font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.1; letter-spacing: -0.01em;
-    margin-bottom: 4px;
-  }
-  .page-sub { font-weight: 600; color: var(--ink-soft); margin-bottom: 28px; }
+  .page-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: clamp(1.8rem, 5vw, 2.6rem); line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .page-sub { font-weight: 600; color: var(--ink-soft); margin-bottom: 24px; }
   .page-sub b { color: var(--teal-dk); }
 
-  .card {
-    background: white; border: 2px solid var(--ink); border-radius: 18px;
-    box-shadow: 0 4px 0 var(--shadow-cool); padding: 20px;
-  }
+  .card { background: white; border: 2px solid var(--ink); border-radius: 18px; box-shadow: 0 4px 0 var(--shadow-cool); padding: 20px; }
 
-  /* summary stat cards */
-  .summary-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px;
-  }
-  .stat-card { text-align: center; }
-  .stat-card .stat-value {
-    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 2rem; line-height: 1;
-  }
-  .stat-card .stat-label {
-    font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--ink-faint); margin-top: 6px;
-  }
-  .stat-card.accent-teal  .stat-value { color: var(--teal-dk); }
-  .stat-card.accent-sun   .stat-value { color: var(--sun-dk); }
-  .stat-card.accent-grape .stat-value { color: var(--grape-dk); }
+  /* ── Hero stats ── */
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+  .hero-stat { text-align: center; }
+  .hero-stat .hero-icon { font-size: 28px; margin-bottom: 4px; }
+  .hero-stat .hero-value { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 2.2rem; line-height: 1; }
+  .hero-stat .hero-label { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 4px; }
+  .hero-stat .hero-sub { font-size: 11px; font-weight: 600; color: var(--ink-faint); margin-top: 2px; }
+  .hero-stat.streak .hero-value { color: var(--coral-dk); }
+  .hero-stat.time .hero-value { color: var(--grape-dk); }
+  .hero-stat.mastered .hero-value { color: var(--gold); }
 
-  /* section heading */
-  .section-head {
-    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.3rem;
-    margin: 8px 0 14px; display: flex; align-items: baseline; gap: 10px;
-  }
-  .section-head .hint { font-family: 'Nunito'; font-weight: 600; font-size: 13px; color: var(--ink-faint); }
+  @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-stat .hero-value { opacity: 0; animation: countUp 400ms ease-out forwards; }
+  .hero-stat:nth-child(1) .hero-value { animation-delay: 100ms; }
+  .hero-stat:nth-child(2) .hero-value { animation-delay: 300ms; }
+  .hero-stat:nth-child(3) .hero-value { animation-delay: 500ms; }
 
-  /* trend chart */
-  .trend-card { margin-bottom: 28px; }
+  /* ── Streak calendar ── */
+  .streak-card { margin-bottom: 24px; }
+  .streak-card .section-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 14px; display: flex; align-items: baseline; gap: 8px; }
+  .streak-card .hint { font-family: 'Nunito'; font-weight: 600; font-size: 13px; color: var(--ink-faint); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); text-align: center; padding-bottom: 4px; }
+  .cal-cell { aspect-ratio: 1; border-radius: 5px; background: #f0ede4; position: relative; cursor: default; transition: background 300ms; }
+  .cal-cell.lvl-1 { background: #c8ece7; }
+  .cal-cell.lvl-2 { background: #7fd6cb; }
+  .cal-cell.lvl-3 { background: var(--teal); }
+  .cal-cell.today { outline: 2px solid var(--ink); outline-offset: -1px; border-radius: 5px; }
+  .cal-cell.future { background: transparent; }
+  .cal-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; pointer-events: none; }
+  .cal-cell:hover .cal-tip, .cal-cell:active .cal-tip { display: block; }
+
+  /* ── Weak spots ── */
+  .weak-card { margin-bottom: 24px; }
+  .weak-card .section-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; }
+  .weak-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0ede4; cursor: pointer; transition: background 100ms; }
+  .weak-row:last-child { border-bottom: none; }
+  .weak-row:hover { background: rgba(31,184,168,0.03); margin: 0 -12px; padding: 10px 12px; border-radius: 8px; }
+  .weak-name { font-weight: 700; font-size: 15px; }
+  .weak-meta { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+  .weak-acc { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 18px; color: var(--coral-dk); }
+  .weak-arrow { color: var(--ink-faint); font-size: 18px; margin-left: 10px; }
+  .weak-note { font-size: 13px; color: var(--ink-faint); font-weight: 600; margin-top: 10px; line-height: 1.5; }
+
+  /* ── Trend chart ── */
+  .trend-card { margin-bottom: 24px; }
+  .trend-card .section-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .trend-card .hint { font-family: 'Nunito'; font-weight: 600; font-size: 13px; color: var(--ink-faint); }
+  .trend-card .trend-compare { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; color: var(--teal-dk); margin-bottom: 8px; }
   .trend-svg { width: 100%; height: 180px; display: block; overflow: visible; }
   .trend-empty { color: var(--ink-faint); font-weight: 600; font-size: 14px; padding: 8px 0; }
 
-  /* per-module cards */
-  .module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-  .mod-card { position: relative; overflow: hidden; }
-  .mod-card .mod-name {
-    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .mod-card .mod-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-  .mod-stats { display: flex; gap: 18px; flex-wrap: wrap; }
-  .mod-stat .v { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.35rem; }
-  .mod-stat .l { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-top: 2px; }
-  .acc-bar { margin-top: 14px; height: 10px; border-radius: 999px; background: var(--cream-2); overflow: hidden; }
-  .acc-fill { height: 100%; border-radius: 999px; background: var(--teal); transition: width 600ms ease-out; }
-  .subskills { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--shadow-cool); }
-  .subskills-head {
-    font-weight: 800; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--ink-faint); margin-bottom: 8px;
-  }
-  .subskill-row {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 3px 0;
-  }
-  .subskill-row .ss-name { display: inline-flex; align-items: center; gap: 4px; }
-  .subskill-row .ss-val { font-family: 'Fredoka', sans-serif; font-weight: 700; color: var(--ink); }
-  .subskill-row .ss-val.ss-weak { color: var(--coral-dk); }
-  .subskill-row .ss-flag { color: var(--coral); font-size: 9px; }
+  /* ── Mastery grid ── */
+  .mastery-section { margin-bottom: 28px; }
+  .tier-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.2rem; margin: 24px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--shadow-cool); display: flex; align-items: baseline; gap: 10px; }
+  .tier-head:first-child { margin-top: 0; }
+  .tier-head .tier-count { font-family: 'Nunito'; font-weight: 700; font-size: 13px; color: var(--ink-faint); }
+  .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 
-  /* empty / anonymous states */
+  .m-card { padding: 16px; cursor: pointer; transition: transform 100ms; position: relative; overflow: hidden; }
+  .m-card:hover { transform: translateY(-1px); }
+  .m-card:active { transform: translateY(1px); }
+  .m-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .m-ring { width: 44px; height: 44px; flex-shrink: 0; position: relative; }
+  .m-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .m-ring .ring-bg { fill: none; stroke: #eeebe2; stroke-width: 4; }
+  .m-ring .ring-fill { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 800ms ease-out; }
+  .m-ring .ring-fill.bronze { stroke: var(--bronze); }
+  .m-ring .ring-fill.silver { stroke: var(--silver); }
+  .m-ring .ring-fill.gold { stroke: var(--gold); }
+  .m-ring-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 11px; color: var(--ink-faint); }
+  .m-ring-label.bronze { color: var(--bronze); }
+  .m-ring-label.silver { color: var(--silver); }
+  .m-ring-label.gold { color: var(--gold); }
+  .m-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; }
+  .m-tier-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .m-tier-label.bronze { color: var(--bronze); }
+  .m-tier-label.silver { color: var(--silver); }
+  .m-tier-label.gold { color: var(--gold); }
+  .m-tier-label.started { color: var(--ink-faint); }
+  .m-tier-label.untouched { color: var(--ink-faint); font-style: italic; font-weight: 600; text-transform: none; }
+
+  .m-detail { max-height: 0; overflow: hidden; transition: max-height 250ms ease, opacity 200ms; opacity: 0; }
+  .m-card.expanded .m-detail { max-height: 120px; opacity: 1; }
+  .m-detail-inner { padding-top: 10px; border-top: 1px solid #f0ede4; margin-top: 6px; }
+  .m-tier-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 3px 0; }
+  .m-tier-row .m-check { color: var(--teal); font-weight: 800; }
+  .m-tier-row .m-pct { font-family: 'Fredoka', sans-serif; font-weight: 700; color: var(--ink); }
+
+  @keyframes goldShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .m-card.gold-shimmer::after {
+    content: ''; position: absolute; inset: 0; border-radius: 16px; pointer-events: none;
+    background: linear-gradient(90deg, transparent 30%, rgba(230,180,34,0.12) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: goldShimmer 3s ease-in-out infinite;
+  }
+
+  /* ── Empty / anonymous states ── */
   .empty-state { text-align: center; padding: 48px 24px; }
   .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
   .empty-state h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: 8px; }
   .empty-state p { color: var(--ink-soft); font-weight: 600; max-width: 420px; margin: 0 auto 20px; line-height: 1.5; }
-  .btn-primary {
-    display: inline-block; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px;
-    color: white; background: var(--teal); text-decoration: none;
-    border: 2px solid var(--ink); border-radius: 14px; padding: 12px 24px;
-    box-shadow: 0 4px 0 var(--ink); transition: transform 120ms, box-shadow 120ms;
-  }
+  .btn-primary { display: inline-block; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; color: white; background: var(--teal); text-decoration: none; border: 2px solid var(--ink); border-radius: 14px; padding: 12px 24px; box-shadow: 0 4px 0 var(--ink); transition: transform 120ms, box-shadow 120ms; }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 0 var(--ink); }
   .btn-primary:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
   .btn-primary.sun { background: var(--sun); color: var(--ink); }
 
-  .device-note {
-    margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-faint); font-weight: 600;
-  }
+  .device-note { margin-top: 28px; text-align: center; font-size: 12px; color: var(--ink-faint); font-weight: 600; }
 
   @media (max-width: 560px) {
-    .summary-grid { gap: 10px; }
-    .stat-card { padding: 14px 8px; }
-    .stat-card .stat-value { font-size: 1.5rem; }
-    /* Header tidy on phones: brand + nav stay on the first line; the
-       tagline (if present) wraps to its own line beneath. */
+    .hero-stats { gap: 10px; }
+    .hero-stat .hero-value { font-size: 1.6rem; }
+    .hero-stat .hero-icon { font-size: 22px; }
     .site-header { padding: 10px 16px; }
     .site-header .brand-name { font-size: 22px; }
-    .site-tagline { order: 3; flex-basis: 100%; }
+    .cal-grid { gap: 3px; }
   }
   [hidden] { display: none !important; }
 
-  footer {
-    background: white;
-    border-top: 2px solid var(--shadow-cool);
-    padding: 16px 24px;
-    text-align: center;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    color: var(--ink-faint);
-  }
+  footer { background: white; border-top: 2px solid var(--shadow-cool); padding: 16px 24px; text-align: center; font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--ink-faint); }
   footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
   footer a:hover { text-decoration: underline; }
   footer .sep { margin: 0 8px; }
@@ -205,7 +176,6 @@
 
 <div class="wrap">
 
-  <!-- ANONYMOUS: no active profile -->
   <section class="card empty-state" id="state-anon" hidden>
     <div class="emoji">🎵</div>
     <h2>Make a profile to see your progress</h2>
@@ -213,7 +183,6 @@
     <a href="profile.html" class="btn-primary">Add a name →</a>
   </section>
 
-  <!-- PROFILE BUT NO ROUNDS -->
   <section class="card empty-state" id="state-empty" hidden>
     <div class="emoji">🎯</div>
     <h2>No rounds yet</h2>
@@ -221,47 +190,61 @@
     <a href="play.html" class="btn-primary sun">Pick a module →</a>
   </section>
 
-  <!-- HAS DATA -->
   <section id="state-data" hidden>
     <h1 class="page-title">Your progress</h1>
     <p class="page-sub">How <b id="who">you</b> are doing across every module.</p>
 
-    <div class="summary-grid">
-      <div class="card stat-card accent-teal">
-        <div class="stat-value" id="sum-accuracy">—</div>
-        <div class="stat-label">Overall accuracy</div>
+    <!-- Hero stats -->
+    <div class="hero-stats">
+      <div class="card hero-stat streak">
+        <div class="hero-icon">🔥</div>
+        <div class="hero-value" id="hero-streak">0</div>
+        <div class="hero-label">Day streak</div>
+        <div class="hero-sub" id="hero-streak-best"></div>
       </div>
-      <div class="card stat-card accent-sun">
-        <div class="stat-value" id="sum-rounds">—</div>
-        <div class="stat-label">Rounds played</div>
+      <div class="card hero-stat time">
+        <div class="hero-icon">⏱</div>
+        <div class="hero-value" id="hero-time">0</div>
+        <div class="hero-label">Practice time</div>
       </div>
-      <div class="card stat-card accent-grape">
-        <div class="stat-value" id="sum-time">—</div>
-        <div class="stat-label">Time practiced</div>
+      <div class="card hero-stat mastered">
+        <div class="hero-icon">★</div>
+        <div class="hero-value" id="hero-mastered">0</div>
+        <div class="hero-label">Modules mastered</div>
+        <div class="hero-sub" id="hero-mastered-sub"></div>
       </div>
     </div>
 
+    <!-- Streak calendar -->
+    <div class="card streak-card">
+      <div class="section-head">Practice calendar <span class="hint" id="cal-hint"></span></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <!-- Weak spots -->
+    <div class="card weak-card" id="weak-card" hidden>
+      <div class="section-head">Focus areas</div>
+      <div id="weak-list"></div>
+      <div class="weak-note">These are your trickiest spots. Your learning path is already drilling them.</div>
+    </div>
+
+    <!-- Accuracy trend -->
     <div class="card trend-card">
       <div class="section-head">Accuracy over time <span class="hint" id="trend-hint"></span></div>
-      <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none" aria-label="Accuracy over time"></svg>
+      <div class="trend-compare" id="trend-compare" hidden></div>
+      <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
       <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
     </div>
 
-    <div class="section-head">By module <span class="hint">Accuracy and rounds for each skill you've practiced</span></div>
-    <div class="module-grid" id="module-grid"></div>
+    <!-- Mastery grid -->
+    <div class="mastery-section" id="mastery-section"></div>
 
-    <div class="device-note">📱 Scores are currently saved in your browser. Clearing browser data will reset your progress.</div>
+    <div class="device-note">📱 Scores are saved in your browser on this device. Clearing browser data will reset your progress.</div>
   </section>
 </div>
 
 <footer>
-  © 2026 QuizNote
-  <span class="sep">·</span>
-  <a href="privacy.html">Privacy Policy</a>
-  <span class="sep">·</span>
-  <a href="terms.html">Terms of Service</a>
-  <span class="sep">·</span>
-  Made by musicians, for musicians
+  © 2026 QuizNote <span class="sep">·</span> <a href="privacy.html">Privacy Policy</a> <span class="sep">·</span> <a href="terms.html">Terms of Service</a> <span class="sep">·</span> Made by musicians, for musicians
 </footer>
 
 <script src="qn-profile.js" defer></script>
@@ -271,323 +254,444 @@
 (function () {
   'use strict';
 
-  // Display names + accent colors for known module slugs. Falls back to the
-  // raw slug (title-cased) for anything not listed, so new modules appear
-  // automatically without editing this file.
   var MODULE_META = {
-    'note-names':      { name: 'Note Names',      color: 'coral' },
-    'ledger-lines':    { name: 'Ledger Lines',    color: 'slate' },
-    'note-values':     { name: 'Note Values',     color: 'sun'   },
-    'dotted-notes':    { name: 'Dotted Notes & Ties', color: 'pink'  },
-    'ear-rhythm':      { name: 'Ear: Rhythm',         color: 'coral' },
-    'key-signatures':  { name: 'Key Signatures',  color: 'grape' },
-    'time-signatures': { name: 'Time Signatures', color: 'teal'  },
-    'piano-quiz':      { name: 'Piano Quiz',       color: 'teal'  },
-    'piano-keyboard':  { name: 'Piano & Keyboard', color: 'teal'  },
-    'scales':          { name: 'Scales',           color: 'grape' },
-    'scale-modes':     { name: 'Scale Modes',      color: 'grape' },
-    'intervals':       { name: 'Intervals',        color: 'coral' },
-    'ear-intervals':   { name: 'Ear: Intervals',   color: 'coral' },
-    'primary-chords':  { name: 'Primary Chords',  color: 'teal'  },
-    'roman-numerals':  { name: 'Roman Numerals',   color: 'grape' },
-    'ear-scales':         { name: 'Ear: Scales',        color: 'coral' },
-    'chromatic-scale':    { name: 'Chromatic Scale',    color: 'grape' },
-    'triads':             { name: 'Triads',             color: 'teal'  },
-    'triad-inversions':   { name: 'Triad Inversions',   color: 'grape' },
-    'seventh-chords':     { name: 'Seventh Chords',     color: 'teal'  },
-    'chord-progressions': { name: 'Chord Progressions', color: 'grape' },
-    'cadences':           { name: 'Cadences',           color: 'teal'  },
-    'ear-chords':         { name: 'Ear: Chord Quality', color: 'coral' },
-    'ear-cadences':       { name: 'Ear: Cadences',      color: 'coral' },
-    'ear-progressions':   { name: 'Ear: Progressions',  color: 'coral' }
+    'note-names':{ name:'Note Names', color:'coral' }, 'ledger-lines':{ name:'Ledger Lines', color:'grape' },
+    'piano-quiz':{ name:'Piano Quiz', color:'teal' }, 'piano-keyboard':{ name:'Piano & Keyboard', color:'teal' },
+    'note-values':{ name:'Note Values', color:'sun' }, 'dotted-notes':{ name:'Dotted Notes & Ties', color:'sun' },
+    'ear-rhythm':{ name:'Ear: Rhythm', color:'coral' }, 'time-signatures':{ name:'Time Signatures', color:'teal' },
+    'accidentals':{ name:'Accidentals', color:'grape' },
+    'tempo-markings':{ name:'Tempo Markings', color:'sun' }, 'dynamics':{ name:'Dynamics', color:'coral' },
+    'articulation':{ name:'Articulation', color:'teal' }, 'score-navigation':{ name:'Score Navigation', color:'grape' },
+    'ornaments':{ name:'Ornaments', color:'grape' },
+    'key-signatures':{ name:'Key Signatures', color:'grape' }, 'scales':{ name:'Scales', color:'grape' },
+    'scale-degrees':{ name:'Scale Degrees', color:'teal' }, 'scale-modes':{ name:'Scale Modes', color:'grape' },
+    'intervals':{ name:'Intervals', color:'coral' }, 'ear-intervals':{ name:'Ear: Intervals', color:'coral' },
+    'ear-scales':{ name:'Ear: Scales', color:'coral' }, 'chromatic-scale':{ name:'Chromatic Scale', color:'grape' },
+    'primary-chords':{ name:'Primary Chords', color:'teal' }, 'roman-numerals':{ name:'Roman Numerals', color:'grape' },
+    'triads':{ name:'Triads', color:'teal' }, 'triad-inversions':{ name:'Triad Inversions', color:'grape' },
+    'seventh-chords':{ name:'Seventh Chords', color:'teal' }, 'chord-progressions':{ name:'Chord Progressions', color:'grape' },
+    'cadences':{ name:'Cadences', color:'teal' }, 'ear-chords':{ name:'Ear: Chord Quality', color:'coral' },
+    'ear-cadences':{ name:'Ear: Cadences', color:'coral' }, 'ear-progressions':{ name:'Ear: Progressions', color:'coral' }
   };
-  var COLOR_HEX = {
-    teal: '#1FB8A8', sun: '#FFB627', grape: '#5B3FE4', coral: '#FF6B6B', ink: '#2A2A3E'
-  };
-  var TIERS = ['easy', 'medium', 'tricky'];
 
-  // Friendly labels for known sub-skill keys. Falls back to the raw key.
-  // Keyed by "module/skill" first, then bare "skill", so the same key can
-  // mean different things in different modules later.
+  var ROSTER = {
+    'Foundations': ['note-names','ledger-lines','piano-quiz','piano-keyboard','note-values','dotted-notes','ear-rhythm','time-signatures','accidentals','tempo-markings','dynamics','articulation','score-navigation','ornaments'],
+    'Reading': ['key-signatures','scales','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','chromatic-scale'],
+    'Theory': ['primary-chords','roman-numerals','triads','triad-inversions','seventh-chords','chord-progressions','cadences','ear-chords','ear-cadences','ear-progressions']
+  };
+  var TIERS = ['easy','medium','tricky'];
+  var COLOR_HEX = { teal:'#1FB8A8', sun:'#FFB627', grape:'#5B3FE4', coral:'#FF6B6B' };
+
   var SKILL_LABELS = {
-    'time-signatures/label':      'Name the signature',
-    'time-signatures/top':        'Beats per measure',
-    'time-signatures/bottom':     'Which note gets the beat',
-    'time-signatures/whichBeats': 'Top vs bottom (beats)',
-    'time-signatures/whichUnit':  'Top vs bottom (unit)',
-    // Note Names + Piano Quiz tag by clef
-    'note-names/treble':  'Treble clef',
-    'note-names/bass':    'Bass clef',
-    'piano-quiz/treble':  'Treble clef',
-    'piano-quiz/bass':    'Bass clef',
-    // Scales tag by mode
-    'scales/major':            'Major',
-    'scales/minor-natural':    'Natural minor',
-    'scales/minor-harmonic':   'Harmonic minor',
-    'scales/minor-melodic':    'Melodic minor',
-    'scales/pentatonic-major':     'Major pentatonic',
-    'scales/pentatonic-minor':     'Minor pentatonic',
-    'ear-scales/pentatonic-major': 'Major pentatonic',
-    'ear-scales/pentatonic-minor': 'Minor pentatonic',
-    // Scale Modes tag by mode rotation
-    'scale-modes/ionian':     'Ionian',
-    'scale-modes/dorian':     'Dorian',
-    'scale-modes/phrygian':   'Phrygian',
-    'scale-modes/lydian':     'Lydian',
-    'scale-modes/mixolydian': 'Mixolydian',
-    'scale-modes/aeolian':    'Aeolian',
-    'scale-modes/locrian':    'Locrian',
-    // Accidentals tag by question type
-    'accidentals/effect':     'Symbol effect',
-    'accidentals/name':       'Naming altered notes',
-    'accidentals/enharmonic': 'Enharmonic equivalents',
-    // Scale Degrees tag by question type
-    'scale-degrees/number':       'Degree numbers',
-    'scale-degrees/name':         'Degree names',
-    'scale-degrees/whichDegree':  'Finding a degree',
-    'primary-chords/function':    'Numeral → chord',
-    'primary-chords/numeral':     'Chord → numeral',
-    'primary-chords/name':        'Function name → chord',
-    'roman-numerals/numeral-to-chord': 'Numeral → chord',
-    'roman-numerals/chord-to-numeral': 'Chord → numeral',
-    'roman-numerals/quality':          'Chord quality',
-    // Note Values (note-value keys) and Key Signatures (key names) and
-    // Intervals (interval shorthand like M3/P5) are self-readable via the
-    // raw-key fallback in skillLabel(), so they need no explicit entries.
-    'bass':   'Bass clef',
-    'treble': 'Treble clef'
+    'time-signatures/label':'Name the signature','time-signatures/top':'Beats per measure',
+    'time-signatures/bottom':'Which note gets the beat','time-signatures/whichBeats':'Top vs bottom (beats)',
+    'time-signatures/whichUnit':'Top vs bottom (unit)',
+    'note-names/treble':'Treble clef','note-names/bass':'Bass clef',
+    'piano-quiz/treble':'Treble clef','piano-quiz/bass':'Bass clef',
+    'scales/major':'Major','scales/minor-natural':'Natural minor','scales/minor-harmonic':'Harmonic minor',
+    'scales/minor-melodic':'Melodic minor','scales/pentatonic-major':'Major pentatonic','scales/pentatonic-minor':'Minor pentatonic',
+    'ear-scales/pentatonic-major':'Major pentatonic','ear-scales/pentatonic-minor':'Minor pentatonic',
+    'scale-modes/ionian':'Ionian','scale-modes/dorian':'Dorian','scale-modes/phrygian':'Phrygian',
+    'scale-modes/lydian':'Lydian','scale-modes/mixolydian':'Mixolydian','scale-modes/aeolian':'Aeolian','scale-modes/locrian':'Locrian',
+    'accidentals/effect':'Symbol effect','accidentals/name':'Naming altered notes','accidentals/enharmonic':'Enharmonic equivalents',
+    'scale-degrees/number':'Degree numbers','scale-degrees/name':'Degree names','scale-degrees/whichDegree':'Finding a degree',
+    'primary-chords/function':'Numeral to chord','primary-chords/numeral':'Chord to numeral','primary-chords/name':'Function name to chord',
+    'roman-numerals/numeral-to-chord':'Numeral to chord','roman-numerals/chord-to-numeral':'Chord to numeral','roman-numerals/quality':'Chord quality',
+    'bass':'Bass clef','treble':'Treble clef'
   };
-  function skillLabel(slug, key) {
-    return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key;
-  }
-
+  function skillLabel(slug, key) { return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key; }
   function metaFor(slug) {
     if (MODULE_META[slug]) return MODULE_META[slug];
-    var pretty = String(slug).split('-').map(function (w) {
-      return w ? w.charAt(0).toUpperCase() + w.slice(1) : w;
-    }).join(' ');
+    var pretty = String(slug).split('-').map(function(w){ return w ? w.charAt(0).toUpperCase()+w.slice(1) : w; }).join(' ');
     return { name: pretty || slug, color: 'teal' };
   }
 
   function show(id) { var e = document.getElementById(id); if (e) e.hidden = false; }
-
   function fmtPct(n) { return Math.round(n) + '%'; }
   function fmtDuration(ms) {
     var s = Math.round(ms / 1000);
     if (s < 60) return s + 's';
     var m = Math.round(s / 60);
     if (m < 60) return m + ' min';
-    var h = Math.floor(m / 60);
-    var rem = m % 60;
+    var h = Math.floor(m / 60), rem = m % 60;
     return h + 'h' + (rem ? ' ' + rem + 'm' : '');
   }
 
-  // Read a module's best score across all difficulty tiers from the
-  // per-difficulty PB keys the modules write: "<slug>_pb_<tier>".
-  function bestScoreFor(slug) {
-    var best = 0;
-    for (var i = 0; i < TIERS.length; i++) {
-      try {
-        var pb = JSON.parse(localStorage.getItem(slug + '_pb_' + TIERS[i]) || '{}');
-        if (pb && typeof pb.score === 'number' && pb.score > best) best = pb.score;
-      } catch (e) {}
+  function dateKey(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function todayKey() { return dateKey(Date.now()); }
+
+  function computeStreak(events) {
+    var days = {};
+    events.forEach(function(ev) {
+      var dk = dateKey(ev.completedAt);
+      days[dk] = (days[dk] || 0) + 1;
+    });
+    var today = new Date(); today.setHours(0,0,0,0);
+    var current = 0, d = new Date(today);
+    if (!days[dateKey(d.getTime())]) {
+      d.setDate(d.getDate() - 1);
     }
-    return best;
+    while (days[dateKey(d.getTime())]) {
+      current++;
+      d.setDate(d.getDate() - 1);
+    }
+    var sorted = Object.keys(days).sort();
+    var longest = 0, run = 0, prev = null;
+    sorted.forEach(function(dk) {
+      if (prev) {
+        var p = new Date(prev), c = new Date(dk);
+        var diff = Math.round((c - p) / 86400000);
+        if (diff === 1) { run++; } else { run = 1; }
+      } else { run = 1; }
+      if (run > longest) longest = run;
+      prev = dk;
+    });
+    return { current: current, longest: longest, dayMap: days };
   }
 
+  function computeMastery(events) {
+    var byModuleTier = {};
+    events.forEach(function(ev) {
+      var key = ev.module + '|' + ev.tier;
+      if (!byModuleTier[key]) byModuleTier[key] = [];
+      byModuleTier[key].push(ev.total > 0 ? ev.correct / ev.total : 0);
+    });
+    var result = {};
+    var allSlugs = [];
+    Object.keys(ROSTER).forEach(function(tier) { ROSTER[tier].forEach(function(s) { allSlugs.push(s); }); });
+    allSlugs.forEach(function(slug) {
+      var cleared = { easy: false, medium: false, tricky: false };
+      var acc = { easy: null, medium: null, tricky: null };
+      var played = false;
+      TIERS.forEach(function(t) {
+        var rounds = byModuleTier[slug + '|' + t] || [];
+        if (rounds.length > 0) played = true;
+        var good = rounds.filter(function(a) { return a >= 0.85; });
+        if (good.length >= 2) cleared[t] = true;
+        if (rounds.length > 0) {
+          var sum = 0; rounds.forEach(function(a) { sum += a; });
+          acc[t] = sum / rounds.length;
+        }
+      });
+      var level = 'untouched';
+      if (cleared.tricky) level = 'gold';
+      else if (cleared.medium) level = 'silver';
+      else if (cleared.easy) level = 'bronze';
+      else if (played) level = 'started';
+      result[slug] = { level: level, cleared: cleared, acc: acc, played: played };
+    });
+    return result;
+  }
+
+  function computeWeakSpots(events) {
+    var bySkill = {};
+    events.forEach(function(ev) {
+      if (!ev.skills) return;
+      for (var sk in ev.skills) {
+        if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
+        var key = ev.module + '/' + sk;
+        if (!bySkill[key]) bySkill[key] = { c: 0, t: 0, module: ev.module, skill: sk };
+        bySkill[key].c += ev.skills[sk].c;
+        bySkill[key].t += ev.skills[sk].t;
+      }
+    });
+    var weak = [];
+    Object.keys(bySkill).forEach(function(key) {
+      var s = bySkill[key];
+      if (s.t < 5) return;
+      var acc = s.c / s.t;
+      if (acc < 0.80) weak.push({ module: s.module, skill: s.skill, acc: acc, total: s.t });
+    });
+    weak.sort(function(a, b) { return a.acc - b.acc; });
+    return weak.slice(0, 4);
+  }
+
+  function computeWeeklyTrend(events) {
+    var chrono = events.slice().reverse();
+    var byWeek = {};
+    chrono.forEach(function(ev) {
+      var d = new Date(ev.completedAt);
+      var day = d.getDay(); var diff = (day + 6) % 7;
+      var mon = new Date(d); mon.setDate(mon.getDate() - diff); mon.setHours(0,0,0,0);
+      var wk = dateKey(mon.getTime());
+      if (!byWeek[wk]) byWeek[wk] = { c: 0, t: 0 };
+      byWeek[wk].c += ev.correct;
+      byWeek[wk].t += ev.total;
+    });
+    var weeks = Object.keys(byWeek).sort().slice(-12);
+    return weeks.map(function(wk) {
+      var w = byWeek[wk];
+      return { week: wk, acc: w.t > 0 ? w.c / w.t : 0 };
+    });
+  }
+
+  // ── Audio ──
+  var audioCtx = null;
+  function playChime(freq, delay) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var now = audioCtx.currentTime + (delay || 0);
+      var osc = audioCtx.createOscillator();
+      var g = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.08, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 0.6);
+    } catch(e) {}
+  }
+
+  // ── Render ──
   function draw() {
     if (!window.QN || !QN.profile) return;
-
-    // Unified nav: pill + "My Progress" hamburger (shared component)
     if (window.QNNav) QNNav.mount({ current: 'progress' });
 
     var active = QN.profile.getActive();
     if (!active) { show('state-anon'); return; }
 
-    var events = QN.events.query(active.id); // newest first
+    var events = QN.events.query(active.id);
     if (!events.length) { show('state-empty'); return; }
 
     show('state-data');
     var whoEl = document.getElementById('who');
     if (whoEl) whoEl.textContent = active.nickname;
 
-    // ----- summary totals -----
-    var totCorrect = 0, totAnswered = 0, totMs = 0;
-    var byModule = {};
-    for (var i = 0; i < events.length; i++) {
-      var ev = events[i];
-      totCorrect += ev.correct;
-      totAnswered += ev.total;
-      totMs += ev.durationMs;
-      if (!byModule[ev.module]) byModule[ev.module] = { correct: 0, total: 0, rounds: 0, skills: {} };
-      byModule[ev.module].correct += ev.correct;
-      byModule[ev.module].total += ev.total;
-      byModule[ev.module].rounds += 1;
-      if (ev.skills) {
-        for (var sk in ev.skills) {
-          if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
-          var bucket = byModule[ev.module].skills;
-          if (!bucket[sk]) bucket[sk] = { c: 0, t: 0 };
-          bucket[sk].c += ev.skills[sk].c;
-          bucket[sk].t += ev.skills[sk].t;
-        }
-      }
+    // Compute everything
+    var streak = computeStreak(events);
+    var mastery = computeMastery(events);
+    var weakSpots = computeWeakSpots(events);
+    var weeklyTrend = computeWeeklyTrend(events);
+
+    var totMs = 0;
+    events.forEach(function(ev) { totMs += ev.durationMs; });
+
+    var goldCount = 0, totalModules = 0;
+    Object.keys(mastery).forEach(function(slug) {
+      totalModules++;
+      if (mastery[slug].level === 'gold') goldCount++;
+    });
+
+    // Hero stats
+    document.getElementById('hero-streak').textContent = streak.current;
+    var bestSub = document.getElementById('hero-streak-best');
+    if (streak.longest > streak.current) bestSub.textContent = 'Best: ' + streak.longest + ' days';
+
+    document.getElementById('hero-time').textContent = fmtDuration(totMs);
+    document.getElementById('hero-mastered').textContent = goldCount + '/' + totalModules;
+    document.getElementById('hero-mastered-sub').textContent =
+      goldCount === totalModules ? 'All mastered!' : (totalModules - goldCount) + ' to go';
+
+    // Subtle load chime
+    playChime(523, 0.1);
+    playChime(659, 0.3);
+    playChime(784, 0.5);
+
+    // Streak calendar (last 5 weeks)
+    drawCalendar(streak.dayMap);
+
+    // Weak spots
+    if (weakSpots.length > 0) {
+      show('weak-card');
+      var list = document.getElementById('weak-list');
+      weakSpots.forEach(function(ws) {
+        var meta = metaFor(ws.module);
+        var row = document.createElement('div');
+        row.className = 'weak-row';
+        row.innerHTML = '<div><div class="weak-name">' + meta.name + '</div><div class="weak-meta">' + skillLabel(ws.module, ws.skill) + '</div></div>' +
+          '<div style="display:flex;align-items:center;"><span class="weak-acc">' + fmtPct(ws.acc * 100) + '</span><span class="weak-arrow">→</span></div>';
+        row.addEventListener('click', function() { window.location.href = ws.module + '.html'; });
+        list.appendChild(row);
+      });
     }
-    document.getElementById('sum-accuracy').textContent =
-      totAnswered > 0 ? fmtPct(100 * totCorrect / totAnswered) : '—';
-    document.getElementById('sum-rounds').textContent = events.length;
-    document.getElementById('sum-time').textContent = fmtDuration(totMs);
 
-    // ----- accuracy trend (oldest -> newest) -----
-    drawTrend(events.slice().reverse());
+    // Trend chart
+    drawTrend(weeklyTrend);
 
-    // ----- per-module cards -----
-    var grid = document.getElementById('module-grid');
-    var slugs = Object.keys(byModule).sort(function (a, b) {
-      return byModule[b].rounds - byModule[a].rounds; // most-played first
-    });
-    slugs.forEach(function (slug) {
-      var m = byModule[slug];
-      var meta = metaFor(slug);
-      var acc = m.total > 0 ? 100 * m.correct / m.total : 0;
-      var best = bestScoreFor(slug);
-
-      var card = document.createElement('div');
-      card.className = 'card mod-card';
-
-      var name = document.createElement('div');
-      name.className = 'mod-name';
-      var dot = document.createElement('span');
-      dot.className = 'mod-dot';
-      dot.style.background = COLOR_HEX[meta.color] || COLOR_HEX.teal;
-      name.appendChild(dot);
-      name.appendChild(document.createTextNode(meta.name));
-      card.appendChild(name);
-
-      var stats = document.createElement('div');
-      stats.className = 'mod-stats';
-      stats.innerHTML =
-        '<div class="mod-stat"><div class="v">' + fmtPct(acc) + '</div><div class="l">Accuracy</div></div>' +
-        '<div class="mod-stat"><div class="v">' + m.rounds + '</div><div class="l">Rounds</div></div>' +
-        (best > 0 ? '<div class="mod-stat"><div class="v">' + best + '</div><div class="l">Best score</div></div>' : '');
-      card.appendChild(stats);
-
-      var bar = document.createElement('div');
-      bar.className = 'acc-bar';
-      var fill = document.createElement('div');
-      fill.className = 'acc-fill';
-      fill.style.width = '0%';
-      fill.style.background = COLOR_HEX[meta.color] || COLOR_HEX.teal;
-      bar.appendChild(fill);
-      card.appendChild(bar);
-
-      // Sub-skill breakdown (only when this module logged tagged questions).
-      // Weakest first — that's the actionable bit and the seed of the future
-      // weak-spot recommender.
-      var skillKeys = Object.keys(m.skills || {});
-      if (skillKeys.length) {
-        skillKeys.sort(function (a, b) {
-          var pa = m.skills[a].t ? m.skills[a].c / m.skills[a].t : 0;
-          var pb = m.skills[b].t ? m.skills[b].c / m.skills[b].t : 0;
-          return pa - pb; // ascending = weakest first
-        });
-        var sub = document.createElement('div');
-        sub.className = 'subskills';
-        var head = document.createElement('div');
-        head.className = 'subskills-head';
-        head.textContent = 'Within this skill';
-        sub.appendChild(head);
-        skillKeys.forEach(function (key) {
-          var s = m.skills[key];
-          var acc = s.t ? 100 * s.c / s.t : 0;
-          var row = document.createElement('div');
-          row.className = 'subskill-row';
-          var weak = acc < 60;
-          row.innerHTML =
-            '<span class="ss-name">' + (weak ? '<span class="ss-flag">●</span> ' : '') + skillLabel(slug, key) + '</span>' +
-            '<span class="ss-val' + (weak ? ' ss-weak' : '') + '">' + fmtPct(acc) + '</span>';
-          sub.appendChild(row);
-        });
-        card.appendChild(sub);
-      }
-
-      grid.appendChild(card);
-      // animate the fill in
-      requestAnimationFrame(function () { setTimeout(function () { fill.style.width = acc + '%'; }, 60); });
-    });
+    // Mastery grid
+    drawMastery(mastery);
   }
 
-  // Hand-drawn SVG line of per-round accuracy. No chart library, matches the
-  // app's own SVG-drawing approach and the no-build constraint.
-  function drawTrend(chrono) {
+  function drawCalendar(dayMap) {
+    var grid = document.getElementById('cal-grid');
+    var days = ['M','T','W','T','F','S','S'];
+    days.forEach(function(d) {
+      var lbl = document.createElement('div');
+      lbl.className = 'cal-label';
+      lbl.textContent = d;
+      grid.appendChild(lbl);
+    });
+
+    var today = new Date(); today.setHours(0,0,0,0);
+    var todayDow = (today.getDay() + 6) % 7;
+    var totalDays = 35;
+    var startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - (totalDays - 1) - todayDow + 6);
+
+    var tk = todayKey();
+    for (var i = 0; i < totalDays + todayDow + 1; i++) {
+      var d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      if (i < (totalDays + todayDow + 1 - 7) && (i % 7) >= 7) continue;
+      var dk = dateKey(d.getTime());
+      var count = dayMap[dk] || 0;
+      var cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      if (dk === tk) cell.classList.add('today');
+      if (d > today) { cell.classList.add('future'); }
+      else if (count >= 6) cell.classList.add('lvl-3');
+      else if (count >= 3) cell.classList.add('lvl-2');
+      else if (count >= 1) cell.classList.add('lvl-1');
+
+      if (count > 0 && d <= today) {
+        var tip = document.createElement('div');
+        tip.className = 'cal-tip';
+        var dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        tip.textContent = count + ' round' + (count !== 1 ? 's' : '') + ' · ' + dateStr;
+        cell.appendChild(tip);
+      }
+      grid.appendChild(cell);
+    }
+
+    var hint = document.getElementById('cal-hint');
+    var activeDays = Object.keys(dayMap).length;
+    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' practiced';
+  }
+
+  function drawTrend(weekly) {
     var svg = document.getElementById('trend-svg');
     var emptyMsg = document.getElementById('trend-empty');
     var hint = document.getElementById('trend-hint');
+    var compare = document.getElementById('trend-compare');
     while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-    var pts = chrono.map(function (ev) {
-      return ev.total > 0 ? (ev.correct / ev.total) : 0;
-    });
-
-    if (pts.length < 2) {
+    if (weekly.length < 2) {
       svg.setAttribute('hidden', '');
       if (emptyMsg) emptyMsg.hidden = false;
       return;
     }
     svg.removeAttribute('hidden');
     if (emptyMsg) emptyMsg.hidden = true;
-    if (hint) hint.textContent = '· last ' + pts.length + ' rounds';
+    if (hint) hint.textContent = 'Last ' + weekly.length + ' weeks';
 
-    var W = 700, H = 180, padX = 12, padY = 18;
-    var n = pts.length;
-    var x = function (i) { return padX + (W - 2 * padX) * (n === 1 ? 0.5 : i / (n - 1)); };
-    var y = function (v) { return padY + (H - 2 * padY) * (1 - v); };
+    if (weekly.length >= 2 && compare) {
+      var thisW = weekly[weekly.length - 1].acc;
+      var lastW = weekly[weekly.length - 2].acc;
+      var diff = Math.round((thisW - lastW) * 100);
+      if (diff > 0) { compare.textContent = '+' + diff + '% vs last week'; compare.style.color = 'var(--teal-dk)'; }
+      else if (diff < 0) { compare.textContent = diff + '% vs last week'; compare.style.color = 'var(--coral-dk)'; }
+      else { compare.textContent = 'Steady vs last week'; compare.style.color = 'var(--ink-faint)'; }
+      compare.hidden = false;
+    }
 
+    var W = 700, H = 180, padX = 40, padY = 18;
+    var n = weekly.length;
+    var x = function(i) { return padX + (W - 2*padX) * (n===1 ? 0.5 : i/(n-1)); };
+    var y = function(v) { return padY + (H - 2*padY) * (1 - v); };
     var NS = 'http://www.w3.org/2000/svg';
 
-    // gridlines at 0/50/100%
-    [0, 0.5, 1].forEach(function (g) {
+    [0, 0.5, 1].forEach(function(g) {
       var ln = document.createElementNS(NS, 'line');
       ln.setAttribute('x1', padX); ln.setAttribute('x2', W - padX);
       ln.setAttribute('y1', y(g)); ln.setAttribute('y2', y(g));
-      ln.setAttribute('stroke', g === 0.5 ? '#e9e4d6' : '#e0dccd');
-      ln.setAttribute('stroke-width', '1');
+      ln.setAttribute('stroke', '#e9e4d6'); ln.setAttribute('stroke-width', '1');
       ln.setAttribute('stroke-dasharray', g === 0.5 ? '4 5' : '0');
       svg.appendChild(ln);
+      var lbl = document.createElementNS(NS, 'text');
+      lbl.setAttribute('x', padX - 6); lbl.setAttribute('y', y(g) + 4);
+      lbl.setAttribute('text-anchor', 'end');
+      lbl.setAttribute('font-size', '11'); lbl.setAttribute('font-family', 'Nunito');
+      lbl.setAttribute('font-weight', '700'); lbl.setAttribute('fill', '#b0b0c0');
+      lbl.textContent = Math.round(g * 100) + '%';
+      svg.appendChild(lbl);
     });
 
-    // area fill under the line
-    var areaD = 'M ' + x(0) + ' ' + y(pts[0]);
-    for (var i = 1; i < n; i++) areaD += ' L ' + x(i) + ' ' + y(pts[i]);
-    areaD += ' L ' + x(n - 1) + ' ' + (H - padY) + ' L ' + x(0) + ' ' + (H - padY) + ' Z';
+    var areaD = 'M ' + x(0) + ' ' + y(weekly[0].acc);
+    for (var i = 1; i < n; i++) areaD += ' L ' + x(i) + ' ' + y(weekly[i].acc);
+    areaD += ' L ' + x(n-1) + ' ' + (H-padY) + ' L ' + x(0) + ' ' + (H-padY) + ' Z';
     var area = document.createElementNS(NS, 'path');
-    area.setAttribute('d', areaD);
-    area.setAttribute('fill', 'rgba(31,184,168,0.12)');
+    area.setAttribute('d', areaD); area.setAttribute('fill', 'rgba(31,184,168,0.10)');
     svg.appendChild(area);
 
-    // the line
-    var lineD = 'M ' + x(0) + ' ' + y(pts[0]);
-    for (var j = 1; j < n; j++) lineD += ' L ' + x(j) + ' ' + y(pts[j]);
+    var lineD = 'M ' + x(0) + ' ' + y(weekly[0].acc);
+    for (var j = 1; j < n; j++) lineD += ' L ' + x(j) + ' ' + y(weekly[j].acc);
     var line = document.createElementNS(NS, 'path');
-    line.setAttribute('d', lineD);
-    line.setAttribute('fill', 'none');
-    line.setAttribute('stroke', '#1FB8A8');
-    line.setAttribute('stroke-width', '3');
-    line.setAttribute('stroke-linejoin', 'round');
-    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('d', lineD); line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', '#1FB8A8'); line.setAttribute('stroke-width', '3');
+    line.setAttribute('stroke-linejoin', 'round'); line.setAttribute('stroke-linecap', 'round');
     svg.appendChild(line);
 
-    // dots (cap at ~30 so a long history doesn't get noisy)
-    var step = n > 30 ? Math.ceil(n / 30) : 1;
-    for (var k = 0; k < n; k += step) {
+    for (var k = 0; k < n; k++) {
       var c = document.createElementNS(NS, 'circle');
-      c.setAttribute('cx', x(k)); c.setAttribute('cy', y(pts[k]));
-      c.setAttribute('r', '3.5');
-      c.setAttribute('fill', '#fff');
-      c.setAttribute('stroke', '#0e8475');
-      c.setAttribute('stroke-width', '2');
+      c.setAttribute('cx', x(k)); c.setAttribute('cy', y(weekly[k].acc));
+      c.setAttribute('r', '4.5'); c.setAttribute('fill', '#fff');
+      c.setAttribute('stroke', '#0e8475'); c.setAttribute('stroke-width', '2.5');
       svg.appendChild(c);
     }
+  }
+
+  function drawMastery(mastery) {
+    var section = document.getElementById('mastery-section');
+    var sectionHead = document.createElement('div');
+    sectionHead.className = 'section-head';
+    sectionHead.innerHTML = '<span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:1.3rem;">Module mastery</span>';
+    section.appendChild(sectionHead);
+
+    Object.keys(ROSTER).forEach(function(tierName) {
+      var slugs = ROSTER[tierName];
+      var goldInTier = 0;
+      slugs.forEach(function(s) { if (mastery[s] && mastery[s].level === 'gold') goldInTier++; });
+
+      var head = document.createElement('div');
+      head.className = 'tier-head';
+      head.innerHTML = tierName + ' <span class="tier-count">' + goldInTier + '/' + slugs.length + ' mastered</span>';
+      section.appendChild(head);
+
+      var grid = document.createElement('div');
+      grid.className = 'mastery-grid';
+
+      slugs.forEach(function(slug) {
+        var m = mastery[slug] || { level: 'untouched', cleared: {}, acc: {} };
+        var meta = metaFor(slug);
+        var card = document.createElement('div');
+        card.className = 'card m-card';
+        if (m.level === 'gold') card.classList.add('gold-shimmer');
+
+        var circumference = 2 * Math.PI * 18;
+        var progress = m.level === 'gold' ? 1 : m.level === 'silver' ? 0.66 : m.level === 'bronze' ? 0.33 : m.level === 'started' ? 0.1 : 0;
+        var offset = circumference * (1 - progress);
+        var ringClass = m.level === 'untouched' || m.level === 'started' ? '' : m.level;
+
+        var tierLabel = m.level === 'untouched' ? 'Not started' :
+          m.level === 'started' ? 'In progress' :
+          m.level.charAt(0).toUpperCase() + m.level.slice(1);
+        var tierClass = m.level;
+
+        var ringLabelText = m.level === 'gold' ? '★' : m.level === 'silver' ? '◐' : m.level === 'bronze' ? '◔' : m.level === 'started' ? '·' : '';
+
+        card.innerHTML = '<div class="m-card-top">' +
+          '<div class="m-ring"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="18"/>' +
+          '<circle class="ring-fill ' + ringClass + '" cx="22" cy="22" r="18" stroke-dasharray="' + circumference + '" stroke-dashoffset="' + offset + '"/>' +
+          '</svg><div class="m-ring-label ' + ringClass + '">' + ringLabelText + '</div></div>' +
+          '<div><div class="m-name">' + meta.name + '</div>' +
+          '<div class="m-tier-label ' + tierClass + '">' + tierLabel + '</div></div></div>' +
+          '<div class="m-detail"><div class="m-detail-inner">' +
+          TIERS.map(function(t) {
+            var label = t.charAt(0).toUpperCase() + t.slice(1);
+            var pct = m.acc[t] !== null ? fmtPct(m.acc[t] * 100) : '—';
+            var check = m.cleared[t] ? '<span class="m-check">✓</span>' : '';
+            return '<div class="m-tier-row"><span>' + label + ' ' + check + '</span><span class="m-pct">' + pct + '</span></div>';
+          }).join('') +
+          '</div></div>';
+
+        card.addEventListener('click', function() { card.classList.toggle('expanded'); });
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+    });
   }
 
   if (document.readyState === 'loading') {
