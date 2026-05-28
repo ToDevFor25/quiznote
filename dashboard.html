@@ -65,8 +65,12 @@
   .cal-cell.lvl-1 { background: #c8ece7; }
   .cal-cell.lvl-2 { background: #7fd6cb; }
   .cal-cell.lvl-3 { background: var(--teal); }
+  .cal-cell.practiced { background: var(--sun); }
+  .cal-cell.both { background: linear-gradient(135deg, var(--teal) 50%, var(--sun) 50%); }
   .cal-cell.today { outline: 2px solid var(--ink); outline-offset: -1px; border-radius: 5px; }
-  .cal-cell.future { background: transparent; }
+  .cal-cell.future { background: transparent; pointer-events: none; }
+  .cal-cell.past { cursor: pointer; }
+  .cal-cell.past:hover { outline: 2px solid var(--ink-faint); outline-offset: -1px; }
   .cal-tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--ink); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; white-space: nowrap; z-index: 5; pointer-events: none; }
   .cal-cell:hover .cal-tip, .cal-cell:active .cal-tip { display: block; }
 
@@ -187,43 +191,23 @@
     .site-header .brand-name { font-size: 22px; }
     .cal-grid { gap: 3px; }
   }
-  /* ── Practice log ── */
-  .practice-log-card { margin-bottom: 24px; }
-  .log-entry {
-    display: flex; align-items: center; gap: 10px; padding: 10px 0;
-    border-bottom: 1px solid #f0ede4; font-size: 14px; font-weight: 600;
+  /* ── Calendar legend + instrument picker ── */
+  .cal-legend { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--ink-faint); }
+  .cal-legend-swatch { width: 12px; height: 12px; border-radius: 3px; }
+  .cal-inst-picker {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: white; border: 2px solid var(--ink); border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 8px; z-index: 10;
+    display: flex; flex-direction: column; gap: 4px; min-width: 120px;
   }
-  .log-entry:last-of-type { border-bottom: none; }
-  .log-entry .log-check { color: var(--teal); font-size: 18px; flex-shrink: 0; }
-  .log-entry .log-text { flex: 1; }
-  .log-entry .log-date { font-size: 12px; color: var(--ink-faint); }
-  .log-entry .log-inst { font-size: 11px; font-weight: 700; color: var(--grape); background: rgba(91,63,228,0.08); padding: 2px 8px; border-radius: 999px; }
-  .log-entry .log-del {
-    background: none; border: none; color: var(--ink-faint); cursor: pointer;
-    font-size: 16px; padding: 4px; opacity: 0.5; transition: opacity 100ms;
+  .cal-inst-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px;
+    color: var(--ink); background: none; border: none; border-radius: 8px;
+    padding: 8px 12px; cursor: pointer; text-align: left; transition: background 100ms;
   }
-  .log-entry .log-del:hover { opacity: 1; color: var(--coral); }
-  .log-add {
-    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
-  }
-  .log-input {
-    flex: 1; min-width: 140px; font-family: inherit; font-size: 14px; font-weight: 600;
-    border: 1.5px solid var(--shadow-cool); border-radius: 10px; padding: 8px 12px;
-    color: var(--ink); background: var(--cream);
-  }
-  .log-input:focus { outline: none; border-color: var(--teal); }
-  .log-select {
-    font-family: inherit; font-size: 13px; font-weight: 600;
-    border: 1.5px solid var(--shadow-cool); border-radius: 10px; padding: 8px 10px;
-    color: var(--ink); background: var(--cream); cursor: pointer;
-  }
-  .log-btn {
-    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
-    color: white; background: var(--teal); border: none; border-radius: 10px;
-    padding: 8px 16px; cursor: pointer; transition: background 100ms;
-  }
-  .log-btn:hover { background: var(--teal-dk); }
-  .log-empty { font-size: 13px; color: var(--ink-faint); font-weight: 600; font-style: italic; padding: 8px 0; }
+  .cal-inst-btn:hover { background: var(--cream); }
+  .cal-inst-btn.undo { color: var(--coral); }
 
   /* ── Share button + dropdown ── */
   .share-btn {
@@ -300,28 +284,35 @@
   @media print {
     body { background: white; }
     .site-header, footer, .back-link, .share-wrap, .next-card, .upnext-card,
-    .device-note, #weak-card, #practice-log, .picker-overlay,
-    .trend-card, .page-title, .page-sub { display: none !important; }
+    .device-note, #weak-card, .picker-overlay,
+    .trend-card, .page-title, .page-sub, .cal-legend,
+    .cal-inst-picker, .cal-tip { display: none !important; }
     .print-header, .print-footer { display: flex !important; }
     .wrap { max-width: 100%; padding: 0; }
-    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; padding: 14px; }
-    .hero-stats { gap: 10px; margin-bottom: 16px; }
-    .hero-stat .hero-value { animation: none; opacity: 1; font-size: 1.8rem; }
-    .hero-stat .hero-icon { font-size: 20px; }
-    .streak-card { margin-bottom: 16px; }
+    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; padding: 12px; }
+    .hero-stats { gap: 8px; margin-bottom: 12px; }
+    .hero-stat { padding: 10px 8px; }
+    .hero-stat .hero-value { animation: none; opacity: 1; font-size: 1.5rem; }
+    .hero-stat .hero-icon { font-size: 16px; margin-bottom: 2px; }
+    .hero-stat .hero-label { font-size: 9px; }
+    .hero-stat .hero-sub { font-size: 9px; }
+    .streak-card { margin-bottom: 12px; padding: 10px; }
+    .streak-card .section-head { font-size: 0.9rem; margin-bottom: 8px; }
     .cal-grid { gap: 2px; }
-    .cal-tip { display: none !important; }
+    .cal-cell { border-radius: 2px; }
     .m-card.gold-shimmer::after { display: none; }
-    .tier-head { cursor: default; font-size: 1rem; margin: 12px 0 8px; padding: 6px 0; }
+    .tier-head { cursor: default; font-size: 0.9rem; margin: 8px 0 6px; padding: 4px 0; border-bottom-width: 1px; }
     .tier-head.collapsed + .mastery-grid { max-height: none; opacity: 1; }
-    .mastery-grid { max-height: none !important; opacity: 1 !important; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
-    .m-card { padding: 8px 10px; }
-    .m-card-top { margin-bottom: 4px; gap: 8px; }
-    .m-ring { width: 28px; height: 28px; }
-    .m-name { font-size: 12px; }
-    .m-tier-label { font-size: 10px; }
+    .mastery-grid { max-height: none !important; opacity: 1 !important; gap: 4px; grid-template-columns: repeat(4, 1fr); }
+    .m-card { padding: 5px 6px; border-width: 1px; border-radius: 8px; box-shadow: none; }
+    .m-card-top { margin-bottom: 0; gap: 5px; }
+    .m-ring { width: 18px; height: 18px; }
+    .m-ring svg circle { stroke-width: 3; }
+    .m-name { font-size: 9px; }
+    .m-tier-label { font-size: 8px; }
     .m-detail { display: none; }
-    .mastery-section .section-head { font-size: 1rem; }
+    .mastery-section .section-head { font-size: 0.9rem; margin-bottom: 4px; }
+    .mastery-section { margin-bottom: 8px; }
     .print-header {
       display: flex !important; justify-content: space-between; align-items: flex-start;
       padding-bottom: 12px; margin-bottom: 14px; border-bottom: 3px solid var(--teal);
@@ -478,17 +469,6 @@
       <div class="trend-compare" id="trend-compare" hidden></div>
       <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
       <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
-    </div>
-
-    <!-- Practice log (self-reported teacher lessons — dashboard only, not exported) -->
-    <div class="card practice-log-card" id="practice-log" hidden>
-      <div class="section-head" style="margin-bottom:12px;">Practice log</div>
-      <div id="log-entries"></div>
-      <div class="log-add" id="log-add-form">
-        <input type="text" class="log-input" id="log-note" placeholder="What did you practice?" maxlength="100" />
-        <select class="log-select" id="log-instrument"><option value="">Instrument</option></select>
-        <button class="log-btn" id="log-add-btn">+ Log</button>
-      </div>
     </div>
 
     <!-- Mastery grid -->
@@ -797,7 +777,7 @@
     }
 
     // Streak calendar (last 5 weeks)
-    drawCalendar(streak.dayMap);
+    drawCalendar(streak.dayMap, active);
 
     // Weak spots
     if (weakSpots.length > 0) {
@@ -817,15 +797,22 @@
     // Trend chart
     drawTrend(weeklyTrend);
 
-    // Practice log
-    drawPracticeLog(active);
-
     // Mastery grid
     drawMastery(mastery);
   }
 
-  function drawCalendar(dayMap) {
+  function drawCalendar(dayMap, active) {
     var grid = document.getElementById('cal-grid');
+    var instruments = (active && active.instruments) || [];
+    var profileId = active ? active.id : null;
+
+    var practiceDays = {};
+    if (profileId && QN.practiceLog) {
+      QN.practiceLog.list(profileId).forEach(function(e) {
+        practiceDays[e.date] = true;
+      });
+    }
+
     var days = ['M','T','W','T','F','S','S'];
     days.forEach(function(d) {
       var lbl = document.createElement('div');
@@ -836,38 +823,108 @@
 
     var today = new Date(); today.setHours(0,0,0,0);
     var todayDow = (today.getDay() + 6) % 7;
-    var totalDays = 35;
+    var totalCells = 35;
     var startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - (totalDays - 1) - todayDow + 6);
+    startDate.setDate(startDate.getDate() - totalCells + 1 - todayDow + 6);
 
     var tk = todayKey();
-    for (var i = 0; i < totalDays + todayDow + 1; i++) {
+
+    for (var i = 0; i < totalCells + todayDow + 1; i++) {
       var d = new Date(startDate);
       d.setDate(d.getDate() + i);
-      if (i < (totalDays + todayDow + 1 - 7) && (i % 7) >= 7) continue;
+      if (i < (totalCells + todayDow + 1 - 7) && (i % 7) >= 7) continue;
       var dk = dateKey(d.getTime());
-      var count = dayMap[dk] || 0;
+      var qnCount = dayMap[dk] || 0;
+      var hasPractice = !!practiceDays[dk];
       var cell = document.createElement('div');
       cell.className = 'cal-cell';
-      if (dk === tk) cell.classList.add('today');
-      if (d > today) { cell.classList.add('future'); }
-      else if (count >= 6) cell.classList.add('lvl-3');
-      else if (count >= 3) cell.classList.add('lvl-2');
-      else if (count >= 1) cell.classList.add('lvl-1');
+      cell.dataset.date = dk;
 
-      if (count > 0 && d <= today) {
-        var tip = document.createElement('div');
-        tip.className = 'cal-tip';
+      if (dk === tk) cell.classList.add('today');
+      if (d > today) {
+        cell.classList.add('future');
+      } else {
+        cell.classList.add('past');
+        if (qnCount > 0 && hasPractice) cell.classList.add('both');
+        else if (hasPractice) cell.classList.add('practiced');
+        else if (qnCount >= 6) cell.classList.add('lvl-3');
+        else if (qnCount >= 3) cell.classList.add('lvl-2');
+        else if (qnCount >= 1) cell.classList.add('lvl-1');
+      }
+
+      var tip = document.createElement('div');
+      tip.className = 'cal-tip';
+      var parts = [];
+      if (qnCount > 0) parts.push(qnCount + ' round' + (qnCount !== 1 ? 's' : ''));
+      if (hasPractice) parts.push('Practiced');
+      if (parts.length > 0) {
         var dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-        tip.textContent = count + ' round' + (count !== 1 ? 's' : '') + ' · ' + dateStr;
+        tip.textContent = parts.join(' + ') + ' · ' + dateStr;
         cell.appendChild(tip);
       }
+
+      if (d <= today && instruments.length > 0) {
+        (function(cellEl, dateStr, hasPrac) {
+          cellEl.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.querySelectorAll('.cal-inst-picker').forEach(function(p) { p.remove(); });
+
+            if (instruments.length <= 1 && !hasPrac) {
+              QN.practiceLog.add(profileId, { date: dateStr, instrument: instruments[0] || null });
+              refreshCalendar(dayMap, active);
+            } else if (hasPrac) {
+              QN.practiceLog.remove(profileId, null, dateStr);
+              refreshCalendar(dayMap, active);
+            } else {
+              var picker = document.createElement('div');
+              picker.className = 'cal-inst-picker';
+              instruments.forEach(function(inst) {
+                var btn = document.createElement('button');
+                btn.className = 'cal-inst-btn';
+                btn.textContent = inst;
+                btn.addEventListener('click', function(ev) {
+                  ev.stopPropagation();
+                  QN.practiceLog.add(profileId, { date: dateStr, instrument: inst });
+                  picker.remove();
+                  refreshCalendar(dayMap, active);
+                });
+                picker.appendChild(btn);
+              });
+              cellEl.appendChild(picker);
+            }
+          });
+        })(cell, dk, hasPractice);
+      }
+
       grid.appendChild(cell);
     }
 
+    // Legend
+    var legend = document.createElement('div');
+    legend.className = 'cal-legend';
+    legend.innerHTML = '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#c8ece7;"></div>QuizNote</div>';
+    if (instruments.length > 0) {
+      legend.innerHTML += '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--sun);"></div>Teacher practice</div>';
+      legend.innerHTML += '<div class="cal-legend-item"><div class="cal-legend-swatch" style="background:linear-gradient(135deg,var(--teal) 50%,var(--sun) 50%);"></div>Both</div>';
+    }
+    grid.parentElement.appendChild(legend);
+
     var hint = document.getElementById('cal-hint');
-    var activeDays = Object.keys(dayMap).length;
-    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' practiced';
+    var activeDays = new Set(Object.keys(dayMap).concat(Object.keys(practiceDays))).size;
+    if (hint) hint.textContent = activeDays + ' day' + (activeDays !== 1 ? 's' : '') + ' active';
+
+    // Close picker on outside click
+    document.addEventListener('click', function() {
+      document.querySelectorAll('.cal-inst-picker').forEach(function(p) { p.remove(); });
+    });
+  }
+
+  function refreshCalendar(dayMap, active) {
+    var grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    var legend = grid.parentElement.querySelector('.cal-legend');
+    if (legend) legend.remove();
+    drawCalendar(dayMap, active);
   }
 
   function drawTrend(weekly) {
@@ -1009,62 +1066,6 @@
       });
 
       section.appendChild(grid);
-    });
-  }
-
-  // ── Practice log ──
-  function drawPracticeLog(active) {
-    var instruments = active.instruments || [];
-    if (instruments.length === 0) return;
-
-    show('practice-log');
-    var select = document.getElementById('log-instrument');
-    instruments.forEach(function(inst) {
-      var opt = document.createElement('option');
-      opt.value = inst; opt.textContent = inst;
-      select.appendChild(opt);
-    });
-    if (instruments.length === 1) { select.value = instruments[0]; select.style.display = 'none'; }
-
-    renderLogEntries(active.id);
-
-    document.getElementById('log-add-btn').addEventListener('click', function() {
-      var note = document.getElementById('log-note').value.trim();
-      var inst = select.value;
-      if (!note && !inst) return;
-      QN.practiceLog.add(active.id, { note: note, instrument: inst || instruments[0] || null });
-      document.getElementById('log-note').value = '';
-      renderLogEntries(active.id);
-    });
-
-    document.getElementById('log-note').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') document.getElementById('log-add-btn').click();
-    });
-  }
-
-  function renderLogEntries(profileId) {
-    var container = document.getElementById('log-entries');
-    container.innerHTML = '';
-    var entries = QN.practiceLog.list(profileId);
-    if (entries.length === 0) {
-      container.innerHTML = '<div class="log-empty">No practice logged yet. Use this to track teacher lessons.</div>';
-      return;
-    }
-    entries.slice().reverse().slice(0, 20).forEach(function(entry) {
-      var div = document.createElement('div');
-      div.className = 'log-entry';
-      var dateStr = entry.date || '';
-      try { dateStr = new Date(entry.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch(e) {}
-      div.innerHTML = '<span class="log-check">✓</span>' +
-        '<span class="log-text">' + (entry.note || 'Practice session') + '</span>' +
-        (entry.instrument ? '<span class="log-inst">' + entry.instrument + '</span>' : '') +
-        '<span class="log-date">' + dateStr + '</span>' +
-        '<button class="log-del" title="Remove">×</button>';
-      div.querySelector('.log-del').addEventListener('click', function() {
-        QN.practiceLog.remove(profileId, entry.id);
-        renderLogEntries(profileId);
-      });
-      container.appendChild(div);
     });
   }
 

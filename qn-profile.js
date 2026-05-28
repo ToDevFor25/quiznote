@@ -1261,9 +1261,13 @@
       if (log.length > 200) log = log.slice(-200);
       writeStorage(this._key(profileId), log);
     },
-    remove: function(profileId, entryId) {
+    remove: function(profileId, entryId, date) {
       if (!profileId) return;
-      var log = this.list(profileId).filter(function(e) { return e.id !== entryId; });
+      var log = this.list(profileId).filter(function(e) {
+        if (entryId) return e.id !== entryId;
+        if (date) return e.date !== date;
+        return true;
+      });
       writeStorage(this._key(profileId), log);
     }
   };
