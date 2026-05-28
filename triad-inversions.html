@@ -914,6 +914,8 @@
 
 
 
+    if (!els['timer-toggle']) els['timer-toggle'] = els['timer-row'];
+    if (!els['timer-toggle-state']) els['timer-toggle-state'] = els['timer-pill-state'];
     els['timer-toggle'].addEventListener('click', function () {
       A.ensureCtx();
       var enabled = !state.settings.timer.enabled;
