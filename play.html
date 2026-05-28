@@ -221,6 +221,12 @@
     .ltile-art.bg-green { background: #e7f5e6; }
     .ltile-art.bg-pink  { background: #ffeef7; }
     .ltile-art.bg-slate { background: #eef1f7; }
+    /* skill-family tints (Option B) — repeat across all three tiers */
+    .ltile-art.th-ear     { background: #ffe6f1; }  /* ear / listen */
+    .ltile-art.th-read    { background: #e9eff9; }  /* read the score */
+    .ltile-art.th-rhythm  { background: #fff2cf; }  /* rhythm & meter */
+    .ltile-art.th-pitch   { background: #e4f3e0; }  /* keys · scales · pitch */
+    .ltile-art.th-harmony { background: #efe9fb; }  /* harmony · chords */
     .ltile-body {
       padding: 14px 14px 16px;
       text-align: center;
@@ -428,7 +434,7 @@
       <div class="tile-grid">
         <!-- PianoQuiz : staff note → arrow → mini piano with one key lit -->
         <a class="ltile" href="piano-quiz.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines y=14, 22, 30, 38, 46 -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -477,7 +483,7 @@
 
         <!-- Note Names : staff note + 4 letter chips with right one teal -->
         <a class="ltile" href="note-names.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines y=22, 30, 38, 46, 54 -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -515,7 +521,7 @@
 
         <!-- Piano & Keyboard : 1-octave keyboard with one key lit + letter chips -->
         <a class="ltile" href="piano-keyboard.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- 1-octave keyboard, C to B -->
               <g stroke="#2A2A3E" stroke-width="1.4">
@@ -558,7 +564,7 @@
 
         <!-- Ledger Lines : staff with Middle C below + ledger line emphasised -->
         <a class="ltile" href="ledger-lines.html">
-          <div class="ltile-art bg-slate">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines y=22, 30, 38, 46, 54 -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -597,7 +603,7 @@
 
         <!-- Note Values : 4 note glyphs over proportional duration bars -->
         <a class="ltile" href="note-values.html">
-          <div class="ltile-art bg-sun">
+          <div class="ltile-art th-rhythm">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g font-family="Bravura Text" font-size="36" fill="#2A2A3E" text-anchor="middle">
                 <text x="22"  y="48">&#xE1D2;</text>
@@ -627,7 +633,7 @@
 
         <!-- Dotted Notes & Ties : dotted half + tied quarters with arc -->
         <a class="ltile" href="dotted-notes.html">
-          <div class="ltile-art bg-pink">
+          <div class="ltile-art th-rhythm">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Dotted half note on left -->
               <g font-family="Bravura Text" font-size="42" fill="#2A2A3E" text-anchor="middle">
@@ -656,7 +662,7 @@
 
         <!-- Ear: Rhythm — pattern matching -->
         <a class="ltile" href="ear-rhythm.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes erB1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
@@ -681,7 +687,7 @@
 
         <!-- Time Signatures : staff with treble clef + 4/4 + "meter?" chip -->
         <a class="ltile" href="time-signatures.html">
-          <div class="ltile-art bg-green">
+          <div class="ltile-art th-rhythm">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="22" x2="154" y2="22"/>
@@ -709,7 +715,7 @@
         </a>
 
         <a class="ltile" href="accidentals.html">
-          <div class="ltile-art bg-grape">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -744,7 +750,7 @@
 
         <!-- Tempo Markings : italic "Allegro" card + metronome chip -->
         <a class="ltile" href="tempo-markings.html">
-          <div class="ltile-art bg-sun">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Italic Allegro card -->
               <rect x="22" y="22" width="116" height="44" rx="9" fill="white" stroke="#2A2A3E" stroke-width="2"/>
@@ -765,7 +771,7 @@
 
         <!-- Dynamics : "p" and "f" Bravura-style letters + hairpin -->
         <a class="ltile" href="dynamics.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Big italic p / f letters -->
               <text x="46" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#2A2A3E" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">p</text>
@@ -783,7 +789,7 @@
 
         <!-- Articulation : notehead with staccato dot + slur curve -->
         <a class="ltile" href="articulation.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -810,7 +816,7 @@
 
         <!-- Score Navigation : repeat barline + D.C. al Fine text -->
         <a class="ltile" href="score-navigation.html">
-          <div class="ltile-art bg-green">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff segment with end-repeat -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -838,7 +844,7 @@
 
         <!-- Ornaments : notehead + trill "tr" + wavy line -->
         <a class="ltile" href="ornaments.html">
-          <div class="ltile-art bg-grape">
+          <div class="ltile-art th-read">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -884,7 +890,7 @@
       <div class="tile-grid">
         <!-- Key Signatures : staff with 3 sharps + "A major?" chip -->
         <a class="ltile" href="key-signatures.html">
-          <div class="ltile-art bg-grape">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="22" x2="154" y2="22"/>
@@ -911,7 +917,7 @@
         <!-- Circle of Fifths : a real 12-key wheel (teal sharps / grape flats /
              gold C), one seat showing a glowing "?" — the in-game position question -->
         <a class="ltile" href="circle-of-fifths.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <radialGradient id="cofTileHub" cx="50%" cy="42%" r="65%">
@@ -959,7 +965,7 @@
 
         <!-- Scales : 8 notes climbing diagonally -->
         <a class="ltile" href="scales.html">
-          <div class="ltile-art bg-green">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="22" x2="154" y2="22"/>
@@ -991,7 +997,7 @@
 
         <!-- Chromatic Scale : staff with a dense row of sharps -->
         <a class="ltile" href="chromatic-scale.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="22" x2="154" y2="22"/>
@@ -1026,7 +1032,7 @@
         </a>
 
         <a class="ltile" href="scale-degrees.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <!-- Staff lines -->
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
@@ -1063,7 +1069,7 @@
 
         <!-- Scale Modes : same staff, rotating tonic / mode label -->
         <a class="ltile" href="scale-modes.html">
-          <div class="ltile-art bg-grape">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="22" x2="154" y2="22"/>
@@ -1102,7 +1108,7 @@
 
         <!-- Intervals : two stacked notes + bracket + answer chips -->
         <a class="ltile" href="intervals.html">
-          <div class="ltile-art bg-slate">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6"  y1="14" x2="154" y2="14"/>
@@ -1136,7 +1142,7 @@
 
         <!-- Ear: Intervals -->
         <a class="ltile" href="ear-intervals.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes eiPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
@@ -1162,7 +1168,7 @@
 
         <!-- Ear: Scales -->
         <a class="ltile" href="ear-scales.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes esRise { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
@@ -1194,7 +1200,7 @@
 
         <!-- Transposition : a note shifts up the staff — same shape, new pitch -->
         <a class="ltile" href="transposition.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-pitch">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6" y1="34" x2="154" y2="34"/>
@@ -1243,7 +1249,7 @@
       <div class="tile-grid">
         <!-- Primary Chords : key sig + I/IV/V labels -->
         <a class="ltile" href="primary-chords.html">
-          <div class="ltile-art bg-teal">
+          <div class="ltile-art th-harmony">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6" y1="22" x2="154" y2="22"/>
@@ -1271,7 +1277,7 @@
 
         <!-- Roman Numerals : key sig + all 7 numeral chips -->
         <a class="ltile" href="roman-numerals.html">
-          <div class="ltile-art bg-grape">
+          <div class="ltile-art th-harmony">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
                 <line x1="6" y1="22" x2="154" y2="22"/>
@@ -1307,7 +1313,7 @@
 
         <!-- Chord Function : the T → PD → D → T harmonic cycle, dominant pulsing -->
         <a class="ltile" href="chord-function.html">
-          <div class="ltile-art bg-slate">
+          <div class="ltile-art th-harmony">
             <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
               <!-- function pills -->
               <rect x="8"   y="30" width="40" height="28" rx="9" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
@@ -1331,19 +1337,19 @@
           </div>
         </a>
 
-        <a class="ltile" href="triads.html"><div class="ltile-art bg-teal"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a>
+        <a class="ltile" href="triads.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a>
 
-        <a class="ltile" href="triad-inversions.html"><div class="ltile-art bg-grape"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a>
+        <a class="ltile" href="triad-inversions.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a>
 
-        <a class="ltile" href="seventh-chords.html"><div class="ltile-art bg-teal"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a>
+        <a class="ltile" href="seventh-chords.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a>
 
-        <a class="ltile" href="chord-progressions.html"><div class="ltile-art bg-grape"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="20" y="35" width="28" height="28" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><text x="34" y="54" font-size="13" fill="white">I</text><text x="60" y="54" font-size="14" fill="#bbb">→</text><rect x="68" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="82" y="54" font-size="13">V</text><text x="108" y="54" font-size="14" fill="#bbb">→</text><rect x="116" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="130" y="54" font-size="13">vi</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Chord Progressions</div><div class="ltile-blurb">Hear the pattern. Name the sequence.</div></div></a>
+        <a class="ltile" href="chord-progressions.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="20" y="35" width="28" height="28" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><text x="34" y="54" font-size="13" fill="white">I</text><text x="60" y="54" font-size="14" fill="#bbb">→</text><rect x="68" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="82" y="54" font-size="13">V</text><text x="108" y="54" font-size="14" fill="#bbb">→</text><rect x="116" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="130" y="54" font-size="13">vi</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Chord Progressions</div><div class="ltile-blurb">Hear the pattern. Name the sequence.</div></div></a>
 
-        <a class="ltile" href="cadences.html"><div class="ltile-art bg-teal"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="30" y="35" width="36" height="36" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="48" y="58" font-size="16">V</text><text x="80" y="58" font-size="20" fill="#bbb">→</text><rect x="94" y="35" width="36" height="36" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/><text x="112" y="58" font-size="16" fill="white">I</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Cadences</div><div class="ltile-blurb">How phrases end. V→I or something else?</div></div></a>
+        <a class="ltile" href="cadences.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="30" y="35" width="36" height="36" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="48" y="58" font-size="16">V</text><text x="80" y="58" font-size="20" fill="#bbb">→</text><rect x="94" y="35" width="36" height="36" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/><text x="112" y="58" font-size="16" fill="white">I</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Cadences</div><div class="ltile-blurb">How phrases end. V→I or something else?</div></div></a>
 
         <!-- Ear: Chord Quality -->
         <a class="ltile" href="ear-chords.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes ecFade { 0%,45%{opacity:1} 50%,95%{opacity:0.3} 100%{opacity:1} }
@@ -1366,7 +1372,7 @@
 
         <!-- Ear: Cadences -->
         <a class="ltile" href="ear-cadences.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.9;transform:translateX(3px)} }
@@ -1389,7 +1395,7 @@
 
         <!-- Ear: Progressions -->
         <a class="ltile" href="ear-progressions.html">
-          <div class="ltile-art bg-coral">
+          <div class="ltile-art th-ear">
             <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
               <style>
                 @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
