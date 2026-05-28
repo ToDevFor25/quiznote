@@ -1623,7 +1623,7 @@
     const keyId = state.deck[state.q];
     const clef = state.clefDeck[state.q];
     state.current = { keyId, clef };
-    state.locked = false;
+    state.locked = false; state.attempts = 0;
     state.currentChoices = buildChoices(keyId, state.pool);
 
     R.renderKeySignature(els['staff-wrap'], { keyId, clef });
