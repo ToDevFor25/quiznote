@@ -350,6 +350,43 @@ footer .sep { margin: 0 8px; }
   border-radius: 999px;
 }
 
+/* ── instruments ─────────────────────────────────────────── */
+
+.inst-section { margin-top: 16px; }
+.inst-label { font-weight: 700; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+.inst-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.inst-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 700; padding: 6px 12px;
+  border-radius: 999px; background: rgba(31, 184, 168, 0.1);
+  color: var(--teal-dk, #0F8A7E); border: none; cursor: default;
+}
+.inst-chip-x {
+  background: none; border: none; color: var(--ink-faint); cursor: pointer;
+  font-size: 16px; line-height: 1; padding: 0; margin-left: 2px;
+}
+.inst-chip-x:hover { color: var(--coral); }
+.inst-add-row { display: flex; gap: 6px; }
+.inst-input {
+  flex: 1; font-family: inherit; font-size: 13px; font-weight: 600;
+  border: 1.5px solid var(--ink-faint); border-radius: 10px; padding: 7px 12px;
+  color: var(--ink); background: white;
+}
+.inst-input:focus { outline: none; border-color: var(--teal); }
+.inst-add-btn {
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--teal-dk); background: rgba(31,184,168,0.12);
+  border: none; border-radius: 10px; padding: 7px 14px; cursor: pointer;
+}
+.inst-add-btn:hover { background: rgba(31,184,168,0.2); }
+.inst-presets { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.inst-preset {
+  font-size: 12px; font-weight: 600; color: var(--ink-faint);
+  background: none; border: 1px solid var(--ink-faint); border-radius: 999px;
+  padding: 3px 10px; cursor: pointer; transition: border-color 100ms, color 100ms;
+}
+.inst-preset:hover { border-color: var(--teal); color: var(--teal-dk); }
+
 /* ── color picker ────────────────────────────────────────── */
 
 .color-grid {
@@ -714,6 +751,25 @@ footer .sep { margin: 0 8px; }
              maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" />
       <p class="hint" id="edit-nickname-hint">1 to 20 characters</p>
     </div>
+    <div class="inst-section">
+      <div class="inst-label">Instruments (optional — enables practice log)</div>
+      <div class="inst-chips" id="edit-inst-chips"></div>
+      <div class="inst-add-row">
+        <input type="text" class="inst-input" id="edit-inst-input" placeholder="Add an instrument" maxlength="30" />
+        <button class="inst-add-btn" id="edit-inst-add" type="button">+ Add</button>
+      </div>
+      <div class="inst-presets" id="edit-inst-presets">
+        <button class="inst-preset" type="button">Piano</button>
+        <button class="inst-preset" type="button">Guitar</button>
+        <button class="inst-preset" type="button">Violin</button>
+        <button class="inst-preset" type="button">Flute</button>
+        <button class="inst-preset" type="button">Voice</button>
+        <button class="inst-preset" type="button">Drums</button>
+        <button class="inst-preset" type="button">Cello</button>
+        <button class="inst-preset" type="button">Trumpet</button>
+      </div>
+    </div>
+
     <label class="suggest-label" style="margin-top:8px;"><span>Color</span></label>
     <div class="color-grid" id="edit-color-grid"><!-- rendered by JS --></div>
     <div class="btn-row" style="margin-top:28px;">
@@ -815,6 +871,7 @@ footer .sep { margin: 0 8px; }
     draftDifficulty: 'medium',
     draftHints:    true,
     draftColor:    'teal',
+    draftInstruments: [],
     editingId:     null   // when editing/deleting an existing profile
   };
 
@@ -1147,11 +1204,65 @@ footer .sep { margin: 0 8px; }
     if (!p) return;
     state.editingId = id;
     state.draftColor = p.color;
+    state.draftInstruments = (p.instruments || []).slice();
     editNicknameInput.value = p.nickname;
     updateEditNicknameValidity();
     renderColorGrid('edit-color-grid', p.color, function (c) { state.draftColor = c; });
+    renderInstChips();
     showView('edit');
   }
+
+  function renderInstChips() {
+    var container = document.getElementById('edit-inst-chips');
+    container.innerHTML = '';
+    state.draftInstruments.forEach(function(inst, idx) {
+      var chip = document.createElement('span');
+      chip.className = 'inst-chip';
+      chip.textContent = inst;
+      var x = document.createElement('button');
+      x.className = 'inst-chip-x'; x.type = 'button';
+      x.textContent = '×';
+      x.addEventListener('click', function() {
+        state.draftInstruments.splice(idx, 1);
+        renderInstChips();
+      });
+      chip.appendChild(x);
+      container.appendChild(chip);
+    });
+  }
+
+  function addInstrument(name) {
+    var trimmed = name.trim().slice(0, 30);
+    if (!trimmed) return;
+    var lower = trimmed.toLowerCase();
+    for (var i = 0; i < state.draftInstruments.length; i++) {
+      if (state.draftInstruments[i].toLowerCase() === lower) return;
+    }
+    if (state.draftInstruments.length >= 10) return;
+    state.draftInstruments.push(trimmed);
+    renderInstChips();
+  }
+
+  document.getElementById('edit-inst-add').addEventListener('click', function() {
+    var input = document.getElementById('edit-inst-input');
+    addInstrument(input.value);
+    input.value = '';
+    input.focus();
+  });
+
+  document.getElementById('edit-inst-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addInstrument(this.value);
+      this.value = '';
+    }
+  });
+
+  document.getElementById('edit-inst-presets').addEventListener('click', function(e) {
+    var btn = e.target.closest('.inst-preset');
+    if (!btn) return;
+    addInstrument(btn.textContent);
+  });
 
   function updateEditNicknameValidity() {
     var val = editNicknameInput.value.trim();
@@ -1174,7 +1285,8 @@ footer .sep { margin: 0 8px; }
     if (val.length < 1 || val.length > 20) return;
     QN.profile.update(state.editingId, {
       nickname: val,
-      color:    state.draftColor
+      color:    state.draftColor,
+      instruments: state.draftInstruments
     });
     renderSwitcher();
     showView('switcher');
