@@ -1111,18 +1111,15 @@
     var daysInMonth = new Date(year, month + 1, 0).getDate();
     var tk = todayKey();
 
-    for (var pad = 0; pad < firstDow; pad++) {
-      var empty = document.createElement('div');
-      empty.className = 'cal-cell pad';
-      grid.appendChild(empty);
-    }
-
     for (var day = 1; day <= daysInMonth; day++) {
       var d = new Date(year, month, day);
       var dk = dateKey(d.getTime());
       var count = dayMap[dk] || 0;
       var cell = document.createElement('div');
       cell.className = 'cal-cell';
+      if (day === 1) {
+        cell.style.gridColumnStart = String(firstDow + 1);
+      }
       if (dk === tk) cell.classList.add('today');
       if (d > today) { cell.classList.add('future'); }
       else if (count >= 1) cell.classList.add('lvl-1');
@@ -1134,6 +1131,7 @@
         tip.textContent = count + ' round' + (count !== 1 ? 's' : '') + ' · ' + dateStr;
         cell.appendChild(tip);
       }
+      cell.dataset.day = day;
       grid.appendChild(cell);
     }
 
