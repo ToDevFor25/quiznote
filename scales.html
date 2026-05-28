@@ -2330,6 +2330,23 @@
     }, 1000);
   }
 
+  // Pause/resume the countdown (used while a hint card is open). Defined here
+  // because showHintCard/hideHintCard call them; without these the hint card
+  // threw and froze the screen.
+  function pauseTimer() {
+    if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+  }
+  function resumeTimer() {
+    if (!state.settings.timer.enabled || (state.timerRemaining || 0) <= 0) return;
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+      state.timerRemaining--;
+      els['timer-num'].textContent = state.timerRemaining;
+      if (state.timerRemaining <= 10) els['timer-badge'].classList.add('urgent');
+      if (state.timerRemaining <= 0) { clearInterval(state.timerInterval); state.timerInterval = null; finishRound(true); }
+    }, 1000);
+  }
+
   function finishRound(timedOut) {
     clearInterval(state.timerInterval);
     A.cancelSequence();
