@@ -1177,6 +1177,8 @@
     ],
   };
 
+  function hintKeyFor() { return state.current ? state.current.type : null; }
+
   // Game state
   const state = {
     settings: { clef: 'treble', difficulty: 'medium', total: 10, accidentals: 'both', keyMode: 'major', hints: true, timer: { enabled: false, seconds: 60 } },

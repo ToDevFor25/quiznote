@@ -1100,6 +1100,8 @@
     ],
   };
 
+  function hintKeyFor() { return state.current ? state.current.type : null; }
+
   // Game state
   const state = {
     settings: { difficulty: 'medium', total: 10, hints: true, timer: { enabled: false, seconds: 60 } },

@@ -1392,6 +1392,17 @@
     ],
   };
 
+  function hintKeyFor() {
+    if (!state.current || !state.current.mode) return null;
+    var m = state.current.mode;
+    if (m === 'major') return 'major';
+    if (m === 'minor-natural') return 'natural';
+    if (m === 'minor-harmonic') return 'harmonic';
+    if (m === 'minor-melodic') return 'melodic';
+    if (m.indexOf('pentatonic') === 0) return 'pentatonic';
+    return null;
+  }
+
   let state = {
     settings: {
       scaleType: 'all',
