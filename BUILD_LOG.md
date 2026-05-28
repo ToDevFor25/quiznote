@@ -1,5 +1,123 @@
 ---
 
+### Dashboard iteration — streak visualization, PDF, share, simplification — May 2026
+
+**Session type:** Feature iteration. Multiple rounds of build-test-refine
+on the progress dashboard, share system, and streak visualization.
+
+**Streak visualization (shipped):**
+
+Three switchable styles on the dashboard, selectable via 📅 ⭕ 🔥 buttons:
+- **Calendar** — binary heat grid (teal = practiced, empty = didn't) +
+  3 stat cards (streak/week/month) + week dot row showing this week's
+  progress.
+- **Rings** — Apple Watch-style concentric SVG rings. Daily streak
+  (inner/red), weekly consistency (middle/teal), monthly total
+  (outer/purple). Center shows streak count.
+- **Flames** — stacked tiers with gradient progress bars. 🔥 daily
+  streak, 🏆 this week's goal, 👑 this month's consistency.
+
+All three are **goal-aware**: weekly fills to the student's practice
+goal, not a fixed 7. Stored as `streakStyle` on profile. Student
+picks their favorite and it persists.
+
+**Practice goal (shipped):**
+
+User-configurable weekly practice goal (3 / 5 / 7 days). Set during
+onboarding (beginner = 3, intermediate/advanced = 5) and adjustable
+anytime from the dashboard via inline "Goal: X days" picker.
+
+Stored as `practiceGoal` on profile (additive, absent = 5). All
+streak visualizations fill relative to the student's personal goal.
+"4 of 5 days" (80% ring) vs "4 of 7 days" (57% ring) — the
+difference between motivation and discouragement.
+
+**Design decision (locked):** the goal lives on the dashboard, not
+the profile. The setting belongs where the data is. See streak →
+want to adjust → tap right there. One screen, zero navigation.
+
+**Calendar simplified to binary:**
+
+Dropped the 4-level intensity (1-2 rounds / 3-5 / 6+). Now binary:
+teal = practiced, empty = didn't. The calendar's job is consistency,
+not volume. The stat cards handle the numbers. Simpler for students,
+cleaner on PDF and social cards.
+
+**Share system rebuilt:**
+
+- "Share as image" renamed to "Share to social"
+- Opens a dark overlay picker with 3 swipeable canvas-rendered cards:
+  - Card A (light) — streak hero, mastery rings
+  - Card B (dark) — tier progress bars
+  - Card C (warm) — achievement highlights
+- All use system-ui fonts (always available, no loading issues)
+- Dot indicators, scroll-snap, Share → button exports selected card
+  via navigator.share (mobile) or PNG download (desktop)
+
+**PDF rebuilt as Option B:**
+
+Multiple iterations to get to one page. Final approach:
+- @page letter with tight margins
+- Inline hero stats (horizontal, compact)
+- Mastery as tiny inline pill tags with 8px colored dots
+- SVG rings hidden in print, replaced with CSS border dots
+- Hides trend chart, weak spots, picker overlay
+- Option B two-column layout from mockups
+
+**Instruments and practice log removed:**
+
+Mid-session simplification. The instrument selector on the profile
+and the self-reported practice log were overbuilt. Stripped:
+- `instruments` field from profile create/update
+- Entire `practiceLog` API from qn-profile.js
+- Instrument selector CSS, HTML, JS from profile.html
+- Interactive tappable calendar + instrument picker from dashboard
+
+The calendar became a pure read-only visualization of QuizNote
+activity. Zero friction, zero manual input. The app tracks usage
+automatically.
+
+**Landing page updated:**
+
+"Why QuizNote" pillars expanded from 2 to 4:
+- No filler (existing)
+- Curriculum-aligned (existing, copy tightened)
+- Teaches, not just tests (NEW — teaching hints)
+- See your progress (NEW — streaks, mastery, Practice Notes)
+
+**Profile schema additions (all additive, no migration):**
+
+- `practiceGoal` (3/5/7, default 5) — weekly practice target
+- `streakStyle` ('calendar'/'rings'/'flames', default 'calendar')
+
+**Strategic decisions documented (not yet built):**
+
+- Practice Notes = the shareable export name ("Practice Notes by
+  QuizNote"). Dashboard = "My Progress."
+- Share via device-native share sheet only (no email from app, no
+  privacy exposure)
+- Teacher practice tracking deferred — was overbuilt, calendar
+  handles it via binary QuizNote activity
+- Instrument feature deferred — was adding noise before core
+  value was solid
+
+**Mockups created:**
+- `_mockups/practice-notes-v2.html` — PDF + 2 social card options
+- `_mockups/practice-notes-pdf-v3.html` — 3 one-page PDF layouts
+- `_mockups/practice-notes-export.html` — original export mockups
+- `_mockups/streak-visualization.html` — 3 streak style options
+
+**Still open / next:**
+- Visual QA on real devices (dashboard, streak styles, PDF, social
+  cards, teaching hints, settings card, onboarding)
+- PDF one-page verification (needs real-device testing with data)
+- Social card visual quality check
+- Build log / project doc updates for streak + goal + share
+- Standing build queue: Circle of Fifths (#6), Chord Function (#7),
+  Transposition (#8)
+
+---
+
 ### Progress dashboard built + Practice Notes + strategic planning — May 2026
 
 **Session type:** Feature build + UX design + strategic planning.

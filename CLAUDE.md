@@ -341,6 +341,28 @@ For any future CSS work:
 - **Profile-wide defaults: SHIPPED (May 2026).** All 32 modules read
   `defaultDifficulty` and `hintsEnabled` from the active profile at
   startup. Per-module override wins over profile default.
+- **Progress dashboard redesign: SHIPPED (May 2026).** Full rewrite of
+  dashboard.html. Hero stats (streak, time, mastered), interactive
+  streak visualization (3 switchable styles: calendar / rings /
+  flames), weak spots from recommender, accuracy trend (weekly), full
+  mastery grid with progressive Bronze/Silver/Gold rings, collapsible
+  tier sections, "Your next step" + "Up next on your path" cards.
+  All animations + 3-note load chime. Zero schema changes — pure UI
+  on existing `qn_events` data.
+- **Practice goal (user-configurable): SHIPPED (May 2026).** Weekly
+  practice target (3/5/7 days), set during onboarding and adjustable
+  from dashboard inline. All streak visualizations are goal-aware
+  (4/5 = full ring, not 4/7 = partial). Stored as `practiceGoal` on
+  profile (additive). Default 5.
+- **Streak visualization styles: SHIPPED (May 2026).** Three views,
+  student-switchable: Calendar (binary heat + stat cards + week
+  dots), Rings (Apple Watch concentric SVG), Flames (stacked tier
+  bars). Style stored as `streakStyle` on profile.
+- **Share to social + PDF: SHIPPED (May 2026).** Share button on
+  dashboard with dropdown: "Save as PDF" (one-page print stylesheet,
+  Option B layout) and "Share to social" (swipeable picker with 3
+  canvas-rendered cards, exports via navigator.share). The
+  shareable export is branded "Practice Notes by QuizNote."
 - **Next priorities (no longer curriculum builds — see BUILD_LOG.md for
   detail):**
     - **Visual QA on real devices** for the teaching hints + settings card

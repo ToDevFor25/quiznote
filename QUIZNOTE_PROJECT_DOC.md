@@ -1,6 +1,6 @@
 # QuizNote — Project Doc (v2)
 
-_Last revised: May 2026 — **All 32 modules live (Phases 1–5A complete). Teaching hints layer shipped across all 32 modules (May 2026): in-game contextual hints on wrong answers, settings card redesign, onboarding interactive toggles, profile-wide defaults. 2-try retry universal.** Prior: **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
+_Last revised: May 2026 — **All 32 modules live + progress dashboard redesign (May 2026): 3 switchable streak visualizations (calendar/rings/flames), user-configurable practice goal (3/5/7 days), progressive mastery grid (Bronze/Silver/Gold), weekly accuracy trend, weak spots from recommender, share button with one-page PDF + 3 swipeable social cards branded "Practice Notes by QuizNote." Onboarding adds practice goal to level toggles. Prior: Teaching hints layer + settings card + retry universal across 32.** Prior: **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
 
 ---
 
@@ -81,8 +81,10 @@ mock exams. Parents buy it because it says "ABRSM" on the tin.
    EarMaster adapt to what you get wrong. QuizNote has a weak-spot
    recommender (module-level) but doesn't adapt question difficulty
    within a round.
-3. **No progress visualization.** Users paying $39 want to SEE
-   improvement — per-module progress bars, accuracy trends, streaks.
+3. ~~**No progress visualization.**~~ **CLOSED (May 2026).** Progress
+   dashboard shipped with streak visualizations (3 user-switchable
+   styles), goal-aware weekly tracking, mastery rings, accuracy
+   trends, and shareable Practice Notes export (PDF + social).
 4. **No offline / PWA.** Practice on the bus needs WiFi currently.
 5. **No microphone input.** Cool but complex. Skip for v1 monetization.
 
@@ -104,10 +106,14 @@ additions below. Without them, hard sell against Tenuto at $3.99.
 
 Three highest-ROI additions before charging $39 lifetime. In order:
 
-**1. Progress dashboard.** Shows value of the subscription. Per-module
-progress bars, accuracy trends over time, weekly practice chart. The
-profile system already has the data — needs a dashboard.html upgrade.
-Medium effort, high perceived value.
+**1. ~~Progress dashboard.~~** **SHIPPED (May 2026).** Full redesign of
+dashboard.html. Hero stats (streak, time, mastered), three switchable
+streak visualizations (calendar/rings/flames), goal-aware fills with
+user-configurable weekly practice goal (3/5/7), weak spots from
+recommender, accuracy trend, progressive mastery grid (Bronze/Silver/
+Gold), "Your next step" recommendation, "Up next on your path" tiles.
+Share button exports as one-page PDF or social card image via native
+share sheet. Branded as "Practice Notes by QuizNote."
 
 **2. PWA offline.** Makes it feel like a real app. manifest.json, service
 worker, Apple touch icons. Already planned (CLAUDE.md). Students
@@ -226,6 +232,7 @@ qn_events         Array<Event>     append-only round log
 Profile = {
   id, nickname, level, color,
   defaultDifficulty, hintsEnabled,
+  practiceGoal, streakStyle,
   createdAt, lastActiveAt, syncedAt
 }
 
@@ -396,6 +403,46 @@ In-game teaching layer across all 32 modules. When a student answers wrong, a co
 **2-try retry:** universal across all 32 modules (was 24 of 32 before May 2026). Every module now has: wrong → hint → second try → reveal on second miss.
 
 **Spec:** `specs/teaching-hints-spec.md` (covers flow, design, data model, authoring guidelines, autonomy guide).
+
+### Progress dashboard (shipped May 2026)
+
+`dashboard.html` is the student's progress home — "My Progress." Shows
+streak visualization (3 switchable styles), weak spots from the
+recommender, accuracy trend (weekly), mastery grid (Bronze/Silver/Gold
+per module across all 32), "Your next step" recommendation, and "Up
+next on your path" forward view.
+
+**Streak visualization:** student picks their preferred view from three
+options stored as `streakStyle` on profile:
+- **Calendar** — binary heat grid (teal = practiced) + stat cards +
+  week dot row showing this week's progress
+- **Rings** — Apple Watch-style concentric SVG rings (daily/weekly/
+  monthly), goal-aware fills
+- **Flames** — stacked tier bars (🔥 daily streak, 🏆 weekly goal,
+  👑 monthly consistency), gradient progress bars
+
+**Practice goal:** user-configurable weekly target (3/5/7 days), stored
+as `practiceGoal` on profile. Set during onboarding (beginner = 3,
+others = 5), adjustable from dashboard via inline picker. All streak
+visualizations fill relative to the goal — "4/5" not "4/7."
+
+**Mastery levels:** progressive Bronze → Silver → Gold per module.
+Bronze = Easy cleared (85%+, 2+ rounds). Silver = Medium cleared.
+Gold = Tricky cleared. Matches the recommender's existing advance
+rule. Computed at render time from `qn_events`.
+
+**Share:** dashboard has a share button with two exports:
+- **Save as PDF** — one-page print stylesheet, "Practice Notes by
+  QuizNote" branding, fits hero stats + calendar + mastery + focus
+  areas on a single letter sheet.
+- **Share to social** — swipeable picker with 3 canvas-rendered cards
+  (light/dark/warm gradients, different angles on the data). Exports
+  via `navigator.share()` (mobile) or PNG download (desktop).
+
+**Privacy model for share:** device-native share sheet only. QuizNote
+generates the asset and hands it to the OS. Never collects recipient
+emails, never sends emails from the app. No third-party PII exposure.
+One privacy policy line covers it.
 
 ### Settings card (shipped May 2026)
 
