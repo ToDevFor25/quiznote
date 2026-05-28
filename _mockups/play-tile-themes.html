@@ -1,0 +1,2186 @@
+<!doctype html><html><head><meta charset=utf8>
+<meta name=viewport content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Bravura Text';font-display:swap;src:url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2');}
+:root {
+  --cream: #FFFAF0;
+  --cream-2: #FFF3DC;
+  --ink: #2A2A3E;
+  --ink-soft: #5a5a6e;
+  --ink-faint: #8a8472;
+  --teal: #1FB8A8;
+  --teal-dk: #0e8475;
+  --teal-lt: #d3f1ec;
+  --sun: #FFB627;
+  --sun-dk: #c98800;
+  --grape: #5B3FE4;
+  --grape-dk: #3d28a8;
+  --coral: #FF6B6B;
+  --coral-dk: #c2453f;
+  --white: #ffffff;
+  --shadow-cool: #d8d6cc;
+}
+
+    /* Bravura Text — SMuFL music notation font (SIL OFL licensed) */
+    @font-face {
+      font-family: 'Bravura Text';
+      font-style: normal;
+      font-weight: 400;
+      font-display: block;
+      src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+           url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+    }
+
+    :root {
+      --cream:      #FFFAF0;
+      --cream-2:    #FFF3DC;
+      --paper:      #ffffff;
+      --ink:        #2A2A3E;
+      --ink-soft:   #5a5a6e;
+      --ink-faint:  #8a8472;
+      --line:       rgba(42, 42, 62, 0.09);
+      --line-strong:rgba(42, 42, 62, 0.16);
+      --teal:       #1FB8A8;
+      --teal-dk:    #0e8475;
+      --teal-lt:    #d3f1ec;
+      --sun:        #FFB627;
+      --sun-dk:     #c98800;
+      --sun-lt:     #fff3cc;
+      --coral:      #FF6B6B;
+      --coral-dk:   #c2453f;
+      --grape:      #5B3FE4;
+      --grape-dk:   #3d28a8;
+      --slate:      #6b7a99;
+      --white:      #ffffff;
+      --shadow:     #d8d6cc;
+      --shadow-soft:    0 6px 22px -8px rgba(42,42,62,0.12), 0 1px 2px rgba(42,42,62,0.04);
+      --shadow-soft-lg: 0 14px 36px -12px rgba(42,42,62,0.18), 0 2px 4px rgba(42,42,62,0.05);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(91,63,228,0.04) 0 200px, transparent 220px),
+        radial-gradient(circle at 90% 85%, rgba(31,184,168,0.05) 0 200px, transparent 220px);
+    }
+
+    /* ---- Nav ---- */
+    nav {
+      background: white;
+      border-bottom: 2.5px solid var(--ink);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .nav-brand {
+      flex: none;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-brand span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .nav-progress {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--ink);
+      text-decoration: none;
+      background: white;
+      border: 2px solid var(--ink);
+      border-radius: 12px;
+      padding: 6px 12px;
+      box-shadow: 0 3px 0 var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .nav-progress:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+    .nav-progress:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+    .nav-tag {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--teal-dk);
+      background: var(--teal-lt);
+      border-radius: 999px;
+      padding: 4px 12px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- Main ---- */
+    main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .page-header h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+    .page-header p {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-top: 8px;
+    }
+
+    /* ---- Tier sections ---- */
+    .tier-section { margin-bottom: 48px; }
+    .tier-section:last-child { margin-bottom: 0; }
+    .tier-header {
+      display: flex; align-items: baseline; gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line-strong);
+      flex-wrap: wrap;
+    }
+    .tier-name {
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: 1.55rem; letter-spacing: -0.018em;
+    }
+    .tier-section.foundations .tier-name { color: var(--sun-dk); }
+    .tier-section.reading     .tier-name { color: var(--teal-dk); }
+    .tier-section.theory      .tier-name { color: var(--grape-dk); }
+    .tier-meta {
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--ink-faint);
+      margin-right: auto;
+    }
+    .tier-desc {
+      font-family: 'Fredoka', sans-serif; font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--ink-soft);
+      width: 100%; flex-basis: 100%;
+    }
+
+    /* ---- Tile grid ---- */
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 16px;
+    }
+    .ltile {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow-soft);
+      padding: 0;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      position: relative;
+      transition: box-shadow 220ms, transform 220ms;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+    .ltile:hover { box-shadow: var(--shadow-soft-lg); transform: translateY(-2px); }
+    .ltile.soon { opacity: 0.72; cursor: default; }
+    .ltile.soon:hover { transform: none; box-shadow: var(--shadow-soft); }
+    .ltile.soon::after {
+      content: 'Soon';
+      position: absolute; top: 12px; right: 12px;
+      font-family: 'Fredoka', sans-serif; font-weight: 600;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--ink-soft);
+      background: white;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 3px 8px;
+      z-index: 2;
+      box-shadow: 0 2px 6px -2px rgba(42,42,62,0.1);
+    }
+    .ltile-art {
+      width: 100%;
+      height: 116px;
+      border-bottom: 1px solid var(--line);
+      background: var(--cream-2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .ltile-art svg { width: 100%; height: 100%; display: block; }
+    .ltile-art.bg-teal  { background: #e8f6f3; }
+    .ltile-art.bg-coral { background: #fff0f0; }
+    .ltile-art.bg-sun   { background: #fff7d9; }
+    .ltile-art.bg-grape { background: #f0ebff; }
+    .ltile-art.bg-green { background: #e7f5e6; }
+    .ltile-art.bg-pink  { background: #ffeef7; }
+    .ltile-art.bg-slate { background: #eef1f7; }
+    .ltile-body {
+      padding: 14px 14px 16px;
+      text-align: center;
+      display: flex; flex-direction: column; gap: 4px;
+      flex: 1;
+    }
+    .ltile-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--ink); letter-spacing: -0.005em; }
+    .ltile-blurb { font-family: 'Nunito', sans-serif; font-weight: 600; font-size: 0.82rem; color: var(--ink-soft); line-height: 1.4; }
+
+    /* .more-soon placeholder tile — retired; 27-module roster complete */
+
+    /* ---- Tile art animations ---- */
+    @keyframes tile-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes tile-shimmer {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+    @keyframes tile-wiggle {
+      0%, 100% { transform: rotate(0); }
+      35% { transform: rotate(-10deg); }
+      65% { transform: rotate(10deg); }
+    }
+    @keyframes tile-wave-out {
+      0%   { transform: translateX(-4px) scale(0.85); opacity: 1; }
+      100% { transform: translateX(12px) scale(1.2); opacity: 0; }
+    }
+    @keyframes tile-key-blink {
+      0%, 100% { fill: var(--teal); }
+      50% { fill: #38e8d2; }
+    }
+    @keyframes tile-bar-grow {
+      0% { transform: scaleX(0.4); }
+      50% { transform: scaleX(1); }
+      100% { transform: scaleX(0.4); }
+    }
+    @keyframes more-drift {
+      0%, 100% { transform: translateY(0); opacity: 0.55; }
+      50% { transform: translateY(-4px); opacity: 1; }
+    }
+    .anim-pulse   { animation: tile-pulse 2200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .anim-shimmer { animation: tile-shimmer 2600ms ease-in-out infinite; }
+    .anim-wiggle  { animation: tile-wiggle 1800ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .anim-wave    { animation: tile-wave-out 2400ms ease-out infinite; }
+    .anim-blink   { animation: tile-key-blink 1400ms ease-in-out infinite; }
+    .anim-bar     { animation: tile-bar-grow 2800ms ease-in-out infinite; transform-origin: left center; }
+    .more-glyph   { animation: more-drift 4200ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+
+    /* ---- Footer ---- */
+    footer {
+      background: white;
+      border-top: 2px solid var(--shadow);
+      padding: 16px 24px;
+      text-align: center;
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      color: var(--ink-faint);
+      flex-shrink: 0;
+    }
+    footer a {
+      color: var(--ink-soft);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    footer a:hover { text-decoration: underline; }
+    footer .sep { margin: 0 8px; }
+
+    /* ---- Collapsible level sections ---- */
+    .tier-toggle {
+      all: unset;
+      width: 100%;
+      display: flex; align-items: baseline; gap: 16px;
+      margin-bottom: 20px;
+      padding: 14px 4px;
+      border-bottom: 1px solid var(--line-strong);
+      border-radius: 0;
+      flex-wrap: wrap;
+      cursor: pointer;
+      transition: background 160ms;
+    }
+    .tier-toggle:hover { background: rgba(255,255,255,0.5); }
+    .tier-toggle:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+    .tier-caret {
+      display: inline-block;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--ink-soft);
+      transition: transform 220ms ease-out;
+      margin-right: -8px;
+      line-height: 1;
+      transform: rotate(0deg);
+    }
+    .tier-toggle[aria-expanded="true"] .tier-caret { transform: rotate(90deg); }
+    .tier-progress {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .tier-section.foundations .tier-progress { background: var(--sun-lt);   color: var(--sun-dk); }
+    .tier-section.reading     .tier-progress { background: var(--teal-lt);  color: var(--teal-dk); }
+    .tier-section.theory      .tier-progress { background: var(--grape-lt); color: var(--grape-dk); }
+
+    .tier-body {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 360ms cubic-bezier(.4, 0, .2, 1);
+    }
+    .tier-toggle[aria-expanded="false"] + .tier-body { grid-template-rows: 0fr; }
+    .tier-body-inner {
+      overflow: hidden;
+      min-height: 0;
+    }
+    /* Suppress transition during initial state restore from localStorage —
+       prevents the "opens then snaps closed" flash on page load. */
+    body.tier-no-anim .tier-body,
+    body.tier-no-anim .tier-caret { transition: none !important; }
+    .tier-toggle .tier-desc {
+      width: 100%; flex-basis: 100%;
+      margin-top: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tier-body { transition: none; }
+      .tier-caret { transition: none; }
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 560px) {
+      main { padding: 28px 16px 48px; }
+      .tile-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .page-header h1 { font-size: 1.8rem; }
+      .ltile-name { font-size: 0.98rem; }
+      .ltile-body { padding: 12px 10px 14px; }
+      .tier-name { font-size: 1.3rem; }
+      .tier-progress { font-size: 11px; padding: 3px 10px; }
+      /* Compact mobile header layout:
+         Row 1 = caret + name (left) ... chip (right)
+         Row 2 = meta
+         Row 3 = desc */
+      .tier-toggle { gap: 10px; padding: 12px 4px; }
+      .tier-meta {
+        order: 3;
+        margin-right: 0;
+        flex-basis: 100%;
+        margin-top: 2px;
+      }
+      .tier-progress {
+        order: 2;
+        margin-left: auto;
+      }
+      .tier-desc {
+        order: 4;
+        font-size: 0.88rem;
+        margin-top: 2px;
+      }
+
+      /* Nav declutters on phones: keep brand + profile chip only.
+         The PRACTICE tag is redundant (the page title says it) and
+         Progress is reachable from the chip's dropdown menu, so the
+         standalone buttons are dropped to give the chip room. */
+      nav { padding: 12px 16px; }
+      .nav-brand { font-size: 22px; }
+      .nav-progress, .nav-tag { display: none; }
+      .nav-right { gap: 8px; min-width: 0; }
+    }
+  
+
+                @keyframes erB1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+                @keyframes erB2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+                @keyframes erB3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                .er-n1 { animation: erB1 1.2s ease-in-out infinite; }
+                .er-n2 { animation: erB2 1.2s ease-in-out 0.15s infinite; }
+                .er-n3 { animation: erB3 1.2s ease-in-out 0.3s infinite; }
+              
+
+                @keyframes eiPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+                .ei-lo { animation: eiPulse 1.6s ease-in-out infinite; }
+                .ei-hi { animation: eiPulse 1.6s ease-in-out 0.4s infinite; }
+              
+
+                @keyframes esRise { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+                .es-d1 { animation: esRise 1.5s ease-in-out infinite; }
+                .es-d2 { animation: esRise 1.5s ease-in-out 0.15s infinite; }
+                .es-d3 { animation: esRise 1.5s ease-in-out 0.3s infinite; }
+                .es-d4 { animation: esRise 1.5s ease-in-out 0.45s infinite; }
+                .es-d5 { animation: esRise 1.5s ease-in-out 0.6s infinite; }
+                .es-d6 { animation: esRise 1.5s ease-in-out 0.75s infinite; }
+                .es-d7 { animation: esRise 1.5s ease-in-out 0.9s infinite; }
+              
+
+                @keyframes ecFade { 0%,45%{opacity:1} 50%,95%{opacity:0.3} 100%{opacity:1} }
+                .ec-maj { animation: ecFade 3s ease-in-out infinite; }
+                .ec-min { animation: ecFade 3s ease-in-out 1.5s infinite; }
+              
+
+                @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.9;transform:translateX(3px)} }
+                .ed-arr { animation: edSlide 1.5s ease-in-out infinite; }
+              
+
+                @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+                .ep-1 { animation: epBob 1.4s ease-in-out infinite; }
+                .ep-2 { animation: epBob 1.4s ease-in-out 0.2s infinite; }
+                .ep-3 { animation: epBob 1.4s ease-in-out 0.4s infinite; }
+                .ep-4 { animation: epBob 1.4s ease-in-out 0.6s infinite; }
+              
+
+/* mockup chrome */
+body{background:var(--cream,#fbf6ea);font-family:'Fredoka',sans-serif;margin:0;padding:18px;color:var(--ink,#2A2A3E);}
+.opt{background:rgba(255,255,255,.4);border:1px solid #e7e0cf;border-radius:18px;padding:14px;margin:0 0 26px;}
+.opt > h2{margin:4px 0 4px;font-size:1.3rem;}
+.opt > p{margin:0 0 12px;color:#6b6b7b;font-size:.92rem;}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.lg{font-size:.8rem;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid #d8d2c4;}
+.tier-h{margin:14px 0 8px;font-size:1.05rem;}
+.tier-h.foundations{color:#b8860b;} .tier-h.reading{color:var(--teal-dk,#0e8475);} .tier-h.theory{color:var(--grape-dk,#4a2fb0);}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ltile{display:block;text-decoration:none;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 5px 16px rgba(43,43,62,.08);border:1px solid #eee;}
+/* theme tints */
+.ltile-art.th-ear{background:#ffe6f1;}
+.ltile-art.th-neutral{background:#f5efe2;}
+.ltile-art.th-read{background:#e9eff9;}
+.ltile-art.th-rhythm{background:#fff2cf;}
+.ltile-art.th-pitch{background:#e4f3e0;}
+.ltile-art.th-harmony{background:#efe9fb;}
+.lg.th-ear{background:#ffe6f1;}.lg.th-neutral{background:#f5efe2;}.lg.th-read{background:#e9eff9;}.lg.th-rhythm{background:#fff2cf;}.lg.th-pitch{background:#e4f3e0;}.lg.th-harmony{background:#efe9fb;}
+</style></head><body>
+<h1 style="font-size:1.4rem;margin:0 0 4px;">Module tile color themes — A vs B</h1>
+<p style="color:#6b6b7b;margin:0 0 20px;font-size:.9rem;">Same tiles, two background schemes. Real art on the proposed tints.</p>
+<div class="opt"><h2>Option A — minimal</h2><p>Ear/listening = pink (the call-to-action); everything else a single calm neutral.</p><div class="legend"><span class="lg th-ear">Ear / listen</span><span class="lg th-neutral">Everything else</span></div><h3 class="tier-h foundations">Foundations</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- B note on middle line (y=38) - stem down -->
+              <g>
+                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Names</div>
+            <div class="ltile-blurb">A note appears. Pick its letter.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- Middle C below staff: ledger line at y=62, notehead at y=62 -->
+              <g>
+                <line x1="92" y1="62" x2="116" y2="62" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round" class="anim-pulse"/>
+                <line x1="108" y1="61" x2="108" y2="40" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="62" rx="5" ry="3.6" transform="rotate(-20 104 62)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips: C is the answer (teal) -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ledger Lines</div>
+            <div class="ltile-blurb">Notes above and below the staff.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=14, 22, 30, 38, 46 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="14" x2="170" y2="14"/>
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="46" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- E note on bottom line (y=46) - stem up - aligned above lit E key (3rd white, center x=79) -->
+              <g class="anim-pulse">
+                <line x1="83" y1="45" x2="83" y2="24" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="79" cy="46" rx="5" ry="3.6" transform="rotate(-20 79 46)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- Arrow down pointing at center of lit E key -->
+              <path d="M79 58 L79 72 M74 67 L79 72 L84 67" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Piano: 8 white keys, C D E F G A B C, w=14 starting at x=44 -->
+              <g stroke="#2A2A3E" stroke-width="1.5">
+                <rect x="44"  y="82" width="14" height="38" fill="white"/>
+                <rect x="58"  y="82" width="14" height="38" fill="white"/>
+                <rect x="72"  y="82" width="14" height="38" fill="#1FB8A8" class="anim-blink"/>
+                <rect x="86"  y="82" width="14" height="38" fill="white"/>
+                <rect x="100" y="82" width="14" height="38" fill="white"/>
+                <rect x="114" y="82" width="14" height="38" fill="white"/>
+                <rect x="128" y="82" width="14" height="38" fill="white"/>
+                <rect x="142" y="82" width="14" height="38" fill="white"/>
+              </g>
+              <!-- Black keys: between C-D, D-E, F-G, G-A, A-B -->
+              <g fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1.2">
+                <rect x="53"  y="82" width="10" height="22"/>
+                <rect x="67"  y="82" width="10" height="22"/>
+                <rect x="95"  y="82" width="10" height="22"/>
+                <rect x="109" y="82" width="10" height="22"/>
+                <rect x="123" y="82" width="10" height="22"/>
+              </g>
+              <!-- Fix arrow Y to point AT the lit E key (x=79 center of teal rect) -->
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">PianoQuiz</div>
+            <div class="ltile-blurb">See a note. Tap the key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- 1-octave keyboard, C to B -->
+              <g stroke="#2A2A3E" stroke-width="1.4">
+                <rect x="20"  y="32" width="22" height="72" fill="white"/>
+                <rect x="42"  y="32" width="22" height="72" fill="white"/>
+                <rect x="64"  y="32" width="22" height="72" fill="#5B3FE4" class="anim-pulse"/>
+                <rect x="86"  y="32" width="22" height="72" fill="white"/>
+                <rect x="108" y="32" width="22" height="72" fill="white"/>
+                <rect x="130" y="32" width="22" height="72" fill="white"/>
+                <rect x="152" y="32" width="22" height="72" fill="white"/>
+              </g>
+              <!-- Black keys -->
+              <g stroke="#0A0A14" stroke-width="1.2">
+                <rect x="35"  y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="57"  y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="101" y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="123" y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="145" y="32" width="14" height="42" fill="#2A2A3E"/>
+              </g>
+              <!-- ? cue on the highlighted (E) key -->
+              <text x="75" y="92" font-family="Fredoka" font-weight="700" font-size="18" fill="white" text-anchor="middle">?</text>
+              <!-- Letter chips below, E highlighted as the answer -->
+              <g>
+                <rect x="18"  y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="29"  y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">D</text>
+                <rect x="46"  y="112" width="22" height="14" rx="4" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="57"  y="123" font-family="Fredoka" font-weight="700" font-size="12" fill="white" text-anchor="middle">E</text>
+                <rect x="74"  y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="85"  y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">F</text>
+                <rect x="102" y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="113" y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">G</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Piano & Keyboard</div>
+            <div class="ltile-blurb">See the key. Name the note.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="36" fill="#2A2A3E" text-anchor="middle">
+                <text x="22"  y="48">&#xE1D2;</text>
+                <text x="62"  y="48">&#xE1D3;</text>
+                <text x="102" y="48">&#xE1D5;</text>
+                <text x="142" y="48">&#xE1D7;</text>
+              </g>
+              <g stroke="#2A2A3E" stroke-width="1.6">
+                <rect x="6"   y="66" width="32" height="12" fill="#FF6B6B" class="anim-bar" style="animation-delay: 0ms"/>
+                <rect x="52"  y="66" width="20" height="12" fill="#FFB627" class="anim-bar" style="animation-delay: 120ms"/>
+                <rect x="96"  y="66" width="12" height="12" fill="#1FB8A8" class="anim-bar" style="animation-delay: 240ms"/>
+                <rect x="139" y="66" width="6"  height="12" fill="#5B3FE4" class="anim-bar" style="animation-delay: 360ms"/>
+              </g>
+              <g font-family="Fredoka" font-weight="600" font-size="12" fill="#5a5a6e" text-anchor="middle">
+                <text x="22"  y="94">4</text>
+                <text x="62"  y="94">2</text>
+                <text x="102" y="94">1</text>
+                <text x="142" y="94">½</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Values</div>
+            <div class="ltile-blurb">How long does each note last?</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Dotted half note on left -->
+              <g font-family="Bravura Text" font-size="42" fill="#2A2A3E" text-anchor="middle">
+                <text x="44" y="68" class="anim-pulse">&#xE1D3;</text>
+                <text x="68" y="68" font-size="42" class="anim-pulse" style="animation-delay: 100ms">&#xE1E7;</text>
+              </g>
+              <!-- Tied quarter notes on right with arc -->
+              <g font-family="Bravura Text" font-size="42" fill="#2A2A3E" text-anchor="middle">
+                <text x="120" y="68">&#xE1D5;</text>
+                <text x="160" y="68">&#xE1D5;</text>
+              </g>
+              <!-- Tie arc connecting noteheads -->
+              <path d="M 116 50 Q 140 36 164 50" stroke="#5B3FE4" stroke-width="2.4" fill="none" stroke-linecap="round" class="anim-shimmer"/>
+              <!-- Beat labels -->
+              <g font-family="Fredoka" font-weight="700" font-size="14" fill="#5a5a6e" text-anchor="middle">
+                <text x="56"  y="100">3 beats</text>
+                <text x="140" y="100">2 beats</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Dotted Notes & Ties</div>
+            <div class="ltile-blurb">A dot adds half. A tie sums them.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes erB1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+                @keyframes erB2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+                @keyframes erB3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                .er-n1 { animation: erB1 1.2s ease-in-out infinite; }
+                .er-n2 { animation: erB2 1.2s ease-in-out 0.15s infinite; }
+                .er-n3 { animation: erB3 1.2s ease-in-out 0.3s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="er-n1" x="70" y="68" font-size="38" text-anchor="middle">🎵</text>
+              <text class="er-n2" x="108" y="58" font-size="30" text-anchor="middle">🎶</text>
+              <text class="er-n3" x="140" y="72" font-size="24" text-anchor="middle">🎵</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">listen + match</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Rhythm</div>
+            <div class="ltile-blurb">Match the rhythm pattern you hear.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 4 over 4, bold serif digits centered on the spaces -->
+              <g font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="22" fill="#2A2A3E" text-anchor="middle">
+                <text x="58" y="38" class="anim-pulse" style="animation-delay: 0ms">4</text>
+                <text x="58" y="54" class="anim-pulse" style="animation-delay: 200ms">4</text>
+              </g>
+              <!-- question chip -->
+              <rect x="78" y="76" width="74" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="115" y="93" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">meter?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Time Signatures</div>
+            <div class="ltile-blurb">See the meter. Name it.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="24" y1="22" x2="176" y2="22"/>
+                <line x1="24" y1="30" x2="176" y2="30"/>
+                <line x1="24" y1="38" x2="176" y2="38"/>
+                <line x1="24" y1="46" x2="176" y2="46"/>
+                <line x1="24" y1="54" x2="176" y2="54"/>
+              </g>
+              <!-- Sharp glyph before a notehead on the middle line -->
+              <text x="91" y="59" font-family="serif" font-weight="700" font-size="23" fill="#2A2A3E" text-anchor="end">&#x266F;</text>
+              <ellipse cx="98" cy="50" rx="6" ry="4.2" transform="rotate(-20 98 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.5"/>
+              <line x1="103" y1="50" x2="103" y2="28" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+              <!-- Accidental symbol chips -->
+              <g font-family="serif" font-weight="700" font-size="22" text-anchor="middle">
+                <rect x="34"  y="82" width="30" height="30" rx="7" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="49"  y="104" fill="white">&#x266F;</text>
+                <rect x="72"  y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="87"  y="104" fill="#2A2A3E">&#x266D;</text>
+                <rect x="110" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="125" y="104" fill="#2A2A3E">&#x266E;</text>
+                <rect x="148" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="163" y="105" fill="#2A2A3E" font-size="20">&#x1D12A;</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Accidentals</div>
+            <div class="ltile-blurb">Sharp, flat, natural — know the signs.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Italic Allegro card -->
+              <rect x="22" y="22" width="116" height="44" rx="9" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="52" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle" class="anim-pulse">Allegro</text>
+              <!-- Metronome marking ♩ = 120 -->
+              <text x="34" y="100" font-family="Bravura Text" font-size="22" fill="#2A2A3E">&#xE1D5;</text>
+              <text x="58" y="100" font-family="Nunito, sans-serif" font-weight="700" font-size="18" fill="#2A2A3E">= 120</text>
+              <!-- Speed chip -->
+              <rect x="124" y="80" width="54" height="26" rx="8" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="151" y="98" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">fast?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Tempo Markings</div>
+            <div class="ltile-blurb">How fast — and how it changes.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Big italic p / f letters -->
+              <text x="46" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#2A2A3E" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">p</text>
+              <text x="100" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#2A2A3E" text-anchor="middle" class="anim-pulse" style="animation-delay: 200ms">mf</text>
+              <text x="156" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 400ms">f</text>
+              <!-- Crescendo hairpin -->
+              <polyline points="20,100 180,80 20,100 180,120" fill="none" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Dynamics</div>
+            <div class="ltile-blurb">From a whisper to a shout.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="36" x2="186" y2="36"/>
+                <line x1="14" y1="48" x2="186" y2="48"/>
+                <line x1="14" y1="60" x2="186" y2="60"/>
+                <line x1="14" y1="72" x2="186" y2="72"/>
+                <line x1="14" y1="84" x2="186" y2="84"/>
+              </g>
+              <!-- Two noteheads + a slur curve -->
+              <ellipse cx="70" cy="60" rx="9" ry="6.4" transform="rotate(-18 70 60)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="77" y1="59" x2="77" y2="26" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <ellipse cx="130" cy="54" rx="9" ry="6.4" transform="rotate(-18 130 54)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="137" y1="53" x2="137" y2="20" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- Slur curve below noteheads -->
+              <path d="M 70 70 Q 100 96 130 64" fill="none" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round" class="anim-pulse"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Articulation</div>
+            <div class="ltile-blurb">Short, smooth, accented — how each note speaks.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff segment with end-repeat -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="28" x2="186" y2="28"/>
+                <line x1="14" y1="36" x2="186" y2="36"/>
+                <line x1="14" y1="44" x2="186" y2="44"/>
+                <line x1="14" y1="52" x2="186" y2="52"/>
+                <line x1="14" y1="60" x2="186" y2="60"/>
+              </g>
+              <!-- End-repeat barline: dots + thin + thick -->
+              <circle cx="160" cy="40" r="2.4" fill="#2A2A3E"/>
+              <circle cx="160" cy="48" r="2.4" fill="#2A2A3E"/>
+              <line x1="168" y1="28" x2="168" y2="60" stroke="#2A2A3E" stroke-width="2"/>
+              <rect x="172" y="28" width="5" height="32" fill="#2A2A3E" class="anim-pulse"/>
+              <!-- "D.C. al Fine" label -->
+              <rect x="20" y="78" width="160" height="34" rx="9" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="100" y="100" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="18" fill="#2A2A3E" text-anchor="middle">D.C. al Fine</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Score Navigation</div>
+            <div class="ltile-blurb">Repeats, jumps, and where to go next.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="42" x2="186" y2="42"/>
+                <line x1="14" y1="54" x2="186" y2="54"/>
+                <line x1="14" y1="66" x2="186" y2="66"/>
+                <line x1="14" y1="78" x2="186" y2="78"/>
+                <line x1="14" y1="90" x2="186" y2="90"/>
+              </g>
+              <!-- Notehead on middle line -->
+              <ellipse cx="80" cy="66" rx="9" ry="6.4" transform="rotate(-18 80 66)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="87" y1="65" x2="87" y2="34" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- "tr" trill marking above the notehead -->
+              <text x="80" y="28" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="20" fill="#2A2A3E" text-anchor="middle" class="anim-pulse">tr</text>
+              <!-- Wavy continuation line -->
+              <path d="M 96 22 q 6 -5 12 0 t 12 0 t 12 0 t 12 0 t 12 0" fill="none" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>
+              <!-- Turn glyph as a hint chip -->
+              <rect x="130" y="100" width="50" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="155" y="115" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">turn?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ornaments</div>
+            <div class="ltile-blurb">Little symbols, big personality.</div>
+          </div>
+        </a></div><h3 class="tier-h reading">Reading</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 3 sharps for A major, clustered after clef in order: F# top line, C# 3rd space, G# above staff -->
+              <text x="34" y="30" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 0ms">&#xE262;</text>
+              <text x="45" y="42" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 140ms">&#xE262;</text>
+              <text x="56" y="26" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 280ms">&#xE262;</text>
+              <rect x="32" y="76" width="96" height="26" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="14" fill="white" text-anchor="middle">A major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Key Signatures</div>
+            <div class="ltile-blurb">Count the sharps. Name the key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="cofTileHub" cx="50%" cy="42%" r="65%">
+                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f3eee2"/>
+                </radialGradient>
+                <filter id="cofTileGlow" x="-60%" y="-60%" width="220%" height="220%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#1FB8A8" flood-opacity="0.75"/>
+                </filter>
+              </defs>
+              <path d="M 68.66 3.25 A 52 52 0 0 1 91.34 3.25 L 85.89 27.65 A 27 27 0 0 0 74.11 27.65 Z" fill="#FFE3A1" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 95.55 4.38 A 52 52 0 0 1 115.2 15.72 L 98.28 34.13 A 27 27 0 0 0 88.07 28.24 Z" fill="#d3efe9" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 118.28 18.8 A 52 52 0 0 1 129.62 38.45 L 105.76 45.93 A 27 27 0 0 0 99.87 35.72 Z" fill="#c0e8e0" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 130.75 42.66 A 52 52 0 0 1 130.75 65.34 L 106.35 59.89 A 27 27 0 0 0 106.35 48.11 Z" fill="#ade1d7" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 129.62 69.55 A 52 52 0 0 1 118.28 89.2 L 99.87 72.28 A 27 27 0 0 0 105.76 62.07 Z" fill="#9adace" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 115.2 92.28 A 52 52 0 0 1 95.55 103.62 L 88.07 79.76 A 27 27 0 0 0 98.28 73.87 Z" fill="#86d2c4" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 91.34 104.75 A 52 52 0 0 1 68.66 104.75 L 74.11 80.35 A 27 27 0 0 0 85.89 80.35 Z" fill="#73cabb" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 64.45 103.62 A 52 52 0 0 1 44.8 92.28 L 61.72 73.87 A 27 27 0 0 0 71.93 79.76 Z" fill="#b49cfb" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path class="anim-blink" filter="url(#cofTileGlow)" d="M 41.72 89.2 A 52 52 0 0 1 30.38 69.55 L 54.24 62.07 A 27 27 0 0 0 60.13 72.28 Z" fill="#1FB8A8" stroke="#0e8475" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 29.25 65.34 A 52 52 0 0 1 29.25 42.66 L 53.65 48.11 A 27 27 0 0 0 53.65 59.89 Z" fill="#ccbcff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 30.38 38.45 A 52 52 0 0 1 41.72 18.8 L 60.13 35.72 A 27 27 0 0 0 54.24 45.93 Z" fill="#d8ccff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 44.8 15.72 A 52 52 0 0 1 64.45 4.38 L 71.93 28.24 A 27 27 0 0 0 61.72 34.13 Z" fill="#e4dcff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <text x="80" y="18.07" text-anchor="middle" fill="#7a5e12" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">C</text>
+              <text x="99.75" y="23.36" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">G</text>
+              <text x="114.21" y="37.82" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">D</text>
+              <text x="119.5" y="57.57" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">A</text>
+              <text x="114.21" y="77.32" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">E</text>
+              <text x="99.75" y="91.78" text-anchor="middle" fill="#0a5d52" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">B</text>
+              <text x="80" y="97.07" text-anchor="middle" fill="#0a5d52" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">F♯</text>
+              <text x="60.25" y="91.78" text-anchor="middle" fill="#3a1f9e" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">D♭</text>
+              <text class="anim-pulse" x="45.79" y="79.35" text-anchor="middle" fill="#ffffff" font-family="Fredoka, sans-serif" font-weight="700" font-size="16">?</text>
+              <text x="40.5" y="57.57" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">E♭</text>
+              <text x="45.79" y="37.82" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">B♭</text>
+              <text x="60.25" y="23.36" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">F</text>
+              <circle cx="80" cy="54" r="24" fill="url(#cofTileHub)" stroke="#e7e0cf" stroke-width="1.4"/>
+              <path d="M 89.58 45.97 A 12.5 12.5 0 1 1 69.17 47.75" fill="none" stroke="#1FB8A8" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M 71.67 43.42 L 71.54 50.85 L 65.31 47.25 Z" fill="#1FB8A8"/>
+              <path d="M 80 1.5 L 74.5 9.5 L 85.5 9.5 Z" fill="#5B3FE4"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Circle of Fifths</div>
+            <div class="ltile-blurb">The map of every key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
+                <text x="40"  y="64" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="54"  y="58" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 90ms">&#xE1D5;</text>
+                <text x="68"  y="52" fill="#FFB627" class="anim-pulse" style="animation-delay: 180ms">&#xE1D5;</text>
+                <text x="82"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 270ms">&#xE1D5;</text>
+                <text x="96"  y="40" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
+                <text x="110" y="34" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 450ms">&#xE1D5;</text>
+                <text x="124" y="28" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 540ms">&#xE1D5;</text>
+                <text x="138" y="22" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 630ms">&#xE1D5;</text>
+              </g>
+              <rect x="36" y="78" width="88" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="95" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">C major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scales</div>
+            <div class="ltile-blurb">Spot the major. Spot the minor.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- Tight chromatic-ish climb with alternating sharp glyphs -->
+              <g font-family="Bravura Text" text-anchor="middle">
+                <text x="34"  y="56" font-size="20" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="44"  y="50" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="51"  y="50" font-size="20" fill="#FFB627" class="anim-pulse" style="animation-delay: 80ms">&#xE1D5;</text>
+                <text x="61"  y="46" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="68"  y="46" font-size="20" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 160ms">&#xE1D5;</text>
+                <text x="85"  y="42" font-size="20" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 240ms">&#xE1D5;</text>
+                <text x="95"  y="38" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="102" y="38" font-size="20" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 320ms">&#xE1D5;</text>
+                <text x="119" y="34" font-size="20" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 400ms">&#xE1D5;</text>
+                <text x="129" y="30" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="136" y="30" font-size="20" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 480ms">&#xE1D5;</text>
+              </g>
+              <rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="97" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Chromatic Scale</div>
+            <div class="ltile-blurb">Half steps all the way — sharps up, flats down.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="24" y1="22" x2="176" y2="22"/>
+                <line x1="24" y1="30" x2="176" y2="30"/>
+                <line x1="24" y1="38" x2="176" y2="38"/>
+                <line x1="24" y1="46" x2="176" y2="46"/>
+                <line x1="24" y1="54" x2="176" y2="54"/>
+              </g>
+              <!-- Key signature: two sharps (D major) -->
+              <g font-family="serif" font-weight="700" font-size="20" fill="#2A2A3E" text-anchor="middle">
+                <text x="40" y="32">&#x266F;</text>
+                <text x="52" y="42">&#x266F;</text>
+              </g>
+              <!-- A queried notehead -->
+              <ellipse cx="110" cy="42" rx="6.5" ry="4.4" transform="rotate(-20 110 42)" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+              <line x1="115" y1="42" x2="115" y2="20" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+              <!-- Degree number chips: 1 3 5 -->
+              <g font-family="Fredoka" font-weight="700" font-size="20" text-anchor="middle">
+                <rect x="36"  y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="51"  y="104" fill="#2A2A3E">1</text>
+                <rect x="85"  y="82" width="30" height="30" rx="7" fill="#0e8475" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="100" y="104" fill="white">3</text>
+                <rect x="134" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="149" y="104" fill="#2A2A3E">5</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scale Degrees</div>
+            <div class="ltile-blurb">Every note has a job in its key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- All white-key notes, but the first highlighted = "this is the tonic" -->
+              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
+                <text x="40"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="56"  y="42" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="72"  y="38" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="88"  y="34" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="104" y="30" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="120" y="26" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="136" y="22" fill="#5B3FE4">&#xE1D5;</text>
+              </g>
+              <!-- Mode-name chips animating in sequence -->
+              <g font-family="Fredoka" font-weight="600" font-size="11" text-anchor="middle">
+                <rect x="14"  y="78" width="44" height="22" rx="7" fill="#FFB627" stroke="#2A2A3E" stroke-width="2" class="anim-pulse" style="animation-delay: 0ms"/>
+                <text x="36"  y="93" fill="#2A2A3E">Dorian</text>
+                <rect x="62"  y="78" width="50" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="87"  y="93" fill="#2A2A3E">Lydian?</text>
+                <rect x="116" y="78" width="42" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="137" y="93" fill="#2A2A3E">Mix.?</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scale Modes</div>
+            <div class="ltile-blurb">Same notes, different home.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="14" x2="154" y2="14"/>
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+              </g>
+              <text x="6"  y="44" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <text x="80" y="48" font-family="Bravura Text" font-size="22" fill="#FF6B6B" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+              <text x="80" y="32" font-family="Bravura Text" font-size="22" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 150ms">&#xE1D5;</text>
+              <path d="M100 22 L108 22 L108 46 L100 46" stroke="#2A2A3E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="120" y="40" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">5th?</text>
+              <g>
+                <rect x="10"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="26"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">3rd</text>
+                <rect x="46"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="62"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">4th</text>
+                <rect x="82"  y="74" width="32" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="98"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="white" text-anchor="middle">5th</text>
+                <rect x="118" y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="134" y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">6th</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Intervals</div>
+            <div class="ltile-blurb">Two notes. How far apart?</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes eiPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+                .ei-lo { animation: eiPulse 1.6s ease-in-out infinite; }
+                .ei-hi { animation: eiPulse 1.6s ease-in-out 0.4s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="ei-lo" cx="68" cy="72" r="14" fill="#5B3FE4" opacity="0.8"/>
+              <text x="68" y="78" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">C</text>
+              <path d="M86 66 Q100 44 114 42" stroke="#FFB627" stroke-width="2.5" fill="none" stroke-dasharray="5 3" stroke-linecap="round"/>
+              <circle class="ei-hi" cx="132" cy="42" r="14" fill="#1FB8A8" opacity="0.8"/>
+              <text x="132" y="48" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">G</text>
+              <rect x="88" y="48" width="24" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="1.5"/>
+              <text x="100" y="63" font-family="Fredoka" font-weight="700" font-size="13" fill="#2A2A3E" text-anchor="middle">P5</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the gap</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Intervals</div>
+            <div class="ltile-blurb">Hear two notes. Name the gap.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes esRise { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+                .es-d1 { animation: esRise 1.5s ease-in-out infinite; }
+                .es-d2 { animation: esRise 1.5s ease-in-out 0.15s infinite; }
+                .es-d3 { animation: esRise 1.5s ease-in-out 0.3s infinite; }
+                .es-d4 { animation: esRise 1.5s ease-in-out 0.45s infinite; }
+                .es-d5 { animation: esRise 1.5s ease-in-out 0.6s infinite; }
+                .es-d6 { animation: esRise 1.5s ease-in-out 0.75s infinite; }
+                .es-d7 { animation: esRise 1.5s ease-in-out 0.9s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="es-d1" cx="36"  cy="82" r="7" fill="#5B3FE4"/>
+              <circle class="es-d2" cx="56"  cy="72" r="7" fill="#5B3FE4"/>
+              <circle class="es-d3" cx="76"  cy="62" r="7" fill="#1FB8A8"/>
+              <circle class="es-d4" cx="96"  cy="52" r="7" fill="#1FB8A8"/>
+              <circle class="es-d5" cx="116" cy="42" r="7" fill="#FFB627"/>
+              <circle class="es-d6" cx="136" cy="32" r="7" fill="#FFB627"/>
+              <circle class="es-d7" cx="156" cy="22" r="7" fill="#FF6B6B"/>
+              <path d="M36 82 L56 72 L76 62 L96 52 L116 42 L136 32 L156 22" stroke="white" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3 4"/>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the scale</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Scales</div>
+            <div class="ltile-blurb">Hear a scale. Name the type.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="34" x2="154" y2="34"/>
+                <line x1="6" y1="44" x2="154" y2="44"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+                <line x1="6" y1="64" x2="154" y2="64"/>
+                <line x1="6" y1="74" x2="154" y2="74"/>
+              </g>
+              <text x="8" y="70" font-family="Bravura Text" font-size="34" fill="#2A2A3E">&#xE050;</text>
+              <!-- original note (muted) -->
+              <ellipse cx="60" cy="64" rx="8" ry="6" transform="rotate(-16 60 64)" fill="#d8c2c8" stroke="#2A2A3E" stroke-width="2"/>
+              <line x1="67.4" y1="62.5" x2="67.4" y2="40" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- shift arrow -->
+              <path d="M 80 56 Q 98 40 110 42" fill="none" stroke="#5B3FE4" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 3"/>
+              <path d="M 105 36 L 114 41 L 104 45 Z" fill="#5B3FE4"/>
+              <!-- transposed note (teal, pulsing) -->
+              <g class="anim-pulse">
+                <ellipse cx="122" cy="44" rx="8" ry="6" transform="rotate(-16 122 44)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+                <line x1="129.4" y1="42.5" x2="129.4" y2="20" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              </g>
+              <rect x="50" y="86" width="60" height="22" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="101" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E">up a 5th</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Transposition</div>
+            <div class="ltile-blurb">Same tune, different key.</div>
+          </div>
+        </a></div><h3 class="tier-h theory">Theory</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="22" x2="154" y2="22"/>
+                <line x1="6" y1="30" x2="154" y2="30"/>
+                <line x1="6" y1="38" x2="154" y2="38"/>
+                <line x1="6" y1="46" x2="154" y2="46"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Fredoka" font-weight="700" text-anchor="middle">
+                <rect x="42" y="70" width="24" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse" style="animation-delay: 0ms"/>
+                <text x="54" y="87" font-size="13" fill="white">I</text>
+                <rect x="70" y="70" width="28" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="84" y="87" font-size="13" fill="#2A2A3E">IV</text>
+                <rect x="102" y="70" width="24" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="114" y="87" font-size="13" fill="#2A2A3E">V</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Primary Chords</div>
+            <div class="ltile-blurb">I, IV, V — the chords that drive every song.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="22" x2="154" y2="22"/>
+                <line x1="6" y1="30" x2="154" y2="30"/>
+                <line x1="6" y1="38" x2="154" y2="38"/>
+                <line x1="6" y1="46" x2="154" y2="46"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Fredoka" font-weight="600" font-size="10" text-anchor="middle">
+                <rect x="8"   y="74" width="20" height="20" rx="6" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="18"  y="88" fill="white">I</text>
+                <rect x="30"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="40"  y="88" fill="#2A2A3E">ii</text>
+                <rect x="52"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="62"  y="88" fill="#2A2A3E">iii</text>
+                <rect x="74"  y="74" width="20" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="1.5" class="anim-pulse" style="animation-delay: 200ms"/>
+                <text x="84"  y="88" fill="#2A2A3E">IV</text>
+                <rect x="96"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="106" y="88" fill="#2A2A3E">V</text>
+                <rect x="118" y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="128" y="88" fill="#2A2A3E">vi</text>
+                <rect x="140" y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="150" y="88" fill="#2A2A3E">vii°</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Roman Numerals</div>
+            <div class="ltile-blurb">Every chord has a job. Learn the system.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-neutral">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <!-- function pills -->
+              <rect x="8"   y="30" width="40" height="28" rx="9" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="28"  y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="white">T</text>
+              <rect x="60"  y="30" width="40" height="28" rx="9" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80"  y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">PD</text>
+              <rect x="112" y="30" width="40" height="28" rx="9" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+              <text x="132" y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="white">D</text>
+              <!-- forward arrows T→PD→D -->
+              <path d="M 51 40 L 59 44 L 51 48 Z" fill="#2A2A3E"/>
+              <path d="M 103 40 L 111 44 L 103 48 Z" fill="#2A2A3E"/>
+              <!-- resolve arc: D back to T -->
+              <path d="M 132 60 Q 80 94 30 60" fill="none" stroke="#5B3FE4" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/>
+              <path d="M 26 64 L 30 55 L 34 64 Z" fill="#5B3FE4"/>
+              <text x="80" y="104" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="11" fill="#6b6b7b">resolve home</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Chord Function</div>
+            <div class="ltile-blurb">What the chord is doing.</div>
+          </div>
+        </a><a class="ltile"><div class="ltile-art th-neutral"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a><a class="ltile"><div class="ltile-art th-neutral"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a><a class="ltile"><div class="ltile-art th-neutral"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a><a class="ltile"><div class="ltile-art th-neutral"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="20" y="35" width="28" height="28" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><text x="34" y="54" font-size="13" fill="white">I</text><text x="60" y="54" font-size="14" fill="#bbb">→</text><rect x="68" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="82" y="54" font-size="13">V</text><text x="108" y="54" font-size="14" fill="#bbb">→</text><rect x="116" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="130" y="54" font-size="13">vi</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Chord Progressions</div><div class="ltile-blurb">Hear the pattern. Name the sequence.</div></div></a><a class="ltile"><div class="ltile-art th-neutral"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="30" y="35" width="36" height="36" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="48" y="58" font-size="16">V</text><text x="80" y="58" font-size="20" fill="#bbb">→</text><rect x="94" y="35" width="36" height="36" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/><text x="112" y="58" font-size="16" fill="white">I</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Cadences</div><div class="ltile-blurb">How phrases end. V→I or something else?</div></div></a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes ecFade { 0%,45%{opacity:1} 50%,95%{opacity:0.3} 100%{opacity:1} }
+                .ec-maj { animation: ecFade 3s ease-in-out infinite; }
+                .ec-min { animation: ecFade 3s ease-in-out 1.5s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="ec-maj" x="70" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#1FB8A8" text-anchor="middle">Major</text>
+              <text x="100" y="62" font-family="Fredoka" font-weight="700" font-size="20" fill="#5a5a6e" text-anchor="middle" opacity="0.4">or</text>
+              <text class="ec-min" x="140" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#5B3FE4" text-anchor="middle">Minor</text>
+              <text x="100" y="86" font-size="24" text-anchor="middle">🤔</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the quality</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Chord Quality</div>
+            <div class="ltile-blurb">Listen and name the chord.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.9;transform:translateX(3px)} }
+                .ed-arr { animation: edSlide 1.5s ease-in-out infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <rect x="42" y="32" width="42" height="42" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="63" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle">V</text>
+              <text class="ed-arr" x="100" y="58" font-size="18" fill="#5a5a6e" text-anchor="middle">→</text>
+              <rect x="116" y="32" width="42" height="42" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="137" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">I</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">name the ending</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Cadences</div>
+            <div class="ltile-blurb">Hear two chords. Name the cadence.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+                .ep-1 { animation: epBob 1.4s ease-in-out infinite; }
+                .ep-2 { animation: epBob 1.4s ease-in-out 0.2s infinite; }
+                .ep-3 { animation: epBob 1.4s ease-in-out 0.4s infinite; }
+                .ep-4 { animation: epBob 1.4s ease-in-out 0.6s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <g class="ep-1"><rect x="22" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="39" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">I</text></g>
+              <g class="ep-2"><rect x="64" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="81" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">IV</text></g>
+              <g class="ep-3"><rect x="106" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="123" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">V</text></g>
+              <g class="ep-4"><rect x="148" y="42" width="34" height="32" rx="8" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/><text x="165" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="white" text-anchor="middle">I</text></g>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">follow the chords</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Progressions</div>
+            <div class="ltile-blurb">Hear the chords. Name the pattern.</div>
+          </div>
+        </a></div></div>
+<div class="opt"><h2>Option B — 5 skill-family tints</h2><p>Each skill family gets a soft tint that repeats across all three tiers; pink stays the boldest.</p><div class="legend"><span class="lg th-ear">Ear / listen</span><span class="lg th-read">Read the score</span><span class="lg th-rhythm">Rhythm &amp; meter</span><span class="lg th-pitch">Keys · scales · pitch</span><span class="lg th-harmony">Harmony · chords</span></div><h3 class="tier-h foundations">Foundations</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- B note on middle line (y=38) - stem down -->
+              <g>
+                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Names</div>
+            <div class="ltile-blurb">A note appears. Pick its letter.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- Middle C below staff: ledger line at y=62, notehead at y=62 -->
+              <g>
+                <line x1="92" y1="62" x2="116" y2="62" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round" class="anim-pulse"/>
+                <line x1="108" y1="61" x2="108" y2="40" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="62" rx="5" ry="3.6" transform="rotate(-20 104 62)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips: C is the answer (teal) -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ledger Lines</div>
+            <div class="ltile-blurb">Notes above and below the staff.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=14, 22, 30, 38, 46 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="14" x2="170" y2="14"/>
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="46" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- E note on bottom line (y=46) - stem up - aligned above lit E key (3rd white, center x=79) -->
+              <g class="anim-pulse">
+                <line x1="83" y1="45" x2="83" y2="24" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="79" cy="46" rx="5" ry="3.6" transform="rotate(-20 79 46)" fill="#FF6B6B" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- Arrow down pointing at center of lit E key -->
+              <path d="M79 58 L79 72 M74 67 L79 72 L84 67" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Piano: 8 white keys, C D E F G A B C, w=14 starting at x=44 -->
+              <g stroke="#2A2A3E" stroke-width="1.5">
+                <rect x="44"  y="82" width="14" height="38" fill="white"/>
+                <rect x="58"  y="82" width="14" height="38" fill="white"/>
+                <rect x="72"  y="82" width="14" height="38" fill="#1FB8A8" class="anim-blink"/>
+                <rect x="86"  y="82" width="14" height="38" fill="white"/>
+                <rect x="100" y="82" width="14" height="38" fill="white"/>
+                <rect x="114" y="82" width="14" height="38" fill="white"/>
+                <rect x="128" y="82" width="14" height="38" fill="white"/>
+                <rect x="142" y="82" width="14" height="38" fill="white"/>
+              </g>
+              <!-- Black keys: between C-D, D-E, F-G, G-A, A-B -->
+              <g fill="#2A2A3E" stroke="#2A2A3E" stroke-width="1.2">
+                <rect x="53"  y="82" width="10" height="22"/>
+                <rect x="67"  y="82" width="10" height="22"/>
+                <rect x="95"  y="82" width="10" height="22"/>
+                <rect x="109" y="82" width="10" height="22"/>
+                <rect x="123" y="82" width="10" height="22"/>
+              </g>
+              <!-- Fix arrow Y to point AT the lit E key (x=79 center of teal rect) -->
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">PianoQuiz</div>
+            <div class="ltile-blurb">See a note. Tap the key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- 1-octave keyboard, C to B -->
+              <g stroke="#2A2A3E" stroke-width="1.4">
+                <rect x="20"  y="32" width="22" height="72" fill="white"/>
+                <rect x="42"  y="32" width="22" height="72" fill="white"/>
+                <rect x="64"  y="32" width="22" height="72" fill="#5B3FE4" class="anim-pulse"/>
+                <rect x="86"  y="32" width="22" height="72" fill="white"/>
+                <rect x="108" y="32" width="22" height="72" fill="white"/>
+                <rect x="130" y="32" width="22" height="72" fill="white"/>
+                <rect x="152" y="32" width="22" height="72" fill="white"/>
+              </g>
+              <!-- Black keys -->
+              <g stroke="#0A0A14" stroke-width="1.2">
+                <rect x="35"  y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="57"  y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="101" y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="123" y="32" width="14" height="42" fill="#2A2A3E"/>
+                <rect x="145" y="32" width="14" height="42" fill="#2A2A3E"/>
+              </g>
+              <!-- ? cue on the highlighted (E) key -->
+              <text x="75" y="92" font-family="Fredoka" font-weight="700" font-size="18" fill="white" text-anchor="middle">?</text>
+              <!-- Letter chips below, E highlighted as the answer -->
+              <g>
+                <rect x="18"  y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="29"  y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">D</text>
+                <rect x="46"  y="112" width="22" height="14" rx="4" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="57"  y="123" font-family="Fredoka" font-weight="700" font-size="12" fill="white" text-anchor="middle">E</text>
+                <rect x="74"  y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="85"  y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">F</text>
+                <rect x="102" y="112" width="22" height="14" rx="4" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+                <text x="113" y="123" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">G</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Piano & Keyboard</div>
+            <div class="ltile-blurb">See the key. Name the note.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-rhythm">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g font-family="Bravura Text" font-size="36" fill="#2A2A3E" text-anchor="middle">
+                <text x="22"  y="48">&#xE1D2;</text>
+                <text x="62"  y="48">&#xE1D3;</text>
+                <text x="102" y="48">&#xE1D5;</text>
+                <text x="142" y="48">&#xE1D7;</text>
+              </g>
+              <g stroke="#2A2A3E" stroke-width="1.6">
+                <rect x="6"   y="66" width="32" height="12" fill="#FF6B6B" class="anim-bar" style="animation-delay: 0ms"/>
+                <rect x="52"  y="66" width="20" height="12" fill="#FFB627" class="anim-bar" style="animation-delay: 120ms"/>
+                <rect x="96"  y="66" width="12" height="12" fill="#1FB8A8" class="anim-bar" style="animation-delay: 240ms"/>
+                <rect x="139" y="66" width="6"  height="12" fill="#5B3FE4" class="anim-bar" style="animation-delay: 360ms"/>
+              </g>
+              <g font-family="Fredoka" font-weight="600" font-size="12" fill="#5a5a6e" text-anchor="middle">
+                <text x="22"  y="94">4</text>
+                <text x="62"  y="94">2</text>
+                <text x="102" y="94">1</text>
+                <text x="142" y="94">½</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Values</div>
+            <div class="ltile-blurb">How long does each note last?</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-rhythm">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Dotted half note on left -->
+              <g font-family="Bravura Text" font-size="42" fill="#2A2A3E" text-anchor="middle">
+                <text x="44" y="68" class="anim-pulse">&#xE1D3;</text>
+                <text x="68" y="68" font-size="42" class="anim-pulse" style="animation-delay: 100ms">&#xE1E7;</text>
+              </g>
+              <!-- Tied quarter notes on right with arc -->
+              <g font-family="Bravura Text" font-size="42" fill="#2A2A3E" text-anchor="middle">
+                <text x="120" y="68">&#xE1D5;</text>
+                <text x="160" y="68">&#xE1D5;</text>
+              </g>
+              <!-- Tie arc connecting noteheads -->
+              <path d="M 116 50 Q 140 36 164 50" stroke="#5B3FE4" stroke-width="2.4" fill="none" stroke-linecap="round" class="anim-shimmer"/>
+              <!-- Beat labels -->
+              <g font-family="Fredoka" font-weight="700" font-size="14" fill="#5a5a6e" text-anchor="middle">
+                <text x="56"  y="100">3 beats</text>
+                <text x="140" y="100">2 beats</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Dotted Notes & Ties</div>
+            <div class="ltile-blurb">A dot adds half. A tie sums them.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes erB1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+                @keyframes erB2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+                @keyframes erB3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+                .er-n1 { animation: erB1 1.2s ease-in-out infinite; }
+                .er-n2 { animation: erB2 1.2s ease-in-out 0.15s infinite; }
+                .er-n3 { animation: erB3 1.2s ease-in-out 0.3s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="er-n1" x="70" y="68" font-size="38" text-anchor="middle">🎵</text>
+              <text class="er-n2" x="108" y="58" font-size="30" text-anchor="middle">🎶</text>
+              <text class="er-n3" x="140" y="72" font-size="24" text-anchor="middle">🎵</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">listen + match</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Rhythm</div>
+            <div class="ltile-blurb">Match the rhythm pattern you hear.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-rhythm">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 4 over 4, bold serif digits centered on the spaces -->
+              <g font-family="Georgia, 'Times New Roman', serif" font-weight="900" font-size="22" fill="#2A2A3E" text-anchor="middle">
+                <text x="58" y="38" class="anim-pulse" style="animation-delay: 0ms">4</text>
+                <text x="58" y="54" class="anim-pulse" style="animation-delay: 200ms">4</text>
+              </g>
+              <!-- question chip -->
+              <rect x="78" y="76" width="74" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="115" y="93" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">meter?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Time Signatures</div>
+            <div class="ltile-blurb">See the meter. Name it.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="24" y1="22" x2="176" y2="22"/>
+                <line x1="24" y1="30" x2="176" y2="30"/>
+                <line x1="24" y1="38" x2="176" y2="38"/>
+                <line x1="24" y1="46" x2="176" y2="46"/>
+                <line x1="24" y1="54" x2="176" y2="54"/>
+              </g>
+              <!-- Sharp glyph before a notehead on the middle line -->
+              <text x="91" y="59" font-family="serif" font-weight="700" font-size="23" fill="#2A2A3E" text-anchor="end">&#x266F;</text>
+              <ellipse cx="98" cy="50" rx="6" ry="4.2" transform="rotate(-20 98 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.5"/>
+              <line x1="103" y1="50" x2="103" y2="28" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+              <!-- Accidental symbol chips -->
+              <g font-family="serif" font-weight="700" font-size="22" text-anchor="middle">
+                <rect x="34"  y="82" width="30" height="30" rx="7" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="49"  y="104" fill="white">&#x266F;</text>
+                <rect x="72"  y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="87"  y="104" fill="#2A2A3E">&#x266D;</text>
+                <rect x="110" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="125" y="104" fill="#2A2A3E">&#x266E;</text>
+                <rect x="148" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="163" y="105" fill="#2A2A3E" font-size="20">&#x1D12A;</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Accidentals</div>
+            <div class="ltile-blurb">Sharp, flat, natural — know the signs.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Italic Allegro card -->
+              <rect x="22" y="22" width="116" height="44" rx="9" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="52" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle" class="anim-pulse">Allegro</text>
+              <!-- Metronome marking ♩ = 120 -->
+              <text x="34" y="100" font-family="Bravura Text" font-size="22" fill="#2A2A3E">&#xE1D5;</text>
+              <text x="58" y="100" font-family="Nunito, sans-serif" font-weight="700" font-size="18" fill="#2A2A3E">= 120</text>
+              <!-- Speed chip -->
+              <rect x="124" y="80" width="54" height="26" rx="8" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="151" y="98" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">fast?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Tempo Markings</div>
+            <div class="ltile-blurb">How fast — and how it changes.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Big italic p / f letters -->
+              <text x="46" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#2A2A3E" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">p</text>
+              <text x="100" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#2A2A3E" text-anchor="middle" class="anim-pulse" style="animation-delay: 200ms">mf</text>
+              <text x="156" y="62" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="44" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 400ms">f</text>
+              <!-- Crescendo hairpin -->
+              <polyline points="20,100 180,80 20,100 180,120" fill="none" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Dynamics</div>
+            <div class="ltile-blurb">From a whisper to a shout.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="36" x2="186" y2="36"/>
+                <line x1="14" y1="48" x2="186" y2="48"/>
+                <line x1="14" y1="60" x2="186" y2="60"/>
+                <line x1="14" y1="72" x2="186" y2="72"/>
+                <line x1="14" y1="84" x2="186" y2="84"/>
+              </g>
+              <!-- Two noteheads + a slur curve -->
+              <ellipse cx="70" cy="60" rx="9" ry="6.4" transform="rotate(-18 70 60)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="77" y1="59" x2="77" y2="26" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <ellipse cx="130" cy="54" rx="9" ry="6.4" transform="rotate(-18 130 54)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="137" y1="53" x2="137" y2="20" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- Slur curve below noteheads -->
+              <path d="M 70 70 Q 100 96 130 64" fill="none" stroke="#2A2A3E" stroke-width="2.2" stroke-linecap="round" class="anim-pulse"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Articulation</div>
+            <div class="ltile-blurb">Short, smooth, accented — how each note speaks.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff segment with end-repeat -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="28" x2="186" y2="28"/>
+                <line x1="14" y1="36" x2="186" y2="36"/>
+                <line x1="14" y1="44" x2="186" y2="44"/>
+                <line x1="14" y1="52" x2="186" y2="52"/>
+                <line x1="14" y1="60" x2="186" y2="60"/>
+              </g>
+              <!-- End-repeat barline: dots + thin + thick -->
+              <circle cx="160" cy="40" r="2.4" fill="#2A2A3E"/>
+              <circle cx="160" cy="48" r="2.4" fill="#2A2A3E"/>
+              <line x1="168" y1="28" x2="168" y2="60" stroke="#2A2A3E" stroke-width="2"/>
+              <rect x="172" y="28" width="5" height="32" fill="#2A2A3E" class="anim-pulse"/>
+              <!-- "D.C. al Fine" label -->
+              <rect x="20" y="78" width="160" height="34" rx="9" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="100" y="100" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="18" fill="#2A2A3E" text-anchor="middle">D.C. al Fine</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Score Navigation</div>
+            <div class="ltile-blurb">Repeats, jumps, and where to go next.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="14" y1="42" x2="186" y2="42"/>
+                <line x1="14" y1="54" x2="186" y2="54"/>
+                <line x1="14" y1="66" x2="186" y2="66"/>
+                <line x1="14" y1="78" x2="186" y2="78"/>
+                <line x1="14" y1="90" x2="186" y2="90"/>
+              </g>
+              <!-- Notehead on middle line -->
+              <ellipse cx="80" cy="66" rx="9" ry="6.4" transform="rotate(-18 80 66)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.8"/>
+              <line x1="87" y1="65" x2="87" y2="34" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- "tr" trill marking above the notehead -->
+              <text x="80" y="28" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="700" font-size="20" fill="#2A2A3E" text-anchor="middle" class="anim-pulse">tr</text>
+              <!-- Wavy continuation line -->
+              <path d="M 96 22 q 6 -5 12 0 t 12 0 t 12 0 t 12 0 t 12 0" fill="none" stroke="#2A2A3E" stroke-width="2" stroke-linecap="round"/>
+              <!-- Turn glyph as a hint chip -->
+              <rect x="130" y="100" width="50" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="155" y="115" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">turn?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ornaments</div>
+            <div class="ltile-blurb">Little symbols, big personality.</div>
+          </div>
+        </a></div><h3 class="tier-h reading">Reading</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- 3 sharps for A major, clustered after clef in order: F# top line, C# 3rd space, G# above staff -->
+              <text x="34" y="30" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 0ms">&#xE262;</text>
+              <text x="45" y="42" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 140ms">&#xE262;</text>
+              <text x="56" y="26" font-family="Bravura Text" font-size="24" fill="#5B3FE4" class="anim-wiggle" style="animation-delay: 280ms">&#xE262;</text>
+              <rect x="32" y="76" width="96" height="26" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="94" font-family="Fredoka" font-weight="600" font-size="14" fill="white" text-anchor="middle">A major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Key Signatures</div>
+            <div class="ltile-blurb">Count the sharps. Name the key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="cofTileHub" cx="50%" cy="42%" r="65%">
+                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f3eee2"/>
+                </radialGradient>
+                <filter id="cofTileGlow" x="-60%" y="-60%" width="220%" height="220%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="2.6" flood-color="#1FB8A8" flood-opacity="0.75"/>
+                </filter>
+              </defs>
+              <path d="M 68.66 3.25 A 52 52 0 0 1 91.34 3.25 L 85.89 27.65 A 27 27 0 0 0 74.11 27.65 Z" fill="#FFE3A1" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 95.55 4.38 A 52 52 0 0 1 115.2 15.72 L 98.28 34.13 A 27 27 0 0 0 88.07 28.24 Z" fill="#d3efe9" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 118.28 18.8 A 52 52 0 0 1 129.62 38.45 L 105.76 45.93 A 27 27 0 0 0 99.87 35.72 Z" fill="#c0e8e0" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 130.75 42.66 A 52 52 0 0 1 130.75 65.34 L 106.35 59.89 A 27 27 0 0 0 106.35 48.11 Z" fill="#ade1d7" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 129.62 69.55 A 52 52 0 0 1 118.28 89.2 L 99.87 72.28 A 27 27 0 0 0 105.76 62.07 Z" fill="#9adace" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 115.2 92.28 A 52 52 0 0 1 95.55 103.62 L 88.07 79.76 A 27 27 0 0 0 98.28 73.87 Z" fill="#86d2c4" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 91.34 104.75 A 52 52 0 0 1 68.66 104.75 L 74.11 80.35 A 27 27 0 0 0 85.89 80.35 Z" fill="#73cabb" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 64.45 103.62 A 52 52 0 0 1 44.8 92.28 L 61.72 73.87 A 27 27 0 0 0 71.93 79.76 Z" fill="#b49cfb" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path class="anim-blink" filter="url(#cofTileGlow)" d="M 41.72 89.2 A 52 52 0 0 1 30.38 69.55 L 54.24 62.07 A 27 27 0 0 0 60.13 72.28 Z" fill="#1FB8A8" stroke="#0e8475" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 29.25 65.34 A 52 52 0 0 1 29.25 42.66 L 53.65 48.11 A 27 27 0 0 0 53.65 59.89 Z" fill="#ccbcff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 30.38 38.45 A 52 52 0 0 1 41.72 18.8 L 60.13 35.72 A 27 27 0 0 0 54.24 45.93 Z" fill="#d8ccff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M 44.8 15.72 A 52 52 0 0 1 64.45 4.38 L 71.93 28.24 A 27 27 0 0 0 61.72 34.13 Z" fill="#e4dcff" stroke="#fffdf7" stroke-width="1.6" stroke-linejoin="round"/>
+              <text x="80" y="18.07" text-anchor="middle" fill="#7a5e12" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">C</text>
+              <text x="99.75" y="23.36" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">G</text>
+              <text x="114.21" y="37.82" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">D</text>
+              <text x="119.5" y="57.57" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">A</text>
+              <text x="114.21" y="77.32" text-anchor="middle" fill="#0f7468" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">E</text>
+              <text x="99.75" y="91.78" text-anchor="middle" fill="#0a5d52" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">B</text>
+              <text x="80" y="97.07" text-anchor="middle" fill="#0a5d52" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">F♯</text>
+              <text x="60.25" y="91.78" text-anchor="middle" fill="#3a1f9e" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">D♭</text>
+              <text class="anim-pulse" x="45.79" y="79.35" text-anchor="middle" fill="#ffffff" font-family="Fredoka, sans-serif" font-weight="700" font-size="16">?</text>
+              <text x="40.5" y="57.57" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">E♭</text>
+              <text x="45.79" y="37.82" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">B♭</text>
+              <text x="60.25" y="23.36" text-anchor="middle" fill="#4326b8" font-family="Fredoka, sans-serif" font-weight="700" font-size="10.5">F</text>
+              <circle cx="80" cy="54" r="24" fill="url(#cofTileHub)" stroke="#e7e0cf" stroke-width="1.4"/>
+              <path d="M 89.58 45.97 A 12.5 12.5 0 1 1 69.17 47.75" fill="none" stroke="#1FB8A8" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M 71.67 43.42 L 71.54 50.85 L 65.31 47.25 Z" fill="#1FB8A8"/>
+              <path d="M 80 1.5 L 74.5 9.5 L 85.5 9.5 Z" fill="#5B3FE4"/>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Circle of Fifths</div>
+            <div class="ltile-blurb">The map of every key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
+                <text x="40"  y="64" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="54"  y="58" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 90ms">&#xE1D5;</text>
+                <text x="68"  y="52" fill="#FFB627" class="anim-pulse" style="animation-delay: 180ms">&#xE1D5;</text>
+                <text x="82"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 270ms">&#xE1D5;</text>
+                <text x="96"  y="40" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 360ms">&#xE1D5;</text>
+                <text x="110" y="34" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 450ms">&#xE1D5;</text>
+                <text x="124" y="28" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 540ms">&#xE1D5;</text>
+                <text x="138" y="22" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 630ms">&#xE1D5;</text>
+              </g>
+              <rect x="36" y="78" width="88" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="95" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">C major?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scales</div>
+            <div class="ltile-blurb">Spot the major. Spot the minor.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- Tight chromatic-ish climb with alternating sharp glyphs -->
+              <g font-family="Bravura Text" text-anchor="middle">
+                <text x="34"  y="56" font-size="20" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="44"  y="50" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="51"  y="50" font-size="20" fill="#FFB627" class="anim-pulse" style="animation-delay: 80ms">&#xE1D5;</text>
+                <text x="61"  y="46" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="68"  y="46" font-size="20" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 160ms">&#xE1D5;</text>
+                <text x="85"  y="42" font-size="20" fill="#1FB8A8" class="anim-pulse" style="animation-delay: 240ms">&#xE1D5;</text>
+                <text x="95"  y="38" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="102" y="38" font-size="20" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 320ms">&#xE1D5;</text>
+                <text x="119" y="34" font-size="20" fill="#5B3FE4" class="anim-pulse" style="animation-delay: 400ms">&#xE1D5;</text>
+                <text x="129" y="30" font-size="13" fill="#2A2A3E">&#xE262;</text>
+                <text x="136" y="30" font-size="20" fill="#FF6B6B" class="anim-pulse" style="animation-delay: 480ms">&#xE1D5;</text>
+              </g>
+              <rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="97" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Chromatic Scale</div>
+            <div class="ltile-blurb">Half steps all the way — sharps up, flats down.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="24" y1="22" x2="176" y2="22"/>
+                <line x1="24" y1="30" x2="176" y2="30"/>
+                <line x1="24" y1="38" x2="176" y2="38"/>
+                <line x1="24" y1="46" x2="176" y2="46"/>
+                <line x1="24" y1="54" x2="176" y2="54"/>
+              </g>
+              <!-- Key signature: two sharps (D major) -->
+              <g font-family="serif" font-weight="700" font-size="20" fill="#2A2A3E" text-anchor="middle">
+                <text x="40" y="32">&#x266F;</text>
+                <text x="52" y="42">&#x266F;</text>
+              </g>
+              <!-- A queried notehead -->
+              <ellipse cx="110" cy="42" rx="6.5" ry="4.4" transform="rotate(-20 110 42)" fill="white" stroke="#2A2A3E" stroke-width="1.6"/>
+              <line x1="115" y1="42" x2="115" y2="20" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+              <!-- Degree number chips: 1 3 5 -->
+              <g font-family="Fredoka" font-weight="700" font-size="20" text-anchor="middle">
+                <rect x="36"  y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="51"  y="104" fill="#2A2A3E">1</text>
+                <rect x="85"  y="82" width="30" height="30" rx="7" fill="#0e8475" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="100" y="104" fill="white">3</text>
+                <rect x="134" y="82" width="30" height="30" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="149" y="104" fill="#2A2A3E">5</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scale Degrees</div>
+            <div class="ltile-blurb">Every note has a job in its key.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+                <line x1="6"  y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6"  y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <!-- All white-key notes, but the first highlighted = "this is the tonic" -->
+              <g font-family="Bravura Text" font-size="20" text-anchor="middle">
+                <text x="40"  y="46" fill="#FFB627" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+                <text x="56"  y="42" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="72"  y="38" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="88"  y="34" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="104" y="30" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="120" y="26" fill="#5B3FE4">&#xE1D5;</text>
+                <text x="136" y="22" fill="#5B3FE4">&#xE1D5;</text>
+              </g>
+              <!-- Mode-name chips animating in sequence -->
+              <g font-family="Fredoka" font-weight="600" font-size="11" text-anchor="middle">
+                <rect x="14"  y="78" width="44" height="22" rx="7" fill="#FFB627" stroke="#2A2A3E" stroke-width="2" class="anim-pulse" style="animation-delay: 0ms"/>
+                <text x="36"  y="93" fill="#2A2A3E">Dorian</text>
+                <rect x="62"  y="78" width="50" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="87"  y="93" fill="#2A2A3E">Lydian?</text>
+                <rect x="116" y="78" width="42" height="22" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="137" y="93" fill="#2A2A3E">Mix.?</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Scale Modes</div>
+            <div class="ltile-blurb">Same notes, different home.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6"  y1="14" x2="154" y2="14"/>
+                <line x1="6"  y1="22" x2="154" y2="22"/>
+                <line x1="6"  y1="30" x2="154" y2="30"/>
+                <line x1="6"  y1="38" x2="154" y2="38"/>
+                <line x1="6"  y1="46" x2="154" y2="46"/>
+              </g>
+              <text x="6"  y="44" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <text x="80" y="48" font-family="Bravura Text" font-size="22" fill="#FF6B6B" text-anchor="middle" class="anim-pulse" style="animation-delay: 0ms">&#xE1D5;</text>
+              <text x="80" y="32" font-family="Bravura Text" font-size="22" fill="#5B3FE4" text-anchor="middle" class="anim-pulse" style="animation-delay: 150ms">&#xE1D5;</text>
+              <path d="M100 22 L108 22 L108 46 L100 46" stroke="#2A2A3E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="120" y="40" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">5th?</text>
+              <g>
+                <rect x="10"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="26"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">3rd</text>
+                <rect x="46"  y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="62"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">4th</text>
+                <rect x="82"  y="74" width="32" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="98"  y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="white" text-anchor="middle">5th</text>
+                <rect x="118" y="74" width="32" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="134" y="91" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E" text-anchor="middle">6th</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Intervals</div>
+            <div class="ltile-blurb">Two notes. How far apart?</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes eiPulse { 0%,100%{opacity:0.7} 50%{opacity:1} }
+                .ei-lo { animation: eiPulse 1.6s ease-in-out infinite; }
+                .ei-hi { animation: eiPulse 1.6s ease-in-out 0.4s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="ei-lo" cx="68" cy="72" r="14" fill="#5B3FE4" opacity="0.8"/>
+              <text x="68" y="78" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">C</text>
+              <path d="M86 66 Q100 44 114 42" stroke="#FFB627" stroke-width="2.5" fill="none" stroke-dasharray="5 3" stroke-linecap="round"/>
+              <circle class="ei-hi" cx="132" cy="42" r="14" fill="#1FB8A8" opacity="0.8"/>
+              <text x="132" y="48" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">G</text>
+              <rect x="88" y="48" width="24" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="1.5"/>
+              <text x="100" y="63" font-family="Fredoka" font-weight="700" font-size="13" fill="#2A2A3E" text-anchor="middle">P5</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the gap</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Intervals</div>
+            <div class="ltile-blurb">Hear two notes. Name the gap.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes esRise { 0%,100%{opacity:0.5;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+                .es-d1 { animation: esRise 1.5s ease-in-out infinite; }
+                .es-d2 { animation: esRise 1.5s ease-in-out 0.15s infinite; }
+                .es-d3 { animation: esRise 1.5s ease-in-out 0.3s infinite; }
+                .es-d4 { animation: esRise 1.5s ease-in-out 0.45s infinite; }
+                .es-d5 { animation: esRise 1.5s ease-in-out 0.6s infinite; }
+                .es-d6 { animation: esRise 1.5s ease-in-out 0.75s infinite; }
+                .es-d7 { animation: esRise 1.5s ease-in-out 0.9s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <circle class="es-d1" cx="36"  cy="82" r="7" fill="#5B3FE4"/>
+              <circle class="es-d2" cx="56"  cy="72" r="7" fill="#5B3FE4"/>
+              <circle class="es-d3" cx="76"  cy="62" r="7" fill="#1FB8A8"/>
+              <circle class="es-d4" cx="96"  cy="52" r="7" fill="#1FB8A8"/>
+              <circle class="es-d5" cx="116" cy="42" r="7" fill="#FFB627"/>
+              <circle class="es-d6" cx="136" cy="32" r="7" fill="#FFB627"/>
+              <circle class="es-d7" cx="156" cy="22" r="7" fill="#FF6B6B"/>
+              <path d="M36 82 L56 72 L76 62 L96 52 L116 42 L136 32 L156 22" stroke="white" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3 4"/>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the scale</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Scales</div>
+            <div class="ltile-blurb">Hear a scale. Name the type.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-pitch">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="34" x2="154" y2="34"/>
+                <line x1="6" y1="44" x2="154" y2="44"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+                <line x1="6" y1="64" x2="154" y2="64"/>
+                <line x1="6" y1="74" x2="154" y2="74"/>
+              </g>
+              <text x="8" y="70" font-family="Bravura Text" font-size="34" fill="#2A2A3E">&#xE050;</text>
+              <!-- original note (muted) -->
+              <ellipse cx="60" cy="64" rx="8" ry="6" transform="rotate(-16 60 64)" fill="#d8c2c8" stroke="#2A2A3E" stroke-width="2"/>
+              <line x1="67.4" y1="62.5" x2="67.4" y2="40" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              <!-- shift arrow -->
+              <path d="M 80 56 Q 98 40 110 42" fill="none" stroke="#5B3FE4" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 3"/>
+              <path d="M 105 36 L 114 41 L 104 45 Z" fill="#5B3FE4"/>
+              <!-- transposed note (teal, pulsing) -->
+              <g class="anim-pulse">
+                <ellipse cx="122" cy="44" rx="8" ry="6" transform="rotate(-16 122 44)" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+                <line x1="129.4" y1="42.5" x2="129.4" y2="20" stroke="#2A2A3E" stroke-width="2.4" stroke-linecap="round"/>
+              </g>
+              <rect x="50" y="86" width="60" height="22" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80" y="101" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="12" fill="#2A2A3E">up a 5th</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Transposition</div>
+            <div class="ltile-blurb">Same tune, different key.</div>
+          </div>
+        </a></div><h3 class="tier-h theory">Theory</h3><div class="grid"><a class="ltile">
+          <div class="ltile-art th-harmony">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="22" x2="154" y2="22"/>
+                <line x1="6" y1="30" x2="154" y2="30"/>
+                <line x1="6" y1="38" x2="154" y2="38"/>
+                <line x1="6" y1="46" x2="154" y2="46"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Fredoka" font-weight="700" text-anchor="middle">
+                <rect x="42" y="70" width="24" height="24" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse" style="animation-delay: 0ms"/>
+                <text x="54" y="87" font-size="13" fill="white">I</text>
+                <rect x="70" y="70" width="28" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="84" y="87" font-size="13" fill="#2A2A3E">IV</text>
+                <rect x="102" y="70" width="24" height="24" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="114" y="87" font-size="13" fill="#2A2A3E">V</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Primary Chords</div>
+            <div class="ltile-blurb">I, IV, V — the chords that drive every song.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-harmony">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="6" y1="22" x2="154" y2="22"/>
+                <line x1="6" y1="30" x2="154" y2="30"/>
+                <line x1="6" y1="38" x2="154" y2="38"/>
+                <line x1="6" y1="46" x2="154" y2="46"/>
+                <line x1="6" y1="54" x2="154" y2="54"/>
+              </g>
+              <text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">&#xE050;</text>
+              <g font-family="Fredoka" font-weight="600" font-size="10" text-anchor="middle">
+                <rect x="8"   y="74" width="20" height="20" rx="6" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="18"  y="88" fill="white">I</text>
+                <rect x="30"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="40"  y="88" fill="#2A2A3E">ii</text>
+                <rect x="52"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="62"  y="88" fill="#2A2A3E">iii</text>
+                <rect x="74"  y="74" width="20" height="20" rx="6" fill="#FFB627" stroke="#2A2A3E" stroke-width="1.5" class="anim-pulse" style="animation-delay: 200ms"/>
+                <text x="84"  y="88" fill="#2A2A3E">IV</text>
+                <rect x="96"  y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="106" y="88" fill="#2A2A3E">V</text>
+                <rect x="118" y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="128" y="88" fill="#2A2A3E">vi</text>
+                <rect x="140" y="74" width="20" height="20" rx="6" fill="white" stroke="#2A2A3E" stroke-width="1.5"/>
+                <text x="150" y="88" fill="#2A2A3E">vii°</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Roman Numerals</div>
+            <div class="ltile-blurb">Every chord has a job. Learn the system.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-harmony">
+            <svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">
+              <!-- function pills -->
+              <rect x="8"   y="30" width="40" height="28" rx="9" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="28"  y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="white">T</text>
+              <rect x="60"  y="30" width="40" height="28" rx="9" fill="#FFB627" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="80"  y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E">PD</text>
+              <rect x="112" y="30" width="40" height="28" rx="9" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+              <text x="132" y="49" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="15" fill="white">D</text>
+              <!-- forward arrows T→PD→D -->
+              <path d="M 51 40 L 59 44 L 51 48 Z" fill="#2A2A3E"/>
+              <path d="M 103 40 L 111 44 L 103 48 Z" fill="#2A2A3E"/>
+              <!-- resolve arc: D back to T -->
+              <path d="M 132 60 Q 80 94 30 60" fill="none" stroke="#5B3FE4" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 3"/>
+              <path d="M 26 64 L 30 55 L 34 64 Z" fill="#5B3FE4"/>
+              <text x="80" y="104" text-anchor="middle" font-family="Fredoka" font-weight="600" font-size="11" fill="#6b6b7b">resolve home</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Chord Function</div>
+            <div class="ltile-blurb">What the chord is doing.</div>
+          </div>
+        </a><a class="ltile"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a><a class="ltile"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a><a class="ltile"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a><a class="ltile"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="20" y="35" width="28" height="28" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><text x="34" y="54" font-size="13" fill="white">I</text><text x="60" y="54" font-size="14" fill="#bbb">→</text><rect x="68" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="82" y="54" font-size="13">V</text><text x="108" y="54" font-size="14" fill="#bbb">→</text><rect x="116" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="130" y="54" font-size="13">vi</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Chord Progressions</div><div class="ltile-blurb">Hear the pattern. Name the sequence.</div></div></a><a class="ltile"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="30" y="35" width="36" height="36" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="48" y="58" font-size="16">V</text><text x="80" y="58" font-size="20" fill="#bbb">→</text><rect x="94" y="35" width="36" height="36" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/><text x="112" y="58" font-size="16" fill="white">I</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Cadences</div><div class="ltile-blurb">How phrases end. V→I or something else?</div></div></a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes ecFade { 0%,45%{opacity:1} 50%,95%{opacity:0.3} 100%{opacity:1} }
+                .ec-maj { animation: ecFade 3s ease-in-out infinite; }
+                .ec-min { animation: ecFade 3s ease-in-out 1.5s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <text class="ec-maj" x="70" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#1FB8A8" text-anchor="middle">Major</text>
+              <text x="100" y="62" font-family="Fredoka" font-weight="700" font-size="20" fill="#5a5a6e" text-anchor="middle" opacity="0.4">or</text>
+              <text class="ec-min" x="140" y="62" font-family="Fredoka" font-weight="700" font-size="28" fill="#5B3FE4" text-anchor="middle">Minor</text>
+              <text x="100" y="86" font-size="24" text-anchor="middle">🤔</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">hear the quality</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Chord Quality</div>
+            <div class="ltile-blurb">Listen and name the chord.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes edSlide { 0%,100%{opacity:0.3;transform:translateX(0)} 50%{opacity:0.9;transform:translateX(3px)} }
+                .ed-arr { animation: edSlide 1.5s ease-in-out infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <rect x="42" y="32" width="42" height="42" rx="10" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="63" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="#2A2A3E" text-anchor="middle">V</text>
+              <text class="ed-arr" x="100" y="58" font-size="18" fill="#5a5a6e" text-anchor="middle">→</text>
+              <rect x="116" y="32" width="42" height="42" rx="10" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2"/>
+              <text x="137" y="61" font-family="Fredoka" font-weight="700" font-size="22" fill="white" text-anchor="middle">I</text>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">name the ending</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Cadences</div>
+            <div class="ltile-blurb">Hear two chords. Name the cadence.</div>
+          </div>
+        </a><a class="ltile">
+          <div class="ltile-art th-ear">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <style>
+                @keyframes epBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+                .ep-1 { animation: epBob 1.4s ease-in-out infinite; }
+                .ep-2 { animation: epBob 1.4s ease-in-out 0.2s infinite; }
+                .ep-3 { animation: epBob 1.4s ease-in-out 0.4s infinite; }
+                .ep-4 { animation: epBob 1.4s ease-in-out 0.6s infinite; }
+              </style>
+              <text x="12" y="24" font-size="18" opacity="0.7">🎧</text>
+              <g class="ep-1"><rect x="22" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="39" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">I</text></g>
+              <g class="ep-2"><rect x="64" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="81" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">IV</text></g>
+              <g class="ep-3"><rect x="106" y="42" width="34" height="32" rx="8" fill="white" stroke="#2A2A3E" stroke-width="1.8"/><text x="123" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="#2A2A3E" text-anchor="middle">V</text></g>
+              <g class="ep-4"><rect x="148" y="42" width="34" height="32" rx="8" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="1.8"/><text x="165" y="64" font-family="Fredoka" font-weight="700" font-size="15" fill="white" text-anchor="middle">I</text></g>
+              <text x="100" y="110" font-family="Fredoka" font-weight="700" font-size="13" fill="#5a5a6e" text-anchor="middle">follow the chords</text>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Ear: Progressions</div>
+            <div class="ltile-blurb">Hear the chords. Name the pattern.</div>
+          </div>
+        </a></div></div>
+</body></html>
