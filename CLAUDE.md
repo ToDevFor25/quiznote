@@ -115,6 +115,17 @@ music class, flag it as Tier 3.
   script blocks, all CSS variables resolve, JS class references intact.
 - **`@media` overrides stay inline.** When stripping shared selectors, always
   split top-level vs `@media` segments and preserve `@media` verbatim.
+- **"Buttons dead but nav links work" = an init-time JS throw.** If a screen's
+  `<a href>` links (home / All Modules) navigate but every `<button>` does
+  nothing, JS threw during init and aborted handler wiring — it is NOT an
+  audio/CSS problem. Run the **DOM-mock init trace** (see BUILD_LOG May 2026,
+  `/tmp/trace-any.js`: shims document/window/QN/NH, runs inline scripts +
+  fires DOMContentLoaded, reports the exact throw + line) before guessing.
+  These throws come from **bulk-edit brace corruption** (a prior batch edit
+  shifted a `}` by a line in ~30 modules) — invisible to parsers and to
+  grep-by-name; only executing init or diffing rendered behavior catches them.
+  Note the trace verifies *no init throw* only — it won't catch logic bugs
+  (it missed a `syncMuteUI` pill-orphan that broke only visual feedback).
 
 ---
 
