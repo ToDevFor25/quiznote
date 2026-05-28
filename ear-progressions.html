@@ -1214,13 +1214,20 @@
         nextQuestion();
       }, 2800);
     } else {
-      showToast('Try once more!', 'retry');
-      // Replay so they can listen again
-      playProgression(state.current.chords);
-      setTimeout(function () {
-        btn.classList.remove('wrong');
-        hideToast();
-      }, 2400);
+      var hint = getHint();
+      if (hint) {
+        state.locked = true;
+        showToast('Try once more!', 'retry');
+        setTimeout(function () { showHintCard(hint); }, 500);
+      } else {
+        showToast('Try once more!', 'retry');
+        // Replay so they can listen again
+        playProgression(state.current.chords);
+        setTimeout(function () {
+          btn.classList.remove('wrong');
+          hideToast();
+        }, 2400);
+      }
     }
   }
 

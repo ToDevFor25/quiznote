@@ -1113,11 +1113,18 @@
         nextQuestion();
       }, 1400);
     } else {
-      showToast('Try once more!', 'retry');
-      setTimeout(function () {
-        btn.classList.remove('wrong');
-        hideToast();
-      }, 900);
+      var hint = getHint();
+      if (hint) {
+        state.locked = true;
+        showToast('Try once more!', 'retry');
+        setTimeout(function () { showHintCard(hint); }, 500);
+      } else {
+        showToast('Try once more!', 'retry');
+        setTimeout(function () {
+          btn.classList.remove('wrong');
+          hideToast();
+        }, 900);
+      }
     }
   }
 
