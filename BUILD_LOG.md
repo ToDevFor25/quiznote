@@ -57,6 +57,64 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Recommender sent a Gold-mastered module back to Easy — tier-clear logic + three-way definition drift — May 2026
+
+**Session type:** Bug report from device ("dashboard says Jump back in: Note
+Names · Easy, but I have Gold on Tricky"; then "path's Your next step does it
+too"). Shipped to `Dev` (commit `f62661e`).
+
+**Symptom.** Note Names mastered to Gold (Tricky cleared), yet both the
+dashboard "Jump back in" CTA and path.html "Your next step" card recommended
+**Note Names · Easy**.
+
+**Root cause.** Both surfaces call the same recommender, `QN.recommend.next()`
+(qn-profile.js). Its helper `nextTierFor` walked tiers easy→medium→tricky and
+returned the **first tier that wasn't "cleared," without checking whether a
+harder tier was already cleared**. The user's Easy tier didn't meet the bar
+(under-practiced / pooled accuracy < 85%), so the loop returned `easy` and
+never noticed Tricky was done — directly contradicting the Gold medal.
+
+**Definition drift (the deeper issue).** "Cleared/mastered" was defined in
+**three** places that disagreed on **two** axes:
+- *Per-tier rule:* dashboard `computeMastery` counted **rounds each ≥85%**
+  (per-round); the recommender and path.html `moduleStatus` used **pooled
+  accuracy ≥85%** over ≥2 rounds. These disagree on histories like
+  [100%, 70%] (pooled passes, per-round fails).
+- *Module-done rule:* the dashboard medal = **top tier (Tricky) cleared**;
+  the recommender and path required **every** tier cleared.
+
+**Fix (approved Tier 3 — shared file `qn-profile.js` + `path.html`).**
+- `nextTierFor`: find the **highest** cleared tier, recommend the tier just
+  above it; top tier cleared ⇒ module done (`null`) ⇒ recommender advances to
+  the next module. Mastering a harder tier never sends you down.
+- Unified the clear rule on the **canonical per-round** definition the medal
+  already uses: `tierGood[tier]` = count of rounds scoring ≥ `TIER_UP_ACCURACY`,
+  cleared = `tierGood ≥ MIN_ROUNDS_PER_TIER`. Added `tierGood` tracking + a
+  shared `tierCleared()` in the recommender and in path.html's `rollup`.
+- `path.html moduleStatus`: a module is "cleared" (✓ on the spine) when its
+  **top** tier is cleared — matching the medal and the recommender.
+- `dashboard computeMastery` was already the canonical rule — left unchanged;
+  it's now the reference the other two conform to.
+
+**Verified** with a recommender unit harness (`/tmp/rectest.js`, qn-profile.js
+in a vm + seeded `qn_events`): (A) Tricky cleared / Easy under-practiced now
+advances to piano-quiz, not Note Names·Easy; (B) only-Easy-cleared still
+recommends Note Names·Medium (forward progress intact); (C) no events →
+Note Names·Easy cold-start; (D) Easy with 1 good + 1 weak round → still Easy
+(correctly needs 2 good rounds).
+
+**Lesson / CLAUDE.md candidate.** "Mastered" is computed in 3 surfaces
+(qn-profile.js recommender, dashboard `computeMastery`, path.html mirror).
+They drifted because each re-implemented the rule. The durable fix would be a
+single shared `QN.mastery` helper all three call; until then, any change to
+the clear/advance rule must touch all three in one commit. Canonical rule:
+**≥2 rounds each ≥85% per tier; module done when the top tier is cleared.**
+
+**Still open / next:** consider extracting a shared `QN.mastery`
+helper (recommender + dashboard + path all call it) to prevent future drift.
+
+---
+
 ### Teaching hints dead on time-signatures & dotted-notes — cross-scope ReferenceError in hintKeyFor — May 2026
 
 **Session type:** Single-bug diagnosis from a device report ("didn't get
