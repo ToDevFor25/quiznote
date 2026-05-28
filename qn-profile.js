@@ -1093,7 +1093,7 @@
       for (var i = 0; i < events.length; i++) {
         var ev = events[i];
         if (path.indexOf(ev.module) === -1) continue; // ignore non-path modules
-        if (!perModule[ev.module]) perModule[ev.module] = { rounds: 0, recentAcc: [], tierRounds: {}, tierAcc: {}, skills: {} };
+        if (!perModule[ev.module]) perModule[ev.module] = { rounds: 0, recentAcc: [], tierRounds: {}, tierAcc: {}, tierGood: {}, skills: {} };
         var pm = perModule[ev.module];
         pm.rounds++;
         var w = recencyWeight(i, events.length);
@@ -1105,6 +1105,9 @@
         if (ev.total > 0) {
           if (!pm.tierAcc[t]) pm.tierAcc[t] = { c: 0, n: 0 };
           pm.tierAcc[t].c += ev.correct; pm.tierAcc[t].n += ev.total;
+          // Canonical clear rule (matches dashboard computeMastery): count
+          // individual rounds scoring >= TIER_UP_ACCURACY, not pooled accuracy.
+          if (ev.correct / ev.total >= REC.TIER_UP_ACCURACY) pm.tierGood[t] = (pm.tierGood[t] || 0) + 1;
         }
 
         if (ev.skills && w > 0) {
@@ -1204,26 +1207,29 @@
       };
 
       // ---- helpers ----
+      function tierCleared(info, tr) {
+        // Canonical clear rule, shared with the dashboard medal and the path
+        // spine: at least MIN_ROUNDS_PER_TIER rounds at this tier each scored
+        // >= TIER_UP_ACCURACY.
+        return ((info.tierGood && info.tierGood[tr]) || 0) >= REC.MIN_ROUNDS_PER_TIER;
+      }
       function nextTierFor(info) {
-        // Returns the tier to practice next in this module, or null if the
-        // module is "cleared" (all tiers practiced enough and accurate).
+        // Returns the tier to practice next, or null if the module is done.
+        // We recommend the tier just ABOVE the highest tier already cleared,
+        // so demonstrated mastery of a harder tier never sends you back down
+        // (clearing Tricky = Gold = module done, matching the dashboard medal).
+        var highest = -1;
         for (var ti = 0; ti < TIER_ORDER.length; ti++) {
-          var tr = TIER_ORDER[ti];
-          var rounds = info.tierRounds[tr] || 0;
-          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : 0;
-          if (rounds < REC.MIN_ROUNDS_PER_TIER) return tr;          // under-practiced
-          if (acc < REC.TIER_UP_ACCURACY) return tr;                // not yet mastered
-          // else cleared; check next tier
+          if (tierCleared(info, TIER_ORDER[ti])) highest = ti;
         }
-        return null;
+        if (highest === TIER_ORDER.length - 1) return null;   // top tier cleared -> done
+        return TIER_ORDER[highest + 1];                       // 'easy' when nothing cleared
       }
       function weakestTierFor(info) {
-        // For remediation: practice at the lowest tier that isn't mastered,
+        // For remediation: practice at the lowest tier that isn't cleared,
         // so we rebuild from where it broke down.
         for (var ti = 0; ti < TIER_ORDER.length; ti++) {
-          var tr = TIER_ORDER[ti];
-          var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : null;
-          if (acc !== null && acc < REC.TIER_UP_ACCURACY) return tr;
+          if (!tierCleared(info, TIER_ORDER[ti])) return TIER_ORDER[ti];
         }
         return 'easy';
       }

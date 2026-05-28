@@ -442,7 +442,7 @@
     for (var i = 0; i < events.length; i++) {
       var ev = events[i];
       if (PATH.indexOf(ev.module) === -1) continue;
-      if (!per[ev.module]) per[ev.module] = { rounds: 0, tierRounds: {}, tierAcc: {} };
+      if (!per[ev.module]) per[ev.module] = { rounds: 0, tierRounds: {}, tierAcc: {}, tierGood: {} };
       var pm = per[ev.module];
       pm.rounds++;
       var t = ev.tier || 'easy';
@@ -451,22 +451,25 @@
         if (!pm.tierAcc[t]) pm.tierAcc[t] = { c: 0, n: 0 };
         pm.tierAcc[t].c += ev.correct;
         pm.tierAcc[t].n += ev.total;
+        // Canonical clear rule (matches dashboard + recommender): count rounds
+        // scoring >= TIER_UP_ACCURACY, not pooled accuracy.
+        if (ev.correct / ev.total >= TIER_UP_ACCURACY) pm.tierGood[t] = (pm.tierGood[t] || 0) + 1;
       }
     }
     return per;
   }
 
-  // A module is "cleared" when every tier has >= MIN_ROUNDS_PER_TIER rounds
-  // and >= TIER_UP_ACCURACY accuracy. Matches the recommender's advance rule.
+  // A tier is "cleared" when >= MIN_ROUNDS_PER_TIER rounds at that tier each
+  // scored >= TIER_UP_ACCURACY (canonical rule, shared with the dashboard
+  // medal and the recommender).
+  function tierCleared(info, tr) {
+    return ((info.tierGood && info.tierGood[tr]) || 0) >= MIN_ROUNDS_PER_TIER;
+  }
+  // A module is "cleared" (done) when its TOP tier is cleared — matching the
+  // medal (Gold = Tricky cleared) and the recommender's advance rule.
   function moduleStatus(info) {
     if (!info || !info.rounds) return 'untouched';
-    for (var ti = 0; ti < TIER_ORDER.length; ti++) {
-      var tr = TIER_ORDER[ti];
-      var rounds = info.tierRounds[tr] || 0;
-      var acc = info.tierAcc[tr] ? info.tierAcc[tr].c / info.tierAcc[tr].n : 0;
-      if (rounds < MIN_ROUNDS_PER_TIER || acc < TIER_UP_ACCURACY) return 'in-progress';
-    }
-    return 'cleared';
+    return tierCleared(info, TIER_ORDER[TIER_ORDER.length - 1]) ? 'cleared' : 'in-progress';
   }
 
   function bestScoreFor(slug) {
