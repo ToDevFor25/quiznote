@@ -1961,10 +1961,16 @@
     if (!state.settings.hints || !HINTS) return null;
     var keys = Object.keys(HINTS);
     if (keys.length === 0) return null;
-    var key = keys[Math.floor(Math.random() * keys.length)];
-    var pool = (HINTS[key] || []).filter(function(h) { return !state.shownHints.has(h); });
-    if (pool.length === 0) return null;
-    var hint = pool[Math.floor(Math.random() * pool.length)];
+    var available = [];
+    keys.forEach(function(k) {
+      (HINTS[k] || []).forEach(function(h) { if (!state.shownHints.has(h)) available.push(h); });
+    });
+    if (available.length === 0) {
+      state.shownHints.clear();
+      keys.forEach(function(k) { (HINTS[k] || []).forEach(function(h) { available.push(h); }); });
+    }
+    if (available.length === 0) return null;
+    var hint = available[Math.floor(Math.random() * available.length)];
     state.shownHints.add(hint);
     return hint;
   }

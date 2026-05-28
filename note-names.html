@@ -1475,6 +1475,13 @@
     var category = isAcc && HINTS.accidental && Math.random() < 0.5 ? 'accidental' : clef;
     var pool = (HINTS[category] || []).filter(h => !state.shownHints.has(h));
     if (pool.length === 0 && category !== clef) pool = (HINTS[clef] || []).filter(h => !state.shownHints.has(h));
+    // Cycle: if the relevant hints are exhausted this round, allow reshowing them.
+    if (pool.length === 0) {
+      (HINTS[category] || []).forEach(h => state.shownHints.delete(h));
+      (HINTS[clef] || []).forEach(h => state.shownHints.delete(h));
+      pool = (HINTS[category] || []).filter(h => !state.shownHints.has(h));
+      if (pool.length === 0) pool = (HINTS[clef] || []);
+    }
     if (pool.length === 0) return null;
     var hint = pool[Math.floor(Math.random() * pool.length)];
     state.shownHints.add(hint);
