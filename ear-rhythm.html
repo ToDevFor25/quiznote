@@ -1934,6 +1934,8 @@ function setupSettings() {
     }
 
     // Timer toggle
+    if (!els['timer-toggle']) els['timer-toggle'] = els['timer-row'];
+    if (!els['timer-toggle-state']) els['timer-toggle-state'] = els['timer-pill-state'];
     if (els['timer-toggle']) {
       els['timer-toggle'].addEventListener('click', () => {
         state.settings.timer.enabled = !state.settings.timer.enabled;

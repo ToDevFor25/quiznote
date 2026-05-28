@@ -731,19 +731,11 @@
     if (diff === 'medium' || diff === 'tricky') allQualities.push('Diminished');
     if (diff === 'tricky') allQualities.push('Augmented');
 
-    // Add other qualities as distractors (same-root reasoning is implicit
-    // since we always show quality labels, not chord names)
+    // Distractors are only the qualities in scope for this difficulty, so
+    // Easy stays Major/Minor (2 tiles), Medium adds Diminished (3), Tricky
+    // adds Augmented (4) — never offer a quality the tier never plays.
     for (var i = 0; i < allQualities.length; i++) {
-      if (allQualities[i] !== correct && all.length < 4) {
-        all.push(allQualities[i]);
-      }
-    }
-
-    // If we still need more (shouldn't happen with 4 qualities), pad
-    while (all.length < 4) {
-      var extras = ['Major', 'Minor', 'Diminished', 'Augmented'];
-      var pick = extras[Math.floor(Math.random() * extras.length)];
-      if (all.indexOf(pick) === -1) all.push(pick);
+      if (allQualities[i] !== correct) all.push(allQualities[i]);
     }
 
     // Shuffle
