@@ -1,5 +1,121 @@
 ---
 
+### Chord Function (#7) + Transposition (#8) — Phase 5 Tier B finished — May 2026
+
+**Session type:** Two autonomous clone-and-swap module builds (queue #7, #8),
+shipped to `main` (production) via clean fast-forward. Roster **33 → 35**.
+Phase 5 Tier B is now complete (Circle of Fifths, Chord Function,
+Transposition all live).
+
+**Chord Function (Theory, #34) — `chord-function.html`.** Cloned from
+`roman-numerals.html` (same key/chord data, new answer dimension: harmonic
+*function* rather than chord name). Four question types:
+- **categorize** — show a chord, name its function → 3 tiles
+  (Tonic / Predominant / Dominant). The core type.
+- **identify** — "which chord serves a Predominant function?" → 4 chord
+  tiles. Distractors are drawn only from *other* functions so exactly one
+  tile is correct (avoids the spec's two-valid-answers ambiguity).
+- **motion** (Medium+) — name the two-chord harmonic motion (T→PD, PD→D,
+  D→T, T→D) → 4 direction tiles.
+- **exception** (Tricky, minor keys) — "why is V MAJOR in a minor key?"
+  → "Raised leading tone (harmonic minor)" + 3 plausible-wrong reasons.
+
+Function map (by scale degree, same for major/minor): I/i tonic, ii/ii°
+predominant, iii/III tonic, IV/iv predominant, V dominant, vi/VI tonic,
+vii° dominant. Reuses the major/minor/both selector. Engine smoke-tested
+at 18k questions across tiers/modes, **0 failures**.
+
+  *Post-ship polish (Jonathan reviewed live on Dev):* the staff now renders
+  the **actual triad** (categorize + exception) via `qn-staff.js`
+  `buildStaffWithChord` instead of inheriting Roman Numerals'
+  key-signature-only staff. Triad = diatonic-third stack of the key's
+  `roots` (so V is major in minor, vii° diminished, III+ augmented — all
+  spelled correctly); chords needing a double accidental (sharpest minor
+  keys, 9 of 210) fall back to a key-sig staff. The 3-tile categorize was
+  rebalanced (two on top + third full-width) so it reads as deliberate —
+  3 is the correct count (harmonic function has exactly three categories;
+  a 4th would be musically wrong). identify/motion stay key-sig-only (no
+  single subject chord).
+
+  *Bug fixed:* inherited path-handoff key mismatch — Roman Numerals read an
+  underscore key (`roman_numerals_settings`) that `path.html` never writes
+  (it writes the hyphen-slug + short-prefix forms). Chord Function now reads
+  `chord-function_settings` || `cfn_settings` (both forms path.html writes),
+  so the launch-preset actually works.
+
+**Transposition (Reading, #35) — `transposition.html`.** Cloned from
+`intervals.html`. New transposition engine with correct pitch-spelling math
+(letter-step + semitone arithmetic via NH.music; rejects results needing a
+double accidental). Four question types:
+- **interval** — transpose a note up/down a stated interval (M2, m3, M3,
+  P4, P5, M6, octave).
+- **instrument** (Medium+) — "Written for B♭ trumpet — what concert pitch
+  sounds?" B♭ = down M2, F = down P5, E♭ = down M6. Distractors are the
+  same written note via the *other* instruments.
+- **direction** — name the transposition between two shown notes
+  ("Up a perfect 5th"); distractors include the wrong direction.
+- **melodic** (Tricky) — transpose a 3-note diatonic phrase; distractors
+  shift one note by the wrong interval.
+
+Engine smoke-tested at 31.5k questions across tiers/clefs, **0 failures**
+(after fixing thin-distractor cases on the 2-interval easy tier and
+chromatic melodic fragments — see below).
+
+  *Design decision (Jonathan's call):* the spec wanted **staff-rendered
+  answer tiles** (each answer a mini-staff). No module renders staves inside
+  answer tiles — it's net-new visual machinery I couldn't pixel-verify from
+  the sandbox. Offered staff-tiles (preview + QA, hold prod) vs **note-name
+  tiles** (proven text-tile system, ships clean); Jonathan chose note-name
+  tiles for v1. So: the *question* shows the note(s) on a staff (new
+  in-module single/sequence renderer, reuses the inline interval renderer's
+  geometry); the *answers* are note names like "D5", "B♭4". Staff-rendered
+  answer tiles deferred to v1.1. **No audio in v1** (playing the notes would
+  reveal the transposed answer) — Hear-it button hidden, mute-replay
+  removed, feedback chimes kept.
+
+  *Bugs fixed during build:* (1) easy `interval` only yielded 3 tiles — the
+  2-interval easy tier ran the distractor pool dry; fixed by padding from
+  all intervals + guaranteed octave-shift fallbacks via a `trPick4(correct,
+  distractors, fallback)` helper. (2) melodic fragments came out chromatic
+  (B–C♯–D♯) because a fixed semitone contour forced accidentals; rebuilt as
+  three consecutive natural letters (diatonic). (3) thin direction/instrument
+  distractor sets — comprehensive fallback pools per type.
+
+**Verification approach (no browser in sandbox).** Both engines were
+Node-tested by extracting `makeQuestion`/`buildTranspositionQuestion` and
+running tens of thousands of questions with invariants (prompt present,
+right tile count, exactly one correct, answer ∈ choices, no dup tiles, no
+double-accidental pitches). The new renderers were exercised via a
+Node DOM-string shim: Transposition's question staves and Chord Function's
+`buildStaffWithChord` output (loading the real `qn-staff.js` v1.3.0) were
+rendered to preview HTML, geometry-checked (notehead/stem/ledger counts),
+and sent to Jonathan for device QA.
+
+**Four surfaces** wired atomically for each module:
+- Chord Function → Theory, after Roman Numerals: play tile (T→PD→D→T
+  cycle), path.html MODULES/PATH/SHORT_PREFIX (`cfn_`), qn-profile.js PATH,
+  index.html concept tag, dashboard.html META/ROSTER/4 skill labels.
+- Transposition → end of Reading: play tile (note shifting up the staff),
+  path.html MODULES/PATH/SHORT_PREFIX (`tr_`), qn-profile.js PATH,
+  index.html concept tag, dashboard.html META/ROSTER/4 skill labels.
+
+**Still open / next:**
+1. **Transposition v1.1** — staff-rendered answer tiles (the deferred
+   spec vision); the new in-module note renderer already produces the
+   needed SVG, so the work is a choice-tile rendering layer + choice-model
+   change from string-labels to pitch objects.
+2. **Queue Tier C** — Mock Exam Mode (#9; Phase A = QNM contract audit
+   across all 35 modules) and Curriculum Mapping Overlay (#10; generic v1
+   shippable, named-method version Tier-3/lawyer-gated).
+3. **Queue Tier D** — C Clefs (#11, Tier-3 renderer extension),
+   Construction-mode engineering (#12, Tier-3), Build-a-X cluster (#13),
+   Non-Chord Tones (#14, audience-cap borderline).
+4. **PWA install** on the landing page (own session).
+5. **Device QA** owed on the CoF wheel/tile, Chord Function chord-staff +
+   3-tile layout, and the Transposition staves.
+
+---
+
 ### Circle of Fifths module (Reading #33) + flagship play-tile redesign — May 2026
 
 **Session type:** New module build (autonomous clone-and-swap, queue #6) +

@@ -46,16 +46,19 @@ anything. This is the handshake — it catches stale docs before they cause dama
   `qn-music.js`, `qn-theme.css`, `qn-ui.js`. Flat repo at root — do NOT
   introduce folders, a bundler, or a build step. The flat static structure
   is correct and deliberate.
-- **33 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster +
-  Phase 5 Tier B #6 Circle of Fifths shipped (May 2026).** 14 Foundations +
-  9 Reading + 10 Theory. The 27 → 32 expansion was a deliberate Tier 3 scope
-  decision approved in the May 2026 curriculum gap analysis (BUILD_LOG.md)
-  and executed in the Phase 5 Tier A cluster: Tempo Markings, Dynamics,
-  Articulation, Score Navigation, Ornaments. Circle of Fifths (Reading,
-  queue #6) shipped next, taking 32 → 33; it carries its own in-module
-  wheel renderer (no shared-file change). See QUIZNOTE_PROJECT_DOC.md §5 for
-  the per-module map and §12 for the build history. Further growth beyond 33
-  is still a deliberate scope decision per §5.
+- **35 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster +
+  Phase 5 Tier B #6–#8 (Circle of Fifths, Chord Function, Transposition)
+  shipped (May 2026).** 14 Foundations + 10 Reading + 11 Theory. The 27 → 32
+  expansion was a deliberate Tier 3 scope decision approved in the May 2026
+  curriculum gap analysis (BUILD_LOG.md) and executed in the Phase 5 Tier A
+  cluster: Tempo Markings, Dynamics, Articulation, Score Navigation,
+  Ornaments. Then Tier B shipped: Circle of Fifths (Reading, #6) 32 → 33,
+  Chord Function (Theory, #7) 33 → 34, Transposition (Reading, #8) 34 → 35.
+  Circle of Fifths carries its own in-module wheel renderer; Chord Function
+  reuses qn-staff.js buildStaffWithChord; Transposition carries an in-module
+  single/sequence note renderer (no shared-file change in any). See
+  QUIZNOTE_PROJECT_DOC.md §5 for the per-module map and §12 for the build
+  history. Further growth beyond 35 is still a deliberate scope decision per §5.
 - **Deploy:** push to GitHub **`Dev` branch** → Vercel auto-builds the Dev
   preview. Merge Dev → main for production. **Always commit and push to Dev.
   Never create a new branch. Never push to anything other than Dev.** If
@@ -456,13 +459,17 @@ cluster shipped" for the full session log.
    (position/count/neighbor/relative/enharmonic). Four surfaces wired,
    flagship play-tile (real 12-key wheel + glowing `?` seat). Re-opened
    the May 2026 §5 cut. Did not touch `qn-staff.js`.
-7. **Chord Function (Tonic/Predominant/Dominant)** — `/specs/chord-function-spec.md`.
-   Cheapest meaningful Theory expansion — clone of Roman Numerals with a
-   different categorization axis. Adds a new pedagogical skill at the upper
-   edge of Theory's audience cap.
-8. **Transposition** — `/specs/transposition-spec.md`. High real-world value
-   (every band/orchestra student needs it). v1 uses a constrained 4-button-MC
-   format; generative format deferred.
+7. ~~Chord Function (Tonic/Predominant/Dominant)~~ — **shipped May 2026**
+   (`chord-function.html`). Cloned from Roman Numerals; categorize (3 tiles:
+   T/PD/D) / identify / motion / exception (why V is major in minor) engine.
+   Renders the actual triad on the staff via `buildStaffWithChord` (reuse, no
+   shared-file change). Four surfaces wired.
+8. ~~Transposition~~ — **shipped May 2026** (`transposition.html`). Cloned
+   from Intervals; interval / instrument (B♭/F/E♭ → concert) / direction /
+   melodic engine with pitch-spelling math. v1 answers are **note-name tiles**
+   (Jonathan's call — staff-rendered answer tiles deferred to v1.1); question
+   shows the note(s) on a staff via an in-module single/sequence renderer.
+   No audio in v1. Four surfaces wired.
 
 ### Tier C — non-module multipliers. Independent of all above.
 
