@@ -1647,6 +1647,7 @@
     }
     state.current = state.queue[state.qIndex];
     state.answered = false;
+    state.attempts = 0;
     state.currentChoices = makeChoices(state.current);
     renderQuestion();
   }
@@ -1773,50 +1774,78 @@
 
   function onAnswer(choice, btn) {
     if (state.answered) return;
-    state.answered = true;
     // Stop any in-progress playback so lingering timeouts don't paint onto the next question's staff.
     A.cancelSequence();
     const correct = choice.name === state.current.name;
     const buttons = els['choices-grid'].querySelectorAll('.choice-btn');
-    buttons.forEach(b => b.disabled = true);
+    state.attempts = (state.attempts || 0) + 1;
+    const cleanFirstTry = state.attempts === 1;
 
-    // Sub-skill tally by scale mode (major / minor-natural / -harmonic / -melodic)
-    var _mode = state.current.mode || 'unknown';
-    if (!state.skillTally[_mode]) state.skillTally[_mode] = { c: 0, t: 0 };
-    state.skillTally[_mode].t++;
-    if (correct) state.skillTally[_mode].c++;
+    // Sub-skill tally by scale mode — counted once, on the first attempt.
+    if (cleanFirstTry) {
+      var _mode = state.current.mode || 'unknown';
+      if (!state.skillTally[_mode]) state.skillTally[_mode] = { c: 0, t: 0 };
+      state.skillTally[_mode].t++;
+      if (correct) state.skillTally[_mode].c++;
+    }
 
     if (correct) {
+      state.answered = true;
+      buttons.forEach(b => b.disabled = true);
       btn.classList.add('correct');
-      state.score++;
-      state.streak++;
-      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      state.lastResults.push('correct');
-      showToast('correct', randomPraise());
-      A.playChime(60, state.streak);
-      fireConfetti();
-    } else {
+      if (cleanFirstTry) {
+        state.score++;
+        state.streak++;
+        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+        state.lastResults.push('correct');
+        showToast('correct', randomPraise());
+        A.playChime(60, state.streak);
+        fireConfetti();
+      } else {
+        state.streak = 0;
+        state.lastResults.push('correct');
+        showToast('correct', 'Got it!');
+        A.playChime(60);
+      }
+      updatePlayUI();
+      setTimeout(() => { state.qIndex++; nextQuestion(); }, 1100);
+      return;
+    }
+
+    // Wrong.
+    A.playBoop();
+    document.body.classList.add('shake');
+    setTimeout(() => document.body.classList.remove('shake'), 420);
+
+    if (state.attempts >= 2) {
+      // Second miss — reveal the correct answer and move on.
+      state.answered = true;
+      buttons.forEach(b => b.disabled = true);
       btn.classList.add('wrong');
-      // Reveal correct
       buttons.forEach(b => {
-        if (b.textContent === formatScaleName(state.current.name)) {
-          b.classList.add('reveal-correct');
-        }
+        if (b.textContent === formatScaleName(state.current.name)) b.classList.add('reveal-correct');
       });
       state.streak = 0;
       state.lastResults.push('wrong');
       state.missed.push(state.current);
       showToast('wrong', 'Not quite');
-      A.playBoop();
-      document.body.classList.add('shake');
-      setTimeout(() => document.body.classList.remove('shake'), 420);
+      updatePlayUI();
+      setTimeout(() => { state.qIndex++; nextQuestion(); }, 1600);
+      return;
     }
-    updatePlayUI();
 
-    setTimeout(() => {
-      state.qIndex++;
-      nextQuestion();
-    }, correct ? 1100 : 1600);
+    // First miss — show the teaching hint, then let them try again (hideHintCard
+    // clears the wrong styling and re-enables the buttons via state.answered).
+    btn.classList.add('wrong');
+    var hint = getHint();
+    if (hint) {
+      state.answered = true;
+      showToast('wrong', 'Try once more!');
+      setTimeout(function () { showHintCard(hint); }, 400);
+    } else {
+      showToast('wrong', 'Try once more!');
+      setTimeout(function () { btn.classList.remove('wrong'); if (typeof hideToast === 'function') hideToast(); }, 900);
+    }
   }
 
   function randomPraise() {
