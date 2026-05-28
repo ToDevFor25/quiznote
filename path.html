@@ -355,6 +355,7 @@
     'primary-chords':     { name: 'Primary Chords',     tier: 'theory',  sub: 'I, IV, V in every key' },
     'roman-numerals':     { name: 'Roman Numerals',     tier: 'theory',  sub: 'every chord has a job' },
     'chord-function':     { name: 'Chord Function',     tier: 'theory',  sub: 'what the chord is doing' },
+    'transposition':      { name: 'Transposition',      tier: 'reading', sub: 'same tune, different key' },
     'ear-scales':         { name: 'Ear: Scales',        tier: 'reading', sub: 'hear the scale type' },
     'triads':             { name: 'Triads',             tier: 'theory',  sub: 'name the chord quality' },
     'triad-inversions':   { name: 'Triad Inversions',   tier: 'theory',  sub: 'root, 1st, or 2nd?' },
@@ -368,7 +369,7 @@
 
   // The recommender's linear path (mirror of PATH in qn-profile.js). The
   // spine renders modules in this order, grouped by tier.
-  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'circle-of-fifths', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'primary-chords', 'roman-numerals', 'chord-function', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
+  var PATH = ['note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard', 'key-signatures', 'circle-of-fifths', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'transposition', 'primary-chords', 'roman-numerals', 'chord-function', 'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   // Mirror of the recommender's clear thresholds (kept in sync intentionally
@@ -420,6 +421,7 @@
     'primary-chords':  'pc_',
     'roman-numerals':  'rn_',
     'chord-function':  'cfn_',
+    'transposition':   'tr_',
     'ear-scales':         'es_',
     'triads':             'tr_',
     'triad-inversions':   'ti_',

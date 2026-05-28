@@ -588,6 +588,7 @@
     'intervals':{ name:'Intervals', color:'coral' }, 'ear-intervals':{ name:'Ear: Intervals', color:'coral' },
     'ear-scales':{ name:'Ear: Scales', color:'coral' }, 'chromatic-scale':{ name:'Chromatic Scale', color:'grape' },
     'circle-of-fifths':{ name:'Circle of Fifths', color:'grape' },
+    'transposition':{ name:'Transposition', color:'coral' },
     'primary-chords':{ name:'Primary Chords', color:'teal' }, 'roman-numerals':{ name:'Roman Numerals', color:'grape' },
     'chord-function':{ name:'Chord Function', color:'teal' },
     'triads':{ name:'Triads', color:'teal' }, 'triad-inversions':{ name:'Triad Inversions', color:'grape' },
@@ -598,7 +599,7 @@
 
   var ROSTER = {
     'Foundations': ['note-names','ledger-lines','piano-quiz','piano-keyboard','note-values','dotted-notes','ear-rhythm','time-signatures','accidentals','tempo-markings','dynamics','articulation','score-navigation','ornaments'],
-    'Reading': ['key-signatures','circle-of-fifths','scales','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','chromatic-scale'],
+    'Reading': ['key-signatures','circle-of-fifths','scales','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','chromatic-scale','transposition'],
     'Theory': ['primary-chords','roman-numerals','chord-function','triads','triad-inversions','seventh-chords','chord-progressions','cadences','ear-chords','ear-cadences','ear-progressions']
   };
   var TIERS = ['easy','medium','tricky'];
@@ -621,6 +622,7 @@
     'roman-numerals/numeral-to-chord':'Numeral to chord','roman-numerals/chord-to-numeral':'Chord to numeral','roman-numerals/quality':'Chord quality',
     'chord-function/categorize':'Naming the function','chord-function/identify':'Picking the right chord','chord-function/motion':'Recognizing harmonic motion','chord-function/exception':'Minor-key conventions',
     'circle-of-fifths/position':'Reading the wheel','circle-of-fifths/count':'Sharps & flats per key','circle-of-fifths/neighbor':'Clockwise/counterclockwise','circle-of-fifths/relative':'Relative minor pairings','circle-of-fifths/enharmonic':'Enharmonic intersections',
+    'transposition/interval':'Transposing by an interval','transposition/instrument':'Transposing instruments','transposition/direction':'Naming the transposition','transposition/melodic':'Transposing a phrase',
     'bass':'Bass clef','treble':'Treble clef'
   };
   function skillLabel(slug, key) { return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key; }
