@@ -2048,6 +2048,8 @@
   }
 
   function hideToast() {
+    els['toast'].classList.remove('show');
+  }
 
   function syncPill(el, on) {
     el.classList.toggle('on', on);
@@ -2091,9 +2093,6 @@
     hideToast();
     state.locked = false;
     resumeTimer();
-  }
-
-    els['toast'].classList.remove('show');
   }
 
   function jiggleStreak() {
