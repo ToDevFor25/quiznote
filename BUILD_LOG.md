@@ -1,5 +1,99 @@
 ---
 
+### Guided key-find (flagship) + teaching-hint bug trilogy + promo modal + ship to prod — May 2026
+
+**Session type:** Bug fixes + flagship UX feature + production deploy.
+Continuation of the dashboard session. Everything below shipped to
+`main` (production) at the end of the day via a clean fast-forward of
+`origin/main` to Dev (59 commits, nothing lost). The
+`claude/teaching-modules-strategy-Q5H6g` branch was deleted (its tip
+was fully contained in Dev/main).
+
+**Teaching-hint bug trilogy (all 32 modules).** Reported via Dotted
+Notes ("got 3 wrong, no teaching prompts"). Three distinct bugs:
+1. **attempts never reset per question** (5 note-values-family modules:
+   dotted-notes, note-values, time-signatures, key-signatures,
+   ear-rhythm). `nextQuestion` reset `locked` but not `attempts`, so
+   after the first answer `attempts ≥ 1` and every later wrong answer
+   jumped straight to reveal — no hint. Only Q1 could ever show one.
+   The earlier retry-add script had patched only `startGame`. Fixed
+   `nextQuestion`.
+2. **getHint exhausted too early.** It picked ONE random HINTS key and
+   returned null if that key was used up, even when other keys had
+   hints; single-key modules went silent after 2 wrong answers. Rewrote
+   to gather across all keys and cycle/reset when exhausted. Added the
+   missing per-round `shownHints` reset (25 modules).
+3. **Hints not relevant to the question** (a tie hint on a single
+   quarter note). Added context-aware selection: `getHint` calls an
+   optional `hintKeyFor()` returning the current question's category.
+   Wired for 10 modules where hints describe distinct content:
+   dotted-notes (dotted/tied/plain via SYMBOLS), dynamics / tempo /
+   articulation / ornaments / score-navigation (`state.current.type`),
+   scale-degrees (type), time-signatures (`decodeKey().type`), scales
+   (mode→key map), note-names (clef). Concept-level modules (intervals,
+   accidentals, roman-numerals, primary-chords, key-signatures, all
+   single-skill) stay general — their hints apply to every question;
+   `getHint` falls back to all hints.
+
+**Guided key-find — the flagship feature (Piano Quiz).** Built on
+`pianoquiz-demo.html` first, then ported to `piano-quiz.html`. When the
+user must locate and press a specific key (after a 2nd wrong answer, or
+after using a Hint), the game now guides them there:
+- **Banner** at top of keyboard: "Find and play the highlighted key to
+  continue" with a bobbing arrow.
+- **Persistent glow** — the correct key glows teal and stays until
+  pressed (the hint's old 1.5s auto-clear was useless if the key was
+  scrolled off-screen — removed).
+- **Directional edge halo** — a pulsing teal gradient + arrow (‹ / ›)
+  on the left/right edge of the keyboard pointing toward the off-screen
+  target key. Recomputed on scroll via `getBoundingClientRect`; fades
+  the moment the key enters view.
+- **Middle C indicator suppressed while guiding** (`.kb-frame.guiding
+  .mc-ind { display:none }`) so the edges show ONE clear cue.
+- Reveal mode: tap the glowing key to advance. Hint: glow + guide
+  persist until the next tap. Both clear on next question.
+- **piano-keyboard.html intentionally NOT changed** — it uses
+  letter-button answers (keyboard is the question display, not the
+  input), so there's no press-to-reveal flow to guide.
+- Controller: `keyGuide` state + `showKeyGuide` / `hideKeyGuide` /
+  `updateKeyHalo`, wired into onWrong-reveal, the hint handler, the
+  revealing branch of `handleKeyTap`, a normal-tap guard, the
+  keyboard scroll listener, and `nextQuestion` cleanup.
+
+**Calendar refinements (dashboard).** Settled the streak calendar:
+calendar-month view (not rolling 4 weeks), Sunday-start week (US /
+Apple Calendar convention), two colors only (practiced vs not). The
+alignment saga: grid wasn't cleared between redraws (style switch
+duplicated labels); grid-column-start on day 1 backfired (auto-flow
+filled the empty columns before it); final fix = pad cells + grid
+clear on each draw.
+
+**Demo promo modal redesign.** Smaller card (440→380, tighter
+padding/fonts). Fixed overlapping CTA + Play again buttons — the CTA is
+an `<a class="btn">` and `.btn` never sets `display`, so it was inline;
+`width:100%` and `margin-bottom` were ignored, dropping it onto the
+same line box as the replay button. Set `display:block` on both.
+Removed "No ads. Free during beta." and "More modules coming soon!".
+Hook copy → "No ads. Stay focused. Track your progress."
+
+**Other:** play.html header shortened to "Ready to practice?".
+Onboarding level-detail max-height bumped to fit the practice-goal row.
+
+**Production state:** `main` now has the full body of work from this
+multi-session arc — teaching hints (engine + content + context-aware),
+2-try retry universal, settings card, onboarding toggles, profile
+defaults, the progress dashboard (streak visualizations, practice goal,
+mastery grid, weak spots, trend, share/PDF), and the guided key-find on
+Piano Quiz.
+
+**Still open / next:**
+- Visual QA on real devices (ongoing, owned by Jonathan).
+- Standing build queue: Circle of Fifths (#6), Chord Function (#7),
+  Transposition (#8).
+- PWA offline (last pre-monetization item).
+
+---
+
 ### Dashboard iteration — streak visualization, PDF, share, simplification — May 2026
 
 **Session type:** Feature iteration. Multiple rounds of build-test-refine

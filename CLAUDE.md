@@ -327,6 +327,23 @@ For any future CSS work:
   for all 32 modules, keyed by question type. Toggle cascade: profile
   default (set in onboarding) → per-module start-screen toggle → in-game
   "Don't show hints" dismiss. Spec at `specs/teaching-hints-spec.md`.
+  **Hint engine is context-aware:** `getHint()` calls an optional
+  per-module `hintKeyFor()` returning the current question's category,
+  gathers across all keys, and cycles when exhausted. 10 modules wired
+  context-aware (dotted-notes, dynamics, tempo-markings, articulation,
+  ornaments, score-navigation, scale-degrees, time-signatures, scales,
+  note-names); the rest stay general. `attempts` resets per question in
+  `nextQuestion`, `shownHints` resets per round — both were the bugs that
+  made hints "rarely appear" (fixed May 2026).
+- **Guided key-find (Piano Quiz flagship): SHIPPED (May 2026).** When the
+  user must locate and press a specific key (2nd wrong → reveal, or after
+  a Hint), `piano-quiz.html` (and `pianoquiz-demo.html`) guide them:
+  banner "Find and play the highlighted key", persistent key glow, and a
+  directional teal edge halo (`.key-halo` left/right) pointing toward the
+  off-screen target key (recomputed on scroll, fades when in view). Middle
+  C indicator suppressed while guiding. `piano-keyboard.html` NOT included
+  — it uses letter-button answers, no press-to-reveal flow. Controller:
+  `keyGuide` + `showKeyGuide`/`hideKeyGuide`/`updateKeyHalo`.
 - **Settings card redesign: SHIPPED (May 2026).** Start screen timer
   toggle + muted checkbox replaced with a grouped settings card (3 rows:
   Timer, Teaching hints, Sound) using pill-state indicators. All 32
