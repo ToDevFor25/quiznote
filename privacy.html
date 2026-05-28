@@ -269,6 +269,7 @@
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Cloud sync — practice data syncs to our server when signed in.</li>
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Payments — optional paid tier via Stripe Checkout.</li>
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Child profiles — nested under an adult/guardian account.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> Diagnostics &amp; error reporting — automatic (or opt-in) crash/error reports to help us fix bugs. Today you can choose to email us diagnostics yourself; nothing is sent automatically.</li>
     </ul>
     <p>Each planned feature will be activated only after this policy has been finalized by legal counsel. We will update the "Last updated" date when features go live, and we will provide prominent notice of material changes before they take effect.</p>
   </div>
@@ -342,6 +343,19 @@
         <!-- LAWYER REVIEW: Confirm the "local-only play is not collection" position
              for COPPA purposes. Also confirm whether the profile nickname (freely
              chosen, not verified) qualifies as PII under COPPA. -->
+        <tr>
+          <td><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span></td>
+          <td><strong>Diagnostic / error data</strong></td>
+          <td>Technical error reports: the error message and stack trace, the module or screen where it occurred, app version, browser and operating system, screen size, and a timestamp. Scrubbed of profile nicknames and other identifiers before sending.</td>
+          <td>When enabled, sent automatically (or on an opt-in basis) to our error-reporting provider or endpoint. This is off until cloud features launch. <strong>Today:</strong> you may choose to email us diagnostics yourself &mdash; that voluntary message is covered above under &ldquo;Voluntary contact,&rdquo; and nothing is transmitted automatically.</td>
+        </tr>
+        <!-- LAWYER REVIEW: Automatic error reporting is a NEW off-device data flow.
+             Confirm (1) it is off / opt-in by default, especially for child
+             profiles; (2) payloads are scrubbed of nicknames and other identifiers;
+             (3) the receiving vendor (e.g., Sentry) is added as a sub-processor in
+             Section 8 with a DPA; (4) IP exposure to the receiver is disclosed.
+             Manual, user-initiated diagnostic emails are already covered under
+             "Voluntary contact" and need no separate consent. -->
       </tbody>
     </table>
     <p>We do <strong>not</strong> collect real names, email addresses, or account information during normal App use today. There is no login or registration system at this time. Nicknames are freely chosen and are not verified as real names.</p>
@@ -442,6 +456,7 @@
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Stripe</strong> (payment processing) — will process payment card data directly. See <a href="https://stripe.com/privacy" target="_blank" rel="noopener">Stripe's Privacy Policy</a>.</li>
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Apple</strong> (Sign in with Apple) — will provide your name and email for authentication. See <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple's Privacy Policy</a>.</li>
       <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Google</strong> (Google Sign-In) — will provide your name and email for authentication. See <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+      <li><span style="background:var(--sun-lt,#fff4d6);padding:2px 8px;border-radius:6px;font-weight:700;font-size:12px;letter-spacing:0.05em;color:var(--sun-dk,#c98800);">PLANNED</span> <strong>Error-reporting provider</strong> (a service such as Sentry, or a QuizNote-hosted endpoint — to be named here when selected) — will receive automatic crash/error reports (technical data only) to help us diagnose problems.</li>
     </ul>
     <p>We do not use analytics platforms, ad networks, social-media pixels, or any other data-collecting third-party services beyond those listed above.</p>
     <!-- LAWYER REVIEW: If a cloud database provider is selected (e.g., Supabase, Firebase,

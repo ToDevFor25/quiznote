@@ -57,6 +57,68 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Legal-draft sync: Share/export disclosed + error-reporting scoped (PLANNED) — May 2026
+
+**Session type:** Doc/scoping pass on `privacy.html` + `terms.html`, no app
+code. Shipped to `Dev` and `main`. Both docs remain DRAFT — NOT LEGAL ADVICE,
+pending counsel.
+
+**Why.** Audited the legal drafts against what's actually shipped. The drafts
+already cover the full target architecture (accounts, cloud sync, Stripe,
+child profiles), but two things had drifted or were unscoped:
+
+1. **Share / export was undisclosed (shipped feature).** The dashboard's
+   "Practice Notes" image-share (`navigator.share`) + PDF/print export renders
+   the **nickname + streak + practice time + mastery counts** into an artifact.
+   It's user-initiated and fully on-device (our servers never see it), but the
+   policy implied only two data paths existed (local; planned cloud). Added a
+   §3 "Sharing and export (on your device)" disclosure, a §9 children's note
+   (a freely-chosen nickname can leave the device by a parent's share action —
+   lawyer-flagged against the COPPA "local-only is not collection" position),
+   and a terms §9 line (exported cards are personal-use, carry QuizNote
+   branding that can't be removed/misused). Shipped `f8b11b9`.
+
+2. **Error reporting / diagnostics scoped as a FUTURE feature.** Decided the
+   architecture before building anything (see roadmap below) and pre-wrote the
+   PLANNED disclosures so the drafts are review-ready:
+   - privacy §2 (planned list), §3 (new PLANNED "Diagnostic / error data" table
+     row), §8 (PLANNED error-reporting provider sub-processor) + lawyer-review
+     comment; terms §13 (PLANNED provider line).
+
+**Error-reporting roadmap (decided, NOT built):**
+- **Capture** = client-side `window.onerror` + `unhandledrejection` listeners
+  (would live in a new shared `qn-errors.js`, building on `QN.diagnostics`).
+- **UX = severity-tiered, default invisible.** Cosmetic (chime/anim/hint
+  fails) → silent capture, keep playing. Degraded (audio init, storage write)
+  → inline/auto-recover. Round-fatal → recoverable "skip/new round" state.
+  App-fatal (init throw — the "buttons dead, nav works" case) → friendly
+  full-screen fallback with Reload / All modules / Send diagnostics. Technique:
+  tag severity at the catch site + an init-success sentinel to detect dead
+  init. Capture is always separate from display (log everything, show little).
+- **Phase 0 (safe to ship now, no policy change):** silent capture → a
+  `localStorage` ring buffer; "Send diagnostics" via `mailto:` to
+  support@quiznote.online + copy-to-clipboard. Nothing transmits automatically;
+  the user's own email sends it → already covered by the privacy draft's
+  "Voluntary contact" category.
+- **Phase 1 (cloud, lawyer-gated):** auto-POST to Sentry-style SaaS or a Vercel
+  endpoint. THIS is the step that turns on the new off-device flow → needs the
+  PLANNED disclosures activated, the vendor listed as a sub-processor (+DPA),
+  PII/nickname scrubbing, and a COPPA review (off/opt-in by default for kids).
+
+**Decision rationale (legal posture).** A self-drafted, accurate,
+conservative, beta-gated policy is the right pre-lawyer stance while we're
+local-only with no/low users. The real liability is *inaccuracy*, not
+authorship — so the rule going forward is a per-feature "does this touch
+privacy/terms?" checkpoint (Share/export was the miss that prompted it). Get
+counsel **before** flipping on any of: accounts/auth, cloud sync, payments,
+child-data sync, or automatic error reporting.
+
+**Still open / next:** build Phase-0 `qn-errors.js` when ready (additive, no
+policy change). Effective/Last-updated dates intentionally NOT bumped — they
+finalize at counsel sign-off per the drafts' own convention.
+
+---
+
 ### Dashboard: mastery-rule explainer as a grape banner — May 2026
 
 **Session type:** Small UX add, same thread as the recommender fix. Shipped to
