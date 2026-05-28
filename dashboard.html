@@ -187,7 +187,72 @@
     .site-header .brand-name { font-size: 22px; }
     .cal-grid { gap: 3px; }
   }
+  /* ── Share button + dropdown ── */
+  .share-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
+    color: var(--teal-dk); background: var(--teal-lt);
+    border: 2px solid var(--teal); border-radius: 12px; padding: 7px 14px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    transition: background 120ms, transform 80ms;
+  }
+  .share-btn:hover { background: #b8e4de; }
+  .share-btn:active { transform: translateY(1px); }
+  .share-btn svg { width: 16px; height: 16px; }
+  .share-wrap { position: relative; display: inline-block; }
+  .share-menu {
+    position: absolute; top: calc(100% + 8px); right: 0;
+    background: white; border: 2px solid var(--ink); border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12); padding: 6px;
+    min-width: 200px; z-index: 20;
+    opacity: 0; transform: translateY(-4px); pointer-events: none;
+    transition: opacity 150ms, transform 150ms;
+  }
+  .share-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .share-opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 10px; cursor: pointer;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
+    color: var(--ink); border: none; background: none; width: 100%;
+    text-align: left; transition: background 100ms;
+  }
+  .share-opt:hover { background: var(--cream); }
+  .share-opt svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ── Print header/footer (hidden on screen) ── */
+  .print-header, .print-footer { display: none; }
+
   [hidden] { display: none !important; }
+
+  /* ── Print stylesheet ── */
+  @media print {
+    body { background: white; }
+    .site-header, footer, .back-link, .share-wrap, .next-card, .upnext-card,
+    .device-note, #weak-card { display: none !important; }
+    .print-header, .print-footer { display: flex !important; }
+    .wrap { max-width: 100%; padding: 0; }
+    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; }
+    .hero-stat .hero-value { animation: none; opacity: 1; }
+    .m-card.gold-shimmer::after { display: none; }
+    .tier-head { cursor: default; }
+    .tier-head.collapsed + .mastery-grid { max-height: none; opacity: 1; }
+    .mastery-grid { max-height: none !important; opacity: 1 !important; }
+    .m-detail { max-height: none; opacity: 1; }
+    .m-detail-inner { padding-top: 6px; }
+    .trend-card { break-inside: avoid; }
+    .streak-card { break-inside: avoid; }
+    .print-header {
+      display: flex !important; justify-content: space-between; align-items: flex-start;
+      padding-bottom: 14px; margin-bottom: 20px; border-bottom: 3px solid var(--teal);
+    }
+    .print-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; }
+    .print-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px; color: var(--ink-soft); text-align: right; }
+    .print-brand span { color: var(--teal); }
+    .print-meta { font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+    .print-footer {
+      display: block !important; text-align: center; font-size: 11px; color: var(--ink-faint);
+      font-weight: 600; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 24px;
+    }
+  }
 
   footer { background: white; border-top: 2px solid var(--shadow-cool); padding: 16px 24px; text-align: center; font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--ink-faint); }
   footer a { color: var(--ink-soft); text-decoration: none; font-weight: 600; }
@@ -220,8 +285,38 @@
   </section>
 
   <section id="state-data" hidden>
+    <!-- Print-only header -->
+    <div class="print-header">
+      <div>
+        <div class="print-title">Practice Notes</div>
+        <div class="print-meta" id="print-meta"></div>
+      </div>
+      <div>
+        <div class="print-brand">by Quiz<span>Note</span></div>
+        <div class="print-meta">quiznote.online</div>
+      </div>
+    </div>
+
     <a href="play.html" class="back-link">← All modules</a>
-    <h1 class="page-title">Your progress</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <h1 class="page-title">My Progress</h1>
+      <div class="share-wrap">
+        <button class="share-btn" id="share-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Share
+        </button>
+        <div class="share-menu" id="share-menu">
+          <button class="share-opt" id="share-pdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Save as PDF
+          </button>
+          <button class="share-opt" id="share-image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--grape)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Share as image
+          </button>
+        </div>
+      </div>
+    </div>
     <p class="page-sub">How <b id="who">you</b> are doing across every module.</p>
 
     <!-- Next step recommendation -->
@@ -284,6 +379,9 @@
 
     <!-- Mastery grid -->
     <div class="mastery-section" id="mastery-section"></div>
+
+    <!-- Print-only footer -->
+    <div class="print-footer">Practice Notes by QuizNote · quiznote.online · Progress data is saved on the learner's device.</div>
 
     <div class="device-note">📱 Scores are saved in your browser on this device. Clearing browser data will reset your progress.</div>
   </section>
@@ -797,10 +895,179 @@
     });
   }
 
+  // ── Share button wiring ──
+  function initShare() {
+    var btn = document.getElementById('share-btn');
+    var menu = document.getElementById('share-menu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+    document.addEventListener('click', function() { menu.classList.remove('open'); });
+
+    // Save as PDF
+    document.getElementById('share-pdf').addEventListener('click', function() {
+      menu.classList.remove('open');
+      var active = QN.profile ? QN.profile.getActive() : null;
+      var name = active ? active.nickname : 'Learner';
+      var meta = document.getElementById('print-meta');
+      if (meta) meta.textContent = name + ' · ' + new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      // Expand all collapsed tier sections for print
+      document.querySelectorAll('.tier-head.collapsed').forEach(function(h) { h.classList.remove('collapsed'); });
+      setTimeout(function() { window.print(); }, 100);
+    });
+
+    // Share as image (native share API or fallback)
+    document.getElementById('share-image').addEventListener('click', function() {
+      menu.classList.remove('open');
+      var active = QN.profile ? QN.profile.getActive() : null;
+      var name = active ? active.nickname : 'Learner';
+      generateShareImage(name);
+    });
+  }
+
+  function generateShareImage(name) {
+    var canvas = document.createElement('canvas');
+    var W = 1080, H = 1350;
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#FFFAF0';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(31,184,168,0.06)';
+    ctx.beginPath(); ctx.arc(W - 100, 100, 250, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(91,63,228,0.04)';
+    ctx.beginPath(); ctx.arc(100, H - 100, 200, 0, Math.PI * 2); ctx.fill();
+
+    // Title
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2A2A3E';
+    ctx.font = '700 64px Fredoka, sans-serif';
+    ctx.fillText(name + '’s Practice Notes', W / 2, 120);
+    ctx.fillStyle = '#5a5a6e';
+    ctx.font = '600 32px Nunito, sans-serif';
+    ctx.fillText(new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' }), W / 2, 170);
+
+    // Hero stats
+    var heroY = 260;
+    var stats = [
+      { icon: '🔥', val: document.getElementById('hero-streak').textContent, label: 'Day streak', color: '#c2453f' },
+      { icon: '⏱', val: document.getElementById('hero-time').textContent, label: 'Practice', color: '#3d28a8' },
+      { icon: '★', val: document.getElementById('hero-mastered').textContent, label: 'Mastered', color: '#E6B422' }
+    ];
+    var statW = 280, statGap = 40, startX = (W - 3 * statW - 2 * statGap) / 2;
+    stats.forEach(function(s, i) {
+      var sx = startX + i * (statW + statGap);
+      ctx.fillStyle = 'white';
+      roundRect(ctx, sx, heroY, statW, 180, 24);
+      ctx.fill();
+      ctx.fillStyle = '#2A2A3E';
+      ctx.font = '48px sans-serif';
+      ctx.fillText(s.icon, sx + statW / 2, heroY + 50);
+      ctx.fillStyle = s.color;
+      ctx.font = '700 56px Fredoka, sans-serif';
+      ctx.fillText(s.val, sx + statW / 2, heroY + 120);
+      ctx.fillStyle = '#8a8472';
+      ctx.font = '700 20px Nunito, sans-serif';
+      ctx.fillText(s.label.toUpperCase(), sx + statW / 2, heroY + 155);
+    });
+
+    // Mastery rings
+    var ringY = 520;
+    ctx.fillStyle = '#2A2A3E';
+    ctx.font = '700 36px Fredoka, sans-serif';
+    ctx.fillText('Module mastery', W / 2, ringY);
+
+    var allSlugs = [];
+    Object.keys(ROSTER).forEach(function(t) { ROSTER[t].forEach(function(s) { allSlugs.push(s); }); });
+
+    var ringSize = 52, ringGap = 16, cols = 8;
+    var totalRingW = cols * ringSize + (cols - 1) * ringGap;
+    var rStartX = (W - totalRingW) / 2;
+    var rStartY = ringY + 30;
+
+    allSlugs.forEach(function(slug, idx) {
+      var col = idx % cols, row = Math.floor(idx / cols);
+      var cx = rStartX + col * (ringSize + ringGap) + ringSize / 2;
+      var cy = rStartY + row * (ringSize + ringGap) + ringSize / 2;
+      var r = ringSize / 2 - 4;
+
+      // Background ring
+      ctx.strokeStyle = '#e0ddd4';
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+      // Check mastery from DOM (read the card's tier label)
+      var card = document.querySelector('.m-card .m-name');
+      var cards = document.querySelectorAll('.m-card');
+      var level = 'untouched';
+      if (cards[idx]) {
+        var label = cards[idx].querySelector('.m-tier-label');
+        if (label) {
+          if (label.classList.contains('gold')) level = 'gold';
+          else if (label.classList.contains('silver')) level = 'silver';
+          else if (label.classList.contains('bronze')) level = 'bronze';
+          else if (label.classList.contains('started')) level = 'started';
+        }
+      }
+
+      var colors = { gold: '#E6B422', silver: '#A8A8B0', bronze: '#CD7F32', started: '#c8ece7' };
+      var progress = { gold: 1, silver: 0.66, bronze: 0.33, started: 0.1 };
+      if (colors[level]) {
+        ctx.strokeStyle = colors[level];
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress[level]);
+        ctx.stroke();
+      }
+    });
+
+    // Brand footer
+    var footerY = H - 80;
+    ctx.fillStyle = '#5a5a6e';
+    ctx.font = '700 28px Fredoka, sans-serif';
+    ctx.fillText('Practice Notes by QuizNote', W / 2, footerY);
+    ctx.fillStyle = '#8a8472';
+    ctx.font = '600 22px Nunito, sans-serif';
+    ctx.fillText('quiznote.online', W / 2, footerY + 36);
+
+    // Export
+    canvas.toBlob(function(blob) {
+      if (!blob) return;
+      var file = new File([blob], 'practice-notes.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Practice Notes', text: 'My music theory progress on QuizNote' }).catch(function() {});
+      } else {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'practice-notes.png';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+    }, 'image/png');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', draw);
+    document.addEventListener('DOMContentLoaded', function() { draw(); initShare(); });
   } else {
-    draw();
+    draw(); initShare();
   }
 })();
 </script>
