@@ -575,35 +575,35 @@
   'use strict';
 
   var MODULE_META = {
-    'note-names':{ name:'Note Names', color:'coral' }, 'ledger-lines':{ name:'Ledger Lines', color:'grape' },
-    'piano-quiz':{ name:'Piano Quiz', color:'teal' }, 'piano-keyboard':{ name:'Piano & Keyboard', color:'teal' },
+    'note-names':{ name:'Note Names', color:'slate' }, 'ledger-lines':{ name:'Ledger Lines', color:'slate' },
+    'piano-quiz':{ name:'Piano Quiz', color:'slate' }, 'piano-keyboard':{ name:'Piano & Keyboard', color:'slate' },
     'note-values':{ name:'Note Values', color:'sun' }, 'dotted-notes':{ name:'Dotted Notes & Ties', color:'sun' },
-    'ear-rhythm':{ name:'Ear: Rhythm', color:'coral' }, 'time-signatures':{ name:'Time Signatures', color:'teal' },
-    'accidentals':{ name:'Accidentals', color:'grape' },
-    'tempo-markings':{ name:'Tempo Markings', color:'sun' }, 'dynamics':{ name:'Dynamics', color:'coral' },
-    'articulation':{ name:'Articulation', color:'teal' }, 'score-navigation':{ name:'Score Navigation', color:'grape' },
-    'ornaments':{ name:'Ornaments', color:'grape' },
-    'key-signatures':{ name:'Key Signatures', color:'grape' }, 'scales':{ name:'Scales', color:'grape' },
-    'scale-degrees':{ name:'Scale Degrees', color:'teal' }, 'scale-modes':{ name:'Scale Modes', color:'grape' },
-    'intervals':{ name:'Intervals', color:'coral' }, 'ear-intervals':{ name:'Ear: Intervals', color:'coral' },
-    'ear-scales':{ name:'Ear: Scales', color:'coral' }, 'chromatic-scale':{ name:'Chromatic Scale', color:'grape' },
-    'circle-of-fifths':{ name:'Circle of Fifths', color:'grape' },
-    'transposition':{ name:'Transposition', color:'coral' },
-    'primary-chords':{ name:'Primary Chords', color:'teal' }, 'roman-numerals':{ name:'Roman Numerals', color:'grape' },
-    'chord-function':{ name:'Chord Function', color:'teal' },
-    'triads':{ name:'Triads', color:'teal' }, 'triad-inversions':{ name:'Triad Inversions', color:'grape' },
-    'seventh-chords':{ name:'Seventh Chords', color:'teal' }, 'chord-progressions':{ name:'Chord Progressions', color:'grape' },
-    'cadences':{ name:'Cadences', color:'teal' }, 'ear-chords':{ name:'Ear: Chord Quality', color:'coral' },
-    'ear-cadences':{ name:'Ear: Cadences', color:'coral' }, 'ear-progressions':{ name:'Ear: Progressions', color:'coral' }
+    'ear-rhythm':{ name:'Ear: Rhythm', color:'pink' }, 'time-signatures':{ name:'Time Signatures', color:'sun' },
+    'accidentals':{ name:'Accidentals', color:'slate' },
+    'tempo-markings':{ name:'Tempo Markings', color:'slate' }, 'dynamics':{ name:'Dynamics', color:'slate' },
+    'articulation':{ name:'Articulation', color:'slate' }, 'score-navigation':{ name:'Score Navigation', color:'slate' },
+    'ornaments':{ name:'Ornaments', color:'slate' },
+    'key-signatures':{ name:'Key Signatures', color:'green' }, 'scales':{ name:'Scales', color:'green' },
+    'scale-degrees':{ name:'Scale Degrees', color:'green' }, 'scale-modes':{ name:'Scale Modes', color:'green' },
+    'intervals':{ name:'Intervals', color:'green' }, 'ear-intervals':{ name:'Ear: Intervals', color:'pink' },
+    'ear-scales':{ name:'Ear: Scales', color:'pink' }, 'chromatic-scale':{ name:'Chromatic Scale', color:'green' },
+    'circle-of-fifths':{ name:'Circle of Fifths', color:'green' },
+    'transposition':{ name:'Transposition', color:'green' },
+    'primary-chords':{ name:'Primary Chords', color:'grape' }, 'roman-numerals':{ name:'Roman Numerals', color:'grape' },
+    'chord-function':{ name:'Chord Function', color:'grape' },
+    'triads':{ name:'Triads', color:'grape' }, 'triad-inversions':{ name:'Triad Inversions', color:'grape' },
+    'seventh-chords':{ name:'Seventh Chords', color:'grape' }, 'chord-progressions':{ name:'Chord Progressions', color:'grape' },
+    'cadences':{ name:'Cadences', color:'grape' }, 'ear-chords':{ name:'Ear: Chord Quality', color:'pink' },
+    'ear-cadences':{ name:'Ear: Cadences', color:'pink' }, 'ear-progressions':{ name:'Ear: Progressions', color:'pink' }
   };
 
   var ROSTER = {
-    'Foundations': ['note-names','ledger-lines','piano-quiz','piano-keyboard','note-values','dotted-notes','ear-rhythm','time-signatures','accidentals','tempo-markings','dynamics','articulation','score-navigation','ornaments'],
-    'Reading': ['key-signatures','circle-of-fifths','scales','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','chromatic-scale','transposition'],
-    'Theory': ['primary-chords','roman-numerals','chord-function','triads','triad-inversions','seventh-chords','chord-progressions','cadences','ear-chords','ear-cadences','ear-progressions']
+    'Foundations': ['note-names','piano-quiz','piano-keyboard','ledger-lines','note-values','dotted-notes','ear-rhythm','time-signatures','accidentals','tempo-markings','dynamics','articulation','score-navigation','ornaments'],
+    'Reading': ['key-signatures','circle-of-fifths','scales','chromatic-scale','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','transposition'],
+    'Theory': ['triads','triad-inversions','seventh-chords','primary-chords','roman-numerals','chord-function','chord-progressions','cadences','ear-chords','ear-cadences','ear-progressions']
   };
   var TIERS = ['easy','medium','tricky'];
-  var COLOR_HEX = { teal:'#1FB8A8', sun:'#FFB627', grape:'#5B3FE4', coral:'#FF6B6B' };
+  var COLOR_HEX = { teal:'#1FB8A8', sun:'#FFB627', grape:'#5B3FE4', coral:'#FF6B6B', pink:'#E85D9C', slate:'#5B7FC0', green:'#3DBE6E' };
 
   var SKILL_LABELS = {
     'time-signatures/label':'Name the signature','time-signatures/top':'Beats per measure',

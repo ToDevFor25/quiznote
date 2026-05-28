@@ -420,7 +420,45 @@
       <p>Each module drills one skill. Short sessions, real progress.</p>
     </div>
 
-    <!-- FOUNDATIONS -->
+    <!-- Note Names : staff note + 4 letter chips with right one teal -->
+        <a class="ltile" href="note-names.html">
+          <div class="ltile-art th-read">
+            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <!-- Staff lines y=22, 30, 38, 46, 54 -->
+              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
+                <line x1="30" y1="22" x2="170" y2="22"/>
+                <line x1="30" y1="30" x2="170" y2="30"/>
+                <line x1="30" y1="38" x2="170" y2="38"/>
+                <line x1="30" y1="46" x2="170" y2="46"/>
+                <line x1="30" y1="54" x2="170" y2="54"/>
+              </g>
+              <!-- Treble clef -->
+              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
+              <!-- B note on middle line (y=38) - stem down -->
+              <g>
+                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
+                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
+              </g>
+              <!-- 4 letter chips -->
+              <g>
+                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
+                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
+                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
+                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
+                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
+                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
+              </g>
+            </svg>
+          </div>
+          <div class="ltile-body">
+            <div class="ltile-name">Note Names</div>
+            <div class="ltile-blurb">A note appears. Pick its letter.</div>
+          </div>
+        </a>
+
+        <!-- FOUNDATIONS -->
     <div class="tier-section foundations">
       <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-foundations">
         <span class="tier-caret" aria-hidden="true">▸</span>
@@ -478,44 +516,6 @@
           <div class="ltile-body">
             <div class="ltile-name">PianoQuiz</div>
             <div class="ltile-blurb">See a note. Tap the key.</div>
-          </div>
-        </a>
-
-        <!-- Note Names : staff note + 4 letter chips with right one teal -->
-        <a class="ltile" href="note-names.html">
-          <div class="ltile-art th-read">
-            <svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
-              <!-- Staff lines y=22, 30, 38, 46, 54 -->
-              <g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">
-                <line x1="30" y1="22" x2="170" y2="22"/>
-                <line x1="30" y1="30" x2="170" y2="30"/>
-                <line x1="30" y1="38" x2="170" y2="38"/>
-                <line x1="30" y1="46" x2="170" y2="46"/>
-                <line x1="30" y1="54" x2="170" y2="54"/>
-              </g>
-              <!-- Treble clef -->
-              <text x="30" y="54" font-family="Bravura Text" font-size="38" fill="#2A2A3E">&#xE050;</text>
-              <!-- B note on middle line (y=38) - stem down -->
-              <g>
-                <line x1="100" y1="39" x2="100" y2="60" stroke="#2A2A3E" stroke-width="1.6" stroke-linecap="round"/>
-                <ellipse cx="104" cy="38" rx="5" ry="3.6" transform="rotate(-20 104 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="1.4"/>
-              </g>
-              <!-- 4 letter chips -->
-              <g>
-                <rect x="34"  y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="48"  y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">A</text>
-                <rect x="68"  y="82" width="28" height="28" rx="7" fill="#1FB8A8" stroke="#2A2A3E" stroke-width="2" class="anim-pulse"/>
-                <text x="82"  y="102" font-family="Fredoka" font-weight="700" font-size="16" fill="white" text-anchor="middle">B</text>
-                <rect x="102" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="116" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">C</text>
-                <rect x="136" y="82" width="28" height="28" rx="7" fill="white" stroke="#2A2A3E" stroke-width="2"/>
-                <text x="150" y="102" font-family="Fredoka" font-weight="600" font-size="16" fill="#2A2A3E" text-anchor="middle">D</text>
-              </g>
-            </svg>
-          </div>
-          <div class="ltile-body">
-            <div class="ltile-name">Note Names</div>
-            <div class="ltile-blurb">A note appears. Pick its letter.</div>
           </div>
         </a>
 
@@ -1235,7 +1235,13 @@
     </div>
     </div>
 
-    <!-- THEORY -->
+    <a class="ltile" href="triads.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a>
+
+        <a class="ltile" href="triad-inversions.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a>
+
+        <a class="ltile" href="seventh-chords.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a>
+
+        <!-- THEORY -->
     <div class="tier-section theory">
       <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-theory">
         <span class="tier-caret" aria-hidden="true">▸</span>
@@ -1336,12 +1342,6 @@
             <div class="ltile-blurb">What the chord is doing.</div>
           </div>
         </a>
-
-        <a class="ltile" href="triads.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="30" x2="154" y2="30"/><line x1="6" y1="38" x2="154" y2="38"/><line x1="6" y1="46" x2="154" y2="46"/><line x1="6" y1="54" x2="154" y2="54"/><line x1="6" y1="62" x2="154" y2="62"/></g><ellipse cx="80" cy="54" rx="8" ry="6" transform="rotate(-16 80 54)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="46" rx="8" ry="6" transform="rotate(-16 80 46)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="38" rx="8" ry="6" transform="rotate(-16 80 38)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Triads</div><div class="ltile-blurb">See the chord. Name the quality.</div></div></a>
-
-        <a class="ltile" href="triad-inversions.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" font-size="13" text-anchor="middle" fill="#2A2A3E"><text x="40" y="60">Root</text><text x="80" y="60">1st</text><text x="120" y="60">2nd</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Triad Inversions</div><div class="ltile-blurb">Root position, 1st, or 2nd?</div></div></a>
-
-        <a class="ltile" href="seventh-chords.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85"><line x1="6" y1="26" x2="154" y2="26"/><line x1="6" y1="34" x2="154" y2="34"/><line x1="6" y1="42" x2="154" y2="42"/><line x1="6" y1="50" x2="154" y2="50"/><line x1="6" y1="58" x2="154" y2="58"/></g><ellipse cx="80" cy="58" rx="8" ry="6" transform="rotate(-16 80 58)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="50" rx="8" ry="6" transform="rotate(-16 80 50)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="42" rx="8" ry="6" transform="rotate(-16 80 42)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><ellipse cx="80" cy="34" rx="8" ry="6" transform="rotate(-16 80 34)" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/></svg></div><div class="ltile-body"><div class="ltile-name">Seventh Chords</div><div class="ltile-blurb">Four notes stacked. Five flavours.</div></div></a>
 
         <a class="ltile" href="chord-progressions.html"><div class="ltile-art th-harmony"><svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg"><g font-family="Fredoka" font-weight="700" text-anchor="middle" fill="#2A2A3E"><rect x="20" y="35" width="28" height="28" rx="8" fill="#5B3FE4" stroke="#2A2A3E" stroke-width="2"/><text x="34" y="54" font-size="13" fill="white">I</text><text x="60" y="54" font-size="14" fill="#bbb">→</text><rect x="68" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="82" y="54" font-size="13">V</text><text x="108" y="54" font-size="14" fill="#bbb">→</text><rect x="116" y="35" width="28" height="28" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/><text x="130" y="54" font-size="13">vi</text></g></svg></div><div class="ltile-body"><div class="ltile-name">Chord Progressions</div><div class="ltile-blurb">Hear the pattern. Name the sequence.</div></div></a>
 

@@ -1040,13 +1040,7 @@
   // ─────────────────────────────────────────────────────────────
 
   // v1 linear path: live modules only, in the roster's pedagogical order.
-  var PATH = [
-    'note-names', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'piano-quiz', 'piano-keyboard',
-    'key-signatures', 'circle-of-fifths', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'transposition',
-    'primary-chords', 'roman-numerals', 'chord-function',
-    'triads', 'triad-inversions', 'seventh-chords', 'chord-progressions', 'cadences',
-    'ear-chords', 'ear-cadences', 'ear-progressions'
-  ];
+  var PATH = ['note-names', 'piano-quiz', 'piano-keyboard', 'ledger-lines', 'note-values', 'dotted-notes', 'ear-rhythm', 'time-signatures', 'accidentals', 'tempo-markings', 'dynamics', 'articulation', 'score-navigation', 'ornaments', 'key-signatures', 'circle-of-fifths', 'scales', 'chromatic-scale', 'scale-degrees', 'scale-modes', 'intervals', 'ear-intervals', 'ear-scales', 'transposition', 'triads', 'triad-inversions', 'seventh-chords', 'primary-chords', 'roman-numerals', 'chord-function', 'chord-progressions', 'cadences', 'ear-chords', 'ear-cadences', 'ear-progressions'];
   var TIER_ORDER = ['easy', 'medium', 'tricky'];
 
   var REC = {
