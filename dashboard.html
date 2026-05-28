@@ -256,6 +256,41 @@
   .share-opt:hover { background: var(--cream); }
   .share-opt svg { width: 20px; height: 20px; flex-shrink: 0; }
 
+  /* ── Social card picker overlay ── */
+  .picker-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(42,42,62,0.92);
+    display: flex; align-items: center; justify-content: center;
+    animation: hintFadeIn 180ms ease-out;
+  }
+  .picker-overlay[hidden] { display: none; }
+  .picker-modal { width: 92%; max-width: 400px; text-align: center; }
+  .picker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .picker-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; color: white; }
+  .picker-close { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 24px; cursor: pointer; padding: 4px 8px; }
+  .picker-close:hover { color: white; }
+  .picker-scroll {
+    display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 4px 0 12px; -webkit-overflow-scrolling: touch;
+  }
+  .picker-scroll::-webkit-scrollbar { display: none; }
+  .picker-canvas {
+    flex: 0 0 100%; scroll-snap-align: center;
+    border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    max-width: 100%; height: auto;
+  }
+  .picker-dots { display: flex; justify-content: center; gap: 10px; margin: 12px 0 18px; }
+  .picker-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: background 150ms; }
+  .picker-dot.active { background: var(--teal); }
+  .picker-share-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px;
+    color: white; background: var(--teal); border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 14px; padding: 14px 32px; cursor: pointer; width: 100%;
+    box-shadow: 0 4px 0 var(--teal-dk); transition: transform 80ms;
+  }
+  .picker-share-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--teal-dk); }
+  @keyframes hintFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
   /* ── Print header/footer (hidden on screen) ── */
   .print-header, .print-footer { display: none; }
 
@@ -265,30 +300,39 @@
   @media print {
     body { background: white; }
     .site-header, footer, .back-link, .share-wrap, .next-card, .upnext-card,
-    .device-note, #weak-card { display: none !important; }
+    .device-note, #weak-card, #practice-log, .picker-overlay,
+    .trend-card, .page-title, .page-sub { display: none !important; }
     .print-header, .print-footer { display: flex !important; }
     .wrap { max-width: 100%; padding: 0; }
-    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; }
-    .hero-stat .hero-value { animation: none; opacity: 1; }
+    .card { border: 1.5px solid #ddd; box-shadow: none; break-inside: avoid; padding: 14px; }
+    .hero-stats { gap: 10px; margin-bottom: 16px; }
+    .hero-stat .hero-value { animation: none; opacity: 1; font-size: 1.8rem; }
+    .hero-stat .hero-icon { font-size: 20px; }
+    .streak-card { margin-bottom: 16px; }
+    .cal-grid { gap: 2px; }
+    .cal-tip { display: none !important; }
     .m-card.gold-shimmer::after { display: none; }
-    .tier-head { cursor: default; }
+    .tier-head { cursor: default; font-size: 1rem; margin: 12px 0 8px; padding: 6px 0; }
     .tier-head.collapsed + .mastery-grid { max-height: none; opacity: 1; }
-    .mastery-grid { max-height: none !important; opacity: 1 !important; }
-    .m-detail { max-height: none; opacity: 1; }
-    .m-detail-inner { padding-top: 6px; }
-    .trend-card { break-inside: avoid; }
-    .streak-card { break-inside: avoid; }
+    .mastery-grid { max-height: none !important; opacity: 1 !important; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    .m-card { padding: 8px 10px; }
+    .m-card-top { margin-bottom: 4px; gap: 8px; }
+    .m-ring { width: 28px; height: 28px; }
+    .m-name { font-size: 12px; }
+    .m-tier-label { font-size: 10px; }
+    .m-detail { display: none; }
+    .mastery-section .section-head { font-size: 1rem; }
     .print-header {
       display: flex !important; justify-content: space-between; align-items: flex-start;
-      padding-bottom: 14px; margin-bottom: 20px; border-bottom: 3px solid var(--teal);
+      padding-bottom: 12px; margin-bottom: 14px; border-bottom: 3px solid var(--teal);
     }
-    .print-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; }
-    .print-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px; color: var(--ink-soft); text-align: right; }
+    .print-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 24px; }
+    .print-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 12px; color: var(--ink-soft); text-align: right; }
     .print-brand span { color: var(--teal); }
-    .print-meta { font-size: 12px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
+    .print-meta { font-size: 11px; color: var(--ink-soft); font-weight: 600; margin-top: 2px; }
     .print-footer {
-      display: block !important; text-align: center; font-size: 11px; color: var(--ink-faint);
-      font-weight: 600; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 24px;
+      display: block !important; text-align: center; font-size: 10px; color: var(--ink-faint);
+      font-weight: 600; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 16px;
     }
   }
 
@@ -348,14 +392,35 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Save as PDF
           </button>
-          <button class="share-opt" id="share-image">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--grape)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Share as image
+          <button class="share-opt" id="share-social">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--grape)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share to social
           </button>
         </div>
       </div>
     </div>
     <p class="page-sub">How <b id="who">you</b> are doing across every module.</p>
+
+    <!-- Social card picker overlay -->
+    <div class="picker-overlay" id="picker-overlay" hidden>
+      <div class="picker-modal">
+        <div class="picker-head">
+          <span class="picker-title">Choose your card</span>
+          <button class="picker-close" id="picker-close">✕</button>
+        </div>
+        <div class="picker-scroll" id="picker-scroll">
+          <canvas class="picker-canvas" id="picker-canvas-0" width="540" height="675"></canvas>
+          <canvas class="picker-canvas" id="picker-canvas-1" width="540" height="675"></canvas>
+          <canvas class="picker-canvas" id="picker-canvas-2" width="540" height="675"></canvas>
+        </div>
+        <div class="picker-dots" id="picker-dots">
+          <div class="picker-dot active" data-idx="0"></div>
+          <div class="picker-dot" data-idx="1"></div>
+          <div class="picker-dot" data-idx="2"></div>
+        </div>
+        <button class="picker-share-btn" id="picker-share-btn">Share →</button>
+      </div>
+    </div>
 
     <!-- Next step recommendation -->
     <div class="card next-card" id="next-card" hidden>
@@ -1027,155 +1092,298 @@
       setTimeout(function() { window.print(); }, 100);
     });
 
-    // Share as image (native share API or fallback)
-    document.getElementById('share-image').addEventListener('click', function() {
+    // Share to social — open picker
+    document.getElementById('share-social').addEventListener('click', function() {
       menu.classList.remove('open');
-      var active = QN.profile ? QN.profile.getActive() : null;
-      var name = active ? active.nickname : 'Learner';
-      generateShareImage(name);
+      openPicker();
     });
   }
 
-  function generateShareImage(name) {
-    var canvas = document.createElement('canvas');
-    var W = 1080, H = 1350;
-    canvas.width = W; canvas.height = H;
-    var ctx = canvas.getContext('2d');
+  // ── Social card picker ──
+  var pickerIdx = 0;
 
-    // Background
-    ctx.fillStyle = '#FFFAF0';
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(31,184,168,0.06)';
-    ctx.beginPath(); ctx.arc(W - 100, 100, 250, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(91,63,228,0.04)';
-    ctx.beginPath(); ctx.arc(100, H - 100, 200, 0, Math.PI * 2); ctx.fill();
+  function openPicker() {
+    var active = QN.profile ? QN.profile.getActive() : null;
+    var name = active ? active.nickname : 'Learner';
+    var data = gatherShareData();
 
-    // Title
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#2A2A3E';
-    ctx.font = '700 64px Fredoka, sans-serif';
-    ctx.fillText(name + '’s Practice Notes', W / 2, 120);
-    ctx.fillStyle = '#5a5a6e';
-    ctx.font = '600 32px Nunito, sans-serif';
-    ctx.fillText(new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' }), W / 2, 170);
+    renderCardA(document.getElementById('picker-canvas-0'), name, data);
+    renderCardB(document.getElementById('picker-canvas-1'), name, data);
+    renderCardC(document.getElementById('picker-canvas-2'), name, data);
 
-    // Hero stats
-    var heroY = 260;
-    var stats = [
-      { icon: '🔥', val: document.getElementById('hero-streak').textContent, label: 'Day streak', color: '#c2453f' },
-      { icon: '⏱', val: document.getElementById('hero-time').textContent, label: 'Practice', color: '#3d28a8' },
-      { icon: '★', val: document.getElementById('hero-mastered').textContent, label: 'Mastered', color: '#E6B422' }
-    ];
-    var statW = 280, statGap = 40, startX = (W - 3 * statW - 2 * statGap) / 2;
-    stats.forEach(function(s, i) {
-      var sx = startX + i * (statW + statGap);
-      ctx.fillStyle = 'white';
-      roundRect(ctx, sx, heroY, statW, 180, 24);
-      ctx.fill();
-      ctx.fillStyle = '#2A2A3E';
-      ctx.font = '48px sans-serif';
-      ctx.fillText(s.icon, sx + statW / 2, heroY + 50);
-      ctx.fillStyle = s.color;
-      ctx.font = '700 56px Fredoka, sans-serif';
-      ctx.fillText(s.val, sx + statW / 2, heroY + 120);
-      ctx.fillStyle = '#8a8472';
-      ctx.font = '700 20px Nunito, sans-serif';
-      ctx.fillText(s.label.toUpperCase(), sx + statW / 2, heroY + 155);
+    pickerIdx = 0;
+    syncPickerDots();
+    document.getElementById('picker-overlay').hidden = false;
+    document.getElementById('picker-scroll').scrollLeft = 0;
+  }
+
+  function gatherShareData() {
+    return {
+      streak: document.getElementById('hero-streak').textContent,
+      time: document.getElementById('hero-time').textContent,
+      mastered: document.getElementById('hero-mastered').textContent,
+      cards: document.querySelectorAll('.m-card'),
+      date: new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+    };
+  }
+
+  function syncPickerDots() {
+    document.querySelectorAll('.picker-dot').forEach(function(d, i) {
+      d.classList.toggle('active', i === pickerIdx);
     });
+  }
+
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+    ctx.quadraticCurveTo(x+w,y,x+w,y+r); ctx.lineTo(x+w,y+h-r);
+    ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
+    ctx.quadraticCurveTo(x,y+h,x,y+h-r); ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+  }
+
+  function getMasteryLevels() {
+    var levels = [];
+    document.querySelectorAll('.m-card').forEach(function(card) {
+      var lbl = card.querySelector('.m-tier-label');
+      var lvl = 'untouched';
+      if (lbl) {
+        if (lbl.classList.contains('gold')) lvl = 'gold';
+        else if (lbl.classList.contains('silver')) lvl = 'silver';
+        else if (lbl.classList.contains('bronze')) lvl = 'bronze';
+        else if (lbl.classList.contains('started')) lvl = 'started';
+      }
+      levels.push(lvl);
+    });
+    return levels;
+  }
+
+  var MC = { gold:'#E6B422', silver:'#A8A8B0', bronze:'#CD7F32', started:'#c8ece7' };
+  var MP = { gold:1, silver:0.66, bronze:0.33, started:0.1 };
+
+  function drawRings(ctx, levels, cx, cy, size, gap, cols) {
+    levels.forEach(function(lvl, i) {
+      var col = i % cols, row = Math.floor(i / cols);
+      var x = cx + col * (size + gap) + size / 2;
+      var y = cy + row * (size + gap) + size / 2;
+      var r = size / 2 - 3;
+      ctx.strokeStyle = '#e0ddd4'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      if (MC[lvl]) {
+        ctx.strokeStyle = MC[lvl]; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(x, y, r, -Math.PI/2, -Math.PI/2 + Math.PI*2*MP[lvl]); ctx.stroke();
+      }
+    });
+  }
+
+  function drawBrand(ctx, W, y) {
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#5a5a6e'; ctx.font = '700 18px system-ui, sans-serif';
+    ctx.fillText('Practice Notes by QuizNote', W/2, y);
+    ctx.fillStyle = '#8a8472'; ctx.font = '600 14px system-ui, sans-serif';
+    ctx.fillText('quiznote.online', W/2, y + 22);
+  }
+
+  // Card A — Streak focus (light)
+  function renderCardA(canvas, name, data) {
+    var W = 540, H = 675, ctx = canvas.getContext('2d');
+    // Background
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#f0faf8'); bg.addColorStop(0.4, '#FFFAF0'); bg.addColorStop(1, '#fff5e6');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2A2A3E'; ctx.font = '700 28px system-ui, sans-serif';
+    ctx.fillText(name + '’s Practice Notes', W/2, 50);
+    ctx.fillStyle = '#8a8472'; ctx.font = '600 16px system-ui, sans-serif';
+    ctx.fillText(data.date, W/2, 74);
+
+    ctx.font = '40px sans-serif'; ctx.fillText('🔥', W/2, 130);
+    ctx.fillStyle = '#c2453f'; ctx.font = '700 80px system-ui, sans-serif';
+    ctx.fillText(data.streak, W/2, 210);
+    ctx.fillStyle = '#8a8472'; ctx.font = '700 14px system-ui, sans-serif';
+    ctx.fillText('DAY STREAK', W/2, 234);
+
+    // Mini stats
+    ctx.fillStyle = 'white'; rr(ctx, 40, 260, 220, 80, 14); ctx.fill();
+    ctx.fillStyle = 'white'; rr(ctx, 280, 260, 220, 80, 14); ctx.fill();
+    ctx.fillStyle = '#3d28a8'; ctx.font = '700 28px system-ui, sans-serif';
+    ctx.fillText(data.time, 150, 305);
+    ctx.fillStyle = '#8a8472'; ctx.font = '700 11px system-ui, sans-serif';
+    ctx.fillText('PRACTICE TIME', 150, 325);
+    ctx.fillStyle = '#E6B422'; ctx.font = '700 28px system-ui, sans-serif';
+    ctx.fillText(data.mastered, 390, 305);
+    ctx.fillStyle = '#8a8472'; ctx.font = '700 11px system-ui, sans-serif';
+    ctx.fillText('MASTERED', 390, 325);
 
     // Mastery rings
-    var ringY = 520;
-    ctx.fillStyle = '#2A2A3E';
-    ctx.font = '700 36px Fredoka, sans-serif';
-    ctx.fillText('Module mastery', W / 2, ringY);
+    ctx.fillStyle = '#5a5a6e'; ctx.font = '700 14px system-ui, sans-serif';
+    ctx.fillText('Module mastery', W/2, 380);
+    var levels = getMasteryLevels();
+    var ringS = 32, ringG = 8, cols = 8;
+    var totalW = cols * ringS + (cols-1) * ringG;
+    drawRings(ctx, levels, (W - totalW) / 2, 395, ringS, ringG, cols);
 
-    var allSlugs = [];
-    Object.keys(ROSTER).forEach(function(t) { ROSTER[t].forEach(function(s) { allSlugs.push(s); }); });
-
-    var ringSize = 52, ringGap = 16, cols = 8;
-    var totalRingW = cols * ringSize + (cols - 1) * ringGap;
-    var rStartX = (W - totalRingW) / 2;
-    var rStartY = ringY + 30;
-
-    allSlugs.forEach(function(slug, idx) {
-      var col = idx % cols, row = Math.floor(idx / cols);
-      var cx = rStartX + col * (ringSize + ringGap) + ringSize / 2;
-      var cy = rStartY + row * (ringSize + ringGap) + ringSize / 2;
-      var r = ringSize / 2 - 4;
-
-      // Background ring
-      ctx.strokeStyle = '#e0ddd4';
-      ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
-
-      // Check mastery from DOM (read the card's tier label)
-      var card = document.querySelector('.m-card .m-name');
-      var cards = document.querySelectorAll('.m-card');
-      var level = 'untouched';
-      if (cards[idx]) {
-        var label = cards[idx].querySelector('.m-tier-label');
-        if (label) {
-          if (label.classList.contains('gold')) level = 'gold';
-          else if (label.classList.contains('silver')) level = 'silver';
-          else if (label.classList.contains('bronze')) level = 'bronze';
-          else if (label.classList.contains('started')) level = 'started';
-        }
-      }
-
-      var colors = { gold: '#E6B422', silver: '#A8A8B0', bronze: '#CD7F32', started: '#c8ece7' };
-      var progress = { gold: 1, silver: 0.66, bronze: 0.33, started: 0.1 };
-      if (colors[level]) {
-        ctx.strokeStyle = colors[level];
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress[level]);
-        ctx.stroke();
-      }
-    });
-
-    // Brand footer
-    var footerY = H - 80;
-    ctx.fillStyle = '#5a5a6e';
-    ctx.font = '700 28px Fredoka, sans-serif';
-    ctx.fillText('Practice Notes by QuizNote', W / 2, footerY);
-    ctx.fillStyle = '#8a8472';
-    ctx.font = '600 22px Nunito, sans-serif';
-    ctx.fillText('quiznote.online', W / 2, footerY + 36);
-
-    // Export
-    canvas.toBlob(function(blob) {
-      if (!blob) return;
-      var file = new File([blob], 'practice-notes.png', { type: 'image/png' });
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'Practice Notes', text: 'My music theory progress on QuizNote' }).catch(function() {});
-      } else {
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'practice-notes.png';
-        a.click();
-        URL.revokeObjectURL(a.href);
-      }
-    }, 'image/png');
+    drawBrand(ctx, W, 620);
   }
 
-  function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
+  // Card B — Progress focus (dark)
+  function renderCardB(canvas, name, data) {
+    var W = 540, H = 675, ctx = canvas.getContext('2d');
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#2A2A3E'); bg.addColorStop(0.5, '#1a1a2e'); bg.addColorStop(1, '#0e2a28');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '700 26px system-ui, sans-serif';
+    ctx.fillText(name + '’s Practice Notes', W/2, 50);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.font = '600 16px system-ui, sans-serif';
+    ctx.fillText(data.date, W/2, 74);
+
+    ctx.font = '36px sans-serif'; ctx.fillText('🔥', W/2, 126);
+    ctx.fillStyle = '#FF6B6B'; ctx.font = '700 72px system-ui, sans-serif';
+    ctx.fillText(data.streak, W/2, 200);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '700 13px system-ui, sans-serif';
+    ctx.fillText('DAY STREAK', W/2, 224);
+
+    // Mini stats
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'; rr(ctx, 40, 250, 220, 70, 14); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'; rr(ctx, 280, 250, 220, 70, 14); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.stroke();
+    ctx.fillStyle = '#1FB8A8'; ctx.font = '700 26px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText(data.time, 150, 292);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '700 10px system-ui, sans-serif';
+    ctx.fillText('PRACTICE TIME', 150, 308);
+    ctx.fillStyle = '#1FB8A8'; ctx.font = '700 26px system-ui, sans-serif';
+    ctx.fillText(data.mastered, 390, 292);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '700 10px system-ui, sans-serif';
+    ctx.fillText('MASTERED', 390, 308);
+
+    // Progress bars
+    var tierNames = Object.keys(ROSTER);
+    var tierColors = ['#1FB8A8', '#5B3FE4', '#FFB627'];
+    var barY = 370;
+    var levels = getMasteryLevels();
+    var offset = 0;
+    tierNames.forEach(function(tn, ti) {
+      var slugs = ROSTER[tn];
+      var gold = 0; slugs.forEach(function(s, si) { if (levels[offset + si] === 'gold') gold++; });
+      var pct = slugs.length > 0 ? gold / slugs.length : 0;
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '700 14px system-ui, sans-serif';
+      ctx.fillText(tn, 140, barY + ti * 50);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      rr(ctx, 155, barY + ti * 50 - 14, 280, 18, 9); ctx.fill();
+      ctx.fillStyle = tierColors[ti];
+      if (pct > 0) { rr(ctx, 155, barY + ti * 50 - 14, 280 * pct, 18, 9); ctx.fill(); }
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '700 13px system-ui, sans-serif';
+      ctx.fillText(gold + '/' + slugs.length, 445, barY + ti * 50);
+      offset += slugs.length;
+    });
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '700 18px system-ui, sans-serif';
+    ctx.fillText('Practice Notes by QuizNote', W/2, 620);
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.font = '600 14px system-ui, sans-serif';
+    ctx.fillText('quiznote.online', W/2, 642);
+  }
+
+  // Card C — Highlights (warm)
+  function renderCardC(canvas, name, data) {
+    var W = 540, H = 675, ctx = canvas.getContext('2d');
+    var bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#FFF8F0'); bg.addColorStop(0.5, '#fff0e0'); bg.addColorStop(1, '#ffe8cc');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2A2A3E'; ctx.font = '700 26px system-ui, sans-serif';
+    ctx.fillText(name + '’s Practice Notes', W/2, 50);
+    ctx.fillStyle = '#8a8472'; ctx.font = '600 16px system-ui, sans-serif';
+    ctx.fillText(data.date, W/2, 74);
+    ctx.fillStyle = '#5a5a6e'; ctx.font = '700 20px system-ui, sans-serif';
+    ctx.fillText('This month’s highlights', W/2, 116);
+
+    // Achievement rows
+    var achs = [
+      { icon: '🔥', val: data.streak + '-day streak', lab: 'Current streak', color: '#c2453f' },
+      { icon: '★', val: data.mastered + ' modules mastered', lab: 'Gold tier achieved', color: '#E6B422' },
+      { icon: '⏱', val: data.time + ' practice time', lab: 'Total this month', color: '#0e8475' },
+      { icon: '🎯', val: '32 modules available', lab: 'Keep going!', color: '#3d28a8' },
+    ];
+    var achY = 150;
+    achs.forEach(function(a, i) {
+      var y = achY + i * 100;
+      ctx.fillStyle = 'white'; rr(ctx, 40, y, W - 80, 82, 16); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.03)';
+      ctx.shadowColor = 'rgba(0,0,0,0.04)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+      rr(ctx, 40, y, W - 80, 82, 16); ctx.fill();
+      ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+      ctx.font = '32px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(a.icon, 60, y + 50);
+      ctx.fillStyle = a.color; ctx.font = '700 22px system-ui, sans-serif';
+      ctx.fillText(a.val, 105, y + 40);
+      ctx.fillStyle = '#8a8472'; ctx.font = '600 14px system-ui, sans-serif';
+      ctx.fillText(a.lab, 105, y + 62);
+    });
+
+    drawBrand(ctx, W, 610);
+  }
+
+  // Picker event wiring
+  function initPicker() {
+    var overlay = document.getElementById('picker-overlay');
+    var scroll = document.getElementById('picker-scroll');
+    if (!overlay || !scroll) return;
+
+    document.getElementById('picker-close').addEventListener('click', function() {
+      overlay.hidden = true;
+    });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.hidden = true;
+    });
+
+    scroll.addEventListener('scroll', function() {
+      var w = scroll.offsetWidth;
+      var idx = Math.round(scroll.scrollLeft / w);
+      if (idx !== pickerIdx) { pickerIdx = idx; syncPickerDots(); }
+    });
+
+    document.querySelectorAll('.picker-dot').forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        var idx = parseInt(dot.dataset.idx);
+        pickerIdx = idx; syncPickerDots();
+        scroll.scrollTo({ left: idx * scroll.offsetWidth, behavior: 'smooth' });
+      });
+    });
+
+    document.getElementById('picker-share-btn').addEventListener('click', function() {
+      var canvas = document.getElementById('picker-canvas-' + pickerIdx);
+      canvas.toBlob(function(blob) {
+        if (!blob) return;
+        var file = new File([blob], 'practice-notes.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: 'Practice Notes', text: 'My music theory progress on QuizNote' }).catch(function() {});
+        } else {
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'practice-notes.png';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+        document.getElementById('picker-overlay').hidden = true;
+      }, 'image/png');
+    });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { draw(); initShare(); });
+    document.addEventListener('DOMContentLoaded', function() { draw(); initShare(); initPicker(); });
   } else {
-    draw(); initShare();
+    draw(); initShare(); initPicker();
   }
 })();
 </script>
