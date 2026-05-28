@@ -435,6 +435,8 @@
         level:         data.level || null,
         defaultDifficulty: data.defaultDifficulty || 'medium',
         hintsEnabled:  data.hintsEnabled !== false,
+        practiceGoal:  data.practiceGoal || 5,
+        streakStyle:   data.streakStyle || 'calendar',
         color:         (data.color && COLOR_OPTIONS.indexOf(data.color) >= 0)
                          ? data.color : 'teal',
         createdAt:     now,

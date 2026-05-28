@@ -614,7 +614,7 @@ footer .sep { margin: 0 8px; }
       <p class="view-sub">This helps us pick a good starting difficulty. You can change it anytime.</p>
     </div>
     <div class="level-options">
-      <button class="level-option" data-level="starting" data-diff="easy" data-hints="true" type="button">
+      <button class="level-option" data-level="starting" data-diff="easy" data-hints="true" data-goal="3" type="button">
         <span class="level-main">Just starting out <span class="level-tag">Beginner</span></span>
         <div class="level-detail">
           <div class="level-setting">
@@ -632,9 +632,17 @@ footer .sep { margin: 0 8px; }
               <span class="lpill" data-val="off">Off</span>
             </span>
           </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Practice goal</span>
+            <span class="level-pills" data-setting="goal">
+              <span class="lpill on" data-val="3">3 days</span>
+              <span class="lpill" data-val="5">5 days</span>
+              <span class="lpill" data-val="7">Daily</span>
+            </span>
+          </div>
         </div>
       </button>
-      <button class="level-option" data-level="some" data-diff="medium" data-hints="true" type="button">
+      <button class="level-option" data-level="some" data-diff="medium" data-hints="true" data-goal="5" type="button">
         <span class="level-main">I know some notes <span class="level-tag">Intermediate</span></span>
         <div class="level-detail">
           <div class="level-setting">
@@ -652,9 +660,17 @@ footer .sep { margin: 0 8px; }
               <span class="lpill" data-val="off">Off</span>
             </span>
           </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Practice goal</span>
+            <span class="level-pills" data-setting="goal">
+              <span class="lpill" data-val="3">3 days</span>
+              <span class="lpill on" data-val="5">5 days</span>
+              <span class="lpill" data-val="7">Daily</span>
+            </span>
+          </div>
         </div>
       </button>
-      <button class="level-option" data-level="while" data-diff="tricky" data-hints="false" type="button">
+      <button class="level-option" data-level="while" data-diff="tricky" data-hints="false" data-goal="5" type="button">
         <span class="level-main">I've been playing a while <span class="level-tag">Advanced</span></span>
         <div class="level-detail">
           <div class="level-setting">
@@ -670,6 +686,14 @@ footer .sep { margin: 0 8px; }
             <span class="level-pills" data-setting="hints">
               <span class="lpill" data-val="on">On</span>
               <span class="lpill on" data-val="off">Off</span>
+            </span>
+          </div>
+          <div class="level-setting">
+            <span class="level-setting-label">Practice goal</span>
+            <span class="level-pills" data-setting="goal">
+              <span class="lpill" data-val="3">3 days</span>
+              <span class="lpill on" data-val="5">5 days</span>
+              <span class="lpill" data-val="7">Daily</span>
             </span>
           </div>
         </div>
@@ -814,6 +838,7 @@ footer .sep { margin: 0 8px; }
     draftLevel:    null,
     draftDifficulty: 'medium',
     draftHints:    true,
+    draftGoal:     5,
     draftColor:    'teal',
     editingId:     null   // when editing/deleting an existing profile
   };
@@ -1052,15 +1077,16 @@ footer .sep { margin: 0 8px; }
   function syncLevelPills(option) {
     var diffPills = option.querySelectorAll('[data-setting="diff"] .lpill');
     var hintPills = option.querySelectorAll('[data-setting="hints"] .lpill');
+    var goalPills = option.querySelectorAll('[data-setting="goal"] .lpill');
     diffPills.forEach(function(p) { p.classList.toggle('on', p.dataset.val === state.draftDifficulty); });
     hintPills.forEach(function(p) {
       p.classList.toggle('on', (p.dataset.val === 'on') === state.draftHints);
     });
+    goalPills.forEach(function(p) { p.classList.toggle('on', p.dataset.val === String(state.draftGoal)); });
   }
 
   for (var i = 0; i < levelOptions.length; i++) {
     levelOptions[i].addEventListener('click', function (e) {
-      // Check if a pill was clicked
       var pill = e.target.closest('.lpill');
       if (pill) {
         e.stopPropagation();
@@ -1069,6 +1095,8 @@ footer .sep { margin: 0 8px; }
           state.draftDifficulty = pill.dataset.val;
         } else if (setting === 'hints') {
           state.draftHints = pill.dataset.val === 'on';
+        } else if (setting === 'goal') {
+          state.draftGoal = parseInt(pill.dataset.val, 10);
         }
         syncLevelPills(this);
         return;
@@ -1078,6 +1106,7 @@ footer .sep { margin: 0 8px; }
       state.draftLevel = this.getAttribute('data-level');
       state.draftDifficulty = this.dataset.diff;
       state.draftHints = this.dataset.hints === 'true';
+      state.draftGoal = parseInt(this.dataset.goal, 10) || 5;
       syncLevelPills(this);
     });
   }
@@ -1121,7 +1150,8 @@ footer .sep { margin: 0 8px; }
       level:    state.draftLevel,
       color:    state.draftColor,
       defaultDifficulty: state.draftDifficulty,
-      hintsEnabled: state.draftHints
+      hintsEnabled: state.draftHints,
+      practiceGoal: state.draftGoal
     });
     if (!created) {
       showView('cap-reached');

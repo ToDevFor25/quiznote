@@ -55,10 +55,63 @@
   .hero-stat:nth-child(2) .hero-value { animation-delay: 300ms; }
   .hero-stat:nth-child(3) .hero-value { animation-delay: 500ms; }
 
-  /* ── Streak calendar ── */
-  .streak-card { margin-bottom: 24px; }
-  .streak-card .section-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 14px; display: flex; align-items: baseline; gap: 8px; }
-  .streak-card .hint { font-family: 'Nunito'; font-weight: 600; font-size: 13px; color: var(--ink-faint); }
+  /* ── Streak section ── */
+  .streak-section { margin-bottom: 24px; }
+  .streak-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .streak-controls { display: flex; align-items: center; gap: 6px; }
+  .streak-style-btn { background: none; border: 1.5px solid var(--shadow-cool); border-radius: 8px; padding: 4px 8px; cursor: pointer; font-size: 16px; transition: border-color 100ms; }
+  .streak-style-btn.active { border-color: var(--teal); background: var(--teal-lt); }
+  .goal-picker { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-left: 6px; }
+  .goal-btn { background: none; border: 1.5px solid var(--shadow-cool); border-radius: 8px; padding: 3px 10px; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; color: var(--teal-dk); cursor: pointer; }
+  .goal-btn:hover { border-color: var(--teal); }
+  .goal-options { display: flex; gap: 6px; margin-bottom: 10px; }
+  .goal-options[hidden] { display: none; }
+  .goal-opt { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px; background: var(--cream); border: 1.5px solid var(--shadow-cool); border-radius: 8px; padding: 6px 14px; cursor: pointer; color: var(--ink); transition: border-color 100ms; }
+  .goal-opt:hover { border-color: var(--teal); }
+  .goal-opt.active { border-color: var(--teal); background: var(--teal-lt); color: var(--teal-dk); }
+  .streak-view[hidden] { display: none; }
+  .sv-extras { display: flex; gap: 16px; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+
+  /* Calendar view */
+  .sv-cal-layout { display: flex; gap: 16px; }
+  .sv-cal-left { flex: 1; }
+  .sv-cal-right { flex: 0 0 100px; display: flex; flex-direction: column; gap: 6px; }
+  .sv-stat-card { background: #faf8f3; border: 1px solid #eee; border-radius: 10px; padding: 8px 6px; text-align: center; }
+  .sv-stat-icon { font-size: 14px; }
+  .sv-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 18px; line-height: 1.1; }
+  .sv-stat-val.fire { color: var(--coral-dk); }
+  .sv-stat-val.teal { color: var(--teal-dk); }
+  .sv-stat-val.grape { color: var(--grape); }
+  .sv-stat-lab { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .sv-week-dots { display: flex; align-items: center; gap: 5px; margin-top: 10px; }
+  .sv-wd { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+  .sv-wd.done { background: var(--teal); color: white; }
+  .sv-wd.empty { background: #f0ede4; color: var(--ink-faint); }
+  .sv-wd.today { outline: 2px solid var(--ink); }
+  .sv-wd-label { font-size: 11px; font-weight: 700; color: var(--ink-faint); margin-left: 4px; }
+
+  /* Rings view */
+  .sv-rings-layout { display: flex; align-items: center; gap: 20px; }
+  .sv-rings-svg { width: 140px; height: 140px; flex-shrink: 0; }
+  .sv-rings-legend { display: flex; flex-direction: column; gap: 10px; }
+  .sv-rl-item { display: flex; align-items: center; gap: 8px; }
+  .sv-rl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .sv-rl-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 18px; }
+  .sv-rl-lab { font-size: 10px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; }
+
+  /* Flames view */
+  .sv-flames-stack { display: flex; flex-direction: column; gap: 4px; }
+  .sv-flame { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; }
+  .sv-flame.active { background: rgba(255,107,107,0.05); }
+  .sv-flame-icon { font-size: 24px; width: 34px; text-align: center; }
+  .sv-flame-body { flex: 1; }
+  .sv-flame-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px; }
+  .sv-flame-lab { font-size: 10px; font-weight: 600; color: var(--ink-faint); }
+  .sv-flame-bar { height: 5px; border-radius: 999px; background: #f0ede4; overflow: hidden; margin-top: 3px; }
+  .sv-flame-fill { height: 100%; border-radius: 999px; }
+  .sv-flame-fill.d { background: linear-gradient(90deg, var(--coral), #ff9a6b); }
+  .sv-flame-fill.w { background: linear-gradient(90deg, var(--teal), #34d4c2); }
+  .sv-flame-fill.m { background: linear-gradient(90deg, var(--grape), #7b5ff5); }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .cal-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); text-align: center; padding-bottom: 4px; }
   .cal-cell { aspect-ratio: 1; border-radius: 5px; background: #f0ede4; position: relative; cursor: default; transition: background 300ms; }
@@ -442,31 +495,64 @@
       <div class="upnext-tiles" id="upnext-tiles"></div>
     </div>
 
-    <!-- Hero stats -->
-    <div class="hero-stats">
-      <div class="card hero-stat streak">
-        <div class="hero-icon">🔥</div>
-        <div class="hero-value" id="hero-streak">0</div>
-        <div class="hero-label">Day streak</div>
-        <div class="hero-sub" id="hero-streak-best"></div>
+    <!-- Streak visualization (switchable: rings / flames / calendar) -->
+    <div class="card streak-section" id="streak-section">
+      <div class="streak-header">
+        <div class="section-head" style="margin:0;">Practice streak</div>
+        <div class="streak-controls">
+          <button class="streak-style-btn" data-style="calendar" title="Calendar view">📅</button>
+          <button class="streak-style-btn" data-style="rings" title="Ring view">⭕</button>
+          <button class="streak-style-btn" data-style="flames" title="Flame view">🔥</button>
+          <span class="goal-picker" id="goal-picker">
+            Goal: <button class="goal-btn" id="goal-btn"><span id="goal-display">5</span> days</button>
+          </span>
+        </div>
       </div>
-      <div class="card hero-stat time">
-        <div class="hero-icon">⏱</div>
-        <div class="hero-value" id="hero-time">0</div>
-        <div class="hero-label">Practice time</div>
+      <div class="goal-options" id="goal-options" hidden>
+        <button class="goal-opt" data-goal="3">3 days</button>
+        <button class="goal-opt" data-goal="5">5 days</button>
+        <button class="goal-opt" data-goal="7">Daily</button>
       </div>
-      <div class="card hero-stat mastered">
-        <div class="hero-icon">★</div>
-        <div class="hero-value" id="hero-mastered">0</div>
-        <div class="hero-label">Modules mastered</div>
-        <div class="hero-sub" id="hero-mastered-sub"></div>
-      </div>
-    </div>
 
-    <!-- Streak calendar -->
-    <div class="card streak-card">
-      <div class="section-head">Practice calendar <span class="hint" id="cal-hint"></span></div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <!-- View: Calendar -->
+      <div class="streak-view" id="sv-calendar">
+        <div class="sv-cal-layout">
+          <div class="sv-cal-left">
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <div class="sv-cal-right">
+            <div class="sv-stat-card"><div class="sv-stat-icon">🔥</div><div class="sv-stat-val fire" id="sv-streak">0</div><div class="sv-stat-lab">Day streak</div></div>
+            <div class="sv-stat-card"><div class="sv-stat-icon">📅</div><div class="sv-stat-val teal" id="sv-week">0/0</div><div class="sv-stat-lab">This week</div></div>
+            <div class="sv-stat-card"><div class="sv-stat-icon">📊</div><div class="sv-stat-val grape" id="sv-month">0%</div><div class="sv-stat-lab">This month</div></div>
+          </div>
+        </div>
+        <div class="sv-week-dots" id="sv-week-dots"></div>
+        <div class="sv-extras">
+          <span>⏱ <strong id="sv-time">0</strong> practice time</span>
+          <span>★ <strong id="sv-mastered">0</strong> mastered</span>
+        </div>
+      </div>
+
+      <!-- View: Rings -->
+      <div class="streak-view" id="sv-rings" hidden>
+        <div class="sv-rings-layout">
+          <svg class="sv-rings-svg" viewBox="0 0 160 160" id="rings-svg"></svg>
+          <div class="sv-rings-legend" id="rings-legend"></div>
+        </div>
+        <div class="sv-extras">
+          <span>⏱ <strong id="sv-time-r">0</strong> practice time</span>
+          <span>★ <strong id="sv-mastered-r">0</strong> mastered</span>
+        </div>
+      </div>
+
+      <!-- View: Flames -->
+      <div class="streak-view" id="sv-flames" hidden>
+        <div class="sv-flames-stack" id="flames-stack"></div>
+        <div class="sv-extras">
+          <span>⏱ <strong id="sv-time-f">0</strong> practice time</span>
+          <span>★ <strong id="sv-mastered-f">0</strong> mastered</span>
+        </div>
+      </div>
     </div>
 
     <!-- Weak spots -->
@@ -725,17 +811,16 @@
       if (mastery[slug].level === 'gold') goldCount++;
     });
 
-    // Hero stats
-    document.getElementById('hero-streak').textContent = streak.current;
-    var bestSub = document.getElementById('hero-streak-best');
-    if (streak.longest > streak.current) bestSub.textContent = 'Best: ' + streak.longest + ' days';
+    // Streak visualization
+    var goal = active.practiceGoal || 5;
+    var streakStyle = active.streakStyle || 'calendar';
+    var weekDays = computeWeekDays(events);
+    var monthDays = computeMonthDays(events);
+    var sharedData = { streak: streak, goal: goal, weekDays: weekDays, monthDays: monthDays, totMs: totMs, goldCount: goldCount, totalModules: totalModules };
 
-    document.getElementById('hero-time').textContent = fmtDuration(totMs);
-    document.getElementById('hero-mastered').textContent = goldCount + '/' + totalModules;
-    document.getElementById('hero-mastered-sub').textContent =
-      goldCount === totalModules ? 'All mastered!' : (totalModules - goldCount) + ' to go';
+    drawStreakView(streakStyle, sharedData);
+    initStreakControls(active, sharedData);
 
-    // Subtle load chime
     playChime(523, 0.1);
     playChime(659, 0.3);
     playChime(784, 0.5);
@@ -789,8 +874,6 @@
       } catch(e) {}
     }
 
-    // Streak calendar (last 5 weeks)
-    drawCalendar(streak.dayMap);
 
     // Weak spots
     if (weakSpots.length > 0) {
@@ -812,6 +895,198 @@
 
     // Mastery grid
     drawMastery(mastery);
+  }
+
+  function computeWeekDays(events) {
+    var today = new Date(); today.setHours(0,0,0,0);
+    var dow = (today.getDay() + 6) % 7;
+    var monday = new Date(today); monday.setDate(monday.getDate() - dow);
+    var days = [false,false,false,false,false,false,false];
+    events.forEach(function(ev) {
+      var d = new Date(ev.completedAt); d.setHours(0,0,0,0);
+      var diff = Math.round((d - monday) / 86400000);
+      if (diff >= 0 && diff < 7) days[diff] = true;
+    });
+    return days;
+  }
+
+  function computeMonthDays(events) {
+    var now = new Date();
+    var year = now.getFullYear(), month = now.getMonth();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var practiced = 0;
+    var seen = {};
+    events.forEach(function(ev) {
+      var d = new Date(ev.completedAt);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        var dk = d.getDate();
+        if (!seen[dk]) { seen[dk] = true; practiced++; }
+      }
+    });
+    return { practiced: practiced, total: daysInMonth };
+  }
+
+  function drawStreakView(style, data) {
+    ['sv-calendar','sv-rings','sv-flames'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.hidden = true;
+    });
+    document.querySelectorAll('.streak-style-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.style === style);
+    });
+    document.getElementById('goal-display').textContent = data.goal;
+
+    var timeStr = fmtDuration(data.totMs);
+    var mastStr = data.goldCount + '/' + data.totalModules;
+    var weekCount = data.weekDays.filter(Boolean).length;
+
+    if (style === 'calendar') {
+      document.getElementById('sv-calendar').hidden = false;
+      document.getElementById('sv-streak').textContent = data.streak.current;
+      document.getElementById('sv-week').textContent = weekCount + '/' + data.goal;
+      document.getElementById('sv-month').textContent = Math.round(data.monthDays.practiced / data.monthDays.total * 100) + '%';
+      document.getElementById('sv-time').textContent = timeStr;
+      document.getElementById('sv-mastered').textContent = mastStr;
+      drawCalendar(data.streak.dayMap);
+      drawWeekDots(data.weekDays, data.goal);
+    } else if (style === 'rings') {
+      document.getElementById('sv-rings').hidden = false;
+      document.getElementById('sv-time-r').textContent = timeStr;
+      document.getElementById('sv-mastered-r').textContent = mastStr;
+      drawRingsView(data);
+    } else if (style === 'flames') {
+      document.getElementById('sv-flames').hidden = false;
+      document.getElementById('sv-time-f').textContent = timeStr;
+      document.getElementById('sv-mastered-f').textContent = mastStr;
+      drawFlamesView(data);
+    }
+  }
+
+  function initStreakControls(active, data) {
+    document.querySelectorAll('.streak-style-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var style = btn.dataset.style;
+        active.streakStyle = style;
+        var profiles = QN.profile.list();
+        for (var i = 0; i < profiles.length; i++) {
+          if (profiles[i].id === active.id) { profiles[i].streakStyle = style; break; }
+        }
+        try { localStorage.setItem('qn_profiles', JSON.stringify(profiles)); } catch(e) {}
+        drawStreakView(style, data);
+      });
+    });
+
+    document.getElementById('goal-btn').addEventListener('click', function() {
+      var opts = document.getElementById('goal-options');
+      opts.hidden = !opts.hidden;
+      document.querySelectorAll('.goal-opt').forEach(function(o) {
+        o.classList.toggle('active', parseInt(o.dataset.goal) === data.goal);
+      });
+    });
+
+    document.querySelectorAll('.goal-opt').forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        var g = parseInt(opt.dataset.goal);
+        data.goal = g;
+        active.practiceGoal = g;
+        var profiles = QN.profile.list();
+        for (var i = 0; i < profiles.length; i++) {
+          if (profiles[i].id === active.id) { profiles[i].practiceGoal = g; break; }
+        }
+        try { localStorage.setItem('qn_profiles', JSON.stringify(profiles)); } catch(e) {}
+        document.getElementById('goal-options').hidden = true;
+        drawStreakView(active.streakStyle || 'calendar', data);
+      });
+    });
+  }
+
+  function drawWeekDots(weekDays, goal) {
+    var container = document.getElementById('sv-week-dots');
+    container.innerHTML = '';
+    var dayLabels = ['M','T','W','T','F','S','S'];
+    var today = (new Date().getDay() + 6) % 7;
+    var count = weekDays.filter(Boolean).length;
+    for (var i = 0; i < 7; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'sv-wd ' + (weekDays[i] ? 'done' : 'empty');
+      if (i === today) dot.classList.add('today');
+      dot.textContent = weekDays[i] ? '✓' : dayLabels[i];
+      container.appendChild(dot);
+    }
+    var lbl = document.createElement('span');
+    lbl.className = 'sv-wd-label';
+    lbl.textContent = count + ' of ' + goal + ' this week';
+    container.appendChild(lbl);
+  }
+
+  function drawRingsView(data) {
+    var svg = document.getElementById('rings-svg');
+    svg.innerHTML = '';
+    var NS = 'http://www.w3.org/2000/svg';
+    var weekCount = data.weekDays.filter(Boolean).length;
+    var rings = [
+      { r: 65, color: '#5B3FE4', bg: '#ede8ff', val: data.monthDays.practiced, max: data.monthDays.total, label: data.monthDays.practiced + '/' + data.monthDays.total + ' days', sub: 'This month' },
+      { r: 50, color: '#1FB8A8', bg: '#d3f1ec', val: weekCount, max: data.goal, label: weekCount + '/' + data.goal + ' days', sub: 'This week' },
+      { r: 35, color: '#FF6B6B', bg: '#ffe0e0', val: Math.min(data.streak.current, 30), max: 30, label: data.streak.current + ' days', sub: 'Streak' },
+    ];
+    rings.forEach(function(ring) {
+      var circ = 2 * Math.PI * ring.r;
+      var pct = ring.max > 0 ? Math.min(ring.val / ring.max, 1) : 0;
+      var bg = document.createElementNS(NS, 'circle');
+      bg.setAttribute('cx', 80); bg.setAttribute('cy', 80); bg.setAttribute('r', ring.r);
+      bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', ring.bg); bg.setAttribute('stroke-width', 9);
+      svg.appendChild(bg);
+      var fg = document.createElementNS(NS, 'circle');
+      fg.setAttribute('cx', 80); fg.setAttribute('cy', 80); fg.setAttribute('r', ring.r);
+      fg.setAttribute('fill', 'none'); fg.setAttribute('stroke', ring.color); fg.setAttribute('stroke-width', 9);
+      fg.setAttribute('stroke-dasharray', circ); fg.setAttribute('stroke-dashoffset', circ * (1 - pct));
+      fg.setAttribute('stroke-linecap', 'round'); fg.setAttribute('transform', 'rotate(-90 80 80)');
+      svg.appendChild(fg);
+    });
+    var t1 = document.createElementNS(NS, 'text');
+    t1.setAttribute('x', 80); t1.setAttribute('y', 76); t1.setAttribute('text-anchor', 'middle');
+    t1.setAttribute('font-family', 'Fredoka'); t1.setAttribute('font-weight', '700'); t1.setAttribute('font-size', '24'); t1.setAttribute('fill', '#2A2A3E');
+    t1.textContent = data.streak.current;
+    svg.appendChild(t1);
+    var t2 = document.createElementNS(NS, 'text');
+    t2.setAttribute('x', 80); t2.setAttribute('y', 90); t2.setAttribute('text-anchor', 'middle');
+    t2.setAttribute('font-family', 'Nunito'); t2.setAttribute('font-weight', '700'); t2.setAttribute('font-size', '8'); t2.setAttribute('fill', '#8a8472');
+    t2.textContent = 'DAY STREAK';
+    svg.appendChild(t2);
+
+    var legend = document.getElementById('rings-legend');
+    legend.innerHTML = '';
+    var colors = ['#FF6B6B', '#1FB8A8', '#5B3FE4'];
+    rings.reverse().forEach(function(ring, i) {
+      legend.innerHTML += '<div class="sv-rl-item"><div class="sv-rl-dot" style="background:' + colors[i] + ';"></div><div><div class="sv-rl-val" style="color:' + colors[i] + ';">' + ring.label + '</div><div class="sv-rl-lab">' + ring.sub + '</div></div></div>';
+    });
+  }
+
+  function drawFlamesView(data) {
+    var stack = document.getElementById('flames-stack');
+    stack.innerHTML = '';
+    var weekCount = data.weekDays.filter(Boolean).length;
+    var tiers = [
+      { icon: '🔥', val: data.streak.current + ' days', lab: 'Current daily streak', pct: Math.min(data.streak.current / 30, 1), cls: 'd', active: data.streak.current > 0 },
+      { icon: '🏆', val: weekCount + ' of ' + data.goal + ' days', lab: 'This week\'s practice', pct: data.goal > 0 ? Math.min(weekCount / data.goal, 1) : 0, cls: 'w', active: weekCount > 0 },
+      { icon: '👑', val: data.monthDays.practiced + ' of ' + data.monthDays.total + ' days', lab: 'This month\'s practice', pct: data.monthDays.total > 0 ? data.monthDays.practiced / data.monthDays.total : 0, cls: 'm', active: true },
+    ];
+    var tierColors = ['var(--coral-dk)', 'var(--teal-dk)', 'var(--grape)'];
+    tiers.forEach(function(t, i) {
+      var div = document.createElement('div');
+      div.className = 'sv-flame' + (t.active ? ' active' : '');
+      div.innerHTML = '<div class="sv-flame-icon">' + t.icon + '</div>' +
+        '<div class="sv-flame-body"><div class="sv-flame-val" style="color:' + tierColors[i] + ';">' + t.val + '</div>' +
+        '<div class="sv-flame-lab">' + t.lab + '</div>' +
+        '<div class="sv-flame-bar"><div class="sv-flame-fill ' + t.cls + '" style="width:' + Math.round(t.pct * 100) + '%;"></div></div></div>';
+      stack.appendChild(div);
+    });
+    if (data.streak.longest > data.streak.current) {
+      var best = document.createElement('div');
+      best.style.cssText = 'font-size:12px;font-weight:600;color:var(--ink-faint);text-align:center;margin-top:8px;';
+      best.textContent = 'Best streak ever: ' + data.streak.longest + ' days';
+      stack.appendChild(best);
+    }
   }
 
   function drawCalendar(dayMap) {
@@ -1053,9 +1328,9 @@
 
   function gatherShareData() {
     return {
-      streak: document.getElementById('hero-streak').textContent,
-      time: document.getElementById('hero-time').textContent,
-      mastered: document.getElementById('hero-mastered').textContent,
+      streak: document.getElementById('sv-streak') ? document.getElementById('sv-streak').textContent : '0',
+      time: document.getElementById('sv-time') ? document.getElementById('sv-time').textContent : '0',
+      mastered: document.getElementById('sv-mastered') ? document.getElementById('sv-mastered').textContent : '0',
       cards: document.querySelectorAll('.m-card'),
       date: new Date().toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
     };
