@@ -14,7 +14,7 @@
     --ink: #2A2A3E; --ink-soft: #5a5a6e; --ink-faint: #8a8472;
     --teal: #1FB8A8; --teal-dk: #0e8475; --teal-lt: #d3f1ec;
     --sun: #FFB627; --sun-dk: #c98800;
-    --grape: #5B3FE4; --grape-dk: #3d28a8;
+    --grape: #5B3FE4; --grape-dk: #3d28a8; --grape-lt: #ede8ff;
     --coral: #FF6B6B; --coral-dk: #c2453f;
     --shadow-cool: #d8d6cc;
     --bronze: #CD7F32; --silver: #A8A8B0; --gold: #E6B422;
@@ -146,6 +146,13 @@
 
   /* ── Mastery grid ── */
   .mastery-section { margin-bottom: 28px; }
+  .mastery-note {
+    background: var(--grape-lt); border: 2px solid var(--grape);
+    border-radius: 14px; padding: 11px 16px; margin: 4px 0 18px;
+    font-size: 13px; color: var(--grape-dk); line-height: 1.45;
+  }
+  .mastery-note b { font-family: 'Fredoka', sans-serif; font-weight: 600; }
+  .mastery-note .medal { font-weight: 700; white-space: nowrap; }
   .tier-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.2rem; margin: 24px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--shadow-cool); display: flex; align-items: baseline; gap: 10px; }
   .tier-head:first-child { margin-top: 0; }
   .tier-head .tier-count { font-family: 'Nunito'; font-weight: 700; font-size: 13px; color: var(--ink-faint); }
@@ -1176,14 +1183,17 @@
     var section = document.getElementById('mastery-section');
     var sectionHead = document.createElement('div');
     sectionHead.className = 'section-head';
-    sectionHead.innerHTML = '<span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:1.3rem;">Module mastery</span>' +
-      '<div style="font-size:0.82rem;font-weight:600;color:var(--ink-soft);margin-top:3px;line-height:1.45;">' +
-      'Clear a level by scoring 85%+ accuracy in 2 rounds. Your medal shows the hardest level you’ve cleared — ' +
-      '<span style="color:var(--bronze);">● Bronze</span> (Easy) · ' +
-      '<span style="color:var(--silver);">● Silver</span> (Medium) · ' +
-      '<span style="color:var(--gold);">● Gold</span> (Tricky).' +
-      '</div>';
+    sectionHead.innerHTML = '<span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:1.3rem;">Module mastery</span>';
     section.appendChild(sectionHead);
+
+    var note = document.createElement('div');
+    note.className = 'mastery-note';
+    note.innerHTML = '<b>Earn a medal by mastering each level.</b> ' +
+      'Clear a level by scoring 85%+ accuracy in 2 rounds — your medal shows the hardest level you’ve cleared: ' +
+      '<span class="medal" style="color:var(--bronze);">Bronze</span> (Easy), ' +
+      '<span class="medal" style="color:var(--silver);">Silver</span> (Medium), ' +
+      '<span class="medal" style="color:var(--gold);">Gold</span> (Tricky).';
+    section.appendChild(note);
 
     Object.keys(ROSTER).forEach(function(tierName) {
       var slugs = ROSTER[tierName];
