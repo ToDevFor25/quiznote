@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Streak Visualization — Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2A2A3E; --ink-soft: #5a5a6e; --ink-faint: #8a8472;
+    --teal: #1FB8A8; --teal-dk: #0e8475; --teal-lt: #d3f1ec;
+    --sun: #FFB627; --sun-dk: #c98800;
+    --grape: #5B3FE4; --coral: #FF6B6B; --coral-dk: #c2453f;
+    --gold: #E6B422;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #e8e6e0; color: var(--ink); padding: 20px; }
+
+  h2.label { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 700; color: var(--grape); text-align: center; margin: 48px auto 6px; max-width: 700px; }
+  .desc { text-align: center; color: var(--ink-soft); font-size: 13px; font-weight: 600; margin-bottom: 20px; max-width: 550px; margin-left: auto; margin-right: auto; }
+
+  .card { background: white; border: 2px solid var(--ink); border-radius: 18px; box-shadow: 0 4px 0 #d8d6cc; padding: 24px; max-width: 420px; margin: 0 auto 40px; }
+
+  /* ════════════════════════════════════════ */
+  /* A — CONCENTRIC RINGS (Apple Watch)      */
+  /* ════════════════════════════════════════ */
+  .rings-wrap { display: flex; align-items: center; gap: 24px; }
+  .rings-svg { width: 160px; height: 160px; flex-shrink: 0; }
+  .rings-legend { display: flex; flex-direction: column; gap: 12px; }
+  .ring-stat { display: flex; align-items: center; gap: 10px; }
+  .ring-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .ring-dot.daily { background: var(--coral); }
+  .ring-dot.weekly { background: var(--teal); }
+  .ring-dot.monthly { background: var(--grape); }
+  .ring-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; }
+  .ring-val.daily { color: var(--coral-dk); }
+  .ring-val.weekly { color: var(--teal-dk); }
+  .ring-val.monthly { color: var(--grape); }
+  .ring-lab { font-size: 11px; font-weight: 700; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ════════════════════════════════════════ */
+  /* B — FLAME LADDER                        */
+  /* ════════════════════════════════════════ */
+  .flame-wrap { text-align: center; }
+  .flame-stack { display: flex; flex-direction: column; align-items: center; gap: 0; margin-bottom: 16px; }
+  .flame-tier {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 20px; border-radius: 14px; width: 100%;
+    transition: background 200ms;
+  }
+  .flame-tier.active { background: rgba(255,107,107,0.06); }
+  .flame-tier + .flame-tier { margin-top: 4px; }
+  .flame-icon { font-size: 28px; flex-shrink: 0; width: 40px; text-align: center; }
+  .flame-icon.dim { opacity: 0.25; filter: grayscale(1); }
+  .flame-body { flex: 1; text-align: left; }
+  .flame-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 20px; }
+  .flame-lab { font-size: 11px; font-weight: 600; color: var(--ink-faint); }
+  .flame-bar { height: 6px; border-radius: 999px; background: #f0ede4; overflow: hidden; margin-top: 4px; }
+  .flame-bar-fill { height: 100%; border-radius: 999px; }
+  .flame-bar-fill.d { background: linear-gradient(90deg, var(--coral), #ff9a6b); }
+  .flame-bar-fill.w { background: linear-gradient(90deg, var(--teal), #34d4c2); }
+  .flame-bar-fill.m { background: linear-gradient(90deg, var(--grape), #7b5ff5); }
+
+  .flame-best { font-size: 12px; font-weight: 600; color: var(--ink-faint); }
+
+  /* ════════════════════════════════════════ */
+  /* C — CALENDAR HEAT + STAT CARDS          */
+  /* ════════════════════════════════════════ */
+  .heat-layout { display: flex; gap: 16px; }
+  .heat-left { flex: 1; }
+  .heat-right { flex: 0 0 140px; display: flex; flex-direction: column; gap: 8px; }
+
+  .heat-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .heat-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+  .heat-cell { aspect-ratio: 1; border-radius: 4px; background: #f0ede4; }
+  .heat-cell.l1 { background: #c8ece7; }
+  .heat-cell.l2 { background: #7fd6cb; }
+  .heat-cell.l3 { background: var(--teal); }
+  .heat-cell.today { outline: 2px solid var(--ink); outline-offset: -1px; }
+
+  .streak-stat-card {
+    background: #faf8f3; border: 1.5px solid #eee; border-radius: 12px;
+    padding: 10px; text-align: center;
+  }
+  .ssc-icon { font-size: 18px; }
+  .ssc-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1; }
+  .ssc-lab { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .ssc-val.fire { color: var(--coral-dk); }
+  .ssc-val.teal { color: var(--teal-dk); }
+  .ssc-val.grape { color: var(--grape); }
+
+  .heat-sub { font-size: 11px; font-weight: 600; color: var(--ink-faint); margin-top: 10px; }
+
+  .heat-week-row { display: flex; align-items: center; gap: 4px; margin-top: 10px; }
+  .heat-week-dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+  .heat-week-dot.done { background: var(--teal); color: white; }
+  .heat-week-dot.empty { background: #f0ede4; color: var(--ink-faint); }
+  .heat-week-dot.today-dot { outline: 2px solid var(--ink); }
+  .heat-week-label { font-size: 10px; font-weight: 700; color: var(--ink-faint); margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════ -->
+<h2 class="label">A — Concentric Rings (Apple Watch style)</h2>
+<p class="desc">Three rings: daily streak (inner/red), weekly consistency (middle/teal), monthly total (outer/purple). Each fills toward its goal. Premium, visual, works on all surfaces.</p>
+
+<div class="card">
+  <div class="rings-wrap">
+    <svg class="rings-svg" viewBox="0 0 160 160">
+      <!-- Monthly ring (outer) -->
+      <circle cx="80" cy="80" r="72" fill="none" stroke="#ede8ff" stroke-width="10"/>
+      <circle cx="80" cy="80" r="72" fill="none" stroke="#5B3FE4" stroke-width="10"
+              stroke-dasharray="452.4" stroke-dashoffset="135.7"
+              stroke-linecap="round" transform="rotate(-90 80 80)"/>
+      <!-- Weekly ring (middle) -->
+      <circle cx="80" cy="80" r="56" fill="none" stroke="#d3f1ec" stroke-width="10"/>
+      <circle cx="80" cy="80" r="56" fill="none" stroke="#1FB8A8" stroke-width="10"
+              stroke-dasharray="351.9" stroke-dashoffset="50.3"
+              stroke-linecap="round" transform="rotate(-90 80 80)"/>
+      <!-- Daily ring (inner) -->
+      <circle cx="80" cy="80" r="40" fill="none" stroke="#ffe0e0" stroke-width="10"/>
+      <circle cx="80" cy="80" r="40" fill="none" stroke="#FF6B6B" stroke-width="10"
+              stroke-dasharray="251.3" stroke-dashoffset="0"
+              stroke-linecap="round" transform="rotate(-90 80 80)"/>
+      <!-- Center text -->
+      <text x="80" y="74" text-anchor="middle" font-family="Fredoka" font-weight="700" font-size="28" fill="#2A2A3E">14</text>
+      <text x="80" y="92" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="10" fill="#8a8472" letter-spacing="0.08em">DAY STREAK</text>
+    </svg>
+    <div class="rings-legend">
+      <div class="ring-stat">
+        <div class="ring-dot daily"></div>
+        <div>
+          <div class="ring-val daily">14 days</div>
+          <div class="ring-lab">Current streak</div>
+        </div>
+      </div>
+      <div class="ring-stat">
+        <div class="ring-dot weekly"></div>
+        <div>
+          <div class="ring-val weekly">6 / 7 days</div>
+          <div class="ring-lab">This week</div>
+        </div>
+      </div>
+      <div class="ring-stat">
+        <div class="ring-dot monthly"></div>
+        <div>
+          <div class="ring-val monthly">22 / 28 days</div>
+          <div class="ring-lab">This month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<h2 class="label">B — Flame Ladder</h2>
+<p class="desc">Three tiers stacked. Each tier has a progress bar showing how far toward the goal. Flames grow — daily at the base, weekly crown, monthly halo. Gamified.</p>
+
+<div class="card">
+  <div class="flame-wrap">
+    <div class="flame-stack">
+      <div class="flame-tier active">
+        <div class="flame-icon">🔥</div>
+        <div class="flame-body">
+          <div class="flame-val" style="color:var(--coral-dk);">14 days</div>
+          <div class="flame-lab">Current daily streak</div>
+          <div class="flame-bar"><div class="flame-bar-fill d" style="width:100%;"></div></div>
+        </div>
+      </div>
+      <div class="flame-tier active">
+        <div class="flame-icon">🏆</div>
+        <div class="flame-body">
+          <div class="flame-val" style="color:var(--teal-dk);">6 of 7 days</div>
+          <div class="flame-lab">This week's practice</div>
+          <div class="flame-bar"><div class="flame-bar-fill w" style="width:86%;"></div></div>
+        </div>
+      </div>
+      <div class="flame-tier">
+        <div class="flame-icon">👑</div>
+        <div class="flame-body">
+          <div class="flame-val" style="color:var(--grape);">22 of 28 days</div>
+          <div class="flame-lab">This month's practice</div>
+          <div class="flame-bar"><div class="flame-bar-fill m" style="width:79%;"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="flame-best">Best streak ever: 21 days</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+<h2 class="label">C — Calendar Heat + Stat Cards</h2>
+<p class="desc">Keep the 5-week calendar but pair it with daily/weekly/monthly stat cards on the right. This week shown as dot circles below the calendar. Information-dense, teacher-friendly.</p>
+
+<div class="card">
+  <div class="heat-layout">
+    <div class="heat-left">
+      <div class="heat-grid">
+        <div class="heat-lbl">M</div><div class="heat-lbl">T</div><div class="heat-lbl">W</div><div class="heat-lbl">T</div><div class="heat-lbl">F</div><div class="heat-lbl">S</div><div class="heat-lbl">S</div>
+        <div class="heat-cell l1"></div><div class="heat-cell"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l3"></div><div class="heat-cell"></div><div class="heat-cell l1"></div>
+        <div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell"></div><div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell"></div>
+        <div class="heat-cell"></div><div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l3"></div><div class="heat-cell l2"></div><div class="heat-cell l1"></div>
+        <div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell l3"></div><div class="heat-cell l1"></div><div class="heat-cell l2"></div><div class="heat-cell"></div><div class="heat-cell l1"></div>
+        <div class="heat-cell l2"></div><div class="heat-cell l1"></div><div class="heat-cell l3 today"></div><div class="heat-cell"></div><div class="heat-cell"></div><div class="heat-cell"></div><div class="heat-cell"></div>
+      </div>
+      <div class="heat-week-row">
+        <div class="heat-week-dot done">✓</div>
+        <div class="heat-week-dot done">✓</div>
+        <div class="heat-week-dot done today-dot">✓</div>
+        <div class="heat-week-dot empty">T</div>
+        <div class="heat-week-dot empty">F</div>
+        <div class="heat-week-dot empty">S</div>
+        <div class="heat-week-dot empty">S</div>
+        <div class="heat-week-label">This week: 3 of 7</div>
+      </div>
+      <div class="heat-sub">22 of 28 days practiced this month</div>
+    </div>
+    <div class="heat-right">
+      <div class="streak-stat-card">
+        <div class="ssc-icon">🔥</div>
+        <div class="ssc-val fire">14</div>
+        <div class="ssc-lab">Day streak</div>
+      </div>
+      <div class="streak-stat-card">
+        <div class="ssc-icon">📅</div>
+        <div class="ssc-val teal">6/7</div>
+        <div class="ssc-lab">This week</div>
+      </div>
+      <div class="streak-stat-card">
+        <div class="ssc-icon">📊</div>
+        <div class="ssc-val grape">79%</div>
+        <div class="ssc-lab">Monthly rate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
