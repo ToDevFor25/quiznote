@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Notes PDF — One Page Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #2A2A3E; --ink-soft: #5a5a6e; --ink-faint: #8a8472;
+    --teal: #1FB8A8; --teal-dk: #0e8475;
+    --sun: #FFB627; --grape: #5B3FE4; --coral: #FF6B6B; --coral-dk: #c2453f;
+    --bronze: #CD7F32; --silver: #A8A8B0; --gold: #E6B422;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Nunito', sans-serif; background: #ddd; color: var(--ink); padding: 20px; }
+
+  h2.label { font-family: 'Fredoka', sans-serif; font-size: 20px; font-weight: 700; color: var(--grape); text-align: center; margin: 40px auto 8px; max-width: 900px; }
+  .desc { text-align: center; color: var(--ink-soft); font-size: 13px; font-weight: 600; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* ── Shared page frame ── */
+  .page {
+    width: 8.5in; height: 11in; background: white;
+    margin: 0 auto 40px; box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    overflow: hidden; position: relative;
+  }
+
+  /* ════════════════════════════════════════════ */
+  /* OPTION A — Stats top, mastery as dot grid   */
+  /* ════════════════════════════════════════════ */
+  .pa { padding: 0.45in 0.6in; display: flex; flex-direction: column; height: 100%; }
+
+  .pa-head { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 2.5px solid var(--teal); }
+  .pa-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; }
+  .pa-brand { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 12px; color: var(--ink-soft); text-align: right; }
+  .pa-brand span { color: var(--teal); }
+  .pa-meta { font-size: 11px; color: var(--ink-faint); font-weight: 600; }
+
+  .pa-stats { display: flex; gap: 12px; margin-bottom: 16px; }
+  .pa-stat { flex: 1; background: #faf8f3; border: 1px solid #eee; border-radius: 10px; padding: 12px 8px; text-align: center; }
+  .pa-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 28px; line-height: 1.1; }
+  .pa-stat-lab { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); }
+  .pa-stat:nth-child(1) .pa-stat-val { color: var(--coral-dk); }
+  .pa-stat:nth-child(2) .pa-stat-val { color: var(--grape); }
+  .pa-stat:nth-child(3) .pa-stat-val { color: var(--gold); }
+
+  .pa-mid { display: flex; gap: 20px; margin-bottom: 16px; }
+  .pa-mid-left, .pa-mid-right { flex: 1; }
+
+  .pa-sh { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 6px; color: var(--ink); }
+
+  .pa-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; max-width: 190px; }
+  .pa-cl { font-size: 7px; font-weight: 700; text-transform: uppercase; color: var(--ink-faint); text-align: center; }
+  .pa-cc { aspect-ratio: 1; border-radius: 2px; background: #f0ede4; }
+  .pa-cc.a { background: #c8ece7; } .pa-cc.b { background: #7fd6cb; } .pa-cc.c { background: var(--teal); }
+  .pa-cc.p { background: var(--sun); }
+
+  .pa-focus { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+  .pa-fr { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f5f2ea; }
+  .pa-fr:last-child { border-bottom: none; }
+  .pa-fv { font-family: 'Fredoka', sans-serif; font-weight: 700; color: var(--coral-dk); }
+
+  /* Mastery as dot rows */
+  .pa-mastery { flex: 1; }
+  .pa-tier { margin-bottom: 10px; }
+  .pa-tier-head { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .pa-tier-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 11px; }
+  .pa-tier-count { font-size: 10px; font-weight: 600; color: var(--ink-faint); }
+  .pa-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+  .pa-dot-wrap { display: flex; align-items: center; gap: 3px; margin-right: 6px; }
+  .pa-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #ddd; }
+  .pa-dot.gold { border-color: var(--gold); background: rgba(230,180,34,0.2); }
+  .pa-dot.silver { border-color: var(--silver); background: rgba(168,168,176,0.15); }
+  .pa-dot.bronze { border-color: var(--bronze); background: rgba(205,127,50,0.15); }
+  .pa-dot.started { border-color: var(--teal); }
+  .pa-dot-name { font-size: 8px; font-weight: 600; color: var(--ink-soft); }
+
+  .pa-foot { text-align: center; font-size: 9px; color: var(--ink-faint); font-weight: 600; border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; }
+
+  /* ════════════════════════════════════════════ */
+  /* OPTION B — Two-column, progress bars        */
+  /* ════════════════════════════════════════════ */
+  .pb { padding: 0.45in 0.6in; display: flex; flex-direction: column; height: 100%; }
+
+  .pb-head { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 2.5px solid var(--teal); }
+  .pb-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px; }
+
+  .pb-stats { display: flex; gap: 24px; margin-bottom: 18px; }
+  .pb-stat { display: flex; align-items: center; gap: 8px; }
+  .pb-stat-icon { font-size: 20px; }
+  .pb-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 24px; }
+  .pb-stat-lab { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .pb-stat:nth-child(1) .pb-stat-val { color: var(--coral-dk); }
+  .pb-stat:nth-child(2) .pb-stat-val { color: var(--grape); }
+  .pb-stat:nth-child(3) .pb-stat-val { color: var(--gold); }
+
+  .pb-cols { display: flex; gap: 28px; flex: 1; }
+  .pb-col { flex: 1; }
+
+  .pb-sh { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #eee; }
+
+  .pb-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; max-width: 200px; margin-bottom: 16px; }
+
+  .pb-bar-section { margin-bottom: 14px; }
+  .pb-bar-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 11px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .pb-bar-count { font-family: 'Nunito'; font-weight: 700; color: var(--ink-faint); font-size: 10px; }
+  .pb-bar { height: 12px; background: #f0ede4; border-radius: 999px; overflow: hidden; margin-bottom: 2px; }
+  .pb-bar-fill { height: 100%; border-radius: 999px; }
+  .pb-bar-fill.f { background: var(--teal); }
+  .pb-bar-fill.r { background: var(--grape); }
+  .pb-bar-fill.t { background: var(--sun); }
+
+  .pb-mods { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 10px; }
+  .pb-mod { font-size: 8px; font-weight: 600; color: var(--ink-soft); padding: 2px 5px; border-radius: 4px; background: #faf8f3; border: 1px solid #eee; display: flex; align-items: center; gap: 3px; }
+  .pb-mod-dot { width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid #ddd; }
+  .pb-mod-dot.gold { border-color: var(--gold); background: rgba(230,180,34,0.25); }
+  .pb-mod-dot.silver { border-color: var(--silver); background: rgba(168,168,176,0.2); }
+  .pb-mod-dot.bronze { border-color: var(--bronze); background: rgba(205,127,50,0.2); }
+  .pb-mod-dot.started { border-color: var(--teal); }
+
+  .pb-focus-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--ink-soft); padding: 4px 0; border-bottom: 1px solid #f5f2ea; }
+  .pb-focus-row:last-child { border-bottom: none; }
+
+  .pb-foot { text-align: center; font-size: 9px; color: var(--ink-faint); font-weight: 600; border-top: 1px solid #eee; padding-top: 8px; margin-top: auto; }
+
+  /* ════════════════════════════════════════════ */
+  /* OPTION C — Minimal, no individual modules   */
+  /* ════════════════════════════════════════════ */
+  .pc { padding: 0.5in 0.65in; display: flex; flex-direction: column; height: 100%; }
+
+  .pc-head { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 3px solid var(--teal); }
+  .pc-title { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 28px; }
+
+  .pc-hero { display: flex; gap: 0; margin-bottom: 24px; border: 1.5px solid #eee; border-radius: 14px; overflow: hidden; }
+  .pc-stat { flex: 1; text-align: center; padding: 20px 12px; border-right: 1px solid #eee; }
+  .pc-stat:last-child { border-right: none; }
+  .pc-stat-icon { font-size: 24px; }
+  .pc-stat-val { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 36px; line-height: 1.1; }
+  .pc-stat-lab { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); margin-top: 2px; }
+  .pc-stat:nth-child(1) .pc-stat-val { color: var(--coral-dk); }
+  .pc-stat:nth-child(2) .pc-stat-val { color: var(--grape); }
+  .pc-stat:nth-child(3) .pc-stat-val { color: var(--gold); }
+
+  .pc-bars { margin-bottom: 24px; }
+  .pc-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .pc-bar-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; width: 110px; text-align: right; }
+  .pc-bar { flex: 1; height: 22px; background: #f0ede4; border-radius: 999px; overflow: hidden; position: relative; }
+  .pc-bar-fill { height: 100%; border-radius: 999px; transition: width 600ms; }
+  .pc-bar-row:nth-child(1) .pc-bar-fill { background: linear-gradient(90deg, var(--teal), #34d4c2); }
+  .pc-bar-row:nth-child(2) .pc-bar-fill { background: linear-gradient(90deg, var(--grape), #7b5ff5); }
+  .pc-bar-row:nth-child(3) .pc-bar-fill { background: linear-gradient(90deg, var(--sun), #ffc94d); }
+  .pc-bar-label { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink-soft); width: 40px; }
+
+  .pc-mid { display: flex; gap: 24px; margin-bottom: 24px; flex: 1; }
+  .pc-mid > div { flex: 1; }
+  .pc-sh { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #eee; }
+  .pc-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; max-width: 220px; }
+
+  .pc-focus-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--ink-soft); padding: 5px 0; border-bottom: 1px solid #f5f2ea; }
+  .pc-focus-row:last-child { border-bottom: none; }
+
+  .pc-foot { text-align: center; font-size: 10px; color: var(--ink-faint); font-weight: 600; border-top: 1px solid #eee; padding-top: 10px; margin-top: auto; }
+</style>
+</head>
+<body>
+
+<h2 class="label">Option A — Dot Grid Mastery</h2>
+<p class="desc">Compact. Shows every module as a small dot with a name. Fits because dots are tiny.</p>
+
+<div class="page">
+  <div class="pa">
+    <div class="pa-head">
+      <div><div class="pa-title">Practice Notes</div><div class="pa-meta">Emma · May 28, 2026</div></div>
+      <div><div class="pa-brand">by Quiz<span>Note</span></div><div class="pa-meta">quiznote.online</div></div>
+    </div>
+
+    <div class="pa-stats">
+      <div class="pa-stat"><div class="pa-stat-val">14</div><div class="pa-stat-lab">🔥 Day streak</div></div>
+      <div class="pa-stat"><div class="pa-stat-val">4h 23m</div><div class="pa-stat-lab">⏱ Practice time</div></div>
+      <div class="pa-stat"><div class="pa-stat-val">12 / 32</div><div class="pa-stat-lab">★ Mastered</div></div>
+    </div>
+
+    <div class="pa-mid">
+      <div class="pa-mid-left">
+        <div class="pa-sh">Practice calendar</div>
+        <div class="pa-cal">
+          <div class="pa-cl">M</div><div class="pa-cl">T</div><div class="pa-cl">W</div><div class="pa-cl">T</div><div class="pa-cl">F</div><div class="pa-cl">S</div><div class="pa-cl">S</div>
+          <div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc c"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+          <div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc"></div>
+          <div class="pa-cc"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div>
+          <div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc c"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+        </div>
+      </div>
+      <div class="pa-mid-right">
+        <div class="pa-sh">Focus areas</div>
+        <div class="pa-focus">
+          <div class="pa-fr"><span>Key Signatures</span><span class="pa-fv">62%</span></div>
+          <div class="pa-fr"><span>Intervals (quality)</span><span class="pa-fv">71%</span></div>
+          <div class="pa-fr"><span>Time Sigs (top)</span><span class="pa-fv">75%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pa-mastery">
+      <div class="pa-sh">Module mastery</div>
+      <div class="pa-tier">
+        <div class="pa-tier-head"><span class="pa-tier-name">Foundations</span><span class="pa-tier-count">7/14 mastered</span></div>
+        <div class="pa-dots">
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Note Names</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Ledger Lines</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Piano Quiz</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Keys</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Note Values</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot bronze"></div><div class="pa-dot-name">Dots/Ties</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Ear: Rhythm</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Time Sigs</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Accidentals</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Tempo</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot bronze"></div><div class="pa-dot-name">Dynamics</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot started"></div><div class="pa-dot-name">Articulation</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Score Nav</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Ornaments</div></div>
+        </div>
+      </div>
+      <div class="pa-tier">
+        <div class="pa-tier-head"><span class="pa-tier-name">Reading</span><span class="pa-tier-count">3/8 mastered</span></div>
+        <div class="pa-dots">
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Key Sigs</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Scales</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Degrees</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot bronze"></div><div class="pa-dot-name">Modes</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Intervals</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Ear: Int.</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot bronze"></div><div class="pa-dot-name">Ear: Scales</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Chromatic</div></div>
+        </div>
+      </div>
+      <div class="pa-tier">
+        <div class="pa-tier-head"><span class="pa-tier-name">Theory</span><span class="pa-tier-count">2/10 mastered</span></div>
+        <div class="pa-dots">
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Primary</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot gold"></div><div class="pa-dot-name">Roman Num.</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot silver"></div><div class="pa-dot-name">Triads</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot bronze"></div><div class="pa-dot-name">Inversions</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">7ths</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Progs</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Cadences</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Ear: Ch.</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Ear: Cad.</div></div>
+          <div class="pa-dot-wrap"><div class="pa-dot"></div><div class="pa-dot-name">Ear: Prog.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pa-foot">Practice Notes by QuizNote · quiznote.online · Progress is saved on the learner's device.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+
+<h2 class="label">Option B — Two Column with Progress Bars</h2>
+<p class="desc">Left column: calendar + modules. Right column: progress bars + focus areas. Dense but organized.</p>
+
+<div class="page">
+  <div class="pb">
+    <div class="pb-head">
+      <div><div class="pb-title">Practice Notes</div><div class="pa-meta">Emma · May 28, 2026</div></div>
+      <div><div class="pa-brand">by Quiz<span>Note</span></div><div class="pa-meta">quiznote.online</div></div>
+    </div>
+
+    <div class="pb-stats">
+      <div class="pb-stat"><div class="pb-stat-icon">🔥</div><div><div class="pb-stat-val">14</div><div class="pb-stat-lab">Day streak</div></div></div>
+      <div class="pb-stat"><div class="pb-stat-icon">⏱</div><div><div class="pb-stat-val">4h 23m</div><div class="pb-stat-lab">Practice time</div></div></div>
+      <div class="pb-stat"><div class="pb-stat-icon">★</div><div><div class="pb-stat-val">12/32</div><div class="pb-stat-lab">Mastered</div></div></div>
+    </div>
+
+    <div class="pb-cols">
+      <div class="pb-col">
+        <div class="pb-sh">Practice calendar</div>
+        <div class="pb-cal">
+          <div class="pa-cl">M</div><div class="pa-cl">T</div><div class="pa-cl">W</div><div class="pa-cl">T</div><div class="pa-cl">F</div><div class="pa-cl">S</div><div class="pa-cl">S</div>
+          <div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc c"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+          <div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc"></div>
+          <div class="pa-cc"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div>
+          <div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc c"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+        </div>
+
+        <div class="pb-sh">Modules</div>
+        <div class="pb-bar-section">
+          <div class="pb-bar-head"><span>Foundations</span><span class="pb-bar-count">7/14</span></div>
+          <div class="pb-bar"><div class="pb-bar-fill f" style="width:50%;"></div></div>
+          <div class="pb-mods">
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Note Names</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Ledger</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Piano Q</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Keys</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Values</div>
+            <div class="pb-mod"><div class="pb-mod-dot bronze"></div>Dots</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Ear: Rhy</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Time</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Acc</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Tempo</div>
+            <div class="pb-mod"><div class="pb-mod-dot bronze"></div>Dyn</div>
+            <div class="pb-mod"><div class="pb-mod-dot started"></div>Artic</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>Nav</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Orn</div>
+          </div>
+        </div>
+        <div class="pb-bar-section">
+          <div class="pb-bar-head"><span>Reading</span><span class="pb-bar-count">3/8</span></div>
+          <div class="pb-bar"><div class="pb-bar-fill r" style="width:37%;"></div></div>
+          <div class="pb-mods">
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Key Sig</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Scales</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Deg</div>
+            <div class="pb-mod"><div class="pb-mod-dot bronze"></div>Modes</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Int</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Ear:Int</div>
+            <div class="pb-mod"><div class="pb-mod-dot bronze"></div>Ear:Sc</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>Chrom</div>
+          </div>
+        </div>
+        <div class="pb-bar-section">
+          <div class="pb-bar-head"><span>Theory</span><span class="pb-bar-count">2/10</span></div>
+          <div class="pb-bar"><div class="pb-bar-fill t" style="width:20%;"></div></div>
+          <div class="pb-mods">
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Prim</div>
+            <div class="pb-mod"><div class="pb-mod-dot gold"></div>Rom</div>
+            <div class="pb-mod"><div class="pb-mod-dot silver"></div>Tri</div>
+            <div class="pb-mod"><div class="pb-mod-dot bronze"></div>Inv</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>7th</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>Prog</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>Cad</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>E:Ch</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>E:Cd</div>
+            <div class="pb-mod"><div class="pb-mod-dot"></div>E:Pr</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pb-col">
+        <div class="pb-sh">Focus areas</div>
+        <div class="pb-focus-row"><span>Key Signatures</span><span class="pa-fv">62%</span></div>
+        <div class="pb-focus-row"><span>Intervals (quality)</span><span class="pa-fv">71%</span></div>
+        <div class="pb-focus-row"><span>Time Sigs (top)</span><span class="pa-fv">75%</span></div>
+        <div style="font-size:10px;color:var(--ink-faint);font-weight:600;margin-top:8px;line-height:1.5;">These areas need more practice. QuizNote's learning path drills them automatically.</div>
+      </div>
+    </div>
+
+    <div class="pb-foot">Practice Notes by QuizNote · quiznote.online · Progress is saved on the learner's device.</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+
+<h2 class="label">Option C — Minimal (no individual modules)</h2>
+<p class="desc">Cleanest. Three big progress bars + calendar + focus areas. No 32-module list at all. One glance.</p>
+
+<div class="page">
+  <div class="pc">
+    <div class="pc-head">
+      <div><div class="pc-title">Practice Notes</div><div class="pa-meta">Emma · May 28, 2026</div></div>
+      <div><div class="pa-brand">by Quiz<span>Note</span></div><div class="pa-meta">quiznote.online</div></div>
+    </div>
+
+    <div class="pc-hero">
+      <div class="pc-stat"><div class="pc-stat-icon">🔥</div><div class="pc-stat-val">14</div><div class="pc-stat-lab">Day streak</div></div>
+      <div class="pc-stat"><div class="pc-stat-icon">⏱</div><div class="pc-stat-val">4h 23m</div><div class="pc-stat-lab">Practice time</div></div>
+      <div class="pc-stat"><div class="pc-stat-icon">★</div><div class="pc-stat-val">12 / 32</div><div class="pc-stat-lab">Mastered</div></div>
+    </div>
+
+    <div class="pc-bars">
+      <div class="pc-bar-row"><div class="pc-bar-name">Foundations</div><div class="pc-bar"><div class="pc-bar-fill" style="width:50%;"></div></div><div class="pc-bar-label">7/14</div></div>
+      <div class="pc-bar-row"><div class="pc-bar-name">Reading</div><div class="pc-bar"><div class="pc-bar-fill" style="width:37%;"></div></div><div class="pc-bar-label">3/8</div></div>
+      <div class="pc-bar-row"><div class="pc-bar-name">Theory</div><div class="pc-bar"><div class="pc-bar-fill" style="width:20%;"></div></div><div class="pc-bar-label">2/10</div></div>
+    </div>
+
+    <div class="pc-mid">
+      <div>
+        <div class="pc-sh">Practice calendar</div>
+        <div class="pc-cal">
+          <div class="pa-cl">M</div><div class="pa-cl">T</div><div class="pa-cl">W</div><div class="pa-cl">T</div><div class="pa-cl">F</div><div class="pa-cl">S</div><div class="pa-cl">S</div>
+          <div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc c"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+          <div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div><div class="pa-cc"></div>
+          <div class="pa-cc"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc p"></div>
+          <div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc c"></div><div class="pa-cc a"></div><div class="pa-cc b"></div><div class="pa-cc"></div><div class="pa-cc a"></div>
+          <div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc c"></div><div class="pa-cc b"></div><div class="pa-cc a"></div><div class="pa-cc"></div><div class="pa-cc"></div>
+        </div>
+      </div>
+      <div>
+        <div class="pc-sh">Focus areas</div>
+        <div class="pc-focus-row"><span>Key Signatures</span><span class="pa-fv">62%</span></div>
+        <div class="pc-focus-row"><span>Intervals (quality)</span><span class="pa-fv">71%</span></div>
+        <div class="pc-focus-row"><span>Time Sigs (top)</span><span class="pa-fv">75%</span></div>
+        <div style="font-size:11px;color:var(--ink-faint);font-weight:600;margin-top:12px;line-height:1.5;">QuizNote's learning path automatically drills these areas.</div>
+      </div>
+    </div>
+
+    <div class="pc-foot">Practice Notes by QuizNote · quiznote.online · Progress is saved on the learner's device.</div>
+  </div>
+</div>
+
+</body>
+</html>
