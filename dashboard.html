@@ -138,6 +138,25 @@
     animation: goldShimmer 3s ease-in-out infinite;
   }
 
+  /* ── Collapsible tier sections ── */
+  .tier-head { cursor: pointer; user-select: none; transition: background 100ms; margin: 0 -4px; padding: 12px 4px; border-radius: 8px; }
+  .tier-head:hover { background: rgba(31,184,168,0.04); }
+  .tier-caret { font-size: 14px; color: var(--ink-faint); transition: transform 200ms; display: inline-block; margin-right: 4px; }
+  .tier-head.collapsed .tier-caret { transform: rotate(-90deg); }
+  .tier-head.collapsed + .mastery-grid { max-height: 0; overflow: hidden; opacity: 0; margin: 0; transition: max-height 250ms ease, opacity 150ms, margin 250ms; }
+  .mastery-grid { max-height: 2000px; opacity: 1; transition: max-height 300ms ease, opacity 200ms; }
+
+  /* ── Up next tiles ── */
+  .upnext-card { margin-bottom: 24px; }
+  .upnext-card .section-head { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 12px; }
+  .upnext-tiles { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+  .upnext-tile { flex: 0 0 auto; min-width: 140px; padding: 14px 16px; cursor: pointer; transition: transform 100ms; text-align: center; }
+  .upnext-tile:hover { transform: translateY(-1px); }
+  .upnext-tile:active { transform: translateY(1px); }
+  .upnext-tile .up-name { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .upnext-tile .up-tier { font-size: 12px; font-weight: 600; color: var(--ink-faint); }
+  .upnext-tile .up-dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 auto 8px; }
+
   /* ── Next step card ── */
   .next-card { margin-bottom: 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; transition: transform 100ms; }
   .next-card:hover { transform: translateY(-1px); }
@@ -213,6 +232,12 @@
         <div class="next-reason" id="next-reason"></div>
       </div>
       <button class="next-go" id="next-go">Practice →</button>
+    </div>
+
+    <!-- Up next on your path -->
+    <div class="card upnext-card" id="upnext-card" hidden>
+      <div class="section-head">Up next on your path</div>
+      <div class="upnext-tiles" id="upnext-tiles"></div>
     </div>
 
     <!-- Hero stats -->
@@ -510,7 +535,7 @@
     playChime(659, 0.3);
     playChime(784, 0.5);
 
-    // Next step recommendation
+    // Next step recommendation + up next tiles
     if (QN.recommend && QN.recommend.next) {
       try {
         var rec = QN.recommend.next(active.id);
@@ -527,6 +552,34 @@
             if (e.target.id !== 'next-go') window.location.href = rec.module + '.html';
           });
           show('next-card');
+
+          // Up next: show the next 3-4 modules after the recommendation on the path
+          var allPath = [];
+          Object.keys(ROSTER).forEach(function(t) { ROSTER[t].forEach(function(s) { allPath.push(s); }); });
+          var recIdx = allPath.indexOf(rec.module);
+          if (recIdx >= 0) {
+            var upcoming = [];
+            for (var ui = recIdx + 1; ui < allPath.length && upcoming.length < 4; ui++) {
+              if (mastery[allPath[ui]] && mastery[allPath[ui]].level !== 'gold') {
+                upcoming.push(allPath[ui]);
+              }
+            }
+            if (upcoming.length > 0) {
+              var upTiles = document.getElementById('upnext-tiles');
+              upcoming.forEach(function(slug) {
+                var meta = metaFor(slug);
+                var tile = document.createElement('div');
+                tile.className = 'card upnext-tile';
+                var dotColor = COLOR_HEX[meta.color] || COLOR_HEX.teal;
+                tile.innerHTML = '<div class="up-dot" style="background:' + dotColor + ';"></div>' +
+                  '<div class="up-name">' + meta.name + '</div>' +
+                  '<div class="up-tier">' + (mastery[slug] && mastery[slug].level !== 'untouched' ? mastery[slug].level : 'Not started') + '</div>';
+                tile.addEventListener('click', function() { window.location.href = slug + '.html'; });
+                upTiles.appendChild(tile);
+              });
+              show('upnext-card');
+            }
+          }
         }
       } catch(e) {}
     }
@@ -684,11 +737,19 @@
     Object.keys(ROSTER).forEach(function(tierName) {
       var slugs = ROSTER[tierName];
       var goldInTier = 0;
-      slugs.forEach(function(s) { if (mastery[s] && mastery[s].level === 'gold') goldInTier++; });
+      var startedInTier = 0;
+      slugs.forEach(function(s) {
+        if (mastery[s] && mastery[s].level === 'gold') goldInTier++;
+        if (mastery[s] && mastery[s].level !== 'untouched') startedInTier++;
+      });
 
       var head = document.createElement('div');
-      head.className = 'tier-head';
-      head.innerHTML = tierName + ' <span class="tier-count">' + goldInTier + '/' + slugs.length + ' mastered</span>';
+      head.className = 'tier-head collapsed';
+      head.innerHTML = '<span class="tier-caret">▾</span>' + tierName +
+        ' <span class="tier-count">' + goldInTier + '/' + slugs.length + ' mastered · ' + startedInTier + ' started</span>';
+      head.addEventListener('click', function() {
+        head.classList.toggle('collapsed');
+      });
       section.appendChild(head);
 
       var grid = document.createElement('div');
