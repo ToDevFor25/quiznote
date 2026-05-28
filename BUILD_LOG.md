@@ -1,5 +1,75 @@
 ---
 
+### Teaching hints dead on time-signatures & dotted-notes — cross-scope ReferenceError in hintKeyFor — May 2026
+
+**Session type:** Single-bug diagnosis from a device report ("didn't get
+teaching hints on the time-signature module"; then "dotted-notes too, but
+accidentals/dynamics work"). Shipped to `Dev` (commit `4e48b2a`).
+
+**Symptom.** On a wrong answer, no hint card ever appeared in
+`time-signatures` and `dotted-notes`. Accidentals and dynamics were fine.
+
+**Root cause — module-generation difference, not hint logic.** These modules
+fall into two answer-handling generations, and the inline JS is split across
+*separate* `(function(){…})()` IIFE blocks — a **renderer block** (exposes a
+namespace: `TS` / `DN` / `M` / `R`) and a **game-loop block** (holds `state`,
+`getHint`, `handleAnswer`, `hintKeyFor`).
+- **Working generation (accidentals, dynamics):** uses `onCorrect/onWrong`,
+  choices are objects with `.correct`, `state.current` is the full question
+  object. Their `hintKeyFor` is either absent (accidentals → general hints)
+  or reads `state.current.type` — an in-scope property. No cross-block
+  reference, so nothing throws.
+- **Broken generation (time-signatures, dotted-notes):** uses unified
+  `handleAnswer(pickedKey, btn)`, choices are key-strings, `state.current =
+  {key}`. Their `hintKeyFor` derived the hint category by calling a
+  renderer-block symbol **bare** from the game-loop block:
+  `decodeKey(state.current.key)` (time-signatures) and
+  `SYMBOLS[state.current.key]` (dotted-notes). Those identifiers live in the
+  *other* IIFE's closure, so the call was a `ReferenceError`. `getHint()`
+  calls `hintKeyFor()` first thing, so the throw propagated up through
+  `handleAnswer` on the first wrong answer and aborted it **before** the
+  hint-card branch — silent failure, every time.
+
+**Why it hid so well.** `getHint`, `showHintCard`, the hint overlay markup,
+and the shared `.hint-overlay` CSS are byte-identical to working modules; all
+scripts parse; init throws nowhere (DOM-mock init trace was clean). The bug
+only manifests at the moment `hintKeyFor` runs — first wrong answer — which a
+parser, a grep-by-name, and an init trace all miss. Caught by **driving a
+real wrong-answer click in a DOM mock** (`/tmp/trace3.js`: full DOM/audio
+shims + a probe injected inside the game-loop IIFE that calls the start fn,
+fires a wrong choice's click listener, and reports `hint-overlay.hidden`).
+Before: ReferenceError, overlay stays hidden. After: overlay opens with the
+correct context-specific hint.
+
+**Fix.** Use the accessors these files already use elsewhere for the same
+symbols — `TS.decodeKey` (already used at time-signatures.html:1924) and
+`window.DN.SYMBOLS` (already used at dotted-notes.html:1075/1150). Two
+one-line changes:
+- `time-signatures.html` hintKeyFor → `(state.current && TS.decodeKey) ?
+  TS.decodeKey(state.current.key).type : null`
+- `dotted-notes.html` hintKeyFor → `var sym = window.DN.SYMBOLS[state.current.key];`
+
+**Scope audit.** All 13 `hintKeyFor` definitions checked: 11 read
+`state.current.type`/`.mode` (in-scope, safe — articulation, chord-function,
+circle-of-fifths, dynamics, ornaments, scale-degrees, scales,
+score-navigation, tempo-markings, transposition, note-names). Only
+time-signatures and dotted-notes reached across IIFE scope. No other modules
+affected.
+
+**Lesson / CLAUDE.md candidate.** When inline JS is split into multiple IIFE
+blocks, any symbol shared between blocks MUST go through the exposed namespace
+(`TS.`/`DN.`/`window.DN.`) — a bare reference compiles and parses fine but is
+a runtime `ReferenceError` only on the code path that hits it. The
+"init-trace is clean" heuristic does NOT cover handlers wired at runtime
+(answer handlers built in `renderChoices`); to verify those, drive an actual
+click, not just init.
+
+**Still open / next:** unchanged from prior entries. Owed: device QA that the
+hint card now renders correctly on real screens (mock confirms logic + the
+`hidden` toggle, not pixels).
+
+---
+
 ### Modules-page design system — skill-family tile colors + unified module order + dashboard color language — May 2026
 
 **Session type:** Visual/UX system pass on `play.html`, `path.html`,
