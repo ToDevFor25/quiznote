@@ -109,6 +109,44 @@
   }
   .kb-card svg { width: 100%; display: block; }
 
+  /* Guided-find banner (reveal / hint) */
+  .kb-guide {
+    background: var(--teal-lt, #d3f1ec);
+    color: var(--teal-dk, #0e8475);
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
+    text-align: center; padding: 8px 12px; border-radius: 12px;
+    margin-bottom: 8px;
+    animation: kbGuideIn 220ms ease-out;
+  }
+  .kb-guide[hidden] { display: none; }
+  .kb-guide-arrow { display: inline-block; animation: kbBob 1s ease-in-out infinite; }
+  @keyframes kbGuideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @keyframes kbBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+
+  /* Directional edge halo — points toward an off-screen highlighted key */
+  .key-halo {
+    position: absolute; top: 0; bottom: 0; width: 64px;
+    pointer-events: none; z-index: 6; opacity: 0;
+    transition: opacity 220ms ease;
+    display: flex; align-items: center;
+  }
+  .key-halo.show { opacity: 1; }
+  .key-halo.left  { left: 0;  justify-content: flex-start;
+    background: linear-gradient(to right, rgba(31,184,168,0.45), rgba(31,184,168,0)); }
+  .key-halo.right { right: 0; justify-content: flex-end;
+    background: linear-gradient(to left, rgba(31,184,168,0.45), rgba(31,184,168,0)); }
+  .key-halo .key-halo-arrow {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 26px;
+    color: var(--teal-dk, #0e8475); padding: 0 10px;
+    animation: kbSlide 1s ease-in-out infinite;
+  }
+  @keyframes kbSlide {
+    0%,100% { transform: translateX(0); }
+    50% { transform: translateX(var(--slide, -5px)); }
+  }
+  .key-halo.right .key-halo-arrow { --slide: 5px; }
+  .kb-frame.guiding .mc-ind { display: none !important; }
+
   /* .toast + variants → qn-theme.css (Option-2 placement: praise 46%, retry/reveal 64%) */
 
   /* Confetti + note-burst layer */
@@ -687,6 +725,7 @@
   </div>
 
   <div class="card kb-card">
+    <div class="kb-guide" id="kb-guide" hidden><span class="kb-guide-arrow">👇</span> Find and play the highlighted key to continue</div>
     <div class="kb-frame" id="kb-frame">
       <div class="kb-scroll-wrap" id="kb-scroll-wrap">
         <div id="kb-wrap">
@@ -696,6 +735,9 @@
       <!-- Middle C indicator (left and right variants) — viewport-pinned overlay -->
       <div class="mc-ind left hidden" id="mc-ind-left" aria-label="Scroll to Middle C"></div>
       <div class="mc-ind right hidden" id="mc-ind-right" aria-label="Scroll to Middle C"></div>
+      <!-- Directional halo pointing toward an off-screen highlighted key -->
+      <div class="key-halo left" id="key-halo-left"><span class="key-halo-arrow">‹</span></div>
+      <div class="key-halo right" id="key-halo-right"><span class="key-halo-arrow">›</span></div>
     </div>
     <div class="scroll-hint">← slide to scroll →</div>
   </div>
@@ -1510,9 +1552,51 @@
      'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
      'timer-row','timer-pill-state','hints-row','hints-pill-state','sound-row','sound-pill-state',
-     'hint-overlay','hint-text','hint-got-it','hint-dismiss'].forEach(id => {
+     'hint-overlay','hint-text','hint-got-it','hint-dismiss',
+     'kb-guide','kb-scroll-wrap','key-halo-left','key-halo-right'].forEach(id => {
       els[id] = document.getElementById(id);
     });
+  }
+
+  // ── Guided key-find (reveal + hint): banner + directional edge halo ──
+  var keyGuide = { active: false, midi: null };
+
+  function showKeyGuide(midi) {
+    keyGuide.active = true;
+    keyGuide.midi = midi;
+    var frame = document.getElementById('kb-frame');
+    if (frame) frame.classList.add('guiding');
+    if (els['kb-guide']) els['kb-guide'].hidden = false;
+    updateKeyHalo();
+  }
+
+  function hideKeyGuide() {
+    keyGuide.active = false;
+    keyGuide.midi = null;
+    var frame = document.getElementById('kb-frame');
+    if (frame) frame.classList.remove('guiding');
+    if (els['kb-guide']) els['kb-guide'].hidden = true;
+    if (els['key-halo-left']) els['key-halo-left'].classList.remove('show');
+    if (els['key-halo-right']) els['key-halo-right'].classList.remove('show');
+  }
+
+  function updateKeyHalo() {
+    if (!keyGuide.active || keyGuide.midi == null) return;
+    var wrap = els['kb-wrap'];
+    var scroll = els['kb-scroll-wrap'];
+    var hl = els['key-halo-left'], hr = els['key-halo-right'];
+    if (!wrap || !wrap._nh || !scroll || !hl || !hr) return;
+    var key = wrap._nh.findKey(keyGuide.midi);
+    if (!key) { hl.classList.remove('show'); hr.classList.remove('show'); return; }
+    var kr = key.getBoundingClientRect();
+    var sr = scroll.getBoundingClientRect();
+    if (kr.right < sr.left + 4) {
+      hl.classList.add('show'); hr.classList.remove('show');
+    } else if (kr.left > sr.right - 4) {
+      hr.classList.add('show'); hl.classList.remove('show');
+    } else {
+      hl.classList.remove('show'); hr.classList.remove('show');
+    }
   }
 
   function showScreen(name) {
@@ -1764,6 +1848,7 @@
     state.attempts = 0;
     state.locked = false;
     state.revealing = false;
+    hideKeyGuide();
     R.clearHighlights(els['kb-wrap']);
     hideToast();
 
@@ -1809,6 +1894,7 @@
     if (state.revealing) {
       if (midiEquals(midi, state.current.pitch.midi)) {
         state.revealing = false;
+        hideKeyGuide();
         A.playMidi(midi);
         pressKeyAnim_correct(keyEl);
         R.highlightKey(els['kb-wrap'], state.current.pitch.midi, '#1FB8A8');
@@ -1820,6 +1906,9 @@
       }
       return;
     }
+
+    // A normal answer tap ends any hint-guide state.
+    if (keyGuide.active) { hideKeyGuide(); R.clearHighlights(els['kb-wrap']); }
 
     A.playMidi(midi);
     const correctMidi = state.current.pitch.midi;
@@ -1893,8 +1982,12 @@
       R.glowKey(els['kb-wrap'], state.current.pitch.midi);
       showToast("It's " + dn, 'reveal');
       pushHistory('wrong');
-      // Unlock for correct-only tap
-      setTimeout(() => { state.locked = false; state.revealing = true; }, 300);
+      // Unlock for correct-only tap + guide them to find/press the key
+      setTimeout(() => {
+        state.locked = false;
+        state.revealing = true;
+        showKeyGuide(state.current.pitch.midi);
+      }, 300);
     } else {
       // 1st miss: retry
       showToast('Try once more!', 'retry');
@@ -2516,6 +2609,13 @@
 
   // Play screen actions
   function setupActions() {
+    // Update the directional halo as the keyboard scrolls toward the target key.
+    if (els['kb-scroll-wrap']) {
+      els['kb-scroll-wrap'].addEventListener('scroll', function () {
+        if (keyGuide.active) updateKeyHalo();
+      }, { passive: true });
+    }
+
     els['play-note-btn'].addEventListener('click', () => {
       if (!state.current) return;
       A.ensureCtx();
@@ -2557,9 +2657,10 @@
       state.score = Math.max(0, state.score - 1);
       els['score-num'].textContent = state.score;
       R.glowKey(els['kb-wrap'], state.current.pitch.midi);
-      setTimeout(() => R.clearHighlights(els['kb-wrap']), 1500);
       showToast('−1 · hint used 💡', 'retry');
       setTimeout(hideToast, 1200);
+      // Guide them to the key — glow + halo persist until they tap.
+      showKeyGuide(state.current.pitch.midi);
     });
 
     els['drill-btn'].addEventListener('click', () => {
