@@ -1,5 +1,99 @@
 ---
 
+### Latent brace-corruption hunt — app-wide bug fixes (freeze / toggles / hints / scales) — May 2026
+
+**Session type:** Production bug-fix marathon, driven by device QA. Started
+from a single report ("Ear: Chord Quality freezes") and uncovered a whole
+class of latent bugs from a prior **bulk edit that misplaced braces** across
+many modules' inline JS. None threw a *parse* error (the files looked fine
+and committed clean), but the misplaced braces broke handler wiring, toggle
+feedback, and hint display **at runtime**. All fixes shipped to `main`.
+
+**The unlock (Jonathan's observation):** on a frozen screen the **home /
+All-Modules links still worked but every `<button>` did nothing**. Native
+`<a href>` navigation vs. JS-attached handlers — that's the signature of a
+**JS exception during init aborting handler wiring**, not an audio or CSS
+problem. (The first two hypotheses — iOS audio interruption, then a stale
+`timer-toggle` — were partial/wrong; this reframing is what cracked it.)
+
+**Diagnostic technique that pinned each bug: a Node DOM-mock harness.**
+`/tmp/trace-any.js` parses a module, builds the set of real DOM ids, shims
+`document`/`window`/`localStorage`/`QN`/`NH`/rAF, runs the inline scripts +
+fires the captured `DOMContentLoaded`, and reports the exact throw + stack
+line. This caught `syncPill is not defined`, the `_nh` guard false-positive
+(fixed by returning `undefined` for `_`-prefixed props), `window.scrollTo`
+gaps, etc. **Reusable for any future "buttons dead" report.** Caveat: it
+verifies *no init throw*; it does NOT catch logic bugs (it missed the
+`syncMuteUI` pill-orphan, which only broke visual feedback).
+
+**Bugs found and fixed:**
+- **9 modules frozen** — stale `els['timer-toggle']` handler (settings-card
+  redesign replaced `#timer-toggle` with a Timer *row*). Unguarded
+  `.addEventListener` on the now-missing element threw mid-init, killing the
+  rest of wiring (incl. in-game X / mute). Fix: alias `timer-toggle`→
+  `timer-row`, `timer-toggle-state`→`timer-pill-state` before first use.
+  (ear-chords/-cadences/-progressions, cadences, chord-progressions,
+  seventh-chords, triad-inversions, triads, piano-quiz.)
+- **piano-quiz** — three separate issues, fixed in order: (1) corrupted
+  `hideToast()` had lost its body+brace and **swallowed `syncPill`, `getHint`,
+  `showHintCard`, `hideHintCard`** as nested functions → `syncPill` invisible
+  to `setupStart` → `ReferenceError` froze everything; (2) unguarded
+  `els['hint-got-it']` (piano-quiz has no modal hint card — it uses the
+  guided key-find) threw; (3) `syncMuteUI` closed early so the sound-pill
+  update was orphaned → start-screen Sound toggle gave no feedback.
+- **Sound toggle broken app-wide (30 modules)** — the same `syncMuteUI`
+  orphan: `if (els['sound-pill-state']) syncPill(..., !muted)` sat one line
+  *outside* the function, so the start-screen Sound row changed mute state
+  but never updated the pill (the in-game mute icon worked — it's inside the
+  fn). Batch-fixed by moving the line back inside in all 29 (+piano-quiz).
+- **Teaching hints never showed on wrong answers (8 modules)** — the
+  Phase-4 chord/ear-harmony cluster had the hint machinery but `onWrong`'s
+  first-miss branch only showed "Try once more!" and never called
+  `getHint()`/`showHintCard()`. Wired the standard pattern in.
+- **5 modules' Timer toggle inert** — guarded (so not frozen) but the guard
+  always failed; same alias fix made the toggle work.
+- **Ear: Chord Quality** — Easy padded answer tiles from all 4 qualities, so
+  it showed Diminished/Augmented even though Easy only plays major/minor.
+  Distractors now drawn only from the tier's qualities (Easy 2 / Med 3 /
+  Tricky 4 tiles).
+- **scales (the structural outlier) — three stacked latent bugs:**
+  (1) it boots **inline** (every other module boots from DOMContentLoaded),
+  so `initStartScreen` ran before the deferred `qn-audio.js` loaded and
+  `A.setMuted(...)` threw → all start-page buttons dead. Fix: defer the boot.
+  (2) it was **single-try** (wrong→reveal→next) and `onWrong` never showed a
+  hint card, though `hideHintCard` was already wired to re-enable a retry —
+  the conversion was started but never finished. Completed it: 2-try +
+  clean-first-try scoring + hint card. (3) `showHintCard`/`hideHintCard`
+  called **`pauseTimer`/`resumeTimer` which scales never defined** (it uses
+  `startTimerIfNeeded`+`clearInterval`); never surfaced because the card was
+  never shown. Defined proper pause/resume (preserve `timerRemaining`).
+
+**Verification approach:** Node DOM-mock init traces for every touched
+module (all clean); per-module inline-script parse checks; corruption
+re-scans (e.g. all 29 `syncMuteUI` modules → 0 remaining); engine smoke
+tests where logic changed (Ear: Chord Quality 6k/0). Device QA by Jonathan
+confirmed each fix before shipping; `main` updated by fast-forward.
+
+**Root-cause lesson:** a prior automated/bulk edit shifted braces by a line
+in many modules — invisible to parsers and to grep-by-name, only caught by
+executing init or diffing rendered behavior. Reinforces §8 "verify by
+rendered result, not source." When a module's buttons are dead but links
+work, suspect an init-time throw and run the DOM-mock trace first.
+
+**Still open / next:**
+- **scales rebuild (optional):** now patched and consistent, but it remains
+  the legacy outlier (predates the template). A future "rebuild scales from
+  the standard template" session would retire it permanently — schedule only
+  if it keeps causing cross-file pain; not urgent.
+- pianoquiz-demo init was a harness false-positive (the `_nh` guard) — the
+  demo is fine.
+- qn-audio.js iOS tweak (interrupted-state resume + node cleanup) kept as a
+  harmless robustness improvement, though it was NOT the freeze fix.
+- Standing pre-bug-hunt items unchanged: Transposition v1.1 staff-rendered
+  answer tiles; Tier C (Mock Exam Mode, Curriculum Mapping); PWA install.
+
+---
+
 ### Chord Function (#7) + Transposition (#8) — Phase 5 Tier B finished — May 2026
 
 **Session type:** Two autonomous clone-and-swap module builds (queue #7, #8),
