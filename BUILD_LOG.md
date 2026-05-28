@@ -1,5 +1,114 @@
 ---
 
+### Progress dashboard built + Practice Notes + strategic planning — May 2026
+
+**Session type:** Feature build + UX design + strategic planning.
+
+**Dashboard redesign shipped (dashboard.html — full rewrite):**
+
+1. **Hero stat row** — streak (consecutive days, any 1 round = streak
+   day), practice time, modules mastered (Gold count / 32). Animated
+   count-up with staggered delays. Subtle 3-note ascending chime on
+   page load.
+2. **Streak calendar** — 5-week GitHub-style contribution grid, 4
+   intensity levels, tooltips on tap, today outlined.
+3. **Your next step** card — powered by `QN.recommend.next()`, shows
+   recommended module + tier + reason. Icon by type (cold-start /
+   progress / remediation / review).
+4. **Up next on your path** — horizontal scrollable tiles showing
+   next 3-4 unmastered modules after the recommendation.
+5. **Weak spots card** — top 4 weakest sub-skills (< 80%, 5+ attempts),
+   tappable rows link to module.
+6. **Accuracy trend** — weekly aggregation (was per-round), "this week
+   vs last week" comparison label, Y-axis labels.
+7. **Mastery grid** — 32 modules in Foundations/Reading/Theory sections,
+   collapsible with summary ("5/14 mastered · 8 started"). Progressive
+   rings: Untouched → Started → Bronze (Easy 85%+) → Silver (Medium
+   85%+) → Gold (Tricky 85%+). Gold cards shimmer. Tappable to expand
+   per-tier accuracy breakdown.
+8. **Back link** — "← All modules" to play.html restored.
+
+**Mastery definition (locked):** Progressive Bronze/Silver/Gold.
+85%+ accuracy across 2+ rounds at a tier = cleared. Matches the
+recommender's existing advance rule. Easy = Bronze, Medium = Silver,
+Tricky = Gold.
+
+**Streak definition (locked):** Any 1 completed round in a calendar
+day. Lowest friction — Duolingo model. Habit metric, not effort metric.
+Edge case: if not played today, yesterday's streak stays "active"
+until tomorrow (don't punish busy days).
+
+**Practice Notes — the shareable output:**
+
+Name: **Practice Notes by QuizNote.** The dashboard page stays
+"My Progress" (what you look at). Practice Notes is what you hand
+to someone (the export). Different jobs, different names.
+
+**Share mechanism:** Device-native share sheet (no email from app).
+QuizNote generates the asset (PDF or image), hands it to the OS.
+No teacher email collection, no backend email service, no privacy
+exposure. One privacy policy line covers it.
+
+**Mockups created** (`_mockups/practice-notes-export.html`):
+- Share button placement (next to "My Progress" title)
+- PDF layout (8.5x11 letter — hero stats, streak calendar, focus
+  areas, full mastery grid by tier, branded header/footer)
+- Social share card (4:5 Instagram ratio — bold stats, 32 mastery
+  rings, branded footer)
+
+**Strategic items flagged (not yet built):**
+
+**Share button design (needs work).** Current mockup is too basic
+(plain pill). Should use a recognizable share icon (iOS square-with-
+arrow or Android triple-dot-arc). Possibly a dropdown with: Save as
+PDF / Share image / Print, each with a recognizable icon.
+
+**Multi-instrument Practice Notes (Tier 3 — scope discussion).**
+A student who plays piano AND violin could have separate Practice
+Notes cards, swipeable on the dashboard. Each instrument tracks its
+own practice independently.
+
+**Architecture decision (Jonathan's, approved in conversation):**
+Profile owns the instrument list. `instruments: []` as an additive
+field on the profile (absent = feature off). If empty → no instrument
+cards, no practice log, just QuizNote module data. If populated →
+swipeable cards per instrument + practice checkboxes. Profile page
+gets an instrument selector (free-text or dropdown of common
+instruments). The profile becomes the master source for whether
+the instrument/practice-log feature is active.
+
+**Teacher practice log (self-reported, dashboard-only):**
+A "mark I practiced" checkbox system on the dashboard. Student logs
+that they completed a teacher-assigned lesson — just a date +
+optional one-line note + checkmark. NOT exported to the PDF — the
+PDF shows only verified QuizNote data. The practice log is the
+self-reported supplement visible only on the dashboard.
+
+**Privacy model (locked for share features):**
+- Device-native share sheet = no email from app
+- QuizNote never sees the recipient's identity
+- PDF/image contains only on-screen-visible data (no device IDs,
+  profile UUIDs)
+- For child profiles: parent taps Share (existing adult-owner model)
+- Privacy policy one-liner: "You may export your progress data as
+  a summary document and share it using your device's built-in
+  sharing features. QuizNote does not control or access the sharing
+  destination."
+- Teacher accounts explicitly deferred — the share button gets 80%
+  of the value at 5% of the complexity
+
+**Still open / next:**
+- Visual QA on real devices (dashboard + all teaching hints changes)
+- Share button build (after mockup refinement)
+- Teacher practice log build (after instrument model is specced)
+- Multi-instrument profile field (Tier 3 spec needed)
+- Build log / project doc updates for dashboard
+- Landing page marketing update (post-dashboard)
+- Standing build queue: Circle of Fifths (#6), Chord Function (#7),
+  Transposition (#8)
+
+---
+
 ### Progress dashboard strategy conversation — May 2026
 
 **Session type:** Strategic planning (no code). Conversation about
