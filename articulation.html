@@ -1138,8 +1138,8 @@
       els['mute-btn'].classList.toggle('muted', muted);
       els['mute-btn'].setAttribute('aria-pressed', String(muted));
     }
-  }
     if (els['sound-pill-state']) syncPill(els['sound-pill-state'], !muted);
+  }
 
   function saveMutedPreference(muted) {
     localStorage.setItem('pq_muted', String(muted));
