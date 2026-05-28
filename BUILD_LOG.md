@@ -1,5 +1,59 @@
 ---
 
+### Modules-page design system — skill-family tile colors + unified module order + dashboard color language — May 2026
+
+**Session type:** Visual/UX system pass on `play.html`, `path.html`,
+`qn-profile.js`, `dashboard.html`. Shipped to `main`.
+
+**Skill-family tile colors (Option B).** Tile backgrounds were decorative/
+random (only a loose ear≈coral pattern). Defined 5 soft skill-family tints
+that repeat across all three tiers so a family reads at a glance:
+`.th-ear` pink (#ffe6f1, the boldest — "listen"), `.th-read` slate (#e9eff9,
+notation + score markings), `.th-rhythm` gold (#fff2cf), `.th-pitch` green
+(#e4f3e0, keys/scales/intervals/transposition), `.th-harmony` grape
+(#efe9fb, all chord modules). All 35 tiles reassigned by family. Decided via
+a self-contained side-by-side mockup (`_mockups/play-tile-themes.html`,
+Option A minimal vs B) sent for device review; Jonathan picked B.
+
+**Unified, traditional module order across all three surfaces.** Previously
+the modules page led with piano while the path buried it at #13, and Theory
+analyzed chords (roman numerals) before building them (triads). New single
+order now shared by play.html tiles, path.html PATH, and qn-profile.js
+recommender PATH:
+- Foundations: note-names → piano-quiz → piano-keyboard → ledger-lines →
+  note-values → dotted-notes → ear-rhythm → time-signatures → accidentals →
+  tempo → dynamics → articulation → score-navigation → ornaments
+  (piano moved up — connect notes to the keyboard early)
+- Reading: unchanged
+- Theory: triads → triad-inversions → seventh-chords → primary-chords →
+  roman-numerals → chord-function → chord-progressions → cadences → ear ×3
+  (build chords before analyzing their function)
+
+**Dashboard color language aligned.** Mastery-grid chips + ROSTER now use the
+same 5 families as the tile tints (ear=pink, read=slate, rhythm=sun,
+pitch=green, harmony=grape); added pink/slate/green to COLOR_HEX (saturated
+chip versions). One color language app-wide.
+
+**Bug found + fixed mid-task (good lesson):** the first attempt to reorder
+play.html tiles used a whole-file "slot-swap" (reassign unit text at each
+tile's file position). It corrupted placement — orphaned triads/triad-
+inversions/seventh-chords OUTSIDE any section (floating between Reading's
+close and the Theory header) and dropped note-names from the Foundations
+grid. Root issue: position math across mismatched-length spans + comment
+capture. **Fix + lesson:** reorder tiles PER SECTION — find each
+`<div class="tile-grid">`'s exact close by counting div nesting, then reorder
+only the units inside that grid. Verified by *physical* section placement
+(Foundations 14 / Reading 10 / Theory 11), not just logical slug→tier
+grouping (the logical check passed even while tiles were misplaced — a
+reminder to verify rendered/physical structure, not just data).
+
+**Still open / next:** unchanged from the prior entry (Transposition v1.1
+staff-rendered answer tiles; Tier C Mock Exam Mode + Curriculum Mapping; PWA
+install; optional scales rebuild). The tile-theme mockup lives in `_mockups/`
+for reference.
+
+---
+
 ### Latent brace-corruption hunt — app-wide bug fixes (freeze / toggles / hints / scales) — May 2026
 
 **Session type:** Production bug-fix marathon, driven by device QA. Started
