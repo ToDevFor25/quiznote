@@ -57,6 +57,33 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Dashboard: mastery-rule explainer as a grape banner — May 2026
+
+**Session type:** Small UX add, same thread as the recommender fix. Shipped to
+`Dev` (`6621a02` caption → `f56a63a` banner).
+
+**What.** Added a one-line explainer under the **Module mastery** heading on
+dashboard.html so the medal rule is self-evident: *"Earn a medal by mastering
+each level. Clear a level by scoring 85%+ accuracy in 2 rounds — your medal
+shows the hardest level you've cleared: Bronze (Easy), Silver (Medium), Gold
+(Tricky)."* Medal names are tinted to their ring colors.
+
+**Styling decision.** First pass was a small muted caption inside the section
+header; on Jonathan's call it became a **purple box mirroring path.html's
+`.banner`** (the "Your Path guides; Practice never locks" guide box) for a
+consistent look. Added `.mastery-note` (clone of `.banner`: `--grape-lt` bg,
+2px `--grape` border, 14px radius, `--grape-dk` text, Fredoka bold lead) and
+the `--grape-lt` token (dashboard had `--grape`/`--grape-dk` but not the light
+tint). The note is a sibling of the section header, so unlike the old caption
+it **shows on mobile too** (faithful to the path banner) — flagged as a
+revisit-if-too-heavy item.
+
+**Note.** The "85%+ in 2 rounds" copy intentionally states the canonical
+per-round clear rule — the same rule the recommender/path were unified onto in
+the sibling entry above.
+
+---
+
 ### Recommender sent a Gold-mastered module back to Easy — tier-clear logic + three-way definition drift — May 2026
 
 **Session type:** Bug report from device ("dashboard says Jump back in: Note
