@@ -1094,6 +1094,7 @@
 
   function drawCalendar(dayMap) {
     var grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
     var days = ['M','T','W','T','F','S','S'];
     days.forEach(function(d) {
       var lbl = document.createElement('div');
