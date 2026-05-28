@@ -902,12 +902,12 @@
 
   function computeWeekDays(events) {
     var today = new Date(); today.setHours(0,0,0,0);
-    var dow = (today.getDay() + 6) % 7;
-    var monday = new Date(today); monday.setDate(monday.getDate() - dow);
+    var dow = today.getDay();
+    var sunday = new Date(today); sunday.setDate(sunday.getDate() - dow);
     var days = [false,false,false,false,false,false,false];
     events.forEach(function(ev) {
       var d = new Date(ev.completedAt); d.setHours(0,0,0,0);
-      var diff = Math.round((d - monday) / 86400000);
+      var diff = Math.round((d - sunday) / 86400000);
       if (diff >= 0 && diff < 7) days[diff] = true;
     });
     return days;
@@ -1006,8 +1006,8 @@
   function drawWeekDots(weekDays, goal) {
     var container = document.getElementById('sv-week-dots');
     container.innerHTML = '';
-    var dayLabels = ['M','T','W','T','F','S','S'];
-    var today = (new Date().getDay() + 6) % 7;
+    var dayLabels = ['S','M','T','W','T','F','S'];
+    var today = new Date().getDay();
     var count = weekDays.filter(Boolean).length;
     for (var i = 0; i < 7; i++) {
       var dot = document.createElement('div');
@@ -1095,7 +1095,7 @@
   function drawCalendar(dayMap) {
     var grid = document.getElementById('cal-grid');
     grid.innerHTML = '';
-    var days = ['M','T','W','T','F','S','S'];
+    var days = ['S','M','T','W','T','F','S'];
     days.forEach(function(d) {
       var lbl = document.createElement('div');
       lbl.className = 'cal-label';
@@ -1107,7 +1107,7 @@
     var year = today.getFullYear();
     var month = today.getMonth();
     var firstDay = new Date(year, month, 1);
-    var firstDow = (firstDay.getDay() + 6) % 7;
+    var firstDow = firstDay.getDay();
     var daysInMonth = new Date(year, month + 1, 0).getDate();
     var tk = todayKey();
 
