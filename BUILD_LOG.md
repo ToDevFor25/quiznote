@@ -1,5 +1,62 @@
 ---
 
+### Key-signatures scoring/reveal broken + reveal-shade unification — May 2026
+
+**Session type:** Bug fix + small cross-module visual consistency pass.
+Shipped to `Dev` (commit `0a34f5e`).
+
+**Report.** "Key signatures isn't showing the correct answer after two
+wrong. Time-signatures and scales work. Also the reveal shading differs
+(light vs dark) — keep it consistent across all 35, I prefer the lighter."
+
+**Bug 1 — key-signatures field-name mismatch (whole module non-functional).**
+`nextQuestion` sets `state.current = { keyId, clef }`, but `handleAnswer`
+read `var correct = state.current.key` — which is `undefined` (the field is
+`keyId`, not `key`). Consequences: `pickedKey === undefined` is always false,
+so **every** answer — including the correct one — routed to the wrong branch
+(score never incremented), and the 2nd-wrong reveal did
+`children.find(b => b.dataset.key === undefined)` → matched nothing → no
+reveal. Fix: `state.current.keyId`.
+
+**Bug 2 — missing `M` binding (masked by Bug 1).** Once correct answers
+registered, the `isCorrect` branch hit `if (M.explode) M.explode(...)` and
+threw `M is not defined`. key-signatures uses its own `KS` namespace: the
+renderer block exposes `KS.fx = { explode }` and the game loop binds
+`const R = KS.render` but the clone dropped the `M` binding. Because the
+throw is before `updateStreakBadge/updateProgressAndStats/setTimeout`, a
+correct answer would also have failed to advance. Fix: add
+`const M = KS.fx;` next to the `R` binding. (Same class of cross-IIFE-scope
+bug as the prior teaching-hints session — symbols shared between the
+renderer block and the game-loop block must go through the exposed
+namespace.)
+
+**Verification.** Drove a real round in the DOM-mock harness
+(`/tmp/trace4.js`, probe clicks the correct button then two wrong):
+before — correct click scored 0→0, no class, reveal matched nothing; after —
+correct click scores 0→1, gets `.correct`, advances; two wrong reveals the
+answer with `.reveal-correct`. (Had to add `Element.animate` and full
+WebAudio param stubs to the mock — both are real-browser APIs the explode
+celebration + audio use; their absence are mock gaps, not bugs.)
+
+**Reveal-shade unification.** Shared `qn-theme.css` has two states:
+`.choice-btn.correct` = bold dark teal (white text) and
+`.choice-btn.reveal-correct` = soft light teal (`--teal-lt`/`--teal-dk`).
+Semantics adopted app-wide: **dark = you earned it** (your own correct pick),
+**light = here's the answer** (revealed after the 2nd miss). Audit of all
+button-answer modules: 28 already revealed with the light `.reveal-correct`;
+4 still used the dark `.correct` at the reveal site — **time-signatures,
+dotted-notes, note-values, ear-rhythm** — switched to `.reveal-correct`
+(one word each). `piano-quiz` intentionally excluded — it reveals via the
+guided-keyboard glow (`state.revealing` + halo), not choice buttons. Every
+module's own-correct-pick `.correct` left as the bold dark state.
+
+**Still open / next:** device/pixel QA that key-signatures now scores,
+advances, and reveals correctly, and that the lighter reveal reads well on
+real screens. No schema or shared-file changes in this session
+(qn-theme.css already had `.reveal-correct`).
+
+---
+
 ### Teaching hints dead on time-signatures & dotted-notes — cross-scope ReferenceError in hintKeyFor — May 2026
 
 **Session type:** Single-bug diagnosis from a device report ("didn't get
