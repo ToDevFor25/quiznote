@@ -114,6 +114,9 @@
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
+  /* 3-function categorize: two tiles on top, the third spans full width so
+     the layout reads as deliberate rather than a missing 4th option. */
+  .choices-grid.choices-three .choice-btn:nth-child(3) { grid-column: 1 / -1; }
   /* .choice-btn + .choice-acc -> qn-theme.css */
 
   /* Feedback toasts */
@@ -1087,6 +1090,25 @@
     return nums[i] + ' (' + rootDisplay(keyData.roots[i]) + ')';
   }
 
+  // Build the diatonic triad (root + 3rd + 5th) at degree i as ascending pitch
+  // objects for the staff. Members are diatonic-third stacks of the key's roots
+  // (so V is major in minor, vii° diminished, III+ augmented — all spelled right).
+  // Returns null if any member needs a double accidental (out of render scope).
+  function triadFor(key, isMinor, i) {
+    const keyData = isMinor ? MINOR_KEYS[key] : KEYS[key];
+    const spellings = [i % 7, (i + 2) % 7, (i + 4) % 7].map(x => keyData.roots[x]);
+    if (spellings.some(sp => sp.slice(1) === '##' || sp.slice(1) === 'bb')) return null;
+    let oct = 4, prevStep = -1;
+    return spellings.map(sp => {
+      const m = /^([A-G])(##|bb|[#b]?)$/.exec(sp);
+      const letter = m[1], accidental = m[2] || '';
+      const step = NH.music.LETTER_STEP[letter];
+      if (prevStep >= 0 && step <= prevStep) oct += 1;
+      prevStep = step;
+      return { letter, accidental, octave: oct, midi: toMidi(letter, accidental, oct), name: sp + oct };
+    });
+  }
+
   // Build a tonic pitch for audio reference (play the tonic of the key).
   function tonicPitchFor(key, isMinor) {
     const keyData = isMinor ? MINOR_KEYS[key] : KEYS[key];
@@ -1142,7 +1164,7 @@
         type, skill: type,
         prompt: 'In ' + tonicDisplay(key, true) + ' minor, the V chord (' + vChord + ') is MAJOR, not minor. Why?',
         key, clef, degIdx: 4, pitch: tonicPitchFor(key, true), keySig: keyData.sig,
-        showNote: null, choices, answer: correct,
+        chord: triadFor(key, true, 4), showNote: null, choices, answer: correct,
       };
     }
 
@@ -1202,7 +1224,7 @@
       type: 'categorize', skill: 'categorize',
       prompt: 'In ' + tonicDisplay(key, minor) + modeLabel + ', the ' + nums[degIdx] + ' chord (' + chordName + ') — what is its function?',
       key, clef, degIdx, pitch: tonicPitchFor(key, minor), keySig: keyData.sig,
-      showNote: null, choices: fnChoices(fn), answer: FUNC_LABEL[fn],
+      chord: triadFor(key, minor, degIdx), showNote: null, choices: fnChoices(fn), answer: FUNC_LABEL[fn],
     };
   }
 
@@ -1501,6 +1523,8 @@
     // Word tiles (degree names like "Leading tone") are wider/wrappable.
     const wordy = choices.some(c => /\s/.test(c.label) || c.label.length > 3);
     grid.classList.toggle('choices-wordy', wordy);
+    // The 3-function categorize question gets a balanced layout (see inline CSS).
+    grid.classList.toggle('choices-three', choices.length === 3);
     choices.forEach((choice, idx) => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
@@ -1516,6 +1540,15 @@
       btn.addEventListener('click', () => handleChoiceTap(idx, choice, btn));
       grid.appendChild(btn);
     });
+  }
+
+  function renderChordOnStaff(wrap, pitches, keySig, clef) {
+    const width = 360, lineGap = 16, bottomY = 130, height = 200;
+    const result = NH.staff.buildStaffWithChord({
+      clef: clef, pitches: pitches, keySig: keySig,
+      width: width, lineGap: lineGap, bottomY: bottomY, height: height, noteFill: '#5B3FE4',
+    });
+    wrap.innerHTML = '<svg viewBox="0 0 ' + width + ' ' + height + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">' + result.svg + '</svg>';
   }
 
   function nextQuestion() {
@@ -1535,8 +1568,13 @@
 
     if (els['q-prompt']) els['q-prompt'].textContent = q.prompt;
 
-    // Render staff: key sig only, no notes (text-based questions).
-    R.renderStaff(els['staff-wrap'], { pitch: null, clef: q.clef, keySig: q.keySig });
+    // Staff: show the actual chord when a single chord is the subject
+    // (categorize / exception); otherwise just the key signature.
+    if (q.chord) {
+      renderChordOnStaff(els['staff-wrap'], q.chord, q.keySig, q.clef);
+    } else {
+      R.renderStaff(els['staff-wrap'], { pitch: null, clef: q.clef, keySig: q.keySig });
+    }
 
     state.currentChoices = q.choices;
     renderChoices(q.choices);
