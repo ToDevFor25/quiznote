@@ -57,6 +57,41 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Landing demo: scripted teaching-hint flow — May 2026
+
+**Session type:** Landing-page UX. Shipped to `Dev`, approved on preview, then
+`main`.
+
+**What.** Reworked the non-playable "A round looks like this" Scales demo on
+`index.html` so it *showcases the teaching-hints mechanic* rather than a
+straight correct answer. New scripted loop: climb the C-major scale → reveal
+choices → **pick G Major (wrong → coral)** → **teaching-hint card slides in**
+→ hint hides + wrong clears → **pick C Major (correct → teal)** → existing
+fanfare. The hint text is accurate to what's shown: *"Every note landed on a
+white key — no sharps or flats. The major scale with no sharps or flats is C
+major. (G major would have an F♯.)"* — it both refutes the specific wrong
+guess and teaches the rule.
+
+**How.** The demo already built a C-major scale with the right choices
+(`CHOICES = ['C Major','F Major','A Minor','G Major']`, correct idx 0); only the
+answer phase changed. Added `.demo-choice.wrong` (coral) and a `.demo-hint`
+overlay scoped to `.demo-card` (which is already `position:relative;
+overflow:hidden`), with `pointer-events:none` so the card's tap-through to
+`play.html` still works and it never covers the rest of the page. New
+`WRONG_IDX`/`HINT_TEXT` + `pickWrong`/`showHint`/`hideHint`/`clearWrong`/
+`pickCorrect`; `showChoices` no longer auto-highlights the correct answer.
+Static choice labels synced to the rendered set to avoid a first-paint flash.
+
+**Timeline** (relative to notes finishing): choices at +0, wrong at +1.5s,
+hint at +2.3s, hide+clear at +6.0s, correct at +6.8s, fanfare at +7.3s, loop
+reset at +13s. Hint is on-screen ~3.7s (readable).
+
+**Note.** Self-contained to `index.html` (no shared-file or module change). It
+mirrors the real in-game hint card visually but is a scripted simulation —
+covered by the existing "*Simulation only*" footnote under the demo.
+
+---
+
 ### Legal-draft sync: Share/export disclosed + error-reporting scoped (PLANNED) — May 2026
 
 **Session type:** Doc/scoping pass on `privacy.html` + `terms.html`, no app
