@@ -478,11 +478,11 @@
     position: relative;
     background: var(--cream, #FFFAF0);
     border: 3px solid var(--ink, #2A2A3E);
-    border-radius: 24px;
-    box-shadow: 0 12px 0 rgba(42, 42, 62, 0.18);
-    max-width: 440px; width: 100%;
-    max-height: 90vh; overflow-y: auto;
-    padding: 28px 24px 22px;
+    border-radius: 22px;
+    box-shadow: 0 10px 0 rgba(42, 42, 62, 0.18);
+    max-width: 380px; width: 100%;
+    max-height: 88vh; overflow-y: auto;
+    padding: 20px 18px 16px;
     text-align: center;
     animation: promoPop 320ms cubic-bezier(.4,1.5,.5,1) both;
   }
@@ -495,47 +495,41 @@
   }
   .promo-head {
     font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 26px; color: var(--ink); margin-bottom: 8px;
+    font-size: 21px; color: var(--ink); margin-bottom: 5px;
   }
   .promo-sub {
     font-family: 'Nunito', sans-serif; font-weight: 600;
-    font-size: 15px; color: var(--ink-soft); line-height: 1.45;
-    margin-bottom: 18px;
+    font-size: 13.5px; color: var(--ink-soft); line-height: 1.4;
+    margin-bottom: 12px;
   }
   .promo-tiers {
     text-align: left;
     background: #fff; border: 2px solid var(--ink-faint, #E5E2D8);
-    border-radius: 16px; padding: 14px 16px; margin-bottom: 16px;
+    border-radius: 14px; padding: 11px 14px; margin-bottom: 12px;
   }
-  .promo-tier { margin-bottom: 12px; }
+  .promo-tier { margin-bottom: 8px; }
   .promo-tier:last-of-type { margin-bottom: 0; }
   .promo-tier-name {
     display: block; font-family: 'Fredoka', sans-serif; font-weight: 700;
-    font-size: 15px; letter-spacing: 0.01em;
+    font-size: 14px; letter-spacing: 0.01em;
   }
   .promo-tier-name.foundations { color: var(--sun-dk); }
   .promo-tier-name.reading     { color: var(--teal-dk); }
   .promo-tier-name.theory      { color: var(--grape-dk); }
   .promo-tier-desc {
     font-family: 'Nunito', sans-serif; font-weight: 600;
-    font-size: 13px; color: var(--ink-soft); line-height: 1.35;
-  }
-  .promo-more {
-    margin-top: 12px; padding-top: 10px;
-    border-top: 1.5px dashed var(--ink-faint, #E5E2D8);
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 13px; color: var(--teal-dk); text-align: center;
+    font-size: 12.5px; color: var(--ink-soft); line-height: 1.3;
   }
   .promo-hook {
     font-family: 'Nunito', sans-serif; font-weight: 700;
-    font-size: 14px; color: var(--ink); line-height: 1.45; margin-bottom: 10px;
+    font-size: 13px; color: var(--ink); line-height: 1.4; margin-bottom: 16px;
   }
-  .promo-trust {
-    font-family: 'Fredoka', sans-serif; font-weight: 600;
-    font-size: 13px; color: var(--ink-soft); margin-bottom: 18px;
+  /* CTA + replay: normal-sized (not huge) so they fit and clear their shadows */
+  .promo-cta {
+    width: 100%; text-decoration: none; box-sizing: border-box;
+    font-size: 19px; padding: 13px 24px; margin-bottom: 16px;
   }
-  .promo-cta { width: 100%; text-decoration: none; margin-bottom: 10px; box-sizing: border-box; }
-  .promo-replay { width: 100%; }
+  .promo-replay { width: 100%; font-size: 16px; padding: 11px 22px; }
 
   .miss-list {
     margin-top: 22px; text-align: left;
@@ -1286,13 +1280,11 @@
         <span class="promo-tier-name theory">Theory</span>
         <span class="promo-tier-desc">Chords, cadences, and how harmony works.</span>
       </div>
-      <div class="promo-more">More modules coming soon!</div>
     </div>
 
-    <div class="promo-hook">Go at your own pace, one short round at a time. Track your progress as you build real fluency.</div>
-    <div class="promo-trust">No ads. Free during beta.</div>
+    <div class="promo-hook">Track your progress as you build real fluency.</div>
 
-    <a href="play.html" class="btn teal huge promo-cta">Explore the full app →</a>
+    <a href="play.html" class="btn teal promo-cta">Explore the full app →</a>
     <button class="btn ghost promo-replay" id="promo-replay">↻ Play again</button>
   </div>
 </div>
