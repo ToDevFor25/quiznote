@@ -187,6 +187,44 @@
     .site-header .brand-name { font-size: 22px; }
     .cal-grid { gap: 3px; }
   }
+  /* ── Practice log ── */
+  .practice-log-card { margin-bottom: 24px; }
+  .log-entry {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #f0ede4; font-size: 14px; font-weight: 600;
+  }
+  .log-entry:last-of-type { border-bottom: none; }
+  .log-entry .log-check { color: var(--teal); font-size: 18px; flex-shrink: 0; }
+  .log-entry .log-text { flex: 1; }
+  .log-entry .log-date { font-size: 12px; color: var(--ink-faint); }
+  .log-entry .log-inst { font-size: 11px; font-weight: 700; color: var(--grape); background: rgba(91,63,228,0.08); padding: 2px 8px; border-radius: 999px; }
+  .log-entry .log-del {
+    background: none; border: none; color: var(--ink-faint); cursor: pointer;
+    font-size: 16px; padding: 4px; opacity: 0.5; transition: opacity 100ms;
+  }
+  .log-entry .log-del:hover { opacity: 1; color: var(--coral); }
+  .log-add {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .log-input {
+    flex: 1; min-width: 140px; font-family: inherit; font-size: 14px; font-weight: 600;
+    border: 1.5px solid var(--shadow-cool); border-radius: 10px; padding: 8px 12px;
+    color: var(--ink); background: var(--cream);
+  }
+  .log-input:focus { outline: none; border-color: var(--teal); }
+  .log-select {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--shadow-cool); border-radius: 10px; padding: 8px 10px;
+    color: var(--ink); background: var(--cream); cursor: pointer;
+  }
+  .log-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
+    color: white; background: var(--teal); border: none; border-radius: 10px;
+    padding: 8px 16px; cursor: pointer; transition: background 100ms;
+  }
+  .log-btn:hover { background: var(--teal-dk); }
+  .log-empty { font-size: 13px; color: var(--ink-faint); font-weight: 600; font-style: italic; padding: 8px 0; }
+
   /* ── Share button + dropdown ── */
   .share-btn {
     font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px;
@@ -375,6 +413,17 @@
       <div class="trend-compare" id="trend-compare" hidden></div>
       <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
       <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
+    </div>
+
+    <!-- Practice log (self-reported teacher lessons — dashboard only, not exported) -->
+    <div class="card practice-log-card" id="practice-log" hidden>
+      <div class="section-head" style="margin-bottom:12px;">Practice log</div>
+      <div id="log-entries"></div>
+      <div class="log-add" id="log-add-form">
+        <input type="text" class="log-input" id="log-note" placeholder="What did you practice?" maxlength="100" />
+        <select class="log-select" id="log-instrument"><option value="">Instrument</option></select>
+        <button class="log-btn" id="log-add-btn">+ Log</button>
+      </div>
     </div>
 
     <!-- Mastery grid -->
@@ -703,6 +752,9 @@
     // Trend chart
     drawTrend(weeklyTrend);
 
+    // Practice log
+    drawPracticeLog(active);
+
     // Mastery grid
     drawMastery(mastery);
   }
@@ -892,6 +944,62 @@
       });
 
       section.appendChild(grid);
+    });
+  }
+
+  // ── Practice log ──
+  function drawPracticeLog(active) {
+    var instruments = active.instruments || [];
+    if (instruments.length === 0) return;
+
+    show('practice-log');
+    var select = document.getElementById('log-instrument');
+    instruments.forEach(function(inst) {
+      var opt = document.createElement('option');
+      opt.value = inst; opt.textContent = inst;
+      select.appendChild(opt);
+    });
+    if (instruments.length === 1) { select.value = instruments[0]; select.style.display = 'none'; }
+
+    renderLogEntries(active.id);
+
+    document.getElementById('log-add-btn').addEventListener('click', function() {
+      var note = document.getElementById('log-note').value.trim();
+      var inst = select.value;
+      if (!note && !inst) return;
+      QN.practiceLog.add(active.id, { note: note, instrument: inst || instruments[0] || null });
+      document.getElementById('log-note').value = '';
+      renderLogEntries(active.id);
+    });
+
+    document.getElementById('log-note').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') document.getElementById('log-add-btn').click();
+    });
+  }
+
+  function renderLogEntries(profileId) {
+    var container = document.getElementById('log-entries');
+    container.innerHTML = '';
+    var entries = QN.practiceLog.list(profileId);
+    if (entries.length === 0) {
+      container.innerHTML = '<div class="log-empty">No practice logged yet. Use this to track teacher lessons.</div>';
+      return;
+    }
+    entries.slice().reverse().slice(0, 20).forEach(function(entry) {
+      var div = document.createElement('div');
+      div.className = 'log-entry';
+      var dateStr = entry.date || '';
+      try { dateStr = new Date(entry.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch(e) {}
+      div.innerHTML = '<span class="log-check">✓</span>' +
+        '<span class="log-text">' + (entry.note || 'Practice session') + '</span>' +
+        (entry.instrument ? '<span class="log-inst">' + entry.instrument + '</span>' : '') +
+        '<span class="log-date">' + dateStr + '</span>' +
+        '<button class="log-del" title="Remove">×</button>';
+      div.querySelector('.log-del').addEventListener('click', function() {
+        QN.practiceLog.remove(profileId, entry.id);
+        renderLogEntries(profileId);
+      });
+      container.appendChild(div);
     });
   }
 
