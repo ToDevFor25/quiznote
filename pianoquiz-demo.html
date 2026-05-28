@@ -524,12 +524,13 @@
     font-family: 'Nunito', sans-serif; font-weight: 700;
     font-size: 13px; color: var(--ink); line-height: 1.4; margin-bottom: 16px;
   }
-  /* CTA + replay: normal-sized (not huge) so they fit and clear their shadows */
+  /* CTA + replay: block so width + vertical margins apply (the <a> is inline
+     by default, which is why the buttons were overlapping). */
   .promo-cta {
-    width: 100%; text-decoration: none; box-sizing: border-box;
-    font-size: 19px; padding: 13px 24px; margin-bottom: 16px;
+    display: block; width: 100%; text-decoration: none; box-sizing: border-box;
+    font-size: 19px; padding: 13px 24px; margin-bottom: 14px;
   }
-  .promo-replay { width: 100%; font-size: 16px; padding: 11px 22px; }
+  .promo-replay { display: block; width: 100%; font-size: 16px; padding: 11px 22px; box-sizing: border-box; }
 
   .miss-list {
     margin-top: 22px; text-align: left;
