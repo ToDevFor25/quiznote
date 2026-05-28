@@ -1176,7 +1176,13 @@
     var section = document.getElementById('mastery-section');
     var sectionHead = document.createElement('div');
     sectionHead.className = 'section-head';
-    sectionHead.innerHTML = '<span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:1.3rem;">Module mastery</span>';
+    sectionHead.innerHTML = '<span style="font-family:Fredoka,sans-serif;font-weight:700;font-size:1.3rem;">Module mastery</span>' +
+      '<div style="font-size:0.82rem;font-weight:600;color:var(--ink-soft);margin-top:3px;line-height:1.45;">' +
+      'Clear a level by scoring 85%+ accuracy in 2 rounds. Your medal shows the hardest level you’ve cleared — ' +
+      '<span style="color:var(--bronze);">● Bronze</span> (Easy) · ' +
+      '<span style="color:var(--silver);">● Silver</span> (Medium) · ' +
+      '<span style="color:var(--gold);">● Gold</span> (Tricky).' +
+      '</div>';
     section.appendChild(sectionHead);
 
     Object.keys(ROSTER).forEach(function(tierName) {
