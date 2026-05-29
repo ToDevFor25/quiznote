@@ -228,8 +228,8 @@
     cursor: pointer;
   }
   .er-listen-btn:active { transform: translateY(1px); }
-  /* Pattern SVG in choice buttons */
-  .choice-btn svg { width: 100%; height: auto; max-height: 76px; display: block; }
+  /* Pattern SVG in choice buttons (viewBox is cropped to content) */
+  .choice-btn svg { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; }
 
   /* Explosion FX layer — full-screen overlay (Ear: Rhythm exploding symbols) */
   .er-fx-layer {
@@ -876,12 +876,15 @@
   }
 
   // ── Rhythm pattern renderer (Bravura Text glyphs) ──────────────────────────
-  // Calibrated via _rhythm-render-compare.html (May 2026). Every note is a
-  // complete Bravura glyph (head + stem from the font — no seams). Beamed groups
-  // use the quarter glyph (no flag) and we draw ONLY the beam, placed at the
-  // stem tip measured at runtime via getBBox() — the Bravura *Text* variant's
-  // em scaling differs from the published Bravura metadata, so we measure.
-  var RP = { dir:'down', glyph:46, h:80, cy:44, beamW:4.5, beamGap:2.5, beamR:0, beamDX:-1, vNudge:14 };
+  // Calibrated via _rhythm-render-compare.html (May 2026). Notes are complete
+  // Bravura Text glyphs (head+stem from the font). Beamed groups and single
+  // 8th/16ths render the quarter glyph plus a drawn stem extension so the beam /
+  // flag can sit below the glyph's natural stem tip; the beam is a rect and the
+  // flag is a separately-sized glyph (shortened curl). Stem tip is measured at
+  // runtime via getBBox() (Bravura *Text* em scaling differs from the published
+  // Bravura metadata). The viewBox is cropped to the content for the tiles.
+  var RP = { dir:'down', glyph:44, cy:51, beamW:4.5, beamGap:3.5, beamR:0, beamDX:0,
+             vNudge:14, flagScale:0.65, beamDrop:4.5, stemW:0.8, flagDX:1, flagDY:8 };
   var RP_G = {
     whole:        String.fromCodePoint(0xE1D2),  // noteWhole
     halfUp:       String.fromCodePoint(0xE1D3),  // noteHalfUp
@@ -892,6 +895,10 @@
     eighthDown:   String.fromCodePoint(0xE1D8),  // note8thDown
     sixteenthUp:  String.fromCodePoint(0xE1D9),  // note16thUp
     sixteenthDown:String.fromCodePoint(0xE1DA),  // note16thDown
+    flag8Up:      String.fromCodePoint(0xE240),  // flag8thUp
+    flag8Down:    String.fromCodePoint(0xE241),  // flag8thDown
+    flag16Up:     String.fromCodePoint(0xE242),  // flag16thUp
+    flag16Down:   String.fromCodePoint(0xE243),  // flag16thDown
   };
   var RP_REF = 200, RP_METRICS = null;
   function rpMeasure() {
@@ -911,8 +918,8 @@
       var bd = bb(RP_G.quarterDown), bu = bb(RP_G.quarterUp);
       if (bd.height && bu.height) {
         RP_METRICS = {
-          down: { tip: bd.y + bd.height, stemX: bd.x },
-          up:   { tip: bu.y,             stemX: bu.x + bu.width },
+          down: { tip: bd.y + bd.height, top: bd.y, stemX: bd.x },
+          up:   { tip: bu.y,             top: bu.y, stemX: bu.x + bu.width },
         };
       }
       document.body.removeChild(svg);
@@ -928,21 +935,20 @@
 
   function patternSVG(notes) {
     rpMeasure();
-    var w = 160, h = RP.h, cy = RP.cy, ink = '#2A2A3E';
+    var w = 160, ink = '#2A2A3E';
     var F = RP.glyph, down = (RP.dir !== 'up'), sgn = down ? 1 : -1, ss = F/4;
     var beamW = RP.beamW, beamGap = RP.beamGap, beamR = RP.beamR, beamDX = RP.beamDX;
+    var beamDrop = RP.beamDrop, stemW = RP.stemW, flagScale = RP.flagScale;
+    var flagDX = RP.flagDX, flagDY = RP.flagDY;
     var HEAD_CTR = 0.65, STEM_HALF = 0.06 * ss;
     var m = RP_METRICS ? RP_METRICS[down ? 'down' : 'up'] : null;
     var scale = F / RP_REF;
-    var baseY = cy + RP.vNudge;
-    var tipY = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss);
+    var baseY = RP.cy + RP.vNudge;
+    var tipY = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss);  // glyph's natural stem tip
+    var stemEndY = tipY + sgn*beamDrop;                              // extended stem end
 
-    var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
-    svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
-
-    // Spacing: compress duration→width (sqrt) so short notes aren't cramped.
-    // Strict proportionality crushes beamed 16th groups; sqrt follows engraving
-    // practice (short notes get more than their literal fraction of the width).
+    // sqrt spacing so beamed 16th groups aren't cramped (engraving practice:
+    // short notes get more than their literal fraction of the width).
     var sp = function(b){ return Math.sqrt(b); };
     var totalU = 0; for (var i=0;i<notes.length;i++) totalU += sp(notes[i]);
     var pad = 18, span = w - pad*2, x = pad;
@@ -953,13 +959,15 @@
       x += nw;
     }
 
-    var beamed = []; for (var i=0;i<P.length;i++) beamed[i]=false;
+    var beamed = [], hasFlag = false;
+    for (var i=0;i<P.length;i++) beamed[i]=false;
     var i = 0;
     while (i < P.length) {
       if (P[i].b < 1) {
         var gs = i; while (i < P.length && P[i].b < 1) i++;
         var ge = i - 1;
-        if (ge > gs) for (var j=gs;j<=ge;j++) beamed[j]=true;
+        if (ge > gs) { for (var j=gs;j<=ge;j++) beamed[j]=true; }
+        else { hasFlag = true; }
       } else { i++; }
     }
 
@@ -968,27 +976,44 @@
       var edge = m ? (m.stemX * scale) : ((down ? 0.06 : 1.24) * ss);
       return glyphX(p) + edge + sgn*STEM_HALF + sgn*beamDX;
     };
+    var qGlyphAt = function(p){ return '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+(down?RP_G.quarterDown:RP_G.quarterUp)+'</text>'; };
+    var drawExt = function(p){   // extend the font stem to the beam/flag end
+      if (beamDrop <= 0.01) return '';
+      var x0 = stemCX(p) - stemW/2;
+      return '<rect x="'+x0.toFixed(2)+'" y="'+Math.min(tipY,stemEndY).toFixed(2)+'" width="'+stemW+'" height="'+beamDrop.toFixed(2)+'" fill="'+ink+'"/>';
+    };
+    var flagGlyphFor = function(b){
+      if (b <= 0.25) return down ? RP_G.flag16Down : RP_G.flag16Up;
+      return down ? RP_G.flag8Down : RP_G.flag8Up;
+    };
 
-    // 1) unbeamed → complete glyph (head+stem+flag from the font)
+    var body = '';
+    // 1) unbeamed: quarter/half/whole → complete glyph; single 8th/16th →
+    //    quarter glyph + stem extension + separately-sized flag (shorter curl).
     for (var i=0;i<P.length;i++) {
       if (beamed[i]) continue;
-      svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+rpCompleteGlyph(P[i].b, down)+'</text>';
+      var p = P[i];
+      if (p.b < 1) {
+        body += qGlyphAt(p) + drawExt(p);
+        body += '<text x="'+(stemCX(p)-STEM_HALF+flagDX).toFixed(2)+'" y="'+(stemEndY+flagDY).toFixed(2)+'" font-family="Bravura Text" font-size="'+(F*flagScale).toFixed(2)+'" fill="'+ink+'">'+flagGlyphFor(p.b)+'</text>';
+      } else {
+        body += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+rpCompleteGlyph(p.b, down)+'</text>';
+      }
     }
-    // 2) beamed → quarter glyph (no flag); beam drawn in step 3
-    var qGlyph = down ? RP_G.quarterDown : RP_G.quarterUp;
+    // 2) beamed: quarter glyph + stem extension (beam replaces the flag)
     for (var i=0;i<P.length;i++) {
       if (!beamed[i]) continue;
-      svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+qGlyph+'</text>';
+      body += qGlyphAt(P[i]) + drawExt(P[i]);
     }
-    // 3) beams at the stem tips (primary + secondary over 16th runs)
-    var primaryTopY = down ? tipY : (tipY - beamW);
+    // 3) beams at the (extended) stem end; extra beams (16ths) toward heads.
+    var primaryTopY = down ? (stemEndY - beamW) : stemEndY;
     i = 0;
     while (i < P.length) {
       if (beamed[i]) {
         var gs = i; while (i < P.length && beamed[i]) i++;
         var ge = i - 1;
         var bx1 = stemCX(P[gs]) - STEM_HALF, bx2 = stemCX(P[ge]) + STEM_HALF;
-        svg += '<rect x="'+bx1.toFixed(2)+'" y="'+primaryTopY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
+        body += '<rect x="'+bx1.toFixed(2)+'" y="'+primaryTopY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
         var secondaryTopY = primaryTopY - sgn*(beamW+beamGap);
         for (var j=gs;j<=ge;j++) {
           if (P[j].b <= 0.25) {
@@ -998,12 +1023,20 @@
             var sx2 = stemCX(P[j]) - STEM_HALF;
             var wRun = (endX + STEM_HALF) - sx2;
             if (wRun < beamW*1.4) wRun = beamW*1.4; // lone 16th in group → stub
-            svg += '<rect x="'+sx2.toFixed(2)+'" y="'+secondaryTopY.toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
+            body += '<rect x="'+sx2.toFixed(2)+'" y="'+secondaryTopY.toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
           }
         }
       } else { i++; }
     }
-    svg += '</svg>';
+
+    // Crop the viewBox to the content (calibrator h/cy leave whitespace we don't
+    // want in the tiles). Down: head-top → beam (or flag end). Up: mirror.
+    var headTop = baseY + (m ? m.top * scale : -1.0*ss);
+    var vbTop = (down ? headTop : stemEndY) - 4;
+    var vbBot = (down ? (stemEndY + (hasFlag ? flagDY : 0)) : (baseY + 0.6*ss)) + 5;
+    var vbH = Math.max(20, vbBot - vbTop);
+    var svg = '<svg viewBox="0 '+vbTop.toFixed(2)+' '+w+' '+vbH.toFixed(2)+'" xmlns="http://www.w3.org/2000/svg">';
+    svg += body + '</svg>';
     return svg;
   }
 
