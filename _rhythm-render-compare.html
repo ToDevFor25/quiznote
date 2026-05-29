@@ -216,8 +216,14 @@ function patternSVG_NEW(notes, o) {
   var m = METRICS ? METRICS[down ? 'down' : 'up'] : null;
   var scale = F / REF;
 
+  var beamDrop = o.beamDrop || 0;       // extend stems this far past the glyph's tip
+  var stemW = o.stemW || 1.5;           // drawn stem-extension thickness
+  var flagScale = (o.flagScale != null) ? o.flagScale : 1;
+  var flagDX = o.flagDX || 0, flagDY = o.flagDY || 0;
+
   var baseY = cy + vNudge;
-  var tipY  = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss); // beam sits here
+  var tipY  = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss); // glyph's natural stem tip
+  var stemEndY = tipY + sgn*beamDrop;   // extended stem end — beams & flags sit here
   var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.18"/>';
 
@@ -248,39 +254,37 @@ function patternSVG_NEW(notes, o) {
     var edge = m ? (m.stemX * scale) : ((down ? 0.06 : 1.24) * ss);
     return glyphX(p) + edge + sgn*STEM_HALF + sgn*beamDX;
   }
-
-  // 1) UNBEAMED notes. quarter/half/whole → complete glyph. Single 8th/16th →
-  //    quarter glyph (head+stem) + a SEPARATELY-SIZED flag glyph, so the flag
-  //    ("tail") length is controllable (flagScale). flagScale=1 falls back to
-  //    the complete flagged glyph.
-  var flagScale = (o.flagScale != null) ? o.flagScale : 1;
-  function flagGlyph(b){
+  function qGlyphAt(p){ return '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+(down?GLYPH.quarterDown:GLYPH.quarterUp)+'</text>'; }
+  function drawExt(p){   // extend the font stem to the beam/flag end
+    if (beamDrop <= 0.01) return '';
+    var x0 = stemCX(p) - stemW/2;
+    return '<rect x="'+x0.toFixed(2)+'" y="'+Math.min(tipY,stemEndY).toFixed(2)+'" width="'+stemW+'" height="'+beamDrop.toFixed(2)+'" fill="'+ink+'"/>';
+  }
+  function flagGlyphFor(b){
     if (b <= 0.25) return down ? GLYPH.flag16Down : GLYPH.flag16Up;
     return down ? GLYPH.flag8Down : GLYPH.flag8Up;
   }
+
+  // 1) UNBEAMED. quarter/half/whole → complete glyph. Single 8th/16th → quarter
+  //    glyph + stem extension + separately-sized flag at the (extended) stem end,
+  //    so flagScale shortens the flag curl and the stem matches beamed notes.
   for (var i=0;i<P.length;i++) {
     if (beamed[i]) continue;
     var p = P[i];
-    if (p.b < 1 && flagScale < 0.999) {
-      svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+(down?GLYPH.quarterDown:GLYPH.quarterUp)+'</text>';
-      var fx = stemCX(p) - STEM_HALF;
-      svg += '<text x="'+fx.toFixed(2)+'" y="'+tipY.toFixed(2)+'" font-family="Bravura Text" font-size="'+(F*flagScale).toFixed(2)+'" fill="'+ink+'">'+flagGlyph(p.b)+'</text>';
+    if (p.b < 1) {
+      svg += qGlyphAt(p) + drawExt(p);
+      svg += '<text x="'+(stemCX(p)-STEM_HALF+flagDX).toFixed(2)+'" y="'+(stemEndY+flagDY).toFixed(2)+'" font-family="Bravura Text" font-size="'+(F*flagScale).toFixed(2)+'" fill="'+ink+'">'+flagGlyphFor(p.b)+'</text>';
     } else {
       svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+completeGlyph(p.b, down)+'</text>';
     }
   }
-  // 2) BEAMED notes → complete QUARTER glyph (head+stem, no flag — the beam
-  //    replaces the flag). Identical seating to the unbeamed glyphs, so the
-  //    head-to-stem join is the font's, not ours: no gap possible.
-  var qGlyph = down ? GLYPH.quarterDown : GLYPH.quarterUp;
+  // 2) BEAMED → quarter glyph + stem extension (the beam replaces the flag)
   for (var i=0;i<P.length;i++) {
     if (!beamed[i]) continue;
-    svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+qGlyph+'</text>';
+    svg += qGlyphAt(P[i]) + drawExt(P[i]);
   }
-  // 3) beams at the stem tips. Primary beam caps the tips; extra beams (16ths)
-  //    stack toward the heads (opposite the stem direction).
-  // beam sits AT the stem tip: bottom edge on the tip (down) / top edge on it (up)
-  var primaryTopY = down ? (tipY - beamW) : tipY;
+  // 3) beams at the (extended) stem end; extra beams (16ths) stack toward heads.
+  var primaryTopY = down ? (stemEndY - beamW) : stemEndY;
   i = 0;
   while (i < P.length) {
     if (beamed[i]) {
@@ -307,17 +311,21 @@ function patternSVG_NEW(notes, o) {
 }
 
 // ─── params + UI ──────────────────────────────────────────────
-var DEFAULTS = { dir:'down', glyph:46, h:80, cy:44, beamW:4.5, beamGap:2.5, beamR:0, beamDX:-1, vNudge:14, flagScale:0.8 };
+var DEFAULTS = { dir:'down', glyph:46, h:92, cy:48, beamW:3.5, beamGap:3.5, beamR:0, beamDX:-1, vNudge:14, flagScale:0.85, beamDrop:4, stemW:1.5, flagDX:0, flagDY:0 };
 var META = {
   glyph:   { label:'Glyph size',             min:20, max:54, step:1 },
-  flagScale:{label:'Flag/tail size (8/16)',  min:0.5, max:1, step:0.05 },
+  beamDrop:{ label:'Beam drop (lower beam)', min:0,  max:30, step:0.5 },
+  stemW:   { label:'Stem thickness (ext.)',  min:0.8, max:3, step:0.1 },
+  flagScale:{label:'Flag/tail size (8/16)',  min:0.4, max:1, step:0.05 },
+  flagDX:  { label:'Flag X nudge',           min:-6, max:6, step:0.2 },
+  flagDY:  { label:'Flag Y nudge',           min:-8, max:8, step:0.2 },
   beamW:   { label:'Beam thickness',         min:2,  max:9,  step:0.5 },
   beamGap: { label:'Gap between beams',      min:0.5, max:6, step:0.5 },
   beamR:   { label:'Beam corner radius',     min:0,  max:3,  step:0.1 },
   beamDX:  { label:'Beam X align',           min:-5, max:5,  step:0.2 },
   vNudge:  { label:'Vertical seat',          min:-14, max:14, step:0.5 },
-  cy:      { label:'Baseline Y (head row)',  min:8,  max:54, step:1 },
-  h:       { label:'SVG height',             min:46, max:88, step:1 },
+  cy:      { label:'Baseline Y (head row)',  min:8,  max:60, step:1 },
+  h:       { label:'SVG height',             min:46, max:110, step:1 },
 };
 var P = Object.assign({}, DEFAULTS);
 
