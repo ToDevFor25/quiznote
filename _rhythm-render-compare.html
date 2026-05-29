@@ -152,6 +152,36 @@ var GLYPH = {
   black:        String.fromCodePoint(0xE0A4),  // noteheadBlack (beamed heads only)
 };
 
+// Runtime glyph measurement for Bravura Text (metadata is for Bravura proper).
+// Measure the quarter glyph's bbox once at a large reference size; scale linearly.
+var REF = 200;
+var METRICS = null;
+function measureMetrics() {
+  if (!document.body) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('style', 'position:absolute;left:-9999px;top:0;width:600px;height:600px;');
+  document.body.appendChild(svg);
+  function bbox(ch) {
+    var t = document.createElementNS(ns, 'text');
+    t.setAttribute('x', '0'); t.setAttribute('y', '0');
+    t.setAttribute('font-family', 'Bravura Text'); t.setAttribute('font-size', REF);
+    t.textContent = ch; svg.appendChild(t);
+    var b = t.getBBox(); svg.removeChild(t); return b;
+  }
+  var bd = bbox(GLYPH.quarterDown), bu = bbox(GLYPH.quarterUp);
+  if (bd.height && bu.height) {
+    METRICS = {
+      // raw bbox at REF size (scaled by F/REF at render). y down.
+      // tip = stem-end offset from baseline (down→bottom, up→top).
+      // stemX = the stem's x (leftmost for down, rightmost for up) rel. to origin.
+      down: { tip: bd.y + bd.height, stemX: bd.x },
+      up:   { tip: bu.y,             stemX: bu.x + bu.width },
+    };
+  }
+  document.body.removeChild(svg);
+}
+
 function completeGlyph(b, down) {
   if (b >= 4) return GLYPH.whole;
   if (b >= 2) return down ? GLYPH.halfDown : GLYPH.halfUp;
@@ -173,12 +203,17 @@ function patternSVG_NEW(notes, o) {
   //   noteQuarter stem extends 3.5 ss from the baseline; stem attaches at
   //   glyph-x 0 (down, left) or the head's right edge ~1.24 ss (up).
   //   Head center sits ~0.65 ss right of the glyph origin.
-  var STEM_LEN = 3.5, HEAD_CTR = 0.65;
-  var STEM_CX  = down ? 0.06 : 1.24;
+  var HEAD_CTR = 0.65;
   var STEM_HALF = 0.06 * ss;       // half the stem thickness (0.12 ss)
 
+  // Stem tip + stem-x come from a runtime getBBox() measurement of the actual
+  // Bravura *Text* quarter glyph (the metadata JSON is for Bravura, not the
+  // Text variant — different em scaling). Measured at REF size, scaled linearly.
+  var m = METRICS ? METRICS[down ? 'down' : 'up'] : null;
+  var scale = F / REF;
+
   var baseY = cy + vNudge;
-  var tipY  = baseY + sgn*STEM_LEN*ss;   // stem tip — where the beam sits
+  var tipY  = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss); // beam sits here
   var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.18"/>';
 
@@ -203,7 +238,10 @@ function patternSVG_NEW(notes, o) {
   }
 
   function glyphX(p){ return p.cx - HEAD_CTR*ss; }            // text origin x (centers head on cx)
-  function stemCX(p){ return glyphX(p) + STEM_CX*ss + sgn*beamDX; } // stem centerline x
+  function stemCX(p){                                          // stem centerline x
+    var edge = m ? (m.stemX * scale) : ((down ? 0.06 : 1.24) * ss);
+    return glyphX(p) + edge + sgn*STEM_HALF + sgn*beamDX;
+  }
 
   // 1) UNBEAMED notes → complete glyph (head+stem+flag straight from the font)
   for (var i=0;i<P.length;i++) {
@@ -333,9 +371,13 @@ document.getElementById('copy').addEventListener('click', function(){
   var b=this; setTimeout(function(){ b.textContent='Copy params'; }, 1200);
 });
 
-document.fonts && document.fonts.load('30px "Bravura Text"').then(renderAll);
+function init(){ try { measureMetrics(); } catch(e){} renderAll(); }
 buildControls();
-renderAll();
+if (document.fonts && document.fonts.load) {
+  document.fonts.load(REF + 'px "Bravura Text"').then(init);
+  document.fonts.ready.then(init);
+}
+init();
 </script>
 </body>
 </html>
