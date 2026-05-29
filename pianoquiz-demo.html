@@ -118,7 +118,7 @@
 
   /* ============ START SCREEN ============ */
   #start-screen {
-    align-items: center; justify-content: center;
+    align-items: center; justify-content: safe center;
     padding: 24px 20px 40px;
   }
   .start-wrap { width: 100%; max-width: 720px; }
@@ -195,8 +195,8 @@
   /* On mobile, make play screen fill exactly the viewport and not scroll */
   @media (max-width: 760px) {
     #play-screen.active {
-      height: 100dvh;
       height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       padding: 8px 10px 6px;
       gap: 6px;
