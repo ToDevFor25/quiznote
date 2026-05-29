@@ -940,11 +940,15 @@
     var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
     svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
 
-    var totalBeats = 0; for (var i=0;i<notes.length;i++) totalBeats += notes[i];
+    // Spacing: compress duration→width (sqrt) so short notes aren't cramped.
+    // Strict proportionality crushes beamed 16th groups; sqrt follows engraving
+    // practice (short notes get more than their literal fraction of the width).
+    var sp = function(b){ return Math.sqrt(b); };
+    var totalU = 0; for (var i=0;i<notes.length;i++) totalU += sp(notes[i]);
     var pad = 18, span = w - pad*2, x = pad;
     var P = [];
     for (var i=0;i<notes.length;i++) {
-      var b = notes[i], nw = (b/totalBeats)*span;
+      var b = notes[i], nw = (sp(b)/totalU)*span;
       P.push({ b:b, cx:x + nw/2, nw:nw });
       x += nw;
     }
