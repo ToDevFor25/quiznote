@@ -1207,10 +1207,11 @@
     font-synthesis: none;
     fill: var(--ink);
     opacity: 0;
-    /* Opacity-only fade — no CSS transform. A transform on SVG <text> forces
-       a rasterized layer that renders the glyph blurry/heavy; the playable
-       card's crisp clef has no transform, so we match it and just fade in. */
-    transition: opacity 460ms ease 500ms;
+    /* Render with the staff: the clef fades in together with the staff-line
+       draw (no delay), with NO transform — a CSS transform on an SVG <text>
+       rasterizes the glyph and renders it blurry/heavy. Matches the crisp,
+       static playable-card clef. */
+    transition: opacity 220ms ease;
   }
   .demo-stage.staff-ready .clef { opacity: 1; }
   .demo-landed-note {
