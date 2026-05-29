@@ -228,5 +228,39 @@
     return true;
   }
 
+  // ── "Best in portrait" landscape hint ──────────────────────────────────
+  // Inject the rotate overlay ONCE, and only on practice-module pages (those
+  // with a #play-screen — content pages like the landing/dashboard scroll fine
+  // in landscape and are skipped). Visibility is entirely CSS-driven
+  // (qn-theme.css gates it to short touch landscape); here we only place the
+  // markup. Icon: the landscape→portrait transition glyph.
+  function injectRotateHint() {
+    if (!document.getElementById('play-screen')) return;   // modules only
+    if (document.getElementById('qn-rotate')) return;      // once
+    var el = document.createElement('div');
+    el.id = 'qn-rotate';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML =
+      '<div class="qn-rotate-card">' +
+        '<svg viewBox="0 0 96 80" fill="none" stroke="currentColor" stroke-width="4" ' +
+          'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<g opacity="0.32"><rect x="8" y="31" width="34" height="22" rx="4"/>' +
+          '<line x1="36" y1="37" x2="36" y2="47"/></g>' +
+          '<rect x="60" y="22" width="22" height="36" rx="5"/>' +
+          '<line x1="66" y1="53" x2="76" y2="53"/>' +
+          '<path d="M44 18 A 16 16 0 0 1 61 14"/>' +
+          '<polyline points="55 10 61.5 14 57 19.5"/>' +
+        '</svg>' +
+        '<div class="qn-rotate-title">QuizNote works best upright</div>' +
+        '<div class="qn-rotate-sub">Rotate your device to keep practicing.</div>' +
+      '</div>';
+    document.body.appendChild(el);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectRotateHint);
+  } else {
+    injectRotateHint();
+  }
+
   window.QNNav = { mount: mount, DESTS: DESTS };
 })();

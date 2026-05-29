@@ -139,7 +139,7 @@
    uses it elsewhere too), and .summary-speed styling is inert in modules
    without that element (e.g. scales) — harmless, future-proofs them. */
 #summary-screen {
-  align-items: center; justify-content: center;
+  align-items: center; justify-content: safe center;
   padding: 20px;
 }
 .summary-wrap { width: 100%; max-width: 640px; text-align: center; }
@@ -727,3 +727,32 @@ animation: modalFade 200ms ease-out;
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ── "Best in portrait" landscape hint ───────────────────────────────────
+   Markup is injected by qn-nav.js, but ONLY on practice-module pages (those
+   with a #play-screen). Visibility is gated purely by CSS: shown only on
+   short, touch landscape (phones) — tablets in landscape (taller) and desktop
+   are unaffected. Portrait-first practice UI doesn't fit a phone's landscape
+   height, so we ask the user to rotate rather than show a clipped layout. */
+#qn-rotate { display: none; }
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  #qn-rotate {
+    display: flex; position: fixed; inset: 0; z-index: 99999;
+    align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+    background: var(--cream, #FFFAF0);
+  }
+}
+.qn-rotate-card { max-width: 340px; }
+.qn-rotate-card svg {
+  width: 72px; height: 72px; color: var(--teal-dk);
+  display: block; margin: 0 auto 14px;
+}
+.qn-rotate-title {
+  font-family: 'Fredoka', sans-serif; font-weight: 700;
+  font-size: 22px; line-height: 1.15; color: var(--ink);
+}
+.qn-rotate-sub {
+  font-family: 'Nunito', sans-serif; font-weight: 600;
+  font-size: 14px; color: var(--ink-soft); margin-top: 6px;
+}
