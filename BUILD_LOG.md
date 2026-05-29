@@ -57,6 +57,62 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Session close — quality + viewport sprint (May 28–29, 2026)
+
+**One-session arc:** a run of device-reported bug fixes + a full responsive
+pass + doc/spec upkeep. Each item below has its own detailed entry; this is the
+consolidating close-out + the refreshed next list.
+
+**Shipped to `main` (production):**
+- Teaching hints revived (time-signatures, dotted-notes — cross-scope `ReferenceError`).
+- Key-signatures scoring/reveal fixed (`state.current.key`→`.keyId`; bound missing `M = KS.fx`).
+- Reveal shade unified to the lighter `reveal-correct` everywhere.
+- Recommender: never recommends below your highest-cleared tier; "cleared" rule
+  unified across recommender / dashboard / path.
+- Dashboard mastery-rule explainer (grape banner).
+- Landing demo rebuilt as a scripted teaching-hint flow (wrong→hint→retry→correct→fanfare).
+- Phone-viewport pass (36 modules): dvh fix, start/summary `safe center`,
+  landscape "best in portrait" hint (icon C via `qn-nav.js`), play-screen scroll
+  safety net.
+- Legal drafts: Share/export disclosed; error-reporting scoped PLANNED.
+
+**`Dev`-only (intentionally not promoted):**
+- `specs/pwa-spec.md` — PWA engineering spec, DRAFT.
+
+**Decision:** **PWA is deferred to the cloud session** (Jonathan's call). Rationale:
+iOS evicts local storage after ~7 days unused, so an installed PWA on the
+current local-only model could lose data; doing PWA *after* cloud sync means
+installs are durable from day one. Spec is parked; its only hard blocker on
+resume is a high-res logo for the icon set.
+
+**CLAUDE.md candidates surfaced this session (flagged, not yet applied):**
+1. Multi-IIFE shared-symbol rule: a symbol shared between a module's inline
+   `<script>` blocks must be reached via its exposed namespace (`TS.decodeKey`,
+   `window.DN.SYMBOLS`) — a bare ref parses fine but throws only on the code
+   path that hits it. Verify runtime-wired handlers by driving a click, not just
+   init.
+2. `dvh`/`vh` fallback order: write `height:100vh; height:100dvh;` (fallback
+   first, enhancement last) — the inverted order made `dvh` dead in all 36.
+3. Per-feature "does this touch privacy/terms?" checkpoint (Share/export was the
+   miss that prompted it).
+4. "Mastered" is computed in 3 surfaces and drifted — consider a shared
+   `QN.mastery` helper so the clear/advance rule lives in one place.
+
+**Still open / next:**
+- **Real-device QA** on the viewport pass (SE / 13 / Pro Max / small Android,
+  portrait + landscape; confirm dvh fit + the rotate hint). The owed pixel QA.
+- **Cloud / monetization arc** (accounts → sync → Stripe → consent gate) — the
+  big next track; PWA, error-reporting Phase 1, and iOS storage durability all
+  hang off it.
+- **Error reporting:** Phase 0 (`qn-errors.js`, local capture + mailto/clipboard
+  "send diagnostics") is buildable anytime, no policy change; Phase 1 (cloud)
+  activates the PLANNED disclosures, lawyer-gated.
+- **PWA** — resume in the cloud session (spec ready; needs the logo asset).
+- Optional: the `QN.mastery` extraction above; landing Pillar-1 title duplication
+  (from the older list).
+
+---
+
 ### Phone-viewport pass: dvh fix, overflow-safe play loop, start/summary anchoring, landscape hint — May 2026
 
 **Session type:** Responsive audit + fix across the whole play flow (start /
