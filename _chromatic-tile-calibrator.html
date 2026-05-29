@@ -91,7 +91,10 @@ function yOf(step){ return BOTTOM_E4 - STEP*step; }
 // scale, so we can offset each glyph's text-y to land its CENTER on the staff.
 var REF = 200, MET = null;
 function measure(){
-  if (MET || !document.body) return;
+  if (!document.body) return;
+  // Only trust getBBox once the real Bravura Text font is loaded — otherwise we
+  // measure the fallback font and the head offset is wrong (head sits a step high).
+  if (document.fonts && document.fonts.check && !document.fonts.check(REF + 'px "Bravura Text"')) return;
   try {
     var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
     svg.setAttribute('style','position:absolute;left:-9999px;top:0;width:600px;height:600px;');
@@ -119,7 +122,7 @@ var DESC = [
 var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
 
 var G = { dir:'asc', noteStyle:'quarter', colorMode:'rainbow', noteSize:18, accSize:13,
-          ledgerW:6, showPill:1, headDY:0, stemLen:16, stemW:1.4, stemDX:0,
+          ledgerW:6, showPill:1, headDY:0, stemLen:16, stemW:1.4, stemDX:0, stemDY:0,
           xStart:30, pairGap:6.5, groupGap:11, accGap:5, accDY:-1 };
 var GMETA = {
   noteSize:{label:'Note size',min:10,max:26,step:0.5},
@@ -129,6 +132,7 @@ var GMETA = {
   stemLen: {label:'Stem length (quarter)',min:0,max:30,step:0.5},
   stemW:   {label:'Stem thickness',min:0.8,max:3,step:0.1},
   stemDX:  {label:'Stem X offset',min:-5,max:5,step:0.2},
+  stemDY:  {label:'Stem Y offset',min:-8,max:8,step:0.2},
   showPill:{label:'Show pill (0/1)',min:0,max:1,step:1},
 };
 var NOTES = [];
@@ -167,8 +171,8 @@ function svgInner(){
     if (d.a){ var ag=(d.a==='sharp')?GL.sharp:GL.flat;
       accs += '<text x="'+d.ax.toFixed(1)+'" y="'+(d.ay - accCy).toFixed(1)+'" font-size="'+G.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>'; }
     if (G.noteStyle==='quarter'){
-      var sx = (d.x + headHalf + G.stemDX);
-      stems += '<line x1="'+sx.toFixed(1)+'" y1="'+cy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(cy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
+      var sx = (d.x + headHalf + G.stemDX), sy = cy + G.stemDY;
+      stems += '<line x1="'+sx.toFixed(1)+'" y1="'+sy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(sy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
     }
     heads += '<text x="'+d.x.toFixed(1)+'" y="'+(cy - headCy).toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
   }
