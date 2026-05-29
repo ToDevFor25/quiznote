@@ -92,17 +92,18 @@ var DESC = [ // descending → flats on B A G E D
 var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
 
 var DEFAULTS = {
-  dir:'asc', noteStyle:'head', colorMode:'rainbow',
-  noteSize:17, accSize:15, accGap:6, accDY:0,
-  xStart:30, spacing:10, ledgerW:9, showPill:0,
+  dir:'asc', noteStyle:'quarter', colorMode:'rainbow',
+  noteSize:18, accSize:13, accGap:5, accDY:-1,
+  xStart:30, pairGap:6.5, groupGap:11, ledgerW:6, showPill:1,
 };
 var META = {
   noteSize: { label:'Note size',          min:10, max:26, step:0.5, grp:'Notes' },
   accSize:  { label:'Accidental size',    min:8,  max:24, step:0.5 },
   accGap:   { label:'Accidental gap (←)', min:2,  max:12, step:0.5 },
   accDY:    { label:'Accidental Y nudge', min:-6, max:6,  step:0.5 },
-  xStart:   { label:'First note X',       min:20, max:48, step:1, grp:'Layout' },
-  spacing:  { label:'Note spacing X',     min:6,  max:16, step:0.5 },
+  xStart:   { label:'First note X',       min:18, max:48, step:1, grp:'Layout' },
+  pairGap:  { label:'Gap within a pair',  min:4,  max:14, step:0.5 },
+  groupGap: { label:'Gap between pitches',min:6,  max:20, step:0.5 },
   ledgerW:  { label:'Ledger width',       min:5,  max:16, step:0.5 },
   showPill: { label:'Show pill (0/1)',    min:0,  max:1,  step:1 },
 };
@@ -124,10 +125,17 @@ function svgInner() {
   s += '</g>';
   // clef
   s += '<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GL.clef+'</text>';
-  // notes
+  // notes — cluster layout: a natural and its sharp/flat (same staff step) sit
+  // tight (pairGap); a wider groupGap separates each pitch cluster, so the
+  // chromatic steps stay legible even with all 13 notes.
   var ledgers = '', accs = '', heads = '';
+  var xs = [], cx = P.xStart;
   for (var i=0;i<notes.length;i++) {
-    var n = notes[i], x = P.xStart + i*P.spacing, y = yOf(n.s);
+    xs[i] = cx;
+    if (i < notes.length-1) cx += (notes[i+1].s === notes[i].s) ? P.pairGap : P.groupGap;
+  }
+  for (var i=0;i<notes.length;i++) {
+    var n = notes[i], x = xs[i], y = yOf(n.s);
     if (n.s <= -2) { // middle-C ledger line
       ledgers += '<line x1="'+(x-P.ledgerW).toFixed(1)+'" y1="'+y+'" x2="'+(x+P.ledgerW).toFixed(1)+'" y2="'+y+'" stroke="#2A2A3E" stroke-width="1.4"/>';
     }
