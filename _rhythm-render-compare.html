@@ -45,10 +45,11 @@
 </head>
 <body>
   <h1>Rhythm rendering — hand-drawn SVG (old) vs Bravura glyphs (new)</h1>
-  <p class="sub">Left = current <code>patternSVG()</code>. Right = new renderer:
-     <b>unbeamed notes use the complete Bravura glyphs</b> (same as note-values / dotted-notes —
-     zero tuning), and <b>only beamed groups are composed</b> from noteheadBlack + drawn stem +
-     straight rect beams. Tune the engraving params below, then hit <b>Copy params</b>.</p>
+  <p class="sub">Left = current <code>patternSVG()</code>. Right = new renderer: <b>every note is a
+     complete Bravura glyph</b> (head + stem straight from the font — no gap possible). Unbeamed notes
+     use the flagged glyph; beamed notes use the quarter glyph (no flag) and the <b>only thing drawn
+     is the beam</b>, placed at the stem tip computed exactly from Bravura's metrics
+     (3.5 staff spaces). Tune the beam + position, then hit <b>Copy params</b>.</p>
 
   <div class="panel">
     <div class="controls" id="controls"></div>
@@ -162,14 +163,22 @@ function completeGlyph(b, down) {
 function patternSVG_NEW(notes, o) {
   o = o || {};
   var w = 160, h = o.h, cy = o.cy, ink = '#2A2A3E';
-  var F = o.glyph, stemH = o.stemH, beamW = o.beamW, beamGap = o.beamGap;
-  var stemW = o.stemW, beamR = o.beamR, vNudge = o.vNudge, headDY = o.headDY;
-  var stemDX = o.stemDX || 0;      // nudge stem toward head center (touch the head)
+  var F = o.glyph, beamW = o.beamW, beamGap = o.beamGap, beamR = o.beamR;
+  var vNudge = o.vNudge, beamDX = o.beamDX || 0;
   var down = (o.dir !== 'up');     // default stems DOWN (matches shipped ear-rhythm)
-  var sgn = down ? 1 : -1;         // stems extend in +y when down
-  var ss = F/4;                    // staff space
-  var headW = ss * 1.18;           // approx notehead advance width
-  var baseY = cy + vNudge;         // where complete-glyph baselines sit
+  var sgn = down ? 1 : -1;
+  var ss = F/4;                    // 1 staff space in px
+
+  // Exact Bravura metrics (staff spaces, from bravura_metadata.json):
+  //   noteQuarter stem extends 3.5 ss from the baseline; stem attaches at
+  //   glyph-x 0 (down, left) or the head's right edge ~1.24 ss (up).
+  //   Head center sits ~0.65 ss right of the glyph origin.
+  var STEM_LEN = 3.5, HEAD_CTR = 0.65;
+  var STEM_CX  = down ? 0.06 : 1.24;
+  var STEM_HALF = 0.06 * ss;       // half the stem thickness (0.12 ss)
+
+  var baseY = cy + vNudge;
+  var tipY  = baseY + sgn*STEM_LEN*ss;   // stem tip — where the beam sits
   var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
   svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.18"/>';
 
@@ -193,46 +202,43 @@ function patternSVG_NEW(notes, o) {
     } else { i++; }
   }
 
-  // stem attaches on the right edge (stem-up) or left edge (stem-down);
-  // stemDX > 0 nudges it toward the head center to close any gap.
-  function stemX(p){ return down ? (p.cx - headW/2 + stemW/2 + stemDX) : (p.cx + headW/2 - stemW/2 - stemDX); }
+  function glyphX(p){ return p.cx - HEAD_CTR*ss; }            // text origin x (centers head on cx)
+  function stemCX(p){ return glyphX(p) + STEM_CX*ss + sgn*beamDX; } // stem centerline x
 
-  // 1) UNBEAMED notes → complete glyph (head+stem+flag, perfectly engraved)
+  // 1) UNBEAMED notes → complete glyph (head+stem+flag straight from the font)
   for (var i=0;i<P.length;i++) {
     if (beamed[i]) continue;
-    var p = P[i], hx = p.cx - headW/2;
-    svg += '<text x="'+hx.toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+completeGlyph(p.b, down)+'</text>';
+    var p = P[i];
+    svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+completeGlyph(p.b, down)+'</text>';
   }
-  // 2) BEAMED notes → noteheadBlack + drawn stem (beams added in step 3)
-  var headBaseY = baseY + headDY;
-  var beamY = cy + vNudge + sgn*stemH;   // stem-end / outer beam edge line
+  // 2) BEAMED notes → complete QUARTER glyph (head+stem, no flag — the beam
+  //    replaces the flag). Identical seating to the unbeamed glyphs, so the
+  //    head-to-stem join is the font's, not ours: no gap possible.
+  var qGlyph = down ? GLYPH.quarterDown : GLYPH.quarterUp;
   for (var i=0;i<P.length;i++) {
     if (!beamed[i]) continue;
-    var p = P[i], hx = p.cx - headW/2, sx = stemX(p);
-    svg += '<text x="'+hx.toFixed(2)+'" y="'+headBaseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+GLYPH.black+'</text>';
-    var sy1 = headBaseY, sy2 = beamY;
-    svg += '<rect x="'+(sx-stemW/2).toFixed(2)+'" y="'+Math.min(sy1,sy2).toFixed(2)+'" width="'+stemW+'" height="'+Math.abs(sy2-sy1).toFixed(2)+'" fill="'+ink+'"/>';
+    svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+qGlyph+'</text>';
   }
-  // 3) beams across each beamed group. Primary at stem-end; extra beams (16ths)
-  //    stack toward the noteheads (opposite the stem direction).
-  var primaryY = down ? (beamY - beamW) : beamY;     // rect top of primary beam
+  // 3) beams at the stem tips. Primary beam caps the tips; extra beams (16ths)
+  //    stack toward the heads (opposite the stem direction).
+  var primaryTopY = down ? tipY : (tipY - beamW);
   i = 0;
   while (i < P.length) {
     if (beamed[i]) {
       var gs = i; while (i < P.length && beamed[i]) i++;
       var ge = i - 1;
-      var bx1 = stemX(P[gs]) - stemW/2, bx2 = stemX(P[ge]) + stemW/2;
-      svg += '<rect x="'+bx1.toFixed(2)+'" y="'+primaryY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
-      var secondaryY = primaryY - sgn*(beamW+beamGap);   // toward heads
+      var bx1 = stemCX(P[gs]) - STEM_HALF, bx2 = stemCX(P[ge]) + STEM_HALF;
+      svg += '<rect x="'+bx1.toFixed(2)+'" y="'+primaryTopY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
+      var secondaryTopY = primaryTopY - sgn*(beamW+beamGap);
       for (var j=gs;j<=ge;j++) {
         if (P[j].b <= 0.25) {
           if (j>gs && P[j-1].b <= 0.25) continue;
-          var k=j, endX=stemX(P[j]);
-          while (k<=ge && P[k].b<=0.25){ endX=stemX(P[k]); k++; }
-          var sx2 = stemX(P[j]) - stemW/2;
-          var wRun = (endX + stemW/2) - sx2;
+          var k=j, endX=stemCX(P[j]);
+          while (k<=ge && P[k].b<=0.25){ endX=stemCX(P[k]); k++; }
+          var sx2 = stemCX(P[j]) - STEM_HALF;
+          var wRun = (endX + STEM_HALF) - sx2;
           if (wRun < beamW*1.4) wRun = beamW*1.4; // lone 16th in group → stub
-          svg += '<rect x="'+sx2.toFixed(2)+'" y="'+secondaryY.toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
+          svg += '<rect x="'+sx2.toFixed(2)+'" y="'+secondaryTopY.toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
         }
       }
     } else { i++; }
@@ -242,19 +248,16 @@ function patternSVG_NEW(notes, o) {
 }
 
 // ─── params + UI ──────────────────────────────────────────────
-var DEFAULTS = { dir:'down', glyph:40, h:64, cy:20, stemH:34, stemW:2, stemDX:0, beamW:5, beamGap:3, beamR:0.4, vNudge:0, headDY:0 };
+var DEFAULTS = { dir:'down', glyph:40, h:62, cy:16, beamW:5, beamGap:3, beamR:0.4, beamDX:0, vNudge:0 };
 var META = {
-  glyph:   { label:'Glyph size (heads)',     min:20, max:52, step:1 },
-  stemH:   { label:'Beamed stem length',     min:14, max:38, step:1 },
-  stemW:   { label:'Stem thickness',         min:0.8, max:4, step:0.1 },
-  stemDX:  { label:'Stem X (touch head)',    min:-6, max:6, step:0.2 },
-  beamW:   { label:'Beam thickness',         min:2,  max:8,  step:0.5 },
+  glyph:   { label:'Glyph size',             min:20, max:54, step:1 },
+  beamW:   { label:'Beam thickness',         min:2,  max:9,  step:0.5 },
   beamGap: { label:'Gap between beams',      min:0.5, max:6, step:0.5 },
   beamR:   { label:'Beam corner radius',     min:0,  max:3,  step:0.1 },
-  vNudge:  { label:'Glyph vertical seat',    min:-12, max:12, step:0.5 },
-  headDY:  { label:'Beamed head align',      min:-10, max:10, step:0.5 },
-  cy:      { label:'Baseline Y (head row)',  min:10, max:44, step:1 },
-  h:       { label:'SVG height',             min:46, max:76, step:1 },
+  beamDX:  { label:'Beam X align',           min:-5, max:5,  step:0.2 },
+  vNudge:  { label:'Vertical seat',          min:-14, max:14, step:0.5 },
+  cy:      { label:'Baseline Y (head row)',  min:8,  max:54, step:1 },
+  h:       { label:'SVG height',             min:46, max:80, step:1 },
 };
 var P = Object.assign({}, DEFAULTS);
 
@@ -305,7 +308,7 @@ function buildControls() {
   dwrap.querySelector('select').addEventListener('change', function(e){
     P.dir = e.target.value;
     // move the head row to the opposite side so stems fit either way
-    P.cy = (P.dir === 'up') ? (P.h - 20) : 20;
+    P.cy = (P.dir === 'up') ? (P.h - 12) : 16;
     var slider = document.getElementById('r-cy'), span = document.getElementById('v-cy');
     if (slider) slider.value = P.cy; if (span) span.textContent = P.cy;
     renderAll();
