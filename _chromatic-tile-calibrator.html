@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Chromatic Scale tile — calibrator (play.html)</title>
+<title>Chromatic Scale tile — per-note calibrator (play.html)</title>
 <style>
   @font-face {
     font-family: 'Bravura Text';
@@ -16,138 +16,129 @@
   body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
          color:var(--ink); background:#f7f7fb; padding:24px; }
   h1 { font-size:19px; margin:0 0 4px; }
-  p.sub { margin:0 0 18px; color:#666; font-size:13px; }
+  p.sub { margin:0 0 16px; color:#666; font-size:13px; }
   .row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
   .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:18px; }
-  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px 22px; }
+  .globals { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px 22px; }
   .ctl label { display:block; font-size:12px; font-weight:600; margin-bottom:3px; }
   .ctl input[type=range] { width:100%; }
   .ctl select { width:100%; font:inherit; padding:5px; border-radius:6px; border:1px solid var(--line); }
   .ctl .val { font-variant-numeric:tabular-nums; color:var(--teal); font-weight:700; }
-  .grp { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#999; margin:6px 0 2px; grid-column:1/-1; }
-  /* tile previews — mimic play.html .ltile-art.th-pitch (green) */
+  /* per-note cards */
+  .notes { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+  .ncard { border:1px solid var(--line); border-radius:9px; padding:8px 10px; }
+  .ncard h4 { margin:0 0 6px; font-size:14px; }
+  .ncard .mini { font-size:11px; font-weight:600; margin:4px 0 1px; display:flex; justify-content:space-between; }
+  .ncard .mini .v { color:var(--teal); font-variant-numeric:tabular-nums; }
+  .ncard input[type=range] { width:100%; }
+  .acc-head { color:#a05; }
+  /* tile previews — play.html .ltile-art.th-pitch */
   .tile { background:#e4f3e0; border-radius:16px; overflow:hidden; display:block; }
   .tile svg { width:100%; height:100%; display:block; }
-  .tile.zoom { width:480px; height:336px; border:1px solid var(--line); }
+  .tile.zoom { width:520px; height:364px; border:1px solid var(--line); }
   .tile.actual { width:160px; height:112px; border:1px solid var(--line); }
   .cap { font-size:11px; color:#888; margin:6px 0 2px; }
   pre { background:#1e1e2e; color:#d4d4e8; padding:12px 14px; border-radius:8px; font-size:12px; overflow:auto; margin:10px 0 0; white-space:pre-wrap; }
-  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--teal); background:var(--teal); color:#fff; cursor:pointer; }
+  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--teal); background:var(--teal); color:#fff; cursor:pointer; margin-right:8px; }
+  button.ghost { background:#fff; color:var(--teal); }
 </style>
 </head>
 <body>
-  <h1>Chromatic Scale — tile calibrator</h1>
-  <p class="sub">Builds a real C chromatic scale on the staff for the <code>play.html</code> tile:
-     ascending uses sharps, descending uses flats (matches "sharps up, flats down"). Middle C gets a
-     ledger line. Dial spacing/size/style, hit <b>Copy snippet</b>, send me the values.</p>
+  <h1>Chromatic Scale — per-note calibrator</h1>
+  <p class="sub">Every notehead and every accidental has its own X &amp; Y. Starts from the cluster
+     layout; drag anything. <b>Reset positions</b> re-seeds from the auto layout / direction.
+     Sizes &amp; style are global. Hit <b>Copy snippet</b> when happy.</p>
 
   <div class="row">
     <div>
-      <div class="cap">Zoomed (3×)</div>
+      <div class="cap">Zoomed</div>
       <div class="tile zoom"><div id="zoom"></div></div>
     </div>
     <div>
-      <div class="cap">Actual size (as on play.html)</div>
+      <div class="cap">Actual size (play.html)</div>
       <div class="tile actual"><div id="actual"></div></div>
     </div>
   </div>
 
-  <div class="panel" style="margin-top:18px;">
-    <div class="controls" id="controls"></div>
+  <div class="panel">
+    <div class="globals" id="globals"></div>
+    <div style="margin-top:12px;">
+      <button id="reset" class="ghost">Reset positions</button>
+      <button id="copy">Copy snippet</button>
+    </div>
   </div>
 
   <div class="panel">
-    <button id="copy">Copy snippet</button>
-    <pre id="out"></pre>
+    <div style="font-weight:700;margin-bottom:8px;">Per-note position (X / Y) &amp; accidental (X / Y)</div>
+    <div class="notes" id="notes"></div>
   </div>
 
-<script>
-// Bravura glyphs
-var GL = {
-  clef:    String.fromCodePoint(0xE050),  // gClef (treble)
-  head:    String.fromCodePoint(0xE0A4),  // noteheadBlack
-  quarter: String.fromCodePoint(0xE1D5),  // noteQuarterUp
-  sharp:   String.fromCodePoint(0xE262),  // accidentalSharp
-  flat:    String.fromCodePoint(0xE260),  // accidentalFlat
-};
+  <div class="panel"><pre id="out"></pre></div>
 
-// Staff geometry matches the tile: 5 lines y=22..54 (8px apart). Bottom line
-// (y=54) = E4. One diatonic step = 4px; up = smaller y. Y(step) = 54 - 4*step,
-// where step counts letter-steps above E4 (C4 = -2, C5 = +5).
+<script>
+var GL = {
+  clef:    String.fromCodePoint(0xE050),
+  head:    String.fromCodePoint(0xE0A4),
+  quarter: String.fromCodePoint(0xE1D5),
+  sharp:   String.fromCodePoint(0xE262),
+  flat:    String.fromCodePoint(0xE260),
+};
 var BOTTOM_E4 = 54, STEP = 4;
 function yOf(step){ return BOTTOM_E4 - STEP*step; }
 
-// C chromatic, both spellings. step = letters above E4; acc = ''|'sharp'|'flat'.
-var ASC = [ // ascending → sharps on C D F G A
-  {s:-2,a:''},{s:-2,a:'sharp'},{s:-1,a:''},{s:-1,a:'sharp'},{s:0,a:''},
-  {s:1,a:''},{s:1,a:'sharp'},{s:2,a:''},{s:2,a:'sharp'},{s:3,a:''},
-  {s:3,a:'sharp'},{s:4,a:''},{s:5,a:''}
+// name + staff-step + accidental. (C chromatic, both spellings.)
+var ASC = [
+  {n:'C',s:-2,a:''},{n:'C#',s:-2,a:'sharp'},{n:'D',s:-1,a:''},{n:'D#',s:-1,a:'sharp'},
+  {n:'E',s:0,a:''},{n:'F',s:1,a:''},{n:'F#',s:1,a:'sharp'},{n:'G',s:2,a:''},
+  {n:'G#',s:2,a:'sharp'},{n:'A',s:3,a:''},{n:'A#',s:3,a:'sharp'},{n:'B',s:4,a:''},{n:'C',s:5,a:''}
 ];
-var DESC = [ // descending → flats on B A G E D
-  {s:5,a:''},{s:4,a:''},{s:4,a:'flat'},{s:3,a:''},{s:3,a:'flat'},
-  {s:2,a:''},{s:2,a:'flat'},{s:1,a:''},{s:0,a:''},{s:0,a:'flat'},
-  {s:-1,a:''},{s:-1,a:'flat'},{s:-2,a:''}
+var DESC = [
+  {n:'C',s:5,a:''},{n:'B',s:4,a:''},{n:'Bb',s:4,a:'flat'},{n:'A',s:3,a:''},{n:'Ab',s:3,a:'flat'},
+  {n:'G',s:2,a:''},{n:'Gb',s:2,a:'flat'},{n:'F',s:1,a:''},{n:'E',s:0,a:''},{n:'Eb',s:0,a:'flat'},
+  {n:'D',s:-1,a:''},{n:'Db',s:-1,a:'flat'},{n:'C',s:-2,a:''}
 ];
-
 var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
 
-var DEFAULTS = {
-  dir:'asc', noteStyle:'quarter', colorMode:'rainbow',
-  noteSize:18, accSize:13, accGap:5, accDY:-1,
-  xStart:30, pairGap:6.5, groupGap:11, ledgerW:6, showPill:1,
+var G = { dir:'asc', noteStyle:'quarter', colorMode:'rainbow', noteSize:18, accSize:13,
+          ledgerW:6, showPill:1, xStart:30, pairGap:6.5, groupGap:11, accGap:5, accDY:-1 };
+var GMETA = {
+  noteSize:{label:'Note size',min:10,max:26,step:0.5},
+  accSize: {label:'Accidental size',min:8,max:24,step:0.5},
+  ledgerW: {label:'Ledger width',min:5,max:16,step:0.5},
+  showPill:{label:'Show pill (0/1)',min:0,max:1,step:1},
 };
-var META = {
-  noteSize: { label:'Note size',          min:10, max:26, step:0.5, grp:'Notes' },
-  accSize:  { label:'Accidental size',    min:8,  max:24, step:0.5 },
-  accGap:   { label:'Accidental gap (←)', min:2,  max:12, step:0.5 },
-  accDY:    { label:'Accidental Y nudge', min:-6, max:6,  step:0.5 },
-  xStart:   { label:'First note X',       min:18, max:48, step:1, grp:'Layout' },
-  pairGap:  { label:'Gap within a pair',  min:4,  max:14, step:0.5 },
-  groupGap: { label:'Gap between pitches',min:6,  max:20, step:0.5 },
-  ledgerW:  { label:'Ledger width',       min:5,  max:16, step:0.5 },
-  showPill: { label:'Show pill (0/1)',    min:0,  max:1,  step:1 },
-};
-var P = Object.assign({}, DEFAULTS);
+var NOTES = [];
 
+function seedNotes(){
+  var arr = (G.dir === 'asc') ? ASC : DESC;
+  var xs = [], cx = G.xStart;
+  for (var i=0;i<arr.length;i++){ xs[i]=cx; if (i<arr.length-1) cx += (arr[i+1].s===arr[i].s)?G.pairGap:G.groupGap; }
+  NOTES = arr.map(function(n,i){
+    var y = yOf(n.s);
+    return { n:n.n, s:n.s, a:n.a, x:xs[i], y:y, ax:xs[i]-G.accGap, ay:y+G.accDY };
+  });
+}
 function noteColor(i){
-  if (P.colorMode === 'teal') return '#13a89e';
-  if (P.colorMode === 'dark') return '#2A2A3E';
+  if (G.colorMode==='teal') return '#13a89e';
+  if (G.colorMode==='dark') return '#2A2A3E';
   return PALETTE[i % PALETTE.length];
 }
-
-function svgInner() {
-  var notes = (P.dir === 'asc') ? ASC : DESC;
-  var glyph = (P.noteStyle === 'quarter') ? GL.quarter : GL.head;
-  var s = '';
-  // staff
-  s += '<g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">';
+function svgInner(){
+  var glyph = (G.noteStyle==='quarter') ? GL.quarter : GL.head;
+  var s = '<g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">';
   for (var ly=22; ly<=54; ly+=8) s += '<line x1="6" y1="'+ly+'" x2="154" y2="'+ly+'"/>';
   s += '</g>';
-  // clef
   s += '<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GL.clef+'</text>';
-  // notes — cluster layout: a natural and its sharp/flat (same staff step) sit
-  // tight (pairGap); a wider groupGap separates each pitch cluster, so the
-  // chromatic steps stay legible even with all 13 notes.
-  var ledgers = '', accs = '', heads = '';
-  var xs = [], cx = P.xStart;
-  for (var i=0;i<notes.length;i++) {
-    xs[i] = cx;
-    if (i < notes.length-1) cx += (notes[i+1].s === notes[i].s) ? P.pairGap : P.groupGap;
+  var led='', accs='', heads='';
+  for (var i=0;i<NOTES.length;i++){
+    var d = NOTES[i];
+    if (d.s <= -2) led += '<line x1="'+(d.x-G.ledgerW).toFixed(1)+'" y1="'+d.y+'" x2="'+(d.x+G.ledgerW).toFixed(1)+'" y2="'+d.y+'" stroke="#2A2A3E" stroke-width="1.4"/>';
+    if (d.a){ var ag=(d.a==='sharp')?GL.sharp:GL.flat;
+      accs += '<text x="'+d.ax.toFixed(1)+'" y="'+d.ay.toFixed(1)+'" font-size="'+G.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>'; }
+    heads += '<text x="'+d.x.toFixed(1)+'" y="'+d.y.toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+glyph+'</text>';
   }
-  for (var i=0;i<notes.length;i++) {
-    var n = notes[i], x = xs[i], y = yOf(n.s);
-    if (n.s <= -2) { // middle-C ledger line
-      ledgers += '<line x1="'+(x-P.ledgerW).toFixed(1)+'" y1="'+y+'" x2="'+(x+P.ledgerW).toFixed(1)+'" y2="'+y+'" stroke="#2A2A3E" stroke-width="1.4"/>';
-    }
-    if (n.a) {
-      var ag = (n.a === 'sharp') ? GL.sharp : GL.flat;
-      accs += '<text x="'+(x-P.accGap).toFixed(1)+'" y="'+(y+P.accDY).toFixed(1)+'" font-size="'+P.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>';
-    }
-    heads += '<text x="'+x.toFixed(1)+'" y="'+y+'" font-size="'+P.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+glyph+'</text>';
-  }
-  s += '<g>'+ledgers+'</g>';
-  s += '<g font-family="Bravura Text">'+accs+heads+'</g>';
-  if (P.showPill) {
+  s += '<g>'+led+'</g><g font-family="Bravura Text">'+accs+heads+'</g>';
+  if (G.showPill){
     s += '<rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>';
     s += '<text x="80" y="97" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>';
   }
@@ -155,47 +146,63 @@ function svgInner() {
 }
 function svg(){ return '<svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">'+svgInner()+'</svg>'; }
 
-function render() {
+function render(){
   document.getElementById('zoom').innerHTML = svg();
   document.getElementById('actual').innerHTML = svg();
+  var pos = NOTES.map(function(d){ var o={n:d.n,x:+d.x.toFixed(1),y:+d.y.toFixed(1)}; if(d.a){o.ax=+d.ax.toFixed(1);o.ay=+d.ay.toFixed(1);} return o; });
   document.getElementById('out').textContent =
-    JSON.stringify(P) + '\n\n<!-- play.html tile SVG inner -->\n' + svgInner().replace(/></g, '>\n<');
+    JSON.stringify({ globals:{dir:G.dir,noteStyle:G.noteStyle,colorMode:G.colorMode,noteSize:G.noteSize,accSize:G.accSize,ledgerW:G.ledgerW,showPill:G.showPill}, notes:pos }) +
+    '\n\n<!-- play.html tile SVG inner -->\n' + svgInner().replace(/></g,'>\n<');
 }
 
-function build() {
-  var c = document.getElementById('controls');
-  // selectors (not sliders) first
-  function sel(key, label, opts){
-    var w=document.createElement('div'); w.className='ctl';
-    var o = opts.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
-    w.innerHTML = '<label>'+label+'</label><select id="r-'+key+'">'+o+'</select>';
-    c.appendChild(w); var el=w.querySelector('select'); el.value=P[key];
-    el.addEventListener('change', function(e){ P[key]=e.target.value; render(); });
-  }
-  var g=document.createElement('div'); g.className='grp'; g.textContent='Scale'; c.appendChild(g);
-  sel('dir','Direction', ['asc','desc']);
-  sel('noteStyle','Note style', ['head','quarter']);
-  sel('colorMode','Color', ['rainbow','teal','dark']);
-  Object.keys(META).forEach(function(k){
-    var m = META[k];
-    if (m.grp) { var gg=document.createElement('div'); gg.className='grp'; gg.textContent=m.grp; c.appendChild(gg); }
-    var w = document.createElement('div'); w.className='ctl';
-    w.innerHTML = '<label>'+m.label+': <span class="val" id="v-'+k+'">'+P[k]+'</span></label>'+
-      '<input type="range" id="r-'+k+'" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+P[k]+'">';
-    c.appendChild(w);
-    w.querySelector('input').addEventListener('input', function(e){
-      P[k]=parseFloat(e.target.value); document.getElementById('v-'+k).textContent=P[k]; render();
-    });
+function slider(container, label, val, min, max, step, cls, cb){
+  var w = document.createElement('div');
+  w.innerHTML = '<div class="mini '+(cls||'')+'"><span>'+label+'</span><span class="v">'+val+'</span></div>'+
+    '<input type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'">';
+  container.appendChild(w);
+  var vs = w.querySelector('.v');
+  w.querySelector('input').addEventListener('input', function(e){ var x=parseFloat(e.target.value); vs.textContent=x; cb(x); render(); });
+}
+
+function buildGlobals(){
+  var c = document.getElementById('globals'); c.innerHTML='';
+  function sel(key,label,opts){ var w=document.createElement('div'); w.className='ctl';
+    w.innerHTML='<label>'+label+'</label><select>'+opts.map(function(v){return '<option '+(G[key]===v?'selected':'')+'>'+v+'</option>';}).join('')+'</select>';
+    c.appendChild(w); w.querySelector('select').addEventListener('change',function(e){ G[key]=e.target.value;
+      if(key==='dir'){ seedNotes(); buildNotes(); } render(); }); }
+  sel('dir','Direction',['asc','desc']);
+  sel('noteStyle','Note style',['quarter','head']);
+  sel('colorMode','Color',['rainbow','teal','dark']);
+  Object.keys(GMETA).forEach(function(k){ var m=GMETA[k]; var w=document.createElement('div'); w.className='ctl';
+    w.innerHTML='<label>'+m.label+': <span class="val" id="g-'+k+'">'+G[k]+'</span></label>'+
+      '<input type="range" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+G[k]+'">';
+    c.appendChild(w); w.querySelector('input').addEventListener('input',function(e){ G[k]=parseFloat(e.target.value); document.getElementById('g-'+k).textContent=G[k]; render(); }); });
+}
+
+function buildNotes(){
+  var c = document.getElementById('notes'); c.innerHTML='';
+  NOTES.forEach(function(d, i){
+    var card = document.createElement('div'); card.className='ncard';
+    card.innerHTML = '<h4>'+(i+1)+'. '+d.n+(d.a?' <span class="acc-head">('+(d.a==='sharp'?'♯':'♭')+')</span>':'')+'</h4>';
+    c.appendChild(card);
+    slider(card,'note X', d.x, 0,160,0.5,'', function(v){ d.x=v; });
+    slider(card,'note Y', d.y, 16,68,0.5,'', function(v){ d.y=v; });
+    if (d.a){
+      slider(card,'acc X', d.ax, 0,160,0.5,'acc-head', function(v){ d.ax=v; });
+      slider(card,'acc Y', d.ay, 16,68,0.5,'acc-head', function(v){ d.ay=v; });
+    }
   });
 }
 
+document.getElementById('reset').addEventListener('click', function(){ seedNotes(); buildNotes(); render(); });
 document.getElementById('copy').addEventListener('click', function(){
-  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(P));
+  var pos = NOTES.map(function(d){ var o={n:d.n,x:+d.x.toFixed(1),y:+d.y.toFixed(1)}; if(d.a){o.ax=+d.ax.toFixed(1);o.ay=+d.ay.toFixed(1);} return o; });
+  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify({globals:{dir:G.dir,noteStyle:G.noteStyle,colorMode:G.colorMode,noteSize:G.noteSize,accSize:G.accSize,ledgerW:G.ledgerW,showPill:G.showPill}, notes:pos}));
   this.textContent='Copied!'; var b=this; setTimeout(function(){ b.textContent='Copy snippet'; },1200);
 });
 
+seedNotes(); buildGlobals(); buildNotes();
 document.fonts && document.fonts.load('20px "Bravura Text"').then(render);
-build();
 render();
 </script>
 </body>
