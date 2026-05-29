@@ -1,5 +1,61 @@
 ---
 
+### play.html tile recalibration: Dotted Notes & Chromatic Scale — May 2026
+
+**Session type:** Visual recalibration of two `play.html` library tiles, with
+dedicated per-tile calibrator tools. Shipped to `Dev`, promoted to `main`.
+
+**Dotted Notes & Ties tile.** Dot sat too far from the note; tie arced over the
+top. Built `_dotted-tile-calibrator.html` (renders the exact tile on its cream
+`#fff2cf` bg, sliders for dot X/Y/size + full tie control incl. an Up/Down
+**direction flip** — the old depth-sign slider wasn't an obvious flip). Result:
+dot tucked closer + larger, tie flipped **under** the noteheads. Final tile:
+dotted-half `x57`, dot `x69 y71 size46`, tie `M 120 58 Q 139.5 69 159 58` @1.5.
+
+**Chromatic Scale tile.** Replaced the decorative note-scatter with a real **C
+chromatic scale ascending** (C C# D D# E F F# G G# A A# B C). Built
+`_chromatic-tile-calibrator.html`, which evolved over the session into a
+full **per-note** editor: every notehead and accidental has its own X/Y, plus
+globals (direction asc=sharps/desc=flats, note style, color, sizes, stem
+length/thickness/X/Y, ledger width, nudge-X-all, pill). Heads are
+`noteheadBlack` + drawn stems; middle C on its ledger line; rainbow.
+
+**The recurring lesson (again): measure the Bravura *Text* variant.** Notes kept
+sitting a staff-step high (C looked like D) because:
+1. The complete quarter glyph's baseline is below the head → head floats above
+   `y`, ledger drawn at `y` lands under it. Fix: use `noteheadBlack` (head
+   centered on baseline) + a drawn stem.
+2. `noteheadBlack` in **Bravura Text** still sits on a text baseline (not
+   centered), so `getBBox` measurement is required to find the true head center
+   — AND the measurement must run **after** the font loads (an early/`fonts.check`
+   -gated measure captured fallback-font metrics once and never refreshed, which
+   is what kept it broken across several iterations). Final: measure inside
+   `fonts.ready`/`fonts.load` (+600ms safety net), offset each glyph's text-y by
+   the measured center. Also shipped a manual "Head glyph Y (vs line)" override
+   as a guaranteed escape hatch.
+- Spacing: `sqrt`/cluster layout abandoned in favor of full per-note placement
+  (Jonathan dialed every position by hand).
+
+**Step-up animation.** Each note is a `.cs-note` group (ledger/stem/accidental/
+head) with a staggered 100ms `animation-delay`; a looping `cs-step` keyframe
+(quick rise+fade-in, then hold) climbs the scale one note at a time and repeats.
+Honors `prefers-reduced-motion`.
+
+**Calibrators kept (Jonathan's call — do not discard).** `_chromatic-tile-
+calibrator.html`, `_dotted-tile-calibrator.html`, plus the rhythm ones
+(`_rhythm-render-compare.html`, `_rhythm-calibrator.html`). Underscore-prefixed
+internal tools, tracked in repo per the clef-calibrator precedent. These are the
+template for any future tile/glyph tuning.
+
+**Also on Dev this session (other hands):** landing-page clef rendering tweaks
+(crisp vector, sync fade) and a scale-family start-screen boot fix — folded into
+the same `main` promotion.
+
+**Still open / next.** Device/pixel QA of both tiles on production (the chromatic
+head placement relies on a runtime `getBBox` that only runs in a real browser).
+
+---
+
 ### Ear: Rhythm notation renderer rebuilt (Bravura glyphs) — May 2026
 
 **Session type:** Renderer rework on one module (`ear-rhythm.html`) + a tracked
