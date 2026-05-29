@@ -1207,12 +1207,12 @@
     font-synthesis: none;
     fill: var(--ink);
     opacity: 0;
-    transform-box: fill-box;
-    transform: scale(0.5);
-    transform-origin: center;
-    transition: opacity 380ms ease 500ms, transform 600ms cubic-bezier(.4, 1.8, .5, 1) 500ms;
+    /* Opacity-only fade — no CSS transform. A transform on SVG <text> forces
+       a rasterized layer that renders the glyph blurry/heavy; the playable
+       card's crisp clef has no transform, so we match it and just fade in. */
+    transition: opacity 460ms ease 500ms;
   }
-  .demo-stage.staff-ready .clef { opacity: 1; transform: scale(1); }
+  .demo-stage.staff-ready .clef { opacity: 1; }
   .demo-landed-note {
     opacity: 0;
     transform-box: fill-box;
