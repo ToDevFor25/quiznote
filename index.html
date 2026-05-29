@@ -2753,9 +2753,14 @@
 
     let fontReady = false, inView = false;
     function tryStart(){ if (fontReady && inView && !isPlaying) playOnce(); }
-    if (document.fonts && document.fonts.ready){
-      document.fonts.ready.then(() => { fontReady = true; tryStart(); });
-      setTimeout(() => { fontReady = true; tryStart(); }, 2500);
+    function markFontReady(){ if (!fontReady){ fontReady = true; tryStart(); } }
+    if (document.fonts && document.fonts.load){
+      // Gate the reveal on the actual gClef glyph so the treble clef never
+      // animates in half-loaded (the "distorted then good" flash). The blind
+      // timeout is only a safety net if the font CDN is unreachable.
+      document.fonts.load('1em "Bravura Text"', '\uE050').then(markFontReady, markFontReady);
+      document.fonts.ready.then(markFontReady);
+      setTimeout(markFontReady, 6000);
     } else {
       fontReady = true;
     }
