@@ -1,5 +1,67 @@
 ---
 
+### Ear: Rhythm notation renderer rebuilt (Bravura glyphs) — May 2026
+
+**Session type:** Renderer rework on one module (`ear-rhythm.html`) + a tracked
+calibration tool. Shipped to `Dev`, then promoted to `main`.
+
+**Trigger.** Ear: Rhythm's answer-tile rhythm patterns were drawn with
+hand-rolled SVG primitives (tilted-ellipse noteheads, bezier flags, line
+beams) and looked crude. Jonathan's steer: "look at a module already doing
+this right instead of reinventing the wheel."
+
+**Diagnosis.** `note-values.html` and `dotted-notes.html` already render real
+**Bravura Text** glyphs (the SMuFL engraving font, loaded via @font-face in
+every module) and look professional. `ear-rhythm`'s `patternSVG()` was the
+lone outlier hand-drawing everything. The font can't express *beamed groups*
+as a single glyph, which is why the original went hand-rolled.
+
+**Approach (final).** Every note is a complete Bravura glyph (head+stem from
+the font — no seams). Beamed groups and single 8th/16ths render the **quarter
+glyph** plus a *drawn stem extension*, so the beam (a rect) / flag can sit
+below the glyph's natural stem tip. Single flags are a **separately-sized flag
+glyph** so the curl length is controllable. Stems down / beams below (matches
+the prior shipped orientation).
+
+**Key insight — measure, don't assume.** `bravura_metadata.json` describes
+*Bravura*, but the app renders *Bravura Text*, whose em scaling differs — so
+metric-derived stem-tip positions were wrong (beam floated off the stems).
+Fix: measure the actual quarter glyph at runtime via `getBBox()` at a
+reference size, scale linearly. The beam/flag now land on the real stem tips
+regardless of font variant; falls back to a metadata estimate if measurement
+is unavailable.
+
+**Other fixes found during calibration.**
+- **Spacing:** strict duration-proportional spacing crushed beamed 16th
+  groups. Switched to `sqrt(duration)` spacing (engraving practice — short
+  notes get more than their literal fraction).
+- **viewBox:** cropped to content (head-top → beam/flag end) so tiles aren't
+  mostly whitespace; choice-tile SVG capped at 240px wide, centered.
+- Dead-ends logged: composing head+stem from `noteheadBlack` + a drawn stem
+  reintroduced a seam (noteheadBlack's baseline = head center, complete
+  glyphs sit on the text baseline → different seating). Using the complete
+  quarter glyph for the head+stem everywhere removed the seam.
+
+**Calibration tool.** `_rhythm-render-compare.html` (tracked, `_`-prefix
+internal tool, kept per the clef-calibrator precedent) — old-vs-new battery,
+the quarter=2×8th=4×16th reference row, live sliders, Copy-params. This is now
+the template for rhythm re-tuning. Final params baked into `ear-rhythm.html`:
+`glyph 44, cy 51, vNudge 14, beamW 4.5, beamGap 3.5, beamR 0, beamDX 0,
+beamDrop 4.5, stemW 0.8, flagScale 0.65, flagDX 1, flagDY 8`.
+
+**Scope.** Only `ear-rhythm.html` changed (no shared-file change — Bravura
+Text already loaded everywhere). `dotted-notes.html` / `note-values.html`
+already use complete glyphs and were left as-is.
+
+**Still open / next.** Device/pixel QA of the live answer tiles (the runtime
+`getBBox` measurement needs a real browser; structural + fallback verified
+headless). If beamed/flagged stems look longer than plain quarters after the
+beam-drop, extend quarter/half stems to match (deferred — flagged a possible
+follow-up). The flag-shortening composition lives in both the calibrator and
+`ear-rhythm`; keep them in sync if re-tuned.
+
+---
+
 ### Key-signatures scoring/reveal broken + reveal-shade unification — May 2026
 
 **Session type:** Bug fix + small cross-module visual consistency pass.
