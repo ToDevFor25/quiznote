@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Chromatic Scale tile — calibrator (play.html)</title>
+<style>
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root { --ink:#2A2A3E; --teal:#13a89e; --line:#e3e3ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         color:var(--ink); background:#f7f7fb; padding:24px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  p.sub { margin:0 0 18px; color:#666; font-size:13px; }
+  .row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:18px; }
+  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px 22px; }
+  .ctl label { display:block; font-size:12px; font-weight:600; margin-bottom:3px; }
+  .ctl input[type=range] { width:100%; }
+  .ctl select { width:100%; font:inherit; padding:5px; border-radius:6px; border:1px solid var(--line); }
+  .ctl .val { font-variant-numeric:tabular-nums; color:var(--teal); font-weight:700; }
+  .grp { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#999; margin:6px 0 2px; grid-column:1/-1; }
+  /* tile previews — mimic play.html .ltile-art.th-pitch (green) */
+  .tile { background:#e4f3e0; border-radius:16px; overflow:hidden; display:block; }
+  .tile svg { width:100%; height:100%; display:block; }
+  .tile.zoom { width:480px; height:336px; border:1px solid var(--line); }
+  .tile.actual { width:160px; height:112px; border:1px solid var(--line); }
+  .cap { font-size:11px; color:#888; margin:6px 0 2px; }
+  pre { background:#1e1e2e; color:#d4d4e8; padding:12px 14px; border-radius:8px; font-size:12px; overflow:auto; margin:10px 0 0; white-space:pre-wrap; }
+  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--teal); background:var(--teal); color:#fff; cursor:pointer; }
+</style>
+</head>
+<body>
+  <h1>Chromatic Scale — tile calibrator</h1>
+  <p class="sub">Builds a real C chromatic scale on the staff for the <code>play.html</code> tile:
+     ascending uses sharps, descending uses flats (matches "sharps up, flats down"). Middle C gets a
+     ledger line. Dial spacing/size/style, hit <b>Copy snippet</b>, send me the values.</p>
+
+  <div class="row">
+    <div>
+      <div class="cap">Zoomed (3×)</div>
+      <div class="tile zoom"><div id="zoom"></div></div>
+    </div>
+    <div>
+      <div class="cap">Actual size (as on play.html)</div>
+      <div class="tile actual"><div id="actual"></div></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px;">
+    <div class="controls" id="controls"></div>
+  </div>
+
+  <div class="panel">
+    <button id="copy">Copy snippet</button>
+    <pre id="out"></pre>
+  </div>
+
+<script>
+// Bravura glyphs
+var GL = {
+  clef:    String.fromCodePoint(0xE050),  // gClef (treble)
+  head:    String.fromCodePoint(0xE0A4),  // noteheadBlack
+  quarter: String.fromCodePoint(0xE1D5),  // noteQuarterUp
+  sharp:   String.fromCodePoint(0xE262),  // accidentalSharp
+  flat:    String.fromCodePoint(0xE260),  // accidentalFlat
+};
+
+// Staff geometry matches the tile: 5 lines y=22..54 (8px apart). Bottom line
+// (y=54) = E4. One diatonic step = 4px; up = smaller y. Y(step) = 54 - 4*step,
+// where step counts letter-steps above E4 (C4 = -2, C5 = +5).
+var BOTTOM_E4 = 54, STEP = 4;
+function yOf(step){ return BOTTOM_E4 - STEP*step; }
+
+// C chromatic, both spellings. step = letters above E4; acc = ''|'sharp'|'flat'.
+var ASC = [ // ascending → sharps on C D F G A
+  {s:-2,a:''},{s:-2,a:'sharp'},{s:-1,a:''},{s:-1,a:'sharp'},{s:0,a:''},
+  {s:1,a:''},{s:1,a:'sharp'},{s:2,a:''},{s:2,a:'sharp'},{s:3,a:''},
+  {s:3,a:'sharp'},{s:4,a:''},{s:5,a:''}
+];
+var DESC = [ // descending → flats on B A G E D
+  {s:5,a:''},{s:4,a:''},{s:4,a:'flat'},{s:3,a:''},{s:3,a:'flat'},
+  {s:2,a:''},{s:2,a:'flat'},{s:1,a:''},{s:0,a:''},{s:0,a:'flat'},
+  {s:-1,a:''},{s:-1,a:'flat'},{s:-2,a:''}
+];
+
+var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
+
+var DEFAULTS = {
+  dir:'asc', noteStyle:'head', colorMode:'rainbow',
+  noteSize:17, accSize:15, accGap:6, accDY:0,
+  xStart:30, spacing:10, ledgerW:9, showPill:0,
+};
+var META = {
+  noteSize: { label:'Note size',          min:10, max:26, step:0.5, grp:'Notes' },
+  accSize:  { label:'Accidental size',    min:8,  max:24, step:0.5 },
+  accGap:   { label:'Accidental gap (←)', min:2,  max:12, step:0.5 },
+  accDY:    { label:'Accidental Y nudge', min:-6, max:6,  step:0.5 },
+  xStart:   { label:'First note X',       min:20, max:48, step:1, grp:'Layout' },
+  spacing:  { label:'Note spacing X',     min:6,  max:16, step:0.5 },
+  ledgerW:  { label:'Ledger width',       min:5,  max:16, step:0.5 },
+  showPill: { label:'Show pill (0/1)',    min:0,  max:1,  step:1 },
+};
+var P = Object.assign({}, DEFAULTS);
+
+function noteColor(i){
+  if (P.colorMode === 'teal') return '#13a89e';
+  if (P.colorMode === 'dark') return '#2A2A3E';
+  return PALETTE[i % PALETTE.length];
+}
+
+function svgInner() {
+  var notes = (P.dir === 'asc') ? ASC : DESC;
+  var glyph = (P.noteStyle === 'quarter') ? GL.quarter : GL.head;
+  var s = '';
+  // staff
+  s += '<g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">';
+  for (var ly=22; ly<=54; ly+=8) s += '<line x1="6" y1="'+ly+'" x2="154" y2="'+ly+'"/>';
+  s += '</g>';
+  // clef
+  s += '<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GL.clef+'</text>';
+  // notes
+  var ledgers = '', accs = '', heads = '';
+  for (var i=0;i<notes.length;i++) {
+    var n = notes[i], x = P.xStart + i*P.spacing, y = yOf(n.s);
+    if (n.s <= -2) { // middle-C ledger line
+      ledgers += '<line x1="'+(x-P.ledgerW).toFixed(1)+'" y1="'+y+'" x2="'+(x+P.ledgerW).toFixed(1)+'" y2="'+y+'" stroke="#2A2A3E" stroke-width="1.4"/>';
+    }
+    if (n.a) {
+      var ag = (n.a === 'sharp') ? GL.sharp : GL.flat;
+      accs += '<text x="'+(x-P.accGap).toFixed(1)+'" y="'+(y+P.accDY).toFixed(1)+'" font-size="'+P.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>';
+    }
+    heads += '<text x="'+x.toFixed(1)+'" y="'+y+'" font-size="'+P.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+glyph+'</text>';
+  }
+  s += '<g>'+ledgers+'</g>';
+  s += '<g font-family="Bravura Text">'+accs+heads+'</g>';
+  if (P.showPill) {
+    s += '<rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>';
+    s += '<text x="80" y="97" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>';
+  }
+  return s;
+}
+function svg(){ return '<svg viewBox="0 0 160 112" xmlns="http://www.w3.org/2000/svg">'+svgInner()+'</svg>'; }
+
+function render() {
+  document.getElementById('zoom').innerHTML = svg();
+  document.getElementById('actual').innerHTML = svg();
+  document.getElementById('out').textContent =
+    JSON.stringify(P) + '\n\n<!-- play.html tile SVG inner -->\n' + svgInner().replace(/></g, '>\n<');
+}
+
+function build() {
+  var c = document.getElementById('controls');
+  // selectors (not sliders) first
+  function sel(key, label, opts){
+    var w=document.createElement('div'); w.className='ctl';
+    var o = opts.map(function(v){ return '<option value="'+v+'">'+v+'</option>'; }).join('');
+    w.innerHTML = '<label>'+label+'</label><select id="r-'+key+'">'+o+'</select>';
+    c.appendChild(w); var el=w.querySelector('select'); el.value=P[key];
+    el.addEventListener('change', function(e){ P[key]=e.target.value; render(); });
+  }
+  var g=document.createElement('div'); g.className='grp'; g.textContent='Scale'; c.appendChild(g);
+  sel('dir','Direction', ['asc','desc']);
+  sel('noteStyle','Note style', ['head','quarter']);
+  sel('colorMode','Color', ['rainbow','teal','dark']);
+  Object.keys(META).forEach(function(k){
+    var m = META[k];
+    if (m.grp) { var gg=document.createElement('div'); gg.className='grp'; gg.textContent=m.grp; c.appendChild(gg); }
+    var w = document.createElement('div'); w.className='ctl';
+    w.innerHTML = '<label>'+m.label+': <span class="val" id="v-'+k+'">'+P[k]+'</span></label>'+
+      '<input type="range" id="r-'+k+'" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+P[k]+'">';
+    c.appendChild(w);
+    w.querySelector('input').addEventListener('input', function(e){
+      P[k]=parseFloat(e.target.value); document.getElementById('v-'+k).textContent=P[k]; render();
+    });
+  });
+}
+
+document.getElementById('copy').addEventListener('click', function(){
+  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(P));
+  this.textContent='Copied!'; var b=this; setTimeout(function(){ b.textContent='Copy snippet'; },1200);
+});
+
+document.fonts && document.fonts.load('20px "Bravura Text"').then(render);
+build();
+render();
+</script>
+</body>
+</html>
