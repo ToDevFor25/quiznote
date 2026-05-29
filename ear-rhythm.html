@@ -229,7 +229,7 @@
   }
   .er-listen-btn:active { transform: translateY(1px); }
   /* Pattern SVG in choice buttons */
-  .choice-btn svg { width: 100%; height: 42px; display: block; }
+  .choice-btn svg { width: 100%; height: auto; max-height: 76px; display: block; }
 
   /* Explosion FX layer — full-screen overlay (Ear: Rhythm exploding symbols) */
   .er-fx-layer {
@@ -875,61 +875,129 @@
     }
   }
 
+  // ── Rhythm pattern renderer (Bravura Text glyphs) ──────────────────────────
+  // Calibrated via _rhythm-render-compare.html (May 2026). Every note is a
+  // complete Bravura glyph (head + stem from the font — no seams). Beamed groups
+  // use the quarter glyph (no flag) and we draw ONLY the beam, placed at the
+  // stem tip measured at runtime via getBBox() — the Bravura *Text* variant's
+  // em scaling differs from the published Bravura metadata, so we measure.
+  var RP = { dir:'down', glyph:46, h:80, cy:44, beamW:4.5, beamGap:2.5, beamR:0, beamDX:-1, vNudge:14 };
+  var RP_G = {
+    whole:        String.fromCodePoint(0xE1D2),  // noteWhole
+    halfUp:       String.fromCodePoint(0xE1D3),  // noteHalfUp
+    halfDown:     String.fromCodePoint(0xE1D4),  // noteHalfDown
+    quarterUp:    String.fromCodePoint(0xE1D5),  // noteQuarterUp
+    quarterDown:  String.fromCodePoint(0xE1D6),  // noteQuarterDown
+    eighthUp:     String.fromCodePoint(0xE1D7),  // note8thUp
+    eighthDown:   String.fromCodePoint(0xE1D8),  // note8thDown
+    sixteenthUp:  String.fromCodePoint(0xE1D9),  // note16thUp
+    sixteenthDown:String.fromCodePoint(0xE1DA),  // note16thDown
+  };
+  var RP_REF = 200, RP_METRICS = null;
+  function rpMeasure() {
+    if (RP_METRICS || !document.body) return;
+    try {
+      var ns = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('style', 'position:absolute;left:-9999px;top:0;width:600px;height:600px;');
+      document.body.appendChild(svg);
+      var bb = function (ch) {
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', 0); t.setAttribute('y', 0);
+        t.setAttribute('font-family', 'Bravura Text'); t.setAttribute('font-size', RP_REF);
+        t.textContent = ch; svg.appendChild(t);
+        var b = t.getBBox(); svg.removeChild(t); return b;
+      };
+      var bd = bb(RP_G.quarterDown), bu = bb(RP_G.quarterUp);
+      if (bd.height && bu.height) {
+        RP_METRICS = {
+          down: { tip: bd.y + bd.height, stemX: bd.x },
+          up:   { tip: bu.y,             stemX: bu.x + bu.width },
+        };
+      }
+      document.body.removeChild(svg);
+    } catch (e) { /* fall back to estimate */ }
+  }
+  function rpCompleteGlyph(b, down) {
+    if (b >= 4) return RP_G.whole;
+    if (b >= 2) return down ? RP_G.halfDown : RP_G.halfUp;
+    if (b >= 1) return down ? RP_G.quarterDown : RP_G.quarterUp;
+    if (b > 0.25) return down ? RP_G.eighthDown : RP_G.eighthUp;
+    return down ? RP_G.sixteenthDown : RP_G.sixteenthUp;
+  }
+
   function patternSVG(notes) {
-    var w = 160, h = 48, cy = 16, stemH = 22;
-    var rx = 5.5, ry = 4, tilt = -14, ink = '#2A2A3E';
+    rpMeasure();
+    var w = 160, h = RP.h, cy = RP.cy, ink = '#2A2A3E';
+    var F = RP.glyph, down = (RP.dir !== 'up'), sgn = down ? 1 : -1, ss = F/4;
+    var beamW = RP.beamW, beamGap = RP.beamGap, beamR = RP.beamR, beamDX = RP.beamDX;
+    var HEAD_CTR = 0.65, STEM_HALF = 0.06 * ss;
+    var m = RP_METRICS ? RP_METRICS[down ? 'down' : 'up'] : null;
+    var scale = F / RP_REF;
+    var baseY = cy + RP.vNudge;
+    var tipY = m ? (baseY + m.tip * scale) : (baseY + sgn*3.5*ss);
+
     var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
     svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
-    var totalBeats = 0;
-    for (var i=0;i<notes.length;i++) totalBeats += notes[i];
-    var pad = 16, span = w - pad*2, x = pad;
-    var positions = [];
+
+    var totalBeats = 0; for (var i=0;i<notes.length;i++) totalBeats += notes[i];
+    var pad = 18, span = w - pad*2, x = pad;
+    var P = [];
     for (var i=0;i<notes.length;i++) {
       var b = notes[i], nw = (b/totalBeats)*span;
-      positions.push({ b: b, cx: x + nw/2, nw: nw });
+      P.push({ b:b, cx:x + nw/2, nw:nw });
       x += nw;
     }
-    for (var i=0;i<positions.length;i++) {
-      var p = positions[i], filled = p.b < 2;
-      svg += '<ellipse cx="'+p.cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+tilt+' '+p.cx+' '+cy+')" fill="'+(filled?ink:'none')+'" stroke="'+ink+'" stroke-width="'+(filled?'1':'2')+'"/>';
-      if (p.b < 4) {
-        var sx = p.cx - rx*0.7;
-        svg += '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="1.8"/>';
-      }
-    }
+
+    var beamed = []; for (var i=0;i<P.length;i++) beamed[i]=false;
     var i = 0;
-    while (i < positions.length) {
-      if (positions[i].b < 1) {
-        var groupStart = i;
-        while (i < positions.length && positions[i].b < 1) i++;
-        var groupEnd = i - 1;
-        if (groupEnd > groupStart) {
-          var x1 = positions[groupStart].cx - rx*0.7;
-          var x2 = positions[groupEnd].cx - rx*0.7;
-          var beamY = cy + stemH;
-          svg += '<line x1="'+x1+'" y1="'+beamY+'" x2="'+x2+'" y2="'+beamY+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
-          for (var j = groupStart; j <= groupEnd; j++) {
-            if (positions[j].b <= 0.25) {
-              var sx = positions[j].cx - rx*0.7;
-              var sx2 = (j < groupEnd && positions[j+1].b <= 0.25) ? positions[j+1].cx - rx*0.7 : sx + 6;
-              if (j > groupStart && positions[j-1].b <= 0.25) continue;
-              var endX = sx;
-              var k = j;
-              while (k <= groupEnd && positions[k].b <= 0.25) { endX = positions[k].cx - rx*0.7; k++; }
-              svg += '<line x1="'+sx+'" y1="'+(beamY+3.5)+'" x2="'+endX+'" y2="'+(beamY+3.5)+'" stroke="'+ink+'" stroke-width="2" stroke-linecap="round"/>';
-            }
-          }
-        } else {
-          var sx = positions[groupStart].cx - rx*0.7;
-          var flagCount = positions[groupStart].b <= 0.25 ? 2 : 1;
-          svg += '<path d="M'+sx+','+(cy+stemH)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
-          if (flagCount >= 2) {
-            svg += '<path d="M'+sx+','+(cy+stemH-4)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+    while (i < P.length) {
+      if (P[i].b < 1) {
+        var gs = i; while (i < P.length && P[i].b < 1) i++;
+        var ge = i - 1;
+        if (ge > gs) for (var j=gs;j<=ge;j++) beamed[j]=true;
+      } else { i++; }
+    }
+
+    var glyphX = function(p){ return p.cx - HEAD_CTR*ss; };
+    var stemCX = function(p){
+      var edge = m ? (m.stemX * scale) : ((down ? 0.06 : 1.24) * ss);
+      return glyphX(p) + edge + sgn*STEM_HALF + sgn*beamDX;
+    };
+
+    // 1) unbeamed → complete glyph (head+stem+flag from the font)
+    for (var i=0;i<P.length;i++) {
+      if (beamed[i]) continue;
+      svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+rpCompleteGlyph(P[i].b, down)+'</text>';
+    }
+    // 2) beamed → quarter glyph (no flag); beam drawn in step 3
+    var qGlyph = down ? RP_G.quarterDown : RP_G.quarterUp;
+    for (var i=0;i<P.length;i++) {
+      if (!beamed[i]) continue;
+      svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+qGlyph+'</text>';
+    }
+    // 3) beams at the stem tips (primary + secondary over 16th runs)
+    var primaryTopY = down ? tipY : (tipY - beamW);
+    i = 0;
+    while (i < P.length) {
+      if (beamed[i]) {
+        var gs = i; while (i < P.length && beamed[i]) i++;
+        var ge = i - 1;
+        var bx1 = stemCX(P[gs]) - STEM_HALF, bx2 = stemCX(P[ge]) + STEM_HALF;
+        svg += '<rect x="'+bx1.toFixed(2)+'" y="'+primaryTopY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
+        var secondaryTopY = primaryTopY - sgn*(beamW+beamGap);
+        for (var j=gs;j<=ge;j++) {
+          if (P[j].b <= 0.25) {
+            if (j>gs && P[j-1].b <= 0.25) continue;
+            var k=j, endX=stemCX(P[j]);
+            while (k<=ge && P[k].b<=0.25){ endX=stemCX(P[k]); k++; }
+            var sx2 = stemCX(P[j]) - STEM_HALF;
+            var wRun = (endX + STEM_HALF) - sx2;
+            if (wRun < beamW*1.4) wRun = beamW*1.4; // lone 16th in group → stub
+            svg += '<rect x="'+sx2.toFixed(2)+'" y="'+secondaryTopY.toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="'+beamR+'" fill="'+ink+'"/>';
           }
         }
-      } else {
-        i++;
-      }
+      } else { i++; }
     }
     svg += '</svg>';
     return svg;
