@@ -57,6 +57,71 @@ real screens. No schema or shared-file changes in this session
 
 ---
 
+### Phone-viewport pass: dvh fix, overflow-safe play loop, start/summary anchoring, landscape hint — May 2026
+
+**Session type:** Responsive audit + fix across the whole play flow (start /
+play / summary) on every module. Shipped to `Dev`, then `main`.
+
+**Audit method.** Structural (source-based), since there's no headless browser
+here — read the shared layer + a standard module + the three outliers (scales,
+piano-quiz, time-signatures) and reasoned against real phone viewport heights.
+A background agent extracted per-screen skeletons. Pixel-exact confirmation
+still wants a real-device pass (the owed device-QA).
+
+**What was actually there.** Each module already implements a mobile app-shell:
+at ≤760px, `#play-screen.active` locks to one viewport and the header/footer
+hide during play (`body.playing`). `body` is `min-height:100vh` flex-column;
+the three `.screen`s are direct children (no `<main>` wrapper).
+
+**Headline bug (all 36 modules).** The play-screen height was written
+`height:100dvh; height:100vh;` — inverted, so the later `100vh` always won and
+`100dvh` was dead. The screen sized to the *large* viewport, so with the
+address bar showing, the answer choices + status sat behind the chrome and
+couldn't scroll (`overflow:hidden`). **Fix:** swap to `height:100vh;
+height:100dvh;` (fallback first, enhancement wins). This was the single
+highest-impact change.
+
+**The fixes, by tier:**
+- **P0 (inline, 36 files):** the dvh swap above.
+- **P1 start (inline, 36 files):** `#start-screen` `justify-content:center` →
+  `safe center` — centers when it fits, top-anchors+scrolls when tall (the
+  classic flex-centering-clips-the-top trap on short phones). No desktop change.
+- **P1 summary (shared `qn-theme.css`):** same `safe center` on
+  `#summary-screen` — one edit, all modules; a long miss-list can't clip the
+  title/buttons.
+- **P1 landscape hint (shared, Tier 3, approved):** `qn-nav.js` injects a
+  "best in portrait" overlay **once, only on pages with `#play-screen`**
+  (content pages skipped); `qn-theme.css` gates it to short *touch* landscape
+  (`orientation:landscape AND max-height:500px AND pointer:coarse`) so phones
+  get it, tablets-in-landscape and desktop don't. Icon = the
+  landscape→portrait transition glyph (option C, chosen from
+  `_mockups/rotate-hint.html`).
+- **P2 (scales + universal):** scales gets a `@media (max-height:700px)` staff
+  shrink (it had the tallest floor). All 36 get the play screen's
+  `overflow:hidden` → `overflow-x:hidden; overflow-y:auto` so a too-short
+  device **scrolls rather than clips the answer buttons**.
+
+**Outlier decision — time-signatures.** Its staff uses fragile 1:1 baseline
+geometry (code comment warns rescaling caused digit-drift). Rather than risk
+that, its rigidity is covered by the P2 scroll safety net — no geometry change.
+piano-quiz was fine (its keyboard scrolls horizontally by design).
+
+**Verification.** Every batch checked across all 36: CSS brace balance, inline
+JS parses, edit-correctness assertions (one `safe center` each, dvh-after-vh,
+safety-net present/no leftover `overflow:hidden`). The `qn-nav.js` injector was
+unit-tested to inject only when `#play-screen` exists, and once.
+
+**Lesson / CLAUDE.md candidate.** Don't assume "no app shell" from one file —
+the viewport handling lived inline per module, not in `qn-theme.css`; grepping
+all 36 corrected the wrong first read. And the `dvh`/`vh` fallback order
+matters: fallback first, enhancement last.
+
+**Still open / next:** real-device QA pass (SE / 13 / Pro Max / small Android,
+portrait + landscape); PWA session still owes `manifest.json` with
+`"orientation":"portrait"` (the Android-side lock that pairs with the hint).
+
+---
+
 ### Landing demo: scripted teaching-hint flow — May 2026
 
 **Session type:** Landing-page UX. Shipped to `Dev`, approved on preview, then
