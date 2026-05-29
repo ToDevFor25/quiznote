@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dotted Notes &amp; Ties tile — calibrator (play.html)</title>
+<style>
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root { --ink:#2A2A3E; --teal:#13a89e; --line:#e3e3ee; --tie:#5B3FE4; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         color:var(--ink); background:#f7f7fb; padding:24px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  p.sub { margin:0 0 18px; color:#666; font-size:13px; }
+  .row { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:18px; }
+  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px 22px; }
+  .ctl label { display:block; font-size:12px; font-weight:600; margin-bottom:3px; }
+  .ctl input[type=range] { width:100%; }
+  .ctl .val { font-variant-numeric:tabular-nums; color:var(--teal); font-weight:700; }
+  .grp { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:#999; margin:6px 0 2px; grid-column:1/-1; }
+  /* tile previews — mimic play.html .ltile-art.th-rhythm */
+  .tile { background:#fff2cf; border-radius:16px; overflow:hidden; display:block; }
+  .tile svg { width:100%; height:100%; display:block; }
+  .tile.zoom { width:480px; height:312px; border:1px solid var(--line); }
+  .tile.actual { width:200px; height:130px; border:1px solid var(--line); }
+  .cap { font-size:11px; color:#888; margin:6px 0 2px; }
+  pre { background:#1e1e2e; color:#d4d4e8; padding:12px 14px; border-radius:8px; font-size:12px; overflow:auto; margin:10px 0 0; white-space:pre-wrap; }
+  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--teal); background:var(--teal); color:#fff; cursor:pointer; }
+  .guides { font-size:11px; color:#aaa; }
+</style>
+</head>
+<body>
+  <h1>Dotted Notes &amp; Ties — tile calibrator</h1>
+  <p class="sub">Calibrates the static SVG tile in <code>play.html</code> (the dotted half + tied quarters).
+     Dot and tie controls start at the current live values. <b>Tie depth &gt; 0 bows the tie down (under the heads).</b>
+     Dial it, hit <b>Copy snippet</b>, send me the values.</p>
+
+  <div class="row">
+    <div>
+      <div class="cap">Zoomed (2.4×)</div>
+      <div class="tile zoom"><div id="zoom"></div></div>
+    </div>
+    <div>
+      <div class="cap">Actual size (as on play.html)</div>
+      <div class="tile actual"><div id="actual"></div></div>
+      <div class="cap guides" id="guides"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px;">
+    <div class="controls" id="controls"></div>
+  </div>
+
+  <div class="panel">
+    <button id="copy">Copy snippet</button>
+    <pre id="out"></pre>
+  </div>
+
+<script>
+var G = { half:'', dot:'', quarter:'' }; // noteHalfUp, augmentationDot, noteQuarterUp
+
+// Defaults = current play.html tile values.
+var DEFAULTS = {
+  noteSize: 42, noteBaseY: 68,
+  halfX: 44, dotX: 68, dotY: 68, dotSize: 42,
+  q1X: 120, q2X: 160,
+  tieX1: 116, tieX2: 164, tieY: 50, tieDepth: -14, tieStroke: 2.4,
+};
+var META = {
+  noteSize:  { label:'Note glyph size',     min:28, max:56, step:1, grp:'Notes' },
+  noteBaseY: { label:'Note baseline Y',      min:50, max:95, step:1 },
+  halfX:     { label:'Dotted-half X',        min:28, max:80, step:1 },
+  q1X:       { label:'Tied note 1 X',        min:95, max:150, step:1 },
+  q2X:       { label:'Tied note 2 X',        min:130, max:190, step:1 },
+  dotX:      { label:'Dot X',                min:44, max:96, step:1, grp:'Augmentation dot' },
+  dotY:      { label:'Dot Y',                min:50, max:95, step:1 },
+  dotSize:   { label:'Dot size',             min:16, max:56, step:1 },
+  tieX1:     { label:'Tie left X',           min:95, max:160, step:1, grp:'Tie' },
+  tieX2:     { label:'Tie right X',          min:130, max:195, step:1 },
+  tieY:      { label:'Tie Y (endpoints)',    min:30, max:115, step:1 },
+  tieDepth:  { label:'Tie depth (+down)',    min:-26, max:26, step:1 },
+  tieStroke: { label:'Tie stroke',           min:1, max:4, step:0.1 },
+};
+var P = Object.assign({}, DEFAULTS);
+
+function tieD() {
+  var midX = (P.tieX1 + P.tieX2) / 2;
+  return 'M ' + P.tieX1 + ' ' + P.tieY + ' Q ' + midX + ' ' + (P.tieY + P.tieDepth) + ' ' + P.tieX2 + ' ' + P.tieY;
+}
+function svgInner() {
+  return ''
+    + '<g font-family="Bravura Text" font-size="'+P.noteSize+'" fill="#2A2A3E" text-anchor="middle">'
+    +   '<text x="'+P.halfX+'" y="'+P.noteBaseY+'">'+G.half+'</text>'
+    +   '<text x="'+P.dotX+'" y="'+P.dotY+'" font-size="'+P.dotSize+'">'+G.dot+'</text>'
+    + '</g>'
+    + '<g font-family="Bravura Text" font-size="'+P.noteSize+'" fill="#2A2A3E" text-anchor="middle">'
+    +   '<text x="'+P.q1X+'" y="'+P.noteBaseY+'">'+G.quarter+'</text>'
+    +   '<text x="'+P.q2X+'" y="'+P.noteBaseY+'">'+G.quarter+'</text>'
+    + '</g>'
+    + '<path d="'+tieD()+'" stroke="#5B3FE4" stroke-width="'+P.tieStroke+'" fill="none" stroke-linecap="round"/>'
+    + '<g font-family="-apple-system,sans-serif" font-weight="700" font-size="14" fill="#5a5a6e" text-anchor="middle">'
+    +   '<text x="56" y="100">3 beats</text>'
+    +   '<text x="140" y="100">2 beats</text>'
+    + '</g>';
+}
+function svg() { return '<svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">' + svgInner() + '</svg>'; }
+
+function render() {
+  document.getElementById('zoom').innerHTML = svg();
+  document.getElementById('actual').innerHTML = svg();
+  document.getElementById('guides').textContent = 'dot Δx from half: ' + (P.dotX - P.halfX) + '  ·  tie '
+    + (P.tieDepth >= 0 ? 'below (bows down)' : 'above (bows up)');
+  document.getElementById('out').textContent =
+    '<!-- params -->\n' + JSON.stringify(P) +
+    '\n\n<!-- play.html tile SVG inner (paste between the <svg> tags) -->\n' + svgInner().replace(/></g, '>\n<');
+}
+
+function build() {
+  var c = document.getElementById('controls');
+  Object.keys(META).forEach(function(k){
+    var m = META[k];
+    if (m.grp) { var g=document.createElement('div'); g.className='grp'; g.textContent=m.grp; c.appendChild(g); }
+    var w = document.createElement('div'); w.className='ctl';
+    w.innerHTML = '<label>'+m.label+': <span class="val" id="v-'+k+'">'+P[k]+'</span></label>'+
+      '<input type="range" id="r-'+k+'" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+P[k]+'">';
+    c.appendChild(w);
+    w.querySelector('input').addEventListener('input', function(e){
+      P[k] = parseFloat(e.target.value);
+      document.getElementById('v-'+k).textContent = P[k];
+      render();
+    });
+  });
+}
+
+document.getElementById('copy').addEventListener('click', function(){
+  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(P));
+  this.textContent = 'Copied!'; var b=this; setTimeout(function(){ b.textContent='Copy snippet'; }, 1200);
+});
+
+document.fonts && document.fonts.load('42px "Bravura Text"').then(render);
+build();
+render();
+</script>
+</body>
+</html>
