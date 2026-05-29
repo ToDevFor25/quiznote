@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rhythm render compare — old SVG vs Bravura glyphs</title>
+<style>
+  @font-face {
+    font-family: 'Bravura Text';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root { --ink:#2A2A3E; --teal:#13a89e; --coral:#ff6b6b; --line:#e3e3ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+         color:var(--ink); background:#f7f7fb; padding:24px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { margin:0 0 20px; color:#666; font-size:13px; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px;
+           margin-bottom:20px; }
+  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px 22px; }
+  .ctl label { display:block; font-size:12px; font-weight:600; margin-bottom:4px; }
+  .ctl input[type=range] { width:100%; }
+  .ctl .val { font-variant-numeric:tabular-nums; color:var(--teal); font-weight:700; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+  .cell { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#fff; }
+  .cell .cap { font-size:11px; color:#888; padding:6px 8px 0; }
+  .cmp { display:grid; grid-template-columns:1fr 1fr; }
+  .cmp > div { padding:8px; }
+  .cmp .lab { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#aaa; margin-bottom:2px; }
+  .cmp .old { border-right:1px dashed var(--line); }
+  .cmp svg { width:100%; height:auto; display:block; }
+  .ref { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .ref .eq { font-size:28px; color:#bbb; }
+  .ref .box { width:120px; }
+  .ref svg { width:100%; height:auto; }
+  pre { background:#1e1e2e; color:#d4d4e8; padding:12px 14px; border-radius:8px; font-size:12px;
+        overflow:auto; margin:10px 0 0; }
+  button { font:inherit; font-weight:600; padding:8px 14px; border-radius:8px; border:1px solid var(--teal);
+           background:var(--teal); color:#fff; cursor:pointer; }
+</style>
+</head>
+<body>
+  <h1>Rhythm rendering — hand-drawn SVG (old) vs Bravura glyphs (new)</h1>
+  <p class="sub">Left = current <code>patternSVG()</code>. Right = proposed Bravura-glyph renderer
+     (noteheadBlack/half/whole glyph + drawn stem + flag glyph + straight rect beams).
+     Tune the few real engraving params below, then hit <b>Copy params</b>.</p>
+
+  <div class="panel">
+    <div class="controls" id="controls"></div>
+  </div>
+
+  <div class="panel">
+    <div style="font-weight:700;margin-bottom:10px;">Reference diagram (quarter = 2 eighths = 4 sixteenths)</div>
+    <div class="ref" id="ref"></div>
+  </div>
+
+  <div class="panel">
+    <div style="font-weight:700;margin-bottom:10px;">Battery — old (left, dashed) vs new (right)</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="panel">
+    <button id="copy">Copy params</button>
+    <pre id="out"></pre>
+  </div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// OLD renderer — copied verbatim from ear-rhythm.html patternSVG()
+// ─────────────────────────────────────────────────────────────
+function patternSVG_OLD(notes) {
+  var w = 160, h = 48, cy = 16, stemH = 22;
+  var rx = 5.5, ry = 4, tilt = -14, ink = '#2A2A3E';
+  var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.25"/>';
+  var totalBeats = 0;
+  for (var i=0;i<notes.length;i++) totalBeats += notes[i];
+  var pad = 16, span = w - pad*2, x = pad;
+  var positions = [];
+  for (var i=0;i<notes.length;i++) {
+    var b = notes[i], nw = (b/totalBeats)*span;
+    positions.push({ b: b, cx: x + nw/2, nw: nw });
+    x += nw;
+  }
+  for (var i=0;i<positions.length;i++) {
+    var p = positions[i], filled = p.b < 2;
+    svg += '<ellipse cx="'+p.cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+tilt+' '+p.cx+' '+cy+')" fill="'+(filled?ink:'none')+'" stroke="'+ink+'" stroke-width="'+(filled?'1':'2')+'"/>';
+    if (p.b < 4) {
+      var sx = p.cx - rx*0.7;
+      svg += '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy+stemH)+'" stroke="'+ink+'" stroke-width="1.8"/>';
+    }
+  }
+  var i = 0;
+  while (i < positions.length) {
+    if (positions[i].b < 1) {
+      var groupStart = i;
+      while (i < positions.length && positions[i].b < 1) i++;
+      var groupEnd = i - 1;
+      if (groupEnd > groupStart) {
+        var x1 = positions[groupStart].cx - rx*0.7;
+        var x2 = positions[groupEnd].cx - rx*0.7;
+        var beamY = cy + stemH;
+        svg += '<line x1="'+x1+'" y1="'+beamY+'" x2="'+x2+'" y2="'+beamY+'" stroke="'+ink+'" stroke-width="2.5" stroke-linecap="round"/>';
+        for (var j = groupStart; j <= groupEnd; j++) {
+          if (positions[j].b <= 0.25) {
+            var sx = positions[j].cx - rx*0.7;
+            if (j > groupStart && positions[j-1].b <= 0.25) continue;
+            var endX = sx;
+            var k = j;
+            while (k <= groupEnd && positions[k].b <= 0.25) { endX = positions[k].cx - rx*0.7; k++; }
+            svg += '<line x1="'+sx+'" y1="'+(beamY+3.5)+'" x2="'+endX+'" y2="'+(beamY+3.5)+'" stroke="'+ink+'" stroke-width="2" stroke-linecap="round"/>';
+          }
+        }
+      } else {
+        var sx = positions[groupStart].cx - rx*0.7;
+        var flagCount = positions[groupStart].b <= 0.25 ? 2 : 1;
+        svg += '<path d="M'+sx+','+(cy+stemH)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+        if (flagCount >= 2) {
+          svg += '<path d="M'+sx+','+(cy+stemH-4)+' c-2,-3 -5,-7 -2,-12" stroke="'+ink+'" stroke-width="1.5" fill="none"/>';
+        }
+      }
+    } else { i++; }
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+// ─────────────────────────────────────────────────────────────
+// NEW renderer — Bravura SMuFL glyphs + drawn stems + rect beams
+// SMuFL: noteheadBlack U+E0A4, noteheadHalf U+E0A3, noteheadWhole U+E0A2,
+//        flag8thUp U+E240, flag16thUp U+E242
+// Stems UP, beams on top (matches the reference diagram).
+// ─────────────────────────────────────────────────────────────
+var GLYPH = { black:'', half:'', whole:'', flag8:'', flag16:'' };
+
+function patternSVG_NEW(notes, o) {
+  o = o || {};
+  var w = 160, h = o.h, cy = o.cy, ink = '#2A2A3E';
+  var F = o.glyph, stemH = o.stemH, beamW = o.beamW, beamGap = o.beamGap, flagF = o.flagF;
+  var ss = F/4;                 // staff space
+  var headW = ss * 1.18;        // approx noteheadBlack advance width
+  var stemInset = Math.max(0.6, F*0.02);
+  var svg = '<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  // faint baseline the noteheads sit on
+  svg += '<line x1="8" y1="'+cy+'" x2="'+(w-8)+'" y2="'+cy+'" stroke="'+ink+'" stroke-width="1.2" opacity="0.18"/>';
+
+  var totalBeats = 0; for (var i=0;i<notes.length;i++) totalBeats += notes[i];
+  var pad = 18, span = w - pad*2, x = pad;
+  var P = [];
+  for (var i=0;i<notes.length;i++) {
+    var b = notes[i], nw = (b/totalBeats)*span;
+    P.push({ b:b, cx:x + nw/2, nw:nw });
+    x += nw;
+  }
+
+  function stemX(p){ return p.cx - headW/2 + headW - stemInset; }
+  function headGlyph(b){ return b>=4 ? GLYPH.whole : (b>=2 ? GLYPH.half : GLYPH.black); }
+
+  // 1) noteheads
+  for (var i=0;i<P.length;i++) {
+    var p = P[i];
+    var hx = p.cx - headW/2;
+    svg += '<text x="'+hx.toFixed(2)+'" y="'+cy+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+headGlyph(p.b)+'</text>';
+  }
+  // 2) stems (everything shorter than a whole note)
+  for (var i=0;i<P.length;i++) {
+    var p = P[i];
+    if (p.b >= 4) continue;
+    var sx = stemX(p);
+    svg += '<line x1="'+sx.toFixed(2)+'" y1="'+cy+'" x2="'+sx.toFixed(2)+'" y2="'+(cy-stemH)+'" stroke="'+ink+'" stroke-width="'+(F*0.045).toFixed(2)+'" stroke-linecap="round"/>';
+  }
+  // 3) beams (groups of 2+ consecutive sub-beat notes) or flags (singles)
+  var topY = cy - stemH;
+  var i = 0;
+  while (i < P.length) {
+    if (P[i].b < 1) {
+      var gs = i;
+      while (i < P.length && P[i].b < 1) i++;
+      var ge = i - 1;
+      if (ge > gs) {
+        // primary beam across the whole group
+        var bx1 = stemX(P[gs]), bx2 = stemX(P[ge]);
+        svg += '<rect x="'+bx1.toFixed(2)+'" y="'+topY.toFixed(2)+'" width="'+(bx2-bx1).toFixed(2)+'" height="'+beamW+'" rx="0.6" fill="'+ink+'"/>';
+        // secondary beam over runs of sixteenths
+        for (var j=gs;j<=ge;j++) {
+          if (P[j].b <= 0.25) {
+            if (j>gs && P[j-1].b <= 0.25) continue;
+            var k=j, endX=stemX(P[j]);
+            while (k<=ge && P[k].b<=0.25){ endX=stemX(P[k]); k++; }
+            var sx2 = stemX(P[j]);
+            var wRun = (endX-sx2);
+            if (wRun < 0.5) wRun = beamW*1.2; // lone 16th inside a beamed group: stub
+            svg += '<rect x="'+sx2.toFixed(2)+'" y="'+(topY+beamW+beamGap).toFixed(2)+'" width="'+wRun.toFixed(2)+'" height="'+beamW+'" rx="0.6" fill="'+ink+'"/>';
+          }
+        }
+      } else {
+        // single sub-beat note → flag glyph at stem top
+        var sx = stemX(P[gs]);
+        var flag = P[gs].b <= 0.25 ? GLYPH.flag16 : GLYPH.flag8;
+        svg += '<text x="'+sx.toFixed(2)+'" y="'+topY.toFixed(2)+'" font-family="Bravura Text" font-size="'+flagF+'" fill="'+ink+'">'+flag+'</text>';
+      }
+    } else { i++; }
+  }
+  svg += '</svg>';
+  return svg;
+}
+
+// ─── params + UI ──────────────────────────────────────────────
+var DEFAULTS = { glyph:30, h:56, cy:40, stemH:26, beamW:4, beamGap:3, flagF:30 };
+var META = {
+  glyph:   { label:'Notehead glyph size', min:18, max:48, step:1 },
+  stemH:   { label:'Stem length',         min:14, max:38, step:1 },
+  beamW:   { label:'Beam thickness',      min:2,  max:7,  step:0.5 },
+  beamGap: { label:'Gap between beams',   min:1,  max:6,  step:0.5 },
+  flagF:   { label:'Flag glyph size',     min:18, max:48, step:1 },
+  cy:      { label:'Baseline Y',          min:28, max:48, step:1 },
+  h:       { label:'SVG height',          min:46, max:64, step:1 },
+};
+var P = Object.assign({}, DEFAULTS);
+
+var PATTERNS = [
+  { cap:'quarter',                      n:[1] },
+  { cap:'2 eighths (beamed)',           n:[0.5,0.5] },
+  { cap:'4 sixteenths (beamed)',        n:[0.25,0.25,0.25,0.25] },
+  { cap:'single eighth (1 flag)',       n:[0.5] },
+  { cap:'single sixteenth (2 flags)',   n:[0.25] },
+  { cap:'half',                         n:[2] },
+  { cap:'whole',                        n:[4] },
+  { cap:'eighth + 2 sixteenths',        n:[0.5,0.25,0.25] },
+  { cap:'2 sixteenths + eighth',        n:[0.25,0.25,0.5] },
+  { cap:'mixed q-8-8-q',                n:[1,0.5,0.5,1] },
+  { cap:'4 eighths',                    n:[0.5,0.5,0.5,0.5] },
+  { cap:'sixteenth run x6',             n:[0.25,0.25,0.25,0.25,0.25,0.25] },
+];
+
+function renderAll() {
+  // grid
+  var g = document.getElementById('grid');
+  g.innerHTML = PATTERNS.map(function(pt){
+    return '<div class="cell"><div class="cap">'+pt.cap+'</div><div class="cmp">'+
+      '<div class="old"><div class="lab">old</div>'+patternSVG_OLD(pt.n)+'</div>'+
+      '<div class="new"><div class="lab">new</div>'+patternSVG_NEW(pt.n,P)+'</div></div></div>';
+  }).join('');
+  // reference row (new renderer only)
+  var ref = document.getElementById('ref');
+  ref.innerHTML =
+    '<div class="box">'+patternSVG_NEW([1],P)+'</div><span class="eq">=</span>'+
+    '<div class="box">'+patternSVG_NEW([0.5,0.5],P)+'</div><span class="eq">=</span>'+
+    '<div class="box">'+patternSVG_NEW([0.25,0.25,0.25,0.25],P)+'</div>';
+  // params out
+  document.getElementById('out').textContent = JSON.stringify(P, null, 2);
+}
+
+function buildControls() {
+  var c = document.getElementById('controls');
+  Object.keys(META).forEach(function(key){
+    var m = META[key];
+    var wrap = document.createElement('div'); wrap.className='ctl';
+    wrap.innerHTML = '<label>'+m.label+': <span class="val" id="v-'+key+'">'+P[key]+'</span></label>'+
+      '<input type="range" id="r-'+key+'" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+P[key]+'">';
+    c.appendChild(wrap);
+    wrap.querySelector('input').addEventListener('input', function(e){
+      P[key] = parseFloat(e.target.value);
+      document.getElementById('v-'+key).textContent = P[key];
+      renderAll();
+    });
+  });
+}
+
+document.getElementById('copy').addEventListener('click', function(){
+  navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(P));
+  this.textContent = 'Copied!';
+  var b=this; setTimeout(function(){ b.textContent='Copy params'; }, 1200);
+});
+
+document.fonts && document.fonts.load('30px "Bravura Text"').then(renderAll);
+buildControls();
+renderAll();
+</script>
+</body>
+</html>
