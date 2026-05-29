@@ -2106,11 +2106,11 @@
         if (streak >= STREAK_GOAL && !warmedUp){
           warmedUp = true;
           tryCard.classList.add('warmed');
-          fbText.innerHTML = `<b>You're warmed up.</b> The real game has 3 difficulty levels.`;
-          fbCta.classList.add('fb-cta-teal');
-          fbCta.textContent = 'Play a round →';
-          fbCta.hidden = false;
-          fbCta.dataset.action = 'play';
+          // Terminal end-state — no module redirect. Sending a note-naming
+          // taster off to a specific named module they don't recognise yet was
+          // confusing; the hero's "Test drive →" CTAs own the conversion step.
+          fbText.innerHTML = `<b>You're warmed up!</b> The full game has 3 difficulty levels — and 30+ more modules to explore.`;
+          fbCta.hidden = true;
         } else {
           fbText.innerHTML = `Nice — that's <b>${current.name}</b>. ${STREAK_GOAL - streak} more for a streak.`;
           fbCta.classList.remove('fb-cta-teal');
@@ -2140,11 +2140,6 @@
       answer(b);
     });
     fbCta.addEventListener('click', () => {
-      if (fbCta.dataset.action === 'play'){
-        window.location.href = 'note-names.html';
-        return;
-      }
-      if (warmedUp){ resetStreak(); }
       newQuestion();
     });
     playBtn.addEventListener('click', () => {
