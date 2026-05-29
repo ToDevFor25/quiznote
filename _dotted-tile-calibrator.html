@@ -70,7 +70,7 @@ var DEFAULTS = {
   noteSize: 42, noteBaseY: 68,
   halfX: 44, dotX: 68, dotY: 68, dotSize: 42,
   q1X: 120, q2X: 160,
-  tieX1: 116, tieX2: 164, tieY: 50, tieDepth: -14, tieStroke: 2.4,
+  tieX1: 116, tieX2: 164, tieY: 50, tieDir: 'up', tieDepth: 14, tieStroke: 2.4,
 };
 var META = {
   noteSize:  { label:'Note glyph size',     min:28, max:56, step:1, grp:'Notes' },
@@ -84,14 +84,15 @@ var META = {
   tieX1:     { label:'Tie left X',           min:95, max:160, step:1, grp:'Tie' },
   tieX2:     { label:'Tie right X',          min:130, max:195, step:1 },
   tieY:      { label:'Tie Y (endpoints)',    min:30, max:115, step:1 },
-  tieDepth:  { label:'Tie depth (+down)',    min:-26, max:26, step:1 },
+  tieDepth:  { label:'Tie bow amount',       min:0, max:30, step:1 },
   tieStroke: { label:'Tie stroke',           min:1, max:4, step:0.1 },
 };
 var P = Object.assign({}, DEFAULTS);
 
 function tieD() {
   var midX = (P.tieX1 + P.tieX2) / 2;
-  return 'M ' + P.tieX1 + ' ' + P.tieY + ' Q ' + midX + ' ' + (P.tieY + P.tieDepth) + ' ' + P.tieX2 + ' ' + P.tieY;
+  var ctrlY = P.tieY + (P.tieDir === 'down' ? P.tieDepth : -P.tieDepth); // down = bows under heads
+  return 'M ' + P.tieX1 + ' ' + P.tieY + ' Q ' + midX + ' ' + ctrlY + ' ' + P.tieX2 + ' ' + P.tieY;
 }
 function svgInner() {
   return ''
@@ -114,8 +115,8 @@ function svg() { return '<svg viewBox="0 0 200 130" xmlns="http://www.w3.org/200
 function render() {
   document.getElementById('zoom').innerHTML = svg();
   document.getElementById('actual').innerHTML = svg();
-  document.getElementById('guides').textContent = 'dot Δx from half: ' + (P.dotX - P.halfX) + '  ·  tie '
-    + (P.tieDepth >= 0 ? 'below (bows down)' : 'above (bows up)');
+  document.getElementById('guides').textContent = 'dot Δx from half: ' + (P.dotX - P.halfX) + '  ·  tie bows '
+    + (P.tieDir === 'down' ? 'down (under heads)' : 'up (over heads)');
   document.getElementById('out').textContent =
     '<!-- params -->\n' + JSON.stringify(P) +
     '\n\n<!-- play.html tile SVG inner (paste between the <svg> tags) -->\n' + svgInner().replace(/></g, '>\n<');
@@ -126,6 +127,18 @@ function build() {
   Object.keys(META).forEach(function(k){
     var m = META[k];
     if (m.grp) { var g=document.createElement('div'); g.className='grp'; g.textContent=m.grp; c.appendChild(g); }
+    // tie-direction flip sits at the top of the Tie group (it's a toggle, not a slider)
+    if (k === 'tieX1') {
+      var dw = document.createElement('div'); dw.className='ctl';
+      dw.innerHTML = '<label>Tie direction (flip)</label>'+
+        '<select id="r-tieDir" style="width:100%;font:inherit;padding:5px;border-radius:6px;border:1px solid var(--line);">'+
+          '<option value="up">Up (bows over heads)</option>'+
+          '<option value="down">Down (bows under heads)</option>'+
+        '</select>';
+      c.appendChild(dw);
+      dw.querySelector('select').value = P.tieDir;
+      dw.querySelector('select').addEventListener('change', function(e){ P.tieDir = e.target.value; render(); });
+    }
     var w = document.createElement('div'); w.className='ctl';
     w.innerHTML = '<label>'+m.label+': <span class="val" id="v-'+k+'">'+P[k]+'</span></label>'+
       '<input type="range" id="r-'+k+'" min="'+m.min+'" max="'+m.max+'" step="'+m.step+'" value="'+P[k]+'">';
