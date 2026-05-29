@@ -981,7 +981,8 @@
       svg += '<text x="'+glyphX(P[i]).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+qGlyph+'</text>';
     }
     // 3) beams at the stem tips (primary + secondary over 16th runs)
-    var primaryTopY = down ? tipY : (tipY - beamW);
+    // beam sits AT the stem tip: bottom edge on the tip (down) / top edge on it (up)
+    var primaryTopY = down ? (tipY - beamW) : tipY;
     i = 0;
     while (i < P.length) {
       if (beamed[i]) {

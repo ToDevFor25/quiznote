@@ -150,6 +150,10 @@ var GLYPH = {
   sixteenthUp:  String.fromCodePoint(0xE1D9),  // note16thUp
   sixteenthDown:String.fromCodePoint(0xE1DA),  // note16thDown
   black:        String.fromCodePoint(0xE0A4),  // noteheadBlack (beamed heads only)
+  flag8Up:      String.fromCodePoint(0xE240),  // flag8thUp
+  flag8Down:    String.fromCodePoint(0xE241),  // flag8thDown
+  flag16Up:     String.fromCodePoint(0xE242),  // flag16thUp
+  flag16Down:   String.fromCodePoint(0xE243),  // flag16thDown
 };
 
 // Runtime glyph measurement for Bravura Text (metadata is for Bravura proper).
@@ -245,11 +249,25 @@ function patternSVG_NEW(notes, o) {
     return glyphX(p) + edge + sgn*STEM_HALF + sgn*beamDX;
   }
 
-  // 1) UNBEAMED notes → complete glyph (head+stem+flag straight from the font)
+  // 1) UNBEAMED notes. quarter/half/whole → complete glyph. Single 8th/16th →
+  //    quarter glyph (head+stem) + a SEPARATELY-SIZED flag glyph, so the flag
+  //    ("tail") length is controllable (flagScale). flagScale=1 falls back to
+  //    the complete flagged glyph.
+  var flagScale = (o.flagScale != null) ? o.flagScale : 1;
+  function flagGlyph(b){
+    if (b <= 0.25) return down ? GLYPH.flag16Down : GLYPH.flag16Up;
+    return down ? GLYPH.flag8Down : GLYPH.flag8Up;
+  }
   for (var i=0;i<P.length;i++) {
     if (beamed[i]) continue;
     var p = P[i];
-    svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+completeGlyph(p.b, down)+'</text>';
+    if (p.b < 1 && flagScale < 0.999) {
+      svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+(down?GLYPH.quarterDown:GLYPH.quarterUp)+'</text>';
+      var fx = stemCX(p) - STEM_HALF;
+      svg += '<text x="'+fx.toFixed(2)+'" y="'+tipY.toFixed(2)+'" font-family="Bravura Text" font-size="'+(F*flagScale).toFixed(2)+'" fill="'+ink+'">'+flagGlyph(p.b)+'</text>';
+    } else {
+      svg += '<text x="'+glyphX(p).toFixed(2)+'" y="'+baseY.toFixed(2)+'" font-family="Bravura Text" font-size="'+F+'" fill="'+ink+'">'+completeGlyph(p.b, down)+'</text>';
+    }
   }
   // 2) BEAMED notes → complete QUARTER glyph (head+stem, no flag — the beam
   //    replaces the flag). Identical seating to the unbeamed glyphs, so the
@@ -261,7 +279,8 @@ function patternSVG_NEW(notes, o) {
   }
   // 3) beams at the stem tips. Primary beam caps the tips; extra beams (16ths)
   //    stack toward the heads (opposite the stem direction).
-  var primaryTopY = down ? tipY : (tipY - beamW);
+  // beam sits AT the stem tip: bottom edge on the tip (down) / top edge on it (up)
+  var primaryTopY = down ? (tipY - beamW) : tipY;
   i = 0;
   while (i < P.length) {
     if (beamed[i]) {
@@ -288,16 +307,17 @@ function patternSVG_NEW(notes, o) {
 }
 
 // ─── params + UI ──────────────────────────────────────────────
-var DEFAULTS = { dir:'down', glyph:40, h:62, cy:16, beamW:5, beamGap:3, beamR:0.4, beamDX:0, vNudge:0 };
+var DEFAULTS = { dir:'down', glyph:46, h:80, cy:44, beamW:4.5, beamGap:2.5, beamR:0, beamDX:-1, vNudge:14, flagScale:0.8 };
 var META = {
   glyph:   { label:'Glyph size',             min:20, max:54, step:1 },
+  flagScale:{label:'Flag/tail size (8/16)',  min:0.5, max:1, step:0.05 },
   beamW:   { label:'Beam thickness',         min:2,  max:9,  step:0.5 },
   beamGap: { label:'Gap between beams',      min:0.5, max:6, step:0.5 },
   beamR:   { label:'Beam corner radius',     min:0,  max:3,  step:0.1 },
   beamDX:  { label:'Beam X align',           min:-5, max:5,  step:0.2 },
   vNudge:  { label:'Vertical seat',          min:-14, max:14, step:0.5 },
   cy:      { label:'Baseline Y (head row)',  min:8,  max:54, step:1 },
-  h:       { label:'SVG height',             min:46, max:80, step:1 },
+  h:       { label:'SVG height',             min:46, max:88, step:1 },
 };
 var P = Object.assign({}, DEFAULTS);
 
