@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rhythm Glyph Calibrator (internal)</title>
+<!--
+  _rhythm-calibrator.html  —  INTERNAL TOOL, NOT A SHIPPING MODULE.
+  Prefix-`_` convention (see CLAUDE.md). Mirrors the _clef-calibrator.html shape:
+    §1  the current shipping render (read-only reference)
+    §2  a live editor: sliders + presets that match the shipping variant
+    §3  a copy-paste snippet with the chosen values
+
+  Three independent targets, each faithful to its real renderer:
+    A. 16th-note FLAGS + secondary beam   → ear-rhythm.html  patternSVG()
+    B. Augmentation DOT offsets           → dotted-notes.html DOT_OFFSETS
+    C. TIE arc                            → dotted-notes.html positionTieArc()
+
+  Nothing here is imported by the app. Delete after calibration if desired.
+-->
+<link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Bravura Text';
+    font-display: swap;
+    src: url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff2') format('woff2'),
+         url('https://cdn.jsdelivr.net/gh/steinbergmedia/bravura@master/redist/woff/BravuraText.woff') format('woff');
+  }
+  :root {
+    --ink: #2A2A3E;
+    --cream: #FFF9EC;
+    --card: #FFFFFF;
+    --line: #E7E0CF;
+    --teal: #18A999;
+    --sun: #FFC24B;
+    --coral: #FF6B5E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px 14px 64px;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--cream); color: var(--ink);
+    -webkit-text-size-adjust: 100%;
+  }
+  h1 { font-size: 20px; margin: 4px 0 2px; }
+  .lede { font-size: 13px; opacity: .7; margin: 0 0 18px; line-height: 1.4; }
+  .sec {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 16px 14px; margin: 0 0 22px; box-shadow: 0 2px 0 var(--line);
+  }
+  .sec h2 { font-size: 16px; margin: 0 0 2px; }
+  .sec .note { font-size: 12px; opacity: .65; margin: 0 0 14px; line-height: 1.4; }
+  .stage-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stage {
+    flex: 1 1 140px; min-width: 130px;
+    background: var(--cream); border: 1px dashed var(--line); border-radius: 12px;
+    padding: 12px 8px 6px; text-align: center;
+  }
+  .stage.warm { background: #FDF3D6; border-color: #EBD9A6; }
+  .stage .cap { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; opacity: .55; margin-top: 6px; }
+  .stage svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .bravura { font-family: 'Bravura Text', serif; color: var(--ink); line-height: 1.35; user-select: none; }
+
+  .ctrls { margin-top: 14px; }
+  .ctrl { margin: 0 0 12px; }
+  .ctrl label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .ctrl label .val { font-variant-numeric: tabular-nums; color: var(--teal); font-weight: 800; }
+  input[type=range] { width: 100%; height: 30px; accent-color: var(--teal); }
+  .subhead { font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; opacity: .5; margin: 16px 0 8px; }
+
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 4px; }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: #fff; color: var(--ink);
+    font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .btn.ghost { background: var(--cream); }
+
+  .out { margin-top: 14px; }
+  pre {
+    background: #1E1E2C; color: #E8E8F0; border-radius: 12px; padding: 12px;
+    font-size: 12px; line-height: 1.5; overflow-x: auto; margin: 6px 0 0;
+    white-space: pre; -webkit-overflow-scrolling: touch;
+  }
+  .copyrow { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .copied { font-size: 12px; color: var(--teal); font-weight: 700; opacity: 0; transition: opacity .2s; }
+  .copied.show { opacity: 1; }
+  .tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  @media (max-width: 380px) { .tier-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h1>Rhythm Glyph Calibrator</h1>
+<p class="lede">Internal tool. Tune the three glyph details, then hit <b>Copy snippet</b> in each section and send them over — I’ll patch <code>ear-rhythm.html</code> and <code>dotted-notes.html</code>. Live previews mirror the real renderers.</p>
+
+<!-- ============================================================ A. FLAGS -->
+<section class="sec" id="secA">
+  <h2>A · 16th-note flags <span style="font-weight:400;opacity:.6;font-size:13px">— ear-rhythm.html</span></h2>
+  <p class="note">The flag is an SVG path; 16ths in a beam get a 2nd beam. “Bigger” = scale the flag path + bump stroke. Shipping defaults: size&nbsp;1.0×, stroke&nbsp;1.5, 2nd-flag&nbsp;gap&nbsp;4, beam&nbsp;gap&nbsp;3.5, beam&nbsp;w&nbsp;2.</p>
+  <div class="stage-row">
+    <div class="stage"><div id="A_ship_8"></div><div class="cap">8th (shipping)</div></div>
+    <div class="stage"><div id="A_ship_16"></div><div class="cap">16th (shipping)</div></div>
+    <div class="stage"><div id="A_ship_beam"></div><div class="cap">16th pair (shipping)</div></div>
+  </div>
+  <div class="stage-row" style="margin-top:10px">
+    <div class="stage warm"><div id="A_edit_8"></div><div class="cap">8th (edited)</div></div>
+    <div class="stage warm"><div id="A_edit_16"></div><div class="cap">16th (edited)</div></div>
+    <div class="stage warm"><div id="A_edit_beam"></div><div class="cap">16th pair (edited)</div></div>
+  </div>
+
+  <div class="presets">
+    <button class="btn ghost" data-a-preset="ship">Reset to shipping</button>
+    <button class="btn ghost" data-a-preset="big">Bigger flags</button>
+    <button class="btn ghost" data-a-preset="bold">Bigger + bolder</button>
+  </div>
+
+  <div class="ctrls">
+    <div class="subhead">Flag (isolated 8th / 16th)</div>
+    <div class="ctrl"><label>Flag size ×<span class="val" id="A_size_v"></span></label><input type="range" id="A_size" min="0.6" max="2.6" step="0.05"></div>
+    <div class="ctrl"><label>Flag stroke width<span class="val" id="A_stroke_v"></span></label><input type="range" id="A_stroke" min="1" max="4" step="0.1"></div>
+    <div class="ctrl"><label>2nd-flag gap (px)<span class="val" id="A_flaggap_v"></span></label><input type="range" id="A_flaggap" min="2" max="12" step="0.5"></div>
+    <div class="subhead">Beamed 16th (2nd beam)</div>
+    <div class="ctrl"><label>Beam gap (px)<span class="val" id="A_beamgap_v"></span></label><input type="range" id="A_beamgap" min="2" max="9" step="0.25"></div>
+    <div class="ctrl"><label>Beam stroke width<span class="val" id="A_beamw_v"></span></label><input type="range" id="A_beamw" min="1.5" max="5" step="0.1"></div>
+  </div>
+
+  <div class="out">
+    <div class="subhead" style="margin-top:4px">Snippet → patternSVG()</div>
+    <pre id="A_out"></pre>
+    <div class="copyrow"><button class="btn primary" data-copy="A_out">Copy snippet</button><span class="copied" id="A_copied">copied ✓</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ B. DOT -->
+<section class="sec" id="secB">
+  <h2>B · Augmentation dot <span style="font-weight:400;opacity:.6;font-size:13px">— dotted-notes.html</span></h2>
+  <p class="note">Dot offset is per note-type (x = horizontal nudge from glyph, y = vertical). “Closer to the note” = lower x. Live glyphs use Bravura at 80px, same as the module.</p>
+  <div class="tier-grid" id="B_stages"></div>
+
+  <div class="presets" style="margin-top:14px">
+    <button class="btn ghost" data-b-preset="ship">Reset to shipping</button>
+    <button class="btn ghost" data-b-preset="closer">Dots closer (−3 x)</button>
+  </div>
+
+  <div class="ctrls" id="B_ctrls"></div>
+
+  <div class="out">
+    <div class="subhead" style="margin-top:4px">Snippet → DOT_OFFSETS</div>
+    <pre id="B_out"></pre>
+    <div class="copyrow"><button class="btn primary" data-copy="B_out">Copy snippet</button><span class="copied" id="B_copied">copied ✓</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ C. TIE -->
+<section class="sec" id="secC">
+  <h2>C · Tie arc <span style="font-weight:400;opacity:.6;font-size:13px">— dotted-notes.html</span></h2>
+  <p class="note">A tie between two stem-up notes should hug <b>under</b> the noteheads, bowing down. Shipping: end-x&nbsp;0.31, y&nbsp;= bottom&nbsp;−&nbsp;18, depth&nbsp;14, stroke&nbsp;2.5. Raise “y drop” to push it under; positive depth bows down.</p>
+  <div class="stage-row">
+    <div class="stage"><div id="C_ship" class="bravura"></div><div class="cap">shipping</div></div>
+    <div class="stage warm"><div id="C_edit" class="bravura"></div><div class="cap">edited</div></div>
+  </div>
+
+  <div class="presets">
+    <button class="btn ghost" data-c-preset="ship">Reset to shipping</button>
+    <button class="btn ghost" data-c-preset="under">Tuck under</button>
+  </div>
+
+  <div class="ctrls">
+    <div class="ctrl"><label>End-x fraction (of glyph width)<span class="val" id="C_xfrac_v"></span></label><input type="range" id="C_xfrac" min="0.1" max="0.6" step="0.01"></div>
+    <div class="ctrl"><label>y drop from notehead bottom (px)<span class="val" id="C_ydrop_v"></span></label><input type="range" id="C_ydrop" min="-30" max="20" step="1"></div>
+    <div class="ctrl"><label>Arc depth (px, + = bow down)<span class="val" id="C_depth_v"></span></label><input type="range" id="C_depth" min="-22" max="22" step="1"></div>
+    <div class="ctrl"><label>Stroke width<span class="val" id="C_stroke_v"></span></label><input type="range" id="C_stroke" min="1.5" max="4.5" step="0.1"></div>
+    <div class="ctrl"><label>Gap between glyphs (px)<span class="val" id="C_gap_v"></span></label><input type="range" id="C_gap" min="12" max="60" step="1"></div>
+  </div>
+
+  <div class="out">
+    <div class="subhead" style="margin-top:4px">Snippet → positionTieArc() + .dn-tie-gap</div>
+    <pre id="C_out"></pre>
+    <div class="copyrow"><button class="btn primary" data-copy="C_out">Copy snippet</button><span class="copied" id="C_copied">copied ✓</span></div>
+  </div>
+</section>
+
+<!-- ============================================================ D. CHROMATIC TILE SHARPS -->
+<section class="sec" id="secD">
+  <h2>D · Chromatic tile sharps <span style="font-weight:400;opacity:.6;font-size:13px">— play.html</span></h2>
+  <p class="note">The ♯ glyphs render at font-size 13 next to 20px noteheads — too small. Bump the size, tune the gap left of each notehead. Noteheads stay fixed; only the 4 sharps move. Shipping: size&nbsp;13, dx&nbsp;−7, dy&nbsp;0.</p>
+  <div class="stage-row">
+    <div class="stage"><div id="D_ship"></div><div class="cap">shipping</div></div>
+    <div class="stage warm"><div id="D_edit"></div><div class="cap">edited</div></div>
+  </div>
+  <div class="presets">
+    <button class="btn ghost" data-d-preset="ship">Reset to shipping</button>
+    <button class="btn ghost" data-d-preset="big">Bigger sharps</button>
+  </div>
+  <div class="ctrls">
+    <div class="ctrl"><label>Sharp size (px)<span class="val" id="D_size_v"></span></label><input type="range" id="D_size" min="10" max="26" step="0.5"></div>
+    <div class="ctrl"><label>Gap left of notehead (dx)<span class="val" id="D_dx_v"></span></label><input type="range" id="D_dx" min="-18" max="-2" step="0.5"></div>
+    <div class="ctrl"><label>Vertical offset (dy)<span class="val" id="D_dy_v"></span></label><input type="range" id="D_dy" min="-6" max="6" step="0.5"></div>
+  </div>
+  <div class="out">
+    <div class="subhead" style="margin-top:4px">Snippet → the 4 sharp &lt;text&gt; lines</div>
+    <pre id="D_out"></pre>
+    <div class="copyrow"><button class="btn primary" data-copy="D_out">Copy snippet</button><span class="copied" id="D_copied">copied ✓</span></div>
+  </div>
+</section>
+
+<script>
+/* ---------- shared ---------- */
+var INK = '#2A2A3E';
+function $(id){ return document.getElementById(id); }
+function bind(id, fn){ var e=$(id); e.addEventListener('input', fn); }
+document.querySelectorAll('[data-copy]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var txt = $(b.getAttribute('data-copy')).textContent;
+    var done = function(){ var c=$(b.getAttribute('data-copy').replace('_out','_copied')); c.classList.add('show'); setTimeout(function(){c.classList.remove('show');},1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, done);
+    else { var t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); try{document.execCommand('copy');}catch(e){} t.remove(); done(); }
+  });
+});
+
+/* ================================================================ A · FLAGS
+   Faithful to ear-rhythm.html patternSVG() geometry:
+   cy=16, stemH=22, rx=5.5, ry=4, tilt=-14. Stem x = cx - rx*0.7.
+   Flag path (shipping): M sx,(cy+stemH) c-2,-3 -5,-7 -2,-12  @ stroke 1.5
+   2nd flag: same, started 4px higher.  2nd beam: y=beamY+3.5 @ stroke 2. */
+var A_DEF = { size:1.0, stroke:1.5, flaggap:4, beamgap:3.5, beamw:2 };
+var A_PRESETS = {
+  ship: A_DEF,
+  big:  { size:1.7, stroke:1.5, flaggap:6, beamgap:4.5, beamw:2.6 },
+  bold: { size:1.9, stroke:2.2, flaggap:7, beamgap:5,   beamw:3.2 }
+};
+var A = Object.assign({}, A_DEF);
+
+function noteHead(cx){
+  var cy=16, rx=5.5, ry=4, tilt=-14;
+  return '<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+tilt+' '+cx+' '+cy+')" fill="'+INK+'" stroke="'+INK+'" stroke-width="1"/>';
+}
+function stem(cx){
+  var cy=16, stemH=22, rx=5.5; var sx=cx - rx*0.7;
+  return '<line x1="'+sx+'" y1="'+cy+'" x2="'+sx+'" y2="'+(cy+stemH)+'" stroke="'+INK+'" stroke-width="1.8"/>';
+}
+// flag path from a start point, scaled by s
+function flagPath(sx, sy, s, w){
+  var d = 'M'+sx+','+sy+' c'+(-2*s)+','+(-3*s)+' '+(-5*s)+','+(-7*s)+' '+(-2*s)+','+(-12*s);
+  return '<path d="'+d+'" stroke="'+INK+'" stroke-width="'+w+'" fill="none" stroke-linecap="round"/>';
+}
+// isolated note with `flags` flags (1=eighth, 2=sixteenth)
+function isoNote(p){
+  var cx=40, cy=16, stemH=22, rx=5.5; var sx=cx - rx*0.7;
+  var svg='<svg viewBox="0 0 80 56" width="80" height="56">';
+  svg+=noteHead(cx)+stem(cx);
+  svg+=flagPath(sx, cy+stemH, p.size, p.stroke);
+  if (p.flags>=2) svg+=flagPath(sx, cy+stemH - p.flaggap, p.size, p.stroke);
+  return svg+'</svg>';
+}
+function beamed16(p){
+  var cy=16, stemH=22, rx=5.5;
+  var cx1=26, cx2=58; var sx1=cx1-rx*0.7, sx2=cx2-rx*0.7;
+  var beamY=cy+stemH;
+  var svg='<svg viewBox="0 0 84 56" width="84" height="56">';
+  svg+=noteHead(cx1)+noteHead(cx2)+stem(cx1)+stem(cx2);
+  svg+='<line x1="'+sx1+'" y1="'+beamY+'" x2="'+sx2+'" y2="'+beamY+'" stroke="'+INK+'" stroke-width="2.5" stroke-linecap="round"/>';
+  svg+='<line x1="'+sx1+'" y1="'+(beamY+p.beamgap)+'" x2="'+sx2+'" y2="'+(beamY+p.beamgap)+'" stroke="'+INK+'" stroke-width="'+p.beamw+'" stroke-linecap="round"/>';
+  return svg+'</svg>';
+}
+function renderA(){
+  $('A_ship_8').innerHTML  = isoNote(Object.assign({flags:1}, A_DEF));
+  $('A_ship_16').innerHTML = isoNote(Object.assign({flags:2}, A_DEF));
+  $('A_ship_beam').innerHTML = beamed16(A_DEF);
+  $('A_edit_8').innerHTML  = isoNote(Object.assign({flags:1}, A));
+  $('A_edit_16').innerHTML = isoNote(Object.assign({flags:2}, A));
+  $('A_edit_beam').innerHTML = beamed16(A);
+  $('A_size_v').textContent   = A.size.toFixed(2)+'×';
+  $('A_stroke_v').textContent = A.stroke.toFixed(1);
+  $('A_flaggap_v').textContent= A.flaggap.toFixed(1);
+  $('A_beamgap_v').textContent= A.beamgap.toFixed(2);
+  $('A_beamw_v').textContent  = A.beamw.toFixed(1);
+  var s=A.size, w=A.stroke.toFixed(1);
+  var c1=(-2*s).toFixed(2), c2=(-3*s).toFixed(2), c3=(-5*s).toFixed(2), c4=(-7*s).toFixed(2), c5=(-2*s).toFixed(2), c6=(-12*s).toFixed(2);
+  $('A_out').textContent =
+'ear-rhythm.html  patternSVG():\n\n'+
+'FLAG path "d" curve fragment (both flags):\n'+
+'  c'+c1+','+c2+' '+c3+','+c4+' '+c5+','+c6+'\n'+
+'Flag stroke-width: '+w+'\n'+
+'2nd-flag vertical gap (cy+stemH - N): '+A.flaggap+'\n\n'+
+'BEAMED-16th 2nd beam:\n'+
+'  vertical gap (beamY + N): '+A.beamgap+'\n'+
+'  stroke-width: '+A.beamw.toFixed(1);
+}
+['size','stroke','flaggap','beamgap','beamw'].forEach(function(k){
+  bind('A_'+k, function(e){ A[k]=parseFloat(e.target.value); renderA(); });
+});
+document.querySelectorAll('[data-a-preset]').forEach(function(b){
+  b.addEventListener('click', function(){
+    A=Object.assign({}, A_PRESETS[b.getAttribute('data-a-preset')]);
+    $('A_size').value=A.size; $('A_stroke').value=A.stroke; $('A_flaggap').value=A.flaggap; $('A_beamgap').value=A.beamgap; $('A_beamw').value=A.beamw;
+    renderA();
+  });
+});
+
+/* ================================================================ B · DOT */
+var B_DEF = {
+  quarter:{x:4,y:4}, half:{x:3,y:4}, eighth:{x:-9,y:4}, sixteenth:{x:-9,y:4}, whole:{x:3,y:4}
+};
+var B_GLYPH = { quarter:'', half:'', eighth:'', sixteenth:'', whole:'' };
+var AUG = '';
+var B_TYPES = ['quarter','half','eighth','sixteenth','whole'];
+var B = JSON.parse(JSON.stringify(B_DEF));
+
+(function buildB(){
+  var stages = $('B_stages'), ctrls = $('B_ctrls');
+  B_TYPES.forEach(function(t){
+    var st=document.createElement('div'); st.className='stage warm';
+    st.innerHTML='<div class="bravura" id="B_glyph_'+t+'" style="font-size:64px"></div><div class="cap">dotted '+t+'</div>';
+    stages.appendChild(st);
+    var box=document.createElement('div');
+    box.innerHTML=
+      '<div class="subhead" style="margin-top:6px">'+t+'</div>'+
+      '<div class="ctrl"><label>x (closer ← / → away)<span class="val" id="B_'+t+'_x_v"></span></label><input type="range" id="B_'+t+'_x" min="-16" max="16" step="0.5"></div>'+
+      '<div class="ctrl"><label>y<span class="val" id="B_'+t+'_y_v"></span></label><input type="range" id="B_'+t+'_y" min="-12" max="16" step="0.5"></div>';
+    ctrls.appendChild(box);
+  });
+})();
+function renderB(){
+  B_TYPES.forEach(function(t){
+    var o=B[t];
+    $('B_glyph_'+t).innerHTML = B_GLYPH[t] + '<span style="position:relative;left:'+o.x+'px;top:'+o.y+'px">'+AUG+'</span>';
+    $('B_'+t+'_x').value=o.x; $('B_'+t+'_y').value=o.y;
+    $('B_'+t+'_x_v').textContent=o.x; $('B_'+t+'_y_v').textContent=o.y;
+  });
+  var lines=['  '+'const DOT_OFFSETS = {'];
+  B_TYPES.forEach(function(t){
+    var pad = t.length<9 ? t+':' + Array(10-t.length).join(' ') : t+':';
+    lines.push('    '+pad+' { x: '+B[t].x+', y: '+B[t].y+' },');
+  });
+  lines.push('  };');
+  $('B_out').textContent = lines.join('\n');
+}
+B_TYPES.forEach(function(t){
+  bind('B_'+t+'_x', function(e){ B[t].x=parseFloat(e.target.value); renderB(); });
+  bind('B_'+t+'_y', function(e){ B[t].y=parseFloat(e.target.value); renderB(); });
+});
+document.querySelectorAll('[data-b-preset]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var p=b.getAttribute('data-b-preset');
+    if(p==='ship') B=JSON.parse(JSON.stringify(B_DEF));
+    else if(p==='closer'){ B=JSON.parse(JSON.stringify(B_DEF)); B_TYPES.forEach(function(t){ B[t].x-=3; }); }
+    renderB();
+  });
+});
+
+/* ================================================================ C · TIE
+   Faithful to positionTieArc(): measure real glyph rects, arc endpoints at
+   width*xfrac, y = notehead-bottom - ydrop, quadratic control at y+depth. */
+var C_DEF = { xfrac:0.31, ydrop:18, depth:14, stroke:2.5, gap:36 };
+var C_PRESETS = {
+  ship:  C_DEF,
+  under: { xfrac:0.31, ydrop:-6, depth:12, stroke:2.5, gap:36 }
+};
+var C = Object.assign({}, C_DEF);
+var C_CHAR = ''; // half note, stem up
+
+function tieMarkup(){
+  return '<div class="dn-tied" style="position:relative;display:inline-flex;flex-direction:row;align-items:center;font-size:80px">'
+    + '<span class="dn-glyph" style="display:inline-block;line-height:1">'+C_CHAR+'</span>'
+    + '<span class="dn-tie-gap" style="display:inline-block"></span>'
+    + '<span class="dn-glyph" style="display:inline-block;line-height:1">'+C_CHAR+'</span>'
+    + '</div>';
+}
+function drawTie(hostId, cfg){
+  var host=$(hostId); host.innerHTML=tieMarkup();
+  var parent=host.querySelector('.dn-tied');
+  parent.querySelector('.dn-tie-gap').style.width=cfg.gap+'px';
+  requestAnimationFrame(function(){
+    var glyphs=host.querySelectorAll('.dn-glyph');
+    var pr=parent.getBoundingClientRect();
+    var g1=glyphs[0].getBoundingClientRect();
+    var g2=glyphs[1].getBoundingClientRect();
+    var x1=(g1.left-pr.left)+g1.width*cfg.xfrac;
+    var x2=(g2.left-pr.left)+g2.width*cfg.xfrac;
+    var y=(g1.bottom+g2.bottom)/2 - pr.top - cfg.ydrop;
+    var midX=(x1+x2)/2;
+    var ns='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('style','position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible');
+    svg.setAttribute('viewBox','0 0 '+pr.width+' '+pr.height);
+    var path=document.createElementNS(ns,'path');
+    path.setAttribute('d','M'+x1+','+y+' Q'+midX+','+(y+cfg.depth)+' '+x2+','+y);
+    path.setAttribute('fill','none'); path.setAttribute('stroke','#2A2A3E');
+    path.setAttribute('stroke-width',cfg.stroke); path.setAttribute('stroke-linecap','round');
+    svg.appendChild(path); parent.appendChild(svg);
+  });
+}
+function renderC(){
+  drawTie('C_ship', C_DEF);
+  drawTie('C_edit', C);
+  $('C_xfrac_v').textContent=C.xfrac.toFixed(2);
+  $('C_ydrop_v').textContent=C.ydrop;
+  $('C_depth_v').textContent=C.depth;
+  $('C_stroke_v').textContent=C.stroke.toFixed(1);
+  $('C_gap_v').textContent=C.gap;
+  $('C_out').textContent =
+'// positionTieArc() — replace the geometry lines:\n'+
+'var x1 = (g1.left - pr.left) + g1.width * '+C.xfrac.toFixed(2)+';\n'+
+'var x2 = (g2.left - pr.left) + g2.width * '+C.xfrac.toFixed(2)+';\n'+
+'var y = (g1.bottom + g2.bottom) / 2 - pr.top - ('+C.ydrop+');\n'+
+'var depth = '+C.depth+';\n'+
+"path.setAttribute('stroke-width', '"+C.stroke.toFixed(1)+"');\n\n"+
+'/* CSS: .dn-symbol.dn-tied .dn-tie-gap { width: '+C.gap+'px; } */';
+}
+['xfrac','ydrop','depth','stroke','gap'].forEach(function(k){
+  bind('C_'+k, function(e){ C[k]=parseFloat(e.target.value); renderC(); });
+});
+document.querySelectorAll('[data-c-preset]').forEach(function(b){
+  b.addEventListener('click', function(){
+    C=Object.assign({}, C_PRESETS[b.getAttribute('data-c-preset')]);
+    $('C_xfrac').value=C.xfrac; $('C_ydrop').value=C.ydrop; $('C_depth').value=C.depth; $('C_stroke').value=C.stroke; $('C_gap').value=C.gap;
+    renderC();
+  });
+});
+
+/* ================================================================ D · CHROMATIC TILE SHARPS
+   Faithful to play.html chromatic tile. Noteheads fixed; each flagged note
+   gets a sharp at (note.x + dx, note.y + dy) @ font-size = size. */
+var GCLEF=String.fromCharCode(0xE050), NOTE=String.fromCharCode(0xE1D5), SHARP=String.fromCharCode(0xE262);
+var D_NOTES=[
+  {x:34,y:56,c:'#FF6B6B'}, {x:51,y:50,c:'#FFB627',s:true}, {x:68,y:46,c:'#1FB8A8',s:true},
+  {x:85,y:42,c:'#1FB8A8'}, {x:102,y:38,c:'#5B3FE4',s:true}, {x:119,y:34,c:'#5B3FE4'}, {x:136,y:30,c:'#FF6B6B',s:true}
+];
+var D_DEF={ size:13, dx:-7, dy:0 };
+var D_PRESETS={ ship:D_DEF, big:{ size:18, dx:-9, dy:0 } };
+var D=Object.assign({}, D_DEF);
+function tileSVG(cfg){
+  var s='<svg viewBox="0 0 160 112" width="160" height="112">';
+  s+='<g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">';
+  [22,30,38,46,54].forEach(function(y){ s+='<line x1="6" y1="'+y+'" x2="154" y2="'+y+'"/>'; });
+  s+='</g>';
+  s+='<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GCLEF+'</text>';
+  s+='<g font-family="Bravura Text" text-anchor="middle">';
+  D_NOTES.forEach(function(n){
+    if(n.s) s+='<text x="'+(n.x+cfg.dx)+'" y="'+(n.y+cfg.dy)+'" font-size="'+cfg.size+'" fill="#2A2A3E">'+SHARP+'</text>';
+    s+='<text x="'+n.x+'" y="'+n.y+'" font-size="20" fill="'+n.c+'">'+NOTE+'</text>';
+  });
+  s+='</g>';
+  s+='<rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>';
+  s+='<text x="80" y="97" font-family="system-ui" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>';
+  return s+'</svg>';
+}
+function renderD(){
+  $('D_ship').innerHTML=tileSVG(D_DEF);
+  $('D_edit').innerHTML=tileSVG(D);
+  $('D_size_v').textContent=D.size.toFixed(1);
+  $('D_dx_v').textContent=D.dx.toFixed(1);
+  $('D_dy_v').textContent=D.dy.toFixed(1);
+  var lines=[];
+  D_NOTES.forEach(function(n){
+    if(!n.s) return;
+    var sx=(n.x+D.dx), sy=(n.y+D.dy);
+    lines.push('<text x="'+sx+'" y="'+sy+'" font-size="'+D.size+'" fill="#2A2A3E">&#xE262;</text>');
+  });
+  $('D_out').textContent='// the 4 sharp <text> lines (noteheads unchanged):\n'+lines.join('\n');
+}
+['size','dx','dy'].forEach(function(k){
+  bind('D_'+k, function(e){ D[k]=parseFloat(e.target.value); renderD(); });
+});
+document.querySelectorAll('[data-d-preset]').forEach(function(b){
+  b.addEventListener('click', function(){
+    D=Object.assign({}, D_PRESETS[b.getAttribute('data-d-preset')]);
+    $('D_size').value=D.size; $('D_dx').value=D.dx; $('D_dy').value=D.dy; renderD();
+  });
+});
+
+/* ---------- init ---------- */
+$('A_size').value=A.size; $('A_stroke').value=A.stroke; $('A_flaggap').value=A.flaggap; $('A_beamgap').value=A.beamgap; $('A_beamw').value=A.beamw;
+$('C_xfrac').value=C.xfrac; $('C_ydrop').value=C.ydrop; $('C_depth').value=C.depth; $('C_stroke').value=C.stroke; $('C_gap').value=C.gap;
+$('D_size').value=D.size; $('D_dx').value=D.dx; $('D_dy').value=D.dy;
+renderA(); renderB(); renderD();
+function renderFontDependent(){ renderC(); renderD(); }
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderFontDependent); else renderFontDependent();
+window.addEventListener('load', renderFontDependent);
+</script>
+</body>
+</html>
