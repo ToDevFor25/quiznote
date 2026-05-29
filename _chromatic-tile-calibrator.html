@@ -119,13 +119,14 @@ var DESC = [
 var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
 
 var G = { dir:'asc', noteStyle:'quarter', colorMode:'rainbow', noteSize:18, accSize:13,
-          ledgerW:6, showPill:1, headDY:0, stemLen:16, stemW:1.4, stemDX:0, stemDY:0,
+          ledgerW:6, showPill:1, headDY:0, headGlyphDY:0, stemLen:16, stemW:1.4, stemDX:0, stemDY:0,
           xStart:30, pairGap:6.5, groupGap:11, accGap:5, accDY:-1 };
 var GMETA = {
   noteSize:{label:'Note size',min:10,max:26,step:0.5},
   accSize: {label:'Accidental size',min:8,max:24,step:0.5},
   ledgerW: {label:'Ledger width',min:5,max:16,step:0.5},
   headDY:  {label:'Head Y nudge (all)',min:-8,max:8,step:0.5},
+  headGlyphDY:{label:'Head glyph Y (vs line)',min:-12,max:12,step:0.5},
   stemLen: {label:'Stem length (quarter)',min:0,max:30,step:0.5},
   stemW:   {label:'Stem thickness',min:0.8,max:3,step:0.1},
   stemDX:  {label:'Stem X offset',min:-5,max:5,step:0.2},
@@ -171,7 +172,7 @@ function svgInner(){
       var sx = (d.x + headHalf + G.stemDX), sy = cy + G.stemDY;
       stems += '<line x1="'+sx.toFixed(1)+'" y1="'+sy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(sy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
     }
-    heads += '<text x="'+d.x.toFixed(1)+'" y="'+(cy - headCy).toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
+    heads += '<text x="'+d.x.toFixed(1)+'" y="'+(cy - headCy + G.headGlyphDY).toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
   }
   s += '<g>'+led+'</g><g>'+stems+'</g><g font-family="Bravura Text">'+accs+heads+'</g>';
   if (G.showPill){
