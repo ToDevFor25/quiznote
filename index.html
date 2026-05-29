@@ -163,6 +163,8 @@
   .hero-bg .glyph {
     position: absolute;
     font-family: 'Bravura Text', serif;
+    font-weight: normal;
+    font-synthesis: none;
     color: var(--ink);
     opacity: 0.06;
     user-select: none;
@@ -395,7 +397,7 @@
     display: block;
   }
   .staff-svg .staff-line { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
-  .staff-svg .clef { fill: var(--ink); font-family: 'Bravura Text', serif; }
+  .staff-svg .clef { fill: var(--ink); font-family: 'Bravura Text', serif; font-weight: normal; font-synthesis: none; }
   #note-g { transform-origin: 200px 90px; transform-box: view-box; }
   #note-g.bouncing { animation: notePop 480ms cubic-bezier(.4,1.6,.6,1); }
   #note-g.shaking  { animation: noteShake 380ms; }
@@ -629,6 +631,8 @@
     position: absolute;
     top: 50%; left: 50%;
     font-family: 'Bravura Text', serif;
+    font-weight: normal;
+    font-synthesis: none;
     font-size: 30px;
     line-height: 1;
     opacity: 0;
@@ -1199,6 +1203,8 @@
   .demo-svg .staff-line.l5 { transition-delay: 280ms; }
   .demo-svg .clef {
     font-family: 'Bravura Text', serif;
+    font-weight: normal;
+    font-synthesis: none;
     fill: var(--ink);
     opacity: 0;
     transform-box: fill-box;
@@ -2466,7 +2472,7 @@
           const p = document.createElement('div');
           const size = 28 + Math.random()*32;
           const color = NOTE_COLORS[Math.floor(Math.random()*NOTE_COLORS.length)];
-          p.style.cssText = `position:absolute;font-family:'Bravura Text',serif;line-height:1;user-select:none;text-shadow:0 0 8px ${color};color:${color};font-size:${size}px;`;
+          p.style.cssText = `position:absolute;font-family:'Bravura Text',serif;font-weight:normal;font-synthesis:none;line-height:1;user-select:none;text-shadow:0 0 8px ${color};color:${color};font-size:${size}px;`;
           p.textContent = (Math.random() < 0.7)
             ? NOTE_GLYPHS[Math.floor(Math.random()*NOTE_GLYPHS.length)]
             : NOTE_EMOJI[Math.floor(Math.random()*NOTE_EMOJI.length)];
