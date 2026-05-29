@@ -86,6 +86,25 @@ var GL = {
 var BOTTOM_E4 = 54, STEP = 4;
 function yOf(step){ return BOTTOM_E4 - STEP*step; }
 
+// Bravura *Text* shifts glyphs onto a text baseline, so a glyph's visual center
+// is NOT at its text-y. Measure noteheadBlack + sharp at a reference size and
+// scale, so we can offset each glyph's text-y to land its CENTER on the staff.
+var REF = 200, MET = null;
+function measure(){
+  if (MET || !document.body) return;
+  try {
+    var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
+    svg.setAttribute('style','position:absolute;left:-9999px;top:0;width:600px;height:600px;');
+    document.body.appendChild(svg);
+    var bb=function(ch){ var t=document.createElementNS(ns,'text'); t.setAttribute('x',0);t.setAttribute('y',0);
+      t.setAttribute('font-family','Bravura Text');t.setAttribute('font-size',REF);t.textContent=ch;
+      svg.appendChild(t); var b=t.getBBox(); svg.removeChild(t); return b; };
+    var h=bb(GL.head), s=bb(GL.sharp);
+    if (h.height) MET={ headCy:(h.y+h.height/2), headW:h.width, accCy:(s.y+s.height/2) };
+    document.body.removeChild(svg);
+  } catch(e){}
+}
+
 // name + staff-step + accidental. (C chromatic, both spellings.)
 var ASC = [
   {n:'C',s:-2,a:''},{n:'C#',s:-2,a:'sharp'},{n:'D',s:-1,a:''},{n:'D#',s:-1,a:'sharp'},
@@ -133,21 +152,25 @@ function svgInner(){
   for (var ly=22; ly<=54; ly+=8) s += '<line x1="6" y1="'+ly+'" x2="154" y2="'+ly+'"/>';
   s += '</g>';
   s += '<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GL.clef+'</text>';
-  // Heads are noteheadBlack (baseline = head CENTER), so note.y is the head
-  // center; the ledger is drawn at the same y so it passes through the head.
-  // "quarter" style adds a drawn stem (the font note glyph's baseline isn't the
-  // head center, which is what put the ledger below the note before).
+  // note.y = the head CENTER (the staff position). We offset each glyph's
+  // text-y by its measured center so the head lands exactly on note.y; the
+  // ledger and stem key off note.y too, so everything stays locked together.
+  var scale = G.noteSize / REF;
+  var headCy   = MET ? MET.headCy * scale : 0;                 // head center vs baseline (px)
+  var headHalf = MET ? (MET.headW/2) * scale : G.noteSize*0.33;
+  var accScale = G.accSize / REF;
+  var accCy    = MET ? MET.accCy * accScale : 0;
   var led='', accs='', stems='', heads='';
   for (var i=0;i<NOTES.length;i++){
-    var d = NOTES[i], hy = d.y + G.headDY;
-    if (d.s <= -2) led += '<line x1="'+(d.x-G.ledgerW).toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+(d.x+G.ledgerW).toFixed(1)+'" y2="'+hy.toFixed(1)+'" stroke="#2A2A3E" stroke-width="1.4"/>';
+    var d = NOTES[i], cy = d.y + G.headDY;        // where we want the head center
+    if (d.s <= -2) led += '<line x1="'+(d.x-G.ledgerW).toFixed(1)+'" y1="'+cy.toFixed(1)+'" x2="'+(d.x+G.ledgerW).toFixed(1)+'" y2="'+cy.toFixed(1)+'" stroke="#2A2A3E" stroke-width="1.4"/>';
     if (d.a){ var ag=(d.a==='sharp')?GL.sharp:GL.flat;
-      accs += '<text x="'+d.ax.toFixed(1)+'" y="'+d.ay.toFixed(1)+'" font-size="'+G.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>'; }
+      accs += '<text x="'+d.ax.toFixed(1)+'" y="'+(d.ay - accCy).toFixed(1)+'" font-size="'+G.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>'; }
     if (G.noteStyle==='quarter'){
-      var sx = (d.x + G.noteSize*0.165 + G.stemDX);
-      stems += '<line x1="'+sx.toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(hy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
+      var sx = (d.x + headHalf + G.stemDX);
+      stems += '<line x1="'+sx.toFixed(1)+'" y1="'+cy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(cy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
     }
-    heads += '<text x="'+d.x.toFixed(1)+'" y="'+hy.toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
+    heads += '<text x="'+d.x.toFixed(1)+'" y="'+(cy - headCy).toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
   }
   s += '<g>'+led+'</g><g>'+stems+'</g><g font-family="Bravura Text">'+accs+heads+'</g>';
   if (G.showPill){
@@ -213,9 +236,13 @@ document.getElementById('copy').addEventListener('click', function(){
   this.textContent='Copied!'; var b=this; setTimeout(function(){ b.textContent='Copy snippet'; },1200);
 });
 
+function boot(){ measure(); render(); }
 seedNotes(); buildGlobals(); buildNotes();
-document.fonts && document.fonts.load('20px "Bravura Text"').then(render);
-render();
+if (document.fonts && document.fonts.load) {
+  document.fonts.load(REF + 'px "Bravura Text"').then(boot);
+  document.fonts.ready.then(boot);
+}
+boot();
 </script>
 </body>
 </html>
