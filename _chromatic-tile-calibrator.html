@@ -100,11 +100,16 @@ var DESC = [
 var PALETTE = ['#FF6B6B','#FF9F1C','#FFB627','#1FB8A8','#13a89e','#3FA7FF','#5B3FE4','#E84393'];
 
 var G = { dir:'asc', noteStyle:'quarter', colorMode:'rainbow', noteSize:18, accSize:13,
-          ledgerW:6, showPill:1, xStart:30, pairGap:6.5, groupGap:11, accGap:5, accDY:-1 };
+          ledgerW:6, showPill:1, headDY:0, stemLen:16, stemW:1.4, stemDX:0,
+          xStart:30, pairGap:6.5, groupGap:11, accGap:5, accDY:-1 };
 var GMETA = {
   noteSize:{label:'Note size',min:10,max:26,step:0.5},
   accSize: {label:'Accidental size',min:8,max:24,step:0.5},
   ledgerW: {label:'Ledger width',min:5,max:16,step:0.5},
+  headDY:  {label:'Head Y nudge (all)',min:-8,max:8,step:0.5},
+  stemLen: {label:'Stem length (quarter)',min:0,max:30,step:0.5},
+  stemW:   {label:'Stem thickness',min:0.8,max:3,step:0.1},
+  stemDX:  {label:'Stem X offset',min:-5,max:5,step:0.2},
   showPill:{label:'Show pill (0/1)',min:0,max:1,step:1},
 };
 var NOTES = [];
@@ -124,20 +129,27 @@ function noteColor(i){
   return PALETTE[i % PALETTE.length];
 }
 function svgInner(){
-  var glyph = (G.noteStyle==='quarter') ? GL.quarter : GL.head;
   var s = '<g stroke="#2A2A3E" stroke-width="1.4" opacity="0.85">';
   for (var ly=22; ly<=54; ly+=8) s += '<line x1="6" y1="'+ly+'" x2="154" y2="'+ly+'"/>';
   s += '</g>';
   s += '<text x="6" y="52" font-family="Bravura Text" font-size="32" fill="#2A2A3E">'+GL.clef+'</text>';
-  var led='', accs='', heads='';
+  // Heads are noteheadBlack (baseline = head CENTER), so note.y is the head
+  // center; the ledger is drawn at the same y so it passes through the head.
+  // "quarter" style adds a drawn stem (the font note glyph's baseline isn't the
+  // head center, which is what put the ledger below the note before).
+  var led='', accs='', stems='', heads='';
   for (var i=0;i<NOTES.length;i++){
-    var d = NOTES[i];
-    if (d.s <= -2) led += '<line x1="'+(d.x-G.ledgerW).toFixed(1)+'" y1="'+d.y+'" x2="'+(d.x+G.ledgerW).toFixed(1)+'" y2="'+d.y+'" stroke="#2A2A3E" stroke-width="1.4"/>';
+    var d = NOTES[i], hy = d.y + G.headDY;
+    if (d.s <= -2) led += '<line x1="'+(d.x-G.ledgerW).toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+(d.x+G.ledgerW).toFixed(1)+'" y2="'+hy.toFixed(1)+'" stroke="#2A2A3E" stroke-width="1.4"/>';
     if (d.a){ var ag=(d.a==='sharp')?GL.sharp:GL.flat;
       accs += '<text x="'+d.ax.toFixed(1)+'" y="'+d.ay.toFixed(1)+'" font-size="'+G.accSize+'" fill="#2A2A3E" text-anchor="middle">'+ag+'</text>'; }
-    heads += '<text x="'+d.x.toFixed(1)+'" y="'+d.y.toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+glyph+'</text>';
+    if (G.noteStyle==='quarter'){
+      var sx = (d.x + G.noteSize*0.165 + G.stemDX);
+      stems += '<line x1="'+sx.toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+sx.toFixed(1)+'" y2="'+(hy-G.stemLen).toFixed(1)+'" stroke="'+noteColor(i)+'" stroke-width="'+G.stemW+'" stroke-linecap="round"/>';
+    }
+    heads += '<text x="'+d.x.toFixed(1)+'" y="'+hy.toFixed(1)+'" font-size="'+G.noteSize+'" fill="'+noteColor(i)+'" text-anchor="middle">'+GL.head+'</text>';
   }
-  s += '<g>'+led+'</g><g font-family="Bravura Text">'+accs+heads+'</g>';
+  s += '<g>'+led+'</g><g>'+stems+'</g><g font-family="Bravura Text">'+accs+heads+'</g>';
   if (G.showPill){
     s += '<rect x="30" y="80" width="100" height="24" rx="8" fill="white" stroke="#2A2A3E" stroke-width="2"/>';
     s += '<text x="80" y="97" font-family="Fredoka" font-weight="600" font-size="13" fill="#2A2A3E" text-anchor="middle">half steps?</text>';
