@@ -164,6 +164,7 @@ function patternSVG_NEW(notes, o) {
   var w = 160, h = o.h, cy = o.cy, ink = '#2A2A3E';
   var F = o.glyph, stemH = o.stemH, beamW = o.beamW, beamGap = o.beamGap;
   var stemW = o.stemW, beamR = o.beamR, vNudge = o.vNudge, headDY = o.headDY;
+  var stemDX = o.stemDX || 0;      // nudge stem toward head center (touch the head)
   var down = (o.dir !== 'up');     // default stems DOWN (matches shipped ear-rhythm)
   var sgn = down ? 1 : -1;         // stems extend in +y when down
   var ss = F/4;                    // staff space
@@ -192,8 +193,9 @@ function patternSVG_NEW(notes, o) {
     } else { i++; }
   }
 
-  // stem attaches on the right edge (stem-up) or left edge (stem-down)
-  function stemX(p){ return down ? (p.cx - headW/2 + stemW/2) : (p.cx + headW/2 - stemW/2); }
+  // stem attaches on the right edge (stem-up) or left edge (stem-down);
+  // stemDX > 0 nudges it toward the head center to close any gap.
+  function stemX(p){ return down ? (p.cx - headW/2 + stemW/2 + stemDX) : (p.cx + headW/2 - stemW/2 - stemDX); }
 
   // 1) UNBEAMED notes → complete glyph (head+stem+flag, perfectly engraved)
   for (var i=0;i<P.length;i++) {
@@ -240,11 +242,12 @@ function patternSVG_NEW(notes, o) {
 }
 
 // ─── params + UI ──────────────────────────────────────────────
-var DEFAULTS = { dir:'down', glyph:40, h:64, cy:20, stemH:34, stemW:2, beamW:5, beamGap:3, beamR:0.4, vNudge:0, headDY:0 };
+var DEFAULTS = { dir:'down', glyph:40, h:64, cy:20, stemH:34, stemW:2, stemDX:0, beamW:5, beamGap:3, beamR:0.4, vNudge:0, headDY:0 };
 var META = {
   glyph:   { label:'Glyph size (heads)',     min:20, max:52, step:1 },
   stemH:   { label:'Beamed stem length',     min:14, max:38, step:1 },
   stemW:   { label:'Stem thickness',         min:0.8, max:4, step:0.1 },
+  stemDX:  { label:'Stem X (touch head)',    min:-6, max:6, step:0.2 },
   beamW:   { label:'Beam thickness',         min:2,  max:8,  step:0.5 },
   beamGap: { label:'Gap between beams',      min:0.5, max:6, step:0.5 },
   beamR:   { label:'Beam corner radius',     min:0,  max:3,  step:0.1 },
