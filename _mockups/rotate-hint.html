@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotate hint — icon options (mockup)</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0; --ink:#2A2A3E; --ink-soft:#5a5a6e; --ink-faint:#8a8472;
+    --teal:#1FB8A8; --teal-dk:#0e8475; --teal-lt:#d3f1ec;
+    --sun:#FFB627; --sun-dk:#c98800; --line:rgba(42,42,62,0.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);padding:28px 18px 60px;line-height:1.5;}
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:28px;margin-bottom:6px;}
+  .sub{color:var(--ink-soft);font-weight:600;margin-bottom:28px;max-width:640px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:18px;color:var(--ink-soft);margin:34px 0 14px;}
+
+  /* Icon option cards */
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:620px){.opts{grid-template-columns:1fr;}}
+  .opt{
+    background:white;border:2.5px solid var(--ink);border-radius:20px;
+    box-shadow:0 6px 0 var(--ink);padding:22px 18px 18px;text-align:center;cursor:pointer;
+    transition:transform 120ms,box-shadow 120ms;
+  }
+  .opt:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink);}
+  .opt.sel{border-color:var(--teal-dk);box-shadow:0 6px 0 var(--teal-dk);background:var(--teal-lt);}
+  .opt svg{width:84px;height:84px;color:var(--ink);display:block;margin:0 auto 12px;}
+  .opt .nm{font-family:'Fredoka',sans-serif;font-weight:700;font-size:16px;}
+  .opt .ds{font-size:13px;color:var(--ink-faint);margin-top:3px;}
+
+  /* Landscape phone frame preview */
+  .frame-row{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:8px;}
+  .frame{
+    position:relative;width:min(560px,92vw);aspect-ratio:16/9;
+    background:var(--cream);border:7px solid #11111b;border-radius:26px;
+    box-shadow:0 10px 0 rgba(0,0,0,0.18);overflow:hidden;
+  }
+  /* faint app content behind the scrim, just for context */
+  .frame .ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--ink-faint);font-family:'Fredoka',sans-serif;font-weight:600;opacity:0.25;font-size:15px;}
+  .scrim{
+    position:absolute;inset:0;background:rgba(42,42,62,0.42);
+    display:flex;align-items:center;justify-content:center;padding:18px;
+  }
+  .hint-card{
+    background:#fffdf5;border:2.5px solid var(--ink);border-radius:18px;
+    box-shadow:0 6px 0 var(--ink);padding:18px 22px;max-width:300px;text-align:center;
+  }
+  .hint-card .ic{width:52px;height:52px;color:var(--teal-dk);margin:0 auto 10px;display:block;}
+  .hint-card .ht{font-family:'Fredoka',sans-serif;font-weight:700;font-size:18px;line-height:1.2;}
+  .hint-card .hs{font-size:13.5px;color:var(--ink-soft);font-weight:600;margin-top:5px;}
+  .cap{font-size:13px;color:var(--ink-faint);}
+  .note{margin-top:30px;font-size:13.5px;color:var(--ink-faint);max-width:680px;border-top:1px solid var(--line);padding-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>“Best in portrait” — rotation icon options</h1>
+  <p class="sub">Three inline-SVG rotation glyphs in QuizNote’s stroke-icon style (no emoji). Tap an option to preview it inside the actual landscape overlay below.</p>
+
+  <div class="opts" id="opts">
+    <div class="opt sel" data-i="A">
+      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="30" y="26" width="20" height="34" rx="5"/>
+        <line x1="36" y1="55" x2="44" y2="55"/>
+        <path d="M19 32 A 24 24 0 0 1 40 14"/>
+        <polyline points="33 12 40.5 13.5 38.5 21"/>
+      </svg>
+      <div class="nm">A · Sweep</div>
+      <div class="ds">Phone + one bold turn arrow</div>
+    </div>
+
+    <div class="opt" data-i="B">
+      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="32" y="29" width="16" height="27" rx="4"/>
+        <line x1="37" y1="52" x2="43" y2="52"/>
+        <path d="M17 35 A 25 25 0 0 1 30 16"/>
+        <polyline points="24 14 30.5 16 28 22.5"/>
+        <path d="M63 45 A 25 25 0 0 1 50 64"/>
+        <polyline points="56 66 49.5 64 52 57.5"/>
+      </svg>
+      <div class="nm">B · Ring</div>
+      <div class="ds">Phone in a rotation ring</div>
+    </div>
+
+    <div class="opt" data-i="C">
+      <svg viewBox="0 0 96 80" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <g opacity="0.32">
+          <rect x="8" y="31" width="34" height="22" rx="4"/>
+          <line x1="36" y1="37" x2="36" y2="47"/>
+        </g>
+        <rect x="60" y="22" width="22" height="36" rx="5"/>
+        <line x1="66" y1="53" x2="76" y2="53"/>
+        <path d="M44 18 A 16 16 0 0 1 61 14"/>
+        <polyline points="55 10 61.5 14 57 19.5"/>
+      </svg>
+      <div class="nm">C · Transition</div>
+      <div class="ds">Landscape → portrait</div>
+    </div>
+  </div>
+
+  <h2>In context — landscape overlay</h2>
+  <div class="frame-row">
+    <div class="frame">
+      <div class="ghost">· practice screen ·</div>
+      <div class="scrim">
+        <div class="hint-card">
+          <span class="ic" id="ctxIcon"></span>
+          <div class="ht">QuizNote works best upright</div>
+          <div class="hs">Rotate your device to keep practicing.</div>
+        </div>
+      </div>
+    </div>
+    <div class="cap">Shows only on short landscape screens (phones); tablets in landscape are unaffected.</div>
+  </div>
+
+  <p class="note">All three are pure inline SVG (<code>stroke: currentColor</code>), so they inherit color and scale crisply at any size — same approach as the nav/share/clef icons. Whichever you pick, I’ll refine its proportions and wire it into the P1 landscape hint. My lean is <b>A (Sweep)</b> — clearest at small sizes; <b>C</b> is the most instructional if you want it to literally say “turn it this way.”</p>
+</div>
+
+<script>
+  var opts = document.getElementById('opts');
+  var ctxIcon = document.getElementById('ctxIcon');
+  function svgFor(i){ return opts.querySelector('.opt[data-i="'+i+'"] svg').cloneNode(true); }
+  function select(i){
+    [].forEach.call(opts.querySelectorAll('.opt'), function(o){ o.classList.toggle('sel', o.dataset.i===i); });
+    ctxIcon.innerHTML = '';
+    var s = svgFor(i); s.removeAttribute('width'); s.removeAttribute('height');
+    s.style.width='100%'; s.style.height='100%';
+    ctxIcon.appendChild(s);
+  }
+  [].forEach.call(opts.querySelectorAll('.opt'), function(o){ o.addEventListener('click', function(){ select(o.dataset.i); }); });
+  select('A');
+</script>
+</body>
+</html>
