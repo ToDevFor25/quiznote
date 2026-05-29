@@ -92,9 +92,6 @@ function yOf(step){ return BOTTOM_E4 - STEP*step; }
 var REF = 200, MET = null;
 function measure(){
   if (!document.body) return;
-  // Only trust getBBox once the real Bravura Text font is loaded — otherwise we
-  // measure the fallback font and the head offset is wrong (head sits a step high).
-  if (document.fonts && document.fonts.check && !document.fonts.check(REF + 'px "Bravura Text"')) return;
   try {
     var ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');
     svg.setAttribute('style','position:absolute;left:-9999px;top:0;width:600px;height:600px;');
@@ -240,13 +237,15 @@ document.getElementById('copy').addEventListener('click', function(){
   this.textContent='Copied!'; var b=this; setTimeout(function(){ b.textContent='Copy snippet'; },1200);
 });
 
-function boot(){ measure(); render(); }
 seedNotes(); buildGlobals(); buildNotes();
-if (document.fonts && document.fonts.load) {
-  document.fonts.load(REF + 'px "Bravura Text"').then(boot);
-  document.fonts.ready.then(boot);
+render(); // initial paint; heads get corrected once the font is measured below
+// Measure ONLY after the font is actually loaded (pre-load getBBox sees the
+// fallback font). Re-measure on both signals; the result overwrites.
+if (document.fonts) {
+  if (document.fonts.ready) document.fonts.ready.then(function(){ measure(); render(); });
+  if (document.fonts.load)  document.fonts.load(REF + 'px "Bravura Text"').then(function(){ measure(); render(); });
 }
-boot();
+setTimeout(function(){ measure(); render(); }, 600); // safety net
 </script>
 </body>
 </html>
