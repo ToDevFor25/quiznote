@@ -1344,6 +1344,9 @@
   }
 
   function startGame() {
+    // Drill = a round seeded from the missed-items pool (shuffleDeck reads
+    // state.drillPool); it is pure practice — no event, no XP, no medal.
+    state.isDrill = !!(state.drillPool && state.drillPool.length);
     state.pool = buildPool();
     state.deck = shuffleDeck(state.pool, state.settings.total, state.drillPool);
     state.q = 0;
@@ -1947,8 +1950,8 @@
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem(pbKey, JSON.stringify(pb)); } catch(e) {}
@@ -2009,7 +2012,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     (M && M.slug) || 'dotted-notes',
         tier:       state.settings.difficulty,
@@ -2033,7 +2036,7 @@
       if (window.QN && QN.roundEnd) QN.roundEnd.render({
         module: 'dotted-notes', score: state.score, total: state.total,
         tier: state.settings.difficulty, bestStreak: state.bestStreak,
-        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+        isDrill: state.isDrill, onRetry: function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
 
