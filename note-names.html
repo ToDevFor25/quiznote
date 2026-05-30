@@ -276,7 +276,15 @@
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; margin-bottom: 8px;
   }
-  .mastery-meter .mm-pips { letter-spacing: 2px; font-size: 16px; }
+  /* Progress pips as CSS dots (filled = banked, outline = remaining). Replaces
+     ▓/░ shade-block glyphs that rendered as tofu/halftone on iOS (no Fredoka
+     glyph → fallback-font substitution). */
+  .mastery-meter .mm-pips { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
+  .mastery-meter .mm-pips .pip {
+    width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box;
+    border: 2px solid var(--teal-dk); background: transparent;
+  }
+  .mastery-meter .mm-pips .pip.on { background: var(--teal-dk); }
   .mastery-meter .mm-note { color: var(--ink-soft); font-weight: 600; }
 
   /* Beat 3 — THE NEXT STEP: one dominant action, recommender-driven. */
@@ -2373,16 +2381,23 @@
       var nextTier = highestCleared >= 2 ? null : TIERS[highestCleared + 1];
 
       meter.hidden = false;
+      // Pips drawn as CSS dots (filled = banked toward next medal, outline =
+      // remaining). innerHTML is safe — no user data, fixed markup.
+      var pipDots = function (filled, total) {
+        var s = '';
+        for (var k = 0; k < total; k++) s += '<i class="pip' + (k < filled ? ' on' : '') + '"></i>';
+        return s;
+      };
       if (els['mm-label']) els['mm-label'].textContent = earned ? MEDAL[earned] : 'No medal yet';
       if (nextTier) {
         var have = Math.min(2, good[nextTier]);
-        if (els['mm-pips']) els['mm-pips'].textContent = ('▓ '.repeat(have) + '░ '.repeat(2 - have)).trim();
+        if (els['mm-pips']) els['mm-pips'].innerHTML = pipDots(have, 2);
         var need = 2 - have;
         if (els['mm-note']) els['mm-note'].textContent = need > 0
           ? need + ' more 85%+ round' + (need === 1 ? '' : 's') + ' → ' + MEDAL[nextTier]
           : 'Ready for ' + MEDAL[nextTier] + '!';
       } else {
-        if (els['mm-pips']) els['mm-pips'].textContent = '▓ ▓';
+        if (els['mm-pips']) els['mm-pips'].innerHTML = pipDots(2, 2);
         // True whether the learner laddered up or jumped straight to Gold on Tricky.
         if (els['mm-note']) els['mm-note'].textContent = 'Gold — top tier mastered! 🎉';
       }
