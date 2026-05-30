@@ -1833,6 +1833,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // a real round: counts toward medals + XP
     const showLetters = state.settings.difficulty !== 'tricky';
     // Full octave range for note pool and keyboard
     let lowOct, highOct;
@@ -2553,8 +2554,8 @@
     let pb = { score: 0, pct: 0, streak: 0 };
     try { pb = JSON.parse(localStorage.getItem('qn_pb') || '{}'); pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0; } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('qn_pb', JSON.stringify(pb)); } catch(e) {}
@@ -2607,7 +2608,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'piano-quiz',
         tier:       state.settings.difficulty,
@@ -2631,7 +2632,7 @@
       if (window.QN && QN.roundEnd) QN.roundEnd.render({
         module: 'piano-quiz', score: state.score, total: state.total,
         tier: state.settings.difficulty, bestStreak: state.bestStreak,
-        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+        isDrill: state.isDrill, onRetry: function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
 
@@ -2716,6 +2717,7 @@
 
     els['drill-btn'].addEventListener('click', () => {
       if (state.drillPool.length === 0) return;
+      state.isDrill = true;   // purely practice: writes no event, no medals, no XP
       const pool = [...state.drillPool];
       state.pool = pool;
       state.deck = [];

@@ -1246,6 +1246,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // a real round: counts toward medals + XP
     state.pool = buildPool(state.settings.clef, state.settings.difficulty);
     state.deck = [];
     state.total = state.settings.total;
@@ -1934,8 +1935,8 @@
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('ll_pb', JSON.stringify(pb)); } catch(e) {}
@@ -1989,7 +1990,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'ledger-lines',
         tier:       state.settings.difficulty,
@@ -2011,7 +2012,7 @@
       if (window.QN && QN.roundEnd) QN.roundEnd.render({
         module: 'ledger-lines', score: state.score, total: state.total,
         tier: state.settings.difficulty, bestStreak: state.bestStreak,
-        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+        isDrill: state.isDrill, onRetry: function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
 
@@ -2067,6 +2068,7 @@
 
     els['drill-btn'].addEventListener('click', () => {
       if (state.drillPool.length === 0) return;
+      state.isDrill = true;   // purely practice: writes no event, no medals, no XP
       state.pool = [...state.drillPool]; state.deck = [];
       state.total = Math.min(state.pool.length * 2, 10);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
