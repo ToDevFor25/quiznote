@@ -1366,6 +1366,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // a real round: counts toward medals + XP
     state.pool = buildPool(state.settings.clef, state.settings.difficulty, state.settings.accidentals);
     state.deck = [];
     state.total = state.settings.total;
@@ -2024,18 +2025,19 @@
       }
     }
 
-    // Personal best
+    // Personal best — drills are purely practice, so a short 2/2 drill must
+    // not mint a fake PB. Read+show the existing PB but never update it on a drill.
     let pb = { score: 0, pct: 0, streak: 0 };
     try {
       pb = JSON.parse(localStorage.getItem('qn_fq_pb') || '{}');
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB  = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
-    try { localStorage.setItem('qn_fq_pb', JSON.stringify(pb)); } catch(e) {}
+    if (newScorePB || newStreakPB) { try { localStorage.setItem('qn_fq_pb', JSON.stringify(pb)); } catch(e) {} }
     const pbRow = els['pb-row'];
     if (pbRow) {
       if (pb.score > 0 || pb.streak > 0) {
@@ -2086,7 +2088,11 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    // Drills are PURELY PRACTICE: they write no event, so they contribute
+    // nothing to medals, XP, the recommender, streaks, or time-practiced.
+    // (roundOutcome stays 'logged' so the no-profile save prompt never fires
+    // off a drill.) Real rounds log/hold as before.
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'note-names',
         tier:       state.settings.difficulty,
@@ -2105,7 +2111,8 @@
 
     // Gamification P0: the three-beat round-end. Wrapped so the meta-layer can
     // never block or break the summary (per CLAUDE.md init-throw avoidance).
-    try { renderXPBeats(pct); } catch (e) { if (window.console) console.warn('xp beats skipped', e); }
+    // Drills earn no XP — pass the flag so Beat 1 shows practice framing, not "+XP".
+    try { renderXPBeats(pct, state.isDrill); } catch (e) { if (window.console) console.warn('xp beats skipped', e); }
 
     setTimeout(() => {
       A.playFanfare(tier);
@@ -2123,7 +2130,7 @@
     }).join(' ');
   }
 
-  function renderXPBeats(pct) {
+  function renderXPBeats(pct, isDrill) {
     if (!window.QN || !QN.xp) return;
     var prof = QN.profile && QN.profile.getActive ? QN.profile.getActive() : null;
     var profileId = prof ? prof.id : null;
@@ -2132,14 +2139,16 @@
     // log whitelists fields and does not persist streak, so the live earn we
     // show here matches what totalFor() recomputes from history). Persisting
     // the streak bonus is a flagged P1 Tier-3 item (touches qn-profile.js).
+    // Drills are purely practice: they earn 0 XP and were never logged, so the
+    // total is just the current standing (no delta to animate).
     var evShape = { correct: state.score, total: state.total, tier: state.settings.difficulty };
-    var roundXP   = QN.xp.roundXP(evShape);
+    var roundXP   = isDrill ? 0 : QN.xp.roundXP(evShape);
     var totalAfter  = profileId ? QN.xp.totalFor(profileId) : roundXP;
     var totalBefore = Math.max(0, totalAfter - roundXP);
     var after  = QN.xp.levelFor(totalAfter);
     var delta  = QN.xp.levelDelta(totalBefore, totalAfter);
 
-    // --- Beat 1: THE EARN ---
+    // --- Beat 1: THE EARN (or, for a drill, honest practice framing) ---
     var earn = els['xp-earn'];
     if (earn) {
       earn.hidden = false;
@@ -2148,7 +2157,10 @@
 
       var streakEl = els['xp-streak-kept'];
       if (streakEl) {
-        if (state.bestStreak >= 2) {
+        if (isDrill) {
+          streakEl.hidden = false;
+          streakEl.textContent = '🎯 Practice round — no XP, just sharpening up';
+        } else if (state.bestStreak >= 2) {
           streakEl.hidden = false;
           streakEl.textContent = '🔥 Best streak this round: ' + state.bestStreak;
         } else { streakEl.hidden = true; }
@@ -2157,10 +2169,18 @@
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var plusEl = els['xp-plus'];
       var barEl  = els['xp-bar-fill'];
-      if (reduce) {
+      // On a drill, the "+XP" headline becomes a static "Practice" label and
+      // the bar just shows the (unchanged) current level progress.
+      if (isDrill) {
+        if (plusEl) plusEl.textContent = 'Practice';
+        if (els['xp-plus'] && els['xp-plus'].nextElementSibling) els['xp-plus'].nextElementSibling.style.display = 'none';
+        if (barEl) barEl.style.width = Math.round(after.pct * 100) + '%';
+      } else if (reduce) {
+        if (els['xp-plus'] && els['xp-plus'].nextElementSibling) els['xp-plus'].nextElementSibling.style.display = '';
         if (plusEl) plusEl.textContent = '+' + roundXP;
         if (barEl)  barEl.style.width = Math.round(after.pct * 100) + '%';
       } else {
+        if (els['xp-plus'] && els['xp-plus'].nextElementSibling) els['xp-plus'].nextElementSibling.style.display = '';
         // count-up the XP number, then fill the level bar
         if (plusEl) {
           var t0 = null, dur = 700;
@@ -2188,6 +2208,9 @@
     if (meter) {
       var TIERS = ['easy', 'medium', 'tricky'];
       var MEDAL = { easy: '🥉 Bronze', medium: '🥈 Silver', tricky: '🥇 Gold' };
+      // Canonical clear rule (matches qn-profile.js + dashboard computeMastery):
+      // >= 2 rounds scoring >= 85%. Drills write no event, so they never appear
+      // here — they're purely practice and don't affect medals or XP.
       var good = { easy: 0, medium: 0, tricky: 0 };
       if (profileId && QN.events && QN.events.query) {
         var evs = QN.events.query(profileId, { module: 'note-names' }) || [];
@@ -2294,6 +2317,7 @@
 
     els['drill-btn'].addEventListener('click', () => {
       if (state.drillPool.length === 0) return;
+      state.isDrill = true;   // purely practice: writes no event, no medals, no XP
       state.pool = [...state.drillPool]; state.deck = [];
       state.total = Math.min(state.pool.length * 2, 10);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
