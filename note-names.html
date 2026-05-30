@@ -276,15 +276,18 @@
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px; margin-bottom: 8px;
   }
-  /* Progress pips as CSS dots (filled = banked, outline = remaining). Replaces
-     ▓/░ shade-block glyphs that rendered as tofu/halftone on iOS (no Fredoka
-     glyph → fallback-font substitution). */
-  .mastery-meter .mm-pips { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
-  .mastery-meter .mm-pips .pip {
-    width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box;
-    border: 2px solid var(--teal-dk); background: transparent;
+  /* Progress toward the next medal as a thin fill BAR — not dots. Discrete dots
+     read as a swipeable carousel pager (people try to swipe them); a fill bar
+     reads unambiguously as progress. CSS-drawn so it can't tofu like the old
+     ▓/░ shade-block glyphs did on iOS. */
+  .mastery-meter .mm-pips {
+    display: inline-block; width: 54px; height: 8px; border-radius: 999px;
+    background: rgba(14,132,117,0.18); overflow: hidden; vertical-align: middle;
   }
-  .mastery-meter .mm-pips .pip.on { background: var(--teal-dk); }
+  .mastery-meter .mm-pips .mm-bar-fill {
+    display: block; height: 100%; border-radius: 999px;
+    background: var(--teal-dk); transition: width .45s ease;
+  }
   .mastery-meter .mm-note { color: var(--ink-soft); font-weight: 600; }
 
   /* Beat 3 — THE NEXT STEP: one dominant action, recommender-driven. */
@@ -2381,23 +2384,22 @@
       var nextTier = highestCleared >= 2 ? null : TIERS[highestCleared + 1];
 
       meter.hidden = false;
-      // Pips drawn as CSS dots (filled = banked toward next medal, outline =
-      // remaining). innerHTML is safe — no user data, fixed markup.
-      var pipDots = function (filled, total) {
-        var s = '';
-        for (var k = 0; k < total; k++) s += '<i class="pip' + (k < filled ? ' on' : '') + '"></i>';
-        return s;
+      // Progress toward the next medal as a fill bar (% of the 2 qualifying
+      // rounds banked). innerHTML is safe — computed width only, no user data.
+      var pipBar = function (filled, total) {
+        var pct = Math.max(0, Math.min(100, Math.round(filled / total * 100)));
+        return '<i class="mm-bar-fill" style="width:' + pct + '%"></i>';
       };
       if (els['mm-label']) els['mm-label'].textContent = earned ? MEDAL[earned] : 'No medal yet';
       if (nextTier) {
         var have = Math.min(2, good[nextTier]);
-        if (els['mm-pips']) els['mm-pips'].innerHTML = pipDots(have, 2);
+        if (els['mm-pips']) els['mm-pips'].innerHTML = pipBar(have, 2);
         var need = 2 - have;
         if (els['mm-note']) els['mm-note'].textContent = need > 0
           ? need + ' more 85%+ round' + (need === 1 ? '' : 's') + ' → ' + MEDAL[nextTier]
           : 'Ready for ' + MEDAL[nextTier] + '!';
       } else {
-        if (els['mm-pips']) els['mm-pips'].innerHTML = pipDots(2, 2);
+        if (els['mm-pips']) els['mm-pips'].innerHTML = pipBar(2, 2);
         // True whether the learner laddered up or jumped straight to Gold on Tricky.
         if (els['mm-note']) els['mm-note'].textContent = 'Gold — top tier mastered! 🎉';
       }
