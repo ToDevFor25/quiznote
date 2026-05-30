@@ -1391,6 +1391,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // real round: counts toward medals + XP
     // Accidentals generates each question from makeQuestion() — no pitch pool/deck.
     state.total = state.settings.total;
     state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0; state.shownHints = new Set();
@@ -1437,10 +1438,19 @@
     state.locked = false;
     hideToast();
 
-    // Generate a fresh question (avoid immediate same-type+answer repeat)
+    // Generate a fresh question (avoid immediate same-type+answer repeat).
+    // In drill mode q.answer MUST be one of the missed answers (state.drillPool);
+    // anti-repeat is relaxed when only one missed answer remains (then repeating
+    // it is the point). Capped — falls back to any question after 40 tries.
+    const drilling = state.isDrill && state.drillPool && state.drillPool.length;
+    const drillSet = drilling ? new Set(state.drillPool) : null;
     let q = makeQuestion(state.settings.difficulty);
     let guard = 0;
-    while (state.lastQ && q.type === state.lastQ.type && q.answer === state.lastQ.answer && guard++ < 6) {
+    while (guard++ < 40) {
+      const wrongDrill = drilling && !drillSet.has(q.answer);
+      const repeat = state.lastQ && q.type === state.lastQ.type && q.answer === state.lastQ.answer
+                     && !(drilling && drillSet.size <= 1);
+      if (!wrongDrill && !repeat) break;
       q = makeQuestion(state.settings.difficulty);
     }
     state.lastQ = q;
@@ -2085,8 +2095,8 @@
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('accidentals_pb', JSON.stringify(pb)); } catch(e) {}
@@ -2140,7 +2150,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'accidentals',
         tier:       state.settings.difficulty,
@@ -2166,7 +2176,7 @@
         total:      state.total,
         tier:       state.settings.difficulty,
         bestStreak: state.bestStreak,
-        isDrill:    false,
+        isDrill:    state.isDrill,
         onRetry:    function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
@@ -2222,6 +2232,7 @@
     });
 
     els['drill-btn'].addEventListener('click', () => {
+      state.isDrill = true;   // drill: re-quiz only the missed answers (pure practice)
       // Accidentals generates questions fresh, so "drill" replays a focused
       // round at the same settings rather than re-serving specific items.
       state.total = state.settings.total;

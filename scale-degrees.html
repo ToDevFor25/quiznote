@@ -1477,6 +1477,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // real round: counts toward medals + XP
     state.deck = [];
     state.total = state.settings.total;
     state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
@@ -1522,7 +1523,14 @@
     state.locked = false;
     hideToast();
 
-    const q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
+    let q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
+    // Drill mode: re-quiz only the missed answers — q.answer MUST be one of
+    // state.drillPool. Re-roll until it is (capped; falls back after 40 tries).
+    if (state.isDrill && state.drillPool && state.drillPool.length) {
+      const _ds = new Set(state.drillPool);
+      let _dg = 0;
+      while (_dg++ < 40 && !_ds.has(q.answer)) q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
+    }
     state.current = q;
 
     els['q-num'].textContent = state.q;
@@ -2146,8 +2154,8 @@
       pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
-    const newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    const newStreakPB = state.bestStreak > pb.streak;
+    const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('scale-degrees_pb', JSON.stringify(pb)); } catch(e) {}
@@ -2201,7 +2209,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'scale-degrees',
         tier:       state.settings.difficulty,
@@ -2223,7 +2231,7 @@
       if (window.QN && QN.roundEnd) QN.roundEnd.render({
         module: 'scale-degrees', score: state.score, total: state.total,
         tier: state.settings.difficulty, bestStreak: state.bestStreak,
-        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+        isDrill: state.isDrill, onRetry: function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
 
@@ -2278,6 +2286,7 @@
     });
 
     els['drill-btn'].addEventListener('click', () => {
+      state.isDrill = true;   // drill: re-quiz only the missed answers (pure practice)
       // Questions are generated fresh each round (no fixed pool to replay),
       // so "drill" just runs another focused round at the same settings.
       state.deck = [];
