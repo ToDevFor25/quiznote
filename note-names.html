@@ -2365,7 +2365,12 @@
       }
       var cleared = { easy: good.easy >= 2, medium: good.medium >= 2, tricky: good.tricky >= 2 };
       var earned = cleared.tricky ? 'tricky' : cleared.medium ? 'medium' : cleared.easy ? 'easy' : null;
-      var nextTier = !cleared.easy ? 'easy' : !cleared.medium ? 'medium' : !cleared.tricky ? 'tricky' : null;
+      // Forward-looking: the tier just ABOVE the highest cleared one (skipping
+      // allowed — clearing Tricky = Gold even if Easy/Medium were never played).
+      // Mirrors qn-profile.js nextTierFor so the card never points a Gold
+      // learner back down to Bronze. Highest cleared index: -1 none .. 2 tricky.
+      var highestCleared = cleared.tricky ? 2 : cleared.medium ? 1 : cleared.easy ? 0 : -1;
+      var nextTier = highestCleared >= 2 ? null : TIERS[highestCleared + 1];
 
       meter.hidden = false;
       if (els['mm-label']) els['mm-label'].textContent = earned ? MEDAL[earned] : 'No medal yet';
@@ -2378,7 +2383,8 @@
           : 'Ready for ' + MEDAL[nextTier] + '!';
       } else {
         if (els['mm-pips']) els['mm-pips'].textContent = '▓ ▓';
-        if (els['mm-note']) els['mm-note'].textContent = 'Gold mastered — every tier cleared! 🎉';
+        // True whether the learner laddered up or jumped straight to Gold on Tricky.
+        if (els['mm-note']) els['mm-note'].textContent = 'Gold — top tier mastered! 🎉';
       }
     }
 
