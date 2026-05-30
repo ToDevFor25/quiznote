@@ -319,13 +319,36 @@
     padding: 20px 18px 16px;
   }
   .summary-bar {
+    position: relative;        /* anchors the scroll-fade scrim */
     flex: 0 0 auto;            /* natural height, pinned by flex layout */
     display: flex; flex-direction: column; gap: 9px;
     padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
     background: var(--cream);
-    border-top: 2.5px solid var(--ink);
-    box-shadow: 0 -8px 20px -8px rgba(42,42,62,0.18);
+    /* Hairline, not a hard ink line: a crisp border reads as "page ends here"
+       and kills the scroll affordance. The fade scrim below does the real
+       separation work. */
+    border-top: 1px solid rgba(42,42,62,0.08);
+    box-shadow: 0 -6px 16px -10px rgba(42,42,62,0.16);
   }
+  /* ---- Scroll-fade scrim (industry-standard scrollability cue) ----
+     A soft gradient sitting just ABOVE the bar so content fades into it
+     rather than stopping at a hard line — the Material "elevated on scroll"
+     / Lea Verou scrolling-shadow pattern. It is HONEST: JS hides it once the
+     scroll area is at the bottom (or doesn't overflow), so a visible fade
+     always means "there's more below." */
+  .summary-bar::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: -26px;
+    height: 26px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--cream) 18%, rgba(255,250,240,0));
+    opacity: 1;
+    transition: opacity .22s ease;
+  }
+  /* At the end of the scroll (or when nothing overflows) the fade is dishonest
+     — kill it so its presence reliably signals "keep scrolling". */
+  #summary-screen.scroll-end .summary-bar::before { opacity: 0; }
   .summary-bar .bar-row { display: flex; gap: 9px; }
   .summary-bar .bar-row > .btn { flex: 1; }
   /* In the bar, the Next CTA fills width and drops its huge padding so the
@@ -1249,6 +1272,19 @@
     });
     document.body.classList.toggle('playing', name === 'play');
     window.scrollTo(0, 0);
+  }
+
+  // ── Summary scroll-fade scrim (honest scrollability cue) ──────────────────
+  // Toggles #summary-screen.scroll-end so the fade above the action bar only
+  // shows while there's more content below. A visible fade therefore always
+  // means "keep scrolling". No-ops gracefully if the scroll area is absent.
+  function updateSummaryScrim() {
+    const scroll = document.querySelector('#summary-screen .summary-scroll');
+    const screen = document.getElementById('summary-screen');
+    if (!scroll || !screen) return;
+    const remaining = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
+    // 4px slop absorbs sub-pixel rounding so the fade fully clears at the end.
+    screen.classList.toggle('scroll-end', remaining <= 4);
   }
 
   function syncMuteUI(muted) {
@@ -2183,6 +2219,10 @@
       A.playFanfare(tier);
       QN_FX.fire(tier);
     }, 700);
+
+    // Content height is now final — measure after two frames so the
+    // scroll-fade scrim starts in the correct state (shown only if overflow).
+    requestAnimationFrame(() => requestAnimationFrame(updateSummaryScrim));
   }
 
   // ── Gamification P0 (spec §3): EARN → PROGRESS → NEXT STEP ────────────────
@@ -2398,6 +2438,11 @@
 
     els['again-btn'].addEventListener('click', () => startRound());
     els['change-btn'].addEventListener('click', () => showScreen('start'));
+
+    // Keep the summary scroll-fade scrim honest as the user scrolls / rotates.
+    const sumScroll = document.querySelector('#summary-screen .summary-scroll');
+    if (sumScroll) sumScroll.addEventListener('scroll', updateSummaryScrim, { passive: true });
+    window.addEventListener('resize', updateSummaryScrim);
   }
 
   // Timer
