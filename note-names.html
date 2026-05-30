@@ -349,6 +349,40 @@
   /* At the end of the scroll (or when nothing overflows) the fade is dishonest
      — kill it so its presence reliably signals "keep scrolling". */
   #summary-screen.scroll-end .summary-bar::before { opacity: 0; }
+  /* ---- Scroll cue pill (animated "More ▾") ----
+     Floats just above the action bar in the fade zone. Bobs to draw the eye,
+     taps to scroll, and shares the fade's honesty: hidden the moment the
+     scroll area is at the bottom (or doesn't overflow). */
+  .summary-bar .scroll-cue {
+    position: absolute;
+    left: 50%; top: 0;
+    transform: translate(-50%, calc(-100% - 4px));
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 11px 5px 13px;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    line-height: 1; color: var(--grape);
+    background: var(--cream);
+    border: 1.5px solid rgba(42,42,62,0.12);
+    border-radius: 999px;
+    box-shadow: 0 3px 10px -3px rgba(42,42,62,0.28);
+    cursor: pointer; z-index: 2;
+    opacity: 1; transition: opacity .22s ease;
+  }
+  .summary-bar .scroll-cue:active { transform: translate(-50%, calc(-100% - 2px)); }
+  .summary-bar .scroll-cue .cue-arrow {
+    font-size: 15px; display: inline-block;
+    animation: cueBob 1.4s ease-in-out infinite;
+  }
+  @keyframes cueBob {
+    0%, 100% { transform: translateY(-1px); }
+    50%      { transform: translateY(2px); }
+  }
+  #summary-screen.scroll-end .summary-bar .scroll-cue {
+    opacity: 0; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .summary-bar .scroll-cue .cue-arrow { animation: none; }
+  }
   .summary-bar .bar-row { display: flex; gap: 9px; }
   .summary-bar .bar-row > .btn { flex: 1; }
   /* In the bar, the Next CTA fills width and drops its huge padding so the
@@ -793,6 +827,9 @@
  <!-- Pinned action bar: non-scrolling sibling of .summary-scroll. High-frequency
       actions only; content above can never hide behind it. -->
  <div class="summary-bar">
+   <!-- Scroll cue: bobs to signal more content below; auto-hides at the
+        bottom (same .scroll-end logic as the fade), taps to scroll. -->
+   <button type="button" class="scroll-cue" id="scroll-cue" aria-label="Scroll down for more">More <span class="cue-arrow" aria-hidden="true">▾</span></button>
    <!-- Beat 3 — THE NEXT STEP: one dominant, recommender-driven action. -->
    <a href="#" class="next-step-cta" id="next-step-cta" hidden>
      <span class="nsc-reason" id="nsc-reason"></span>
@@ -2443,6 +2480,14 @@
     const sumScroll = document.querySelector('#summary-screen .summary-scroll');
     if (sumScroll) sumScroll.addEventListener('scroll', updateSummaryScrim, { passive: true });
     window.addEventListener('resize', updateSummaryScrim);
+
+    // Scroll cue taps to advance the summary by most of a viewport.
+    const cue = document.getElementById('scroll-cue');
+    if (cue && sumScroll) {
+      cue.addEventListener('click', () => {
+        sumScroll.scrollBy({ top: Math.round(sumScroll.clientHeight * 0.7), behavior: 'smooth' });
+      });
+    }
   }
 
   // Timer
