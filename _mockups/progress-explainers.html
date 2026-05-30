@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mockup — Progress explainers + medal/level separation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0; --cream-2:#FFF3DC; --ink:#2A2A3E; --ink-soft:#5a5a6e;
+    --ink-faint:#8a8472; --teal:#1FB8A8; --teal-dk:#0e8475; --teal-lt:#d3f1ec;
+    --sun:#FFB627; --sun-dk:#c98800; --grape:#5B3FE4; --grape-dk:#3d28a8;
+    --grape-lt:#ece8ff; --coral:#FF6B6B; --white:#fff; --shadow-cool:#d8d6cc;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Fredoka',sans-serif; color:var(--ink);
+    background:#e9e6dd; display:flex; flex-direction:column; align-items:center;
+    gap:14px; padding:18px 12px 60px; min-height:100vh;
+  }
+
+  /* ---- harness toolbar (NOT part of the design — mockup controls) ---- */
+  .toolbar{
+    width:100%; max-width:430px; background:var(--ink); color:#fff;
+    border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;
+  }
+  .toolbar .tt{font-weight:700; font-size:14px; letter-spacing:.02em; opacity:.85;}
+  .seg{display:flex; gap:6px; background:rgba(255,255,255,.1); padding:4px; border-radius:10px;}
+  .seg button{
+    flex:1; border:0; cursor:pointer; font-family:inherit; font-weight:700; font-size:14px;
+    padding:9px 10px; border-radius:7px; color:#fff; background:transparent;
+  }
+  .seg button.on{background:var(--white); color:var(--ink);}
+  .toolbar .hint{font-size:12.5px; font-weight:500; opacity:.8; line-height:1.45;}
+  .anno-toggle{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600;}
+  .anno-toggle input{width:18px; height:18px; accent-color:var(--teal);}
+
+  /* ---- phone frame ---- */
+  .phone{
+    width:100%; max-width:412px; background:var(--cream);
+    border:3px solid var(--ink); border-radius:30px; overflow:hidden;
+    box-shadow:0 18px 40px -16px rgba(42,42,62,.5); position:relative; min-height:760px;
+  }
+
+  /* ===== persistent status bar (the global identity surface) ===== */
+  .statusbar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 14px; background:var(--white); border-bottom:2px solid #efe7d5;
+    position:sticky; top:0; z-index:5;
+  }
+  .sb-left{display:flex; align-items:center; gap:10px;}
+  .profile-dot{
+    width:34px; height:34px; border-radius:50%; background:var(--teal);
+    color:#fff; font-weight:700; display:grid; place-items:center; font-size:16px;
+    border:2px solid var(--ink);
+  }
+  .streak-chip{
+    display:inline-flex; align-items:center; gap:4px; font-weight:700; font-size:15px;
+    background:var(--sun); border:2px solid var(--ink); border-radius:999px; padding:3px 9px;
+    box-shadow:0 2px 0 var(--ink);
+  }
+  /* the global LEVEL chip — lives here in AFTER, tappable */
+  .level-chip{
+    display:inline-flex; align-items:center; gap:9px; cursor:pointer;
+    background:var(--grape-lt); border:2px solid var(--grape); border-radius:999px;
+    padding:4px 12px 4px 5px; font-family:inherit; box-shadow:0 2px 0 var(--grape-dk);
+  }
+  .level-chip:active{transform:translateY(1px); box-shadow:0 1px 0 var(--grape-dk);}
+  .ring{position:relative; width:34px; height:34px; flex:0 0 auto;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring .rnum{
+    position:absolute; inset:0; display:grid; place-items:center;
+    font-size:13px; font-weight:700; color:var(--grape-dk);
+  }
+  .level-chip .lc-txt{display:flex; flex-direction:column; line-height:1.05;}
+  .level-chip .lc-name{font-weight:700; font-size:14px; color:var(--grape-dk);}
+  .level-chip .lc-sub{font-size:11px; font-weight:600; color:var(--grape); opacity:.9;}
+  .tap-affordance{
+    margin-left:1px; width:16px; height:16px; border-radius:50%;
+    background:var(--grape); color:#fff; font-size:11px; font-weight:700;
+    display:grid; place-items:center; flex:0 0 auto;
+  }
+
+  /* ===== summary screen body ===== */
+  .screen{padding:18px 18px 26px;}
+  .sm-title{font-size:34px; font-weight:700; line-height:1.05; margin:4px 0 2px; color:var(--grape);}
+  .sm-sub{font-size:15px; font-weight:600; color:var(--ink-soft); margin-bottom:16px;}
+
+  /* round EARN card — momentum for THIS round */
+  .earn{
+    background:var(--grape); color:#fff; border:2.5px solid var(--ink);
+    border-radius:18px; padding:18px; text-align:center; box-shadow:0 5px 0 var(--ink);
+    margin-bottom:14px;
+  }
+  .earn .plus{font-size:44px; font-weight:700;}
+  .earn .plus span{font-size:22px; opacity:.85; margin-left:4px;}
+  /* In BEFORE mode the full level row also lived in this card (stacked) */
+  .earn .inline-level{
+    display:none; align-items:center; justify-content:center; gap:10px; margin-top:12px;
+    background:rgba(255,255,255,.14); border-radius:999px; padding:6px 12px;
+  }
+  .earn .inline-level .il-badge{font-weight:700; font-size:14px; background:rgba(255,255,255,.2); padding:3px 10px; border-radius:999px;}
+  .earn .inline-level .il-bar{flex:1; height:8px; background:rgba(255,255,255,.25); border-radius:999px; overflow:hidden; max-width:120px;}
+  .earn .inline-level .il-bar i{display:block; height:100%; width:39%; background:var(--sun);}
+  .earn .inline-level .il-to{font-size:12px; opacity:.9; white-space:nowrap;}
+
+  /* per-TOPIC mastery medal banner — tappable */
+  .medal{
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    background:var(--teal-lt); border:2.5px solid var(--teal-dk); border-radius:16px;
+    padding:13px 14px; box-shadow:0 4px 0 var(--teal-dk); margin-bottom:16px;
+  }
+  .medal:active{transform:translateY(1px); box-shadow:0 3px 0 var(--teal-dk);}
+  .medal .m-ico{font-size:26px; flex:0 0 auto;}
+  .medal .m-body{flex:1;}
+  .medal .m-top{display:flex; align-items:center; gap:7px; font-weight:700; font-size:18px; color:var(--teal-dk);}
+  .medal .m-scope{font-size:11px; font-weight:700; color:var(--teal-dk); background:#fff; border:1.5px solid var(--teal-dk); border-radius:999px; padding:1px 8px;}
+  .medal .m-sub{font-size:13px; font-weight:600; color:var(--ink-soft); margin-top:2px;}
+  .medal .tap-affordance{background:var(--teal-dk);}
+
+  .grid{display:flex; gap:9px;}
+  .stat{
+    flex:1; background:#fff; border:2.5px solid var(--ink); border-radius:14px;
+    padding:12px 8px; text-align:center; box-shadow:0 4px 0 var(--ink);
+  }
+  .stat.sun{background:var(--sun);}
+  .stat .lab{font-size:12px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;}
+  .stat .val{font-size:28px; font-weight:700; color:var(--teal-dk);}
+  .stat.sun .val{color:var(--ink);}
+  .stat .stars{font-size:20px; letter-spacing:2px; color:var(--sun-dk); white-space:nowrap;}
+
+  /* annotation flags (toggle) */
+  .anno{
+    position:relative; font-size:12px; font-weight:600; color:var(--coral);
+    background:#fff3f3; border:1.5px dashed var(--coral); border-radius:10px;
+    padding:7px 10px; margin:0 0 12px; line-height:1.4; display:none;
+  }
+  .anno.good{color:var(--teal-dk); background:#eefaf7; border-color:var(--teal-dk);}
+  /* mode-aware: bar note is After-only, earn note is Before-only, medal note always */
+  body.show-anno.mode-after #annoBar{display:block;}
+  body.show-anno.mode-before #annoEarn{display:block;}
+  body.show-anno #annoMedal{display:block;}
+
+  /* ===== bottom sheet explainer (tap-to-learn) ===== */
+  .scrim{
+    position:fixed; inset:0; background:rgba(42,42,62,.45); opacity:0; pointer-events:none;
+    transition:opacity .22s ease; z-index:20;
+  }
+  .scrim.open{opacity:1; pointer-events:auto;}
+  .sheet{
+    position:fixed; left:50%; bottom:0; transform:translate(-50%,110%);
+    width:100%; max-width:412px; background:var(--cream);
+    border:3px solid var(--ink); border-bottom:0; border-radius:22px 22px 0 0;
+    padding:10px 20px calc(26px + env(safe-area-inset-bottom)); z-index:21;
+    transition:transform .26s cubic-bezier(.2,.8,.2,1);
+  }
+  .sheet.open{transform:translate(-50%,0);}
+  .sheet .grab{width:42px; height:5px; border-radius:999px; background:#d8d2c2; margin:2px auto 14px;}
+  .sheet .s-ico{font-size:30px;}
+  .sheet h3{margin:6px 0 6px; font-size:21px; font-weight:700;}
+  .sheet p{margin:0 0 10px; font-size:15px; font-weight:500; line-height:1.5; color:var(--ink-soft);}
+  .sheet .s-key{font-weight:700; color:var(--ink);}
+  .sheet .s-foot{font-size:13px; font-weight:600; color:var(--ink-faint); background:#fff; border:2px solid #efe7d5; border-radius:12px; padding:10px 12px;}
+  .sheet .s-close{
+    margin-top:14px; width:100%; border:2.5px solid var(--ink); border-radius:12px;
+    background:var(--grape); color:#fff; font-family:inherit; font-weight:700; font-size:16px;
+    padding:11px; cursor:pointer; box-shadow:0 4px 0 var(--ink);
+  }
+  .sheet .s-close:active{transform:translateY(2px); box-shadow:0 2px 0 var(--ink);}
+  .sheet.teal .s-close{background:var(--teal);}
+  .sheet.teal h3{color:var(--teal-dk);}
+</style>
+</head>
+<body class="mode-after show-anno">
+
+  <div class="toolbar">
+    <div class="tt">MOCKUP · progress explainers + level/medal separation</div>
+    <div class="seg" id="seg">
+      <button data-mode="after" class="on">After (recommended)</button>
+      <button data-mode="before">Before (today)</button>
+    </div>
+    <label class="anno-toggle"><input type="checkbox" id="annoChk" checked> Show design annotations</label>
+    <div class="hint">Tap the <b>purple level chip</b> (top-right) and the <b>teal medal banner</b> to see the tap-to-learn one-liners. Toggle Before/After to see the spatial split.</div>
+  </div>
+
+  <div class="phone">
+    <!-- ===== persistent status bar ===== -->
+    <div class="statusbar">
+      <div class="sb-left">
+        <div class="profile-dot">R</div>
+        <span class="streak-chip">🔥 7</span>
+      </div>
+      <button class="level-chip" id="levelChip">
+        <span class="ring">
+          <svg width="34" height="34" viewBox="0 0 34 34">
+            <circle cx="17" cy="17" r="14" fill="none" stroke="#d7cffb" stroke-width="4"/>
+            <circle cx="17" cy="17" r="14" fill="none" stroke="#5B3FE4" stroke-width="4"
+              stroke-linecap="round" stroke-dasharray="87.9" stroke-dashoffset="53.6"/>
+          </svg>
+          <span class="rnum">7</span>
+        </span>
+        <span class="lc-txt">
+          <span class="lc-name">Apprentice</span>
+          <span class="lc-sub">178 to Lvl 8</span>
+        </span>
+        <span class="tap-affordance">i</span>
+      </button>
+    </div>
+
+    <div class="anno good" id="annoBar">↑ AFTER: the <b>global level</b> lives here in the persistent bar — same place on every screen, your overall identity. Tappable.</div>
+
+    <!-- ===== summary body ===== -->
+    <div class="screen">
+      <div class="sm-title">Amazing Round! ⭐</div>
+      <div class="sm-sub">Amazing — so close to perfect!</div>
+
+      <div class="earn">
+        <div class="plus">+60<span>XP</span></div>
+        <!-- BEFORE: the whole level ladder was stacked in here too -->
+        <div class="inline-level">
+          <span class="il-badge">Lvl 7 · Apprentice</span>
+          <span class="il-bar"><i></i></span>
+          <span class="il-to">178 to Lvl 8</span>
+        </div>
+      </div>
+
+      <div class="anno" id="annoEarn">BEFORE: the level ladder sits inside the round-earn card — so the <b>global</b> level and the <b>per-round</b> XP read as one thing, stacked right above the per-topic medal. No labels for what's global vs per-topic.</div>
+
+      <button class="medal" id="medalBanner">
+        <span class="m-ico">🥈</span>
+        <span class="m-body">
+          <span class="m-top">Silver <span class="m-scope">this topic</span></span>
+          <span class="m-sub">1 more 85%+ round → 🥇 Gold</span>
+        </span>
+        <span class="tap-affordance">i</span>
+      </button>
+
+      <div class="anno good" id="annoMedal">The <b>medal stays with the topic</b> (Note Names) and is now labelled “this topic”. Different visual language from the level: gold trophy vs. purple ring.</div>
+
+      <div class="grid">
+        <div class="stat"><div class="lab">Score</div><div class="val">4<span style="font-size:16px;color:var(--ink-faint)"> / 5</span></div></div>
+        <div class="stat sun"><div class="lab">Best streak</div><div class="val">🔥 3</div></div>
+        <div class="stat"><div class="lab">Stars</div><div class="stars">★ ★ ★ ☆</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== bottom-sheet explainers ===== -->
+  <div class="scrim" id="scrim"></div>
+
+  <div class="sheet" id="sheetLevel">
+    <div class="grab"></div>
+    <div class="s-ico">🟣</div>
+    <h3>Your Level</h3>
+    <p><span class="s-key">How much you’ve practiced overall.</span> You earn XP every round — more for harder rounds, clean rounds, and hot streaks. Enough XP bumps your level.</p>
+    <div class="s-foot">Levels are just for momentum — they never lock anything. Everything’s always open to play.</div>
+    <button class="s-close" data-close>Got it</button>
+  </div>
+
+  <div class="sheet teal" id="sheetMedal">
+    <div class="grab"></div>
+    <div class="s-ico">🏅</div>
+    <h3>Mastery medal</h3>
+    <p><span class="s-key">How well you know this one topic.</span> Score 85%+ in a round to move this topic up: Bronze → Silver → Gold. Every topic has its own medal.</p>
+    <div class="s-foot">Medals = depth on each topic. Your Level = how much you’ve practiced across everything.</div>
+    <button class="s-close" data-close>Got it</button>
+  </div>
+
+<script>
+  var body = document.body;
+  var scrim = document.getElementById('scrim');
+  var sheets = { level: document.getElementById('sheetLevel'), medal: document.getElementById('sheetMedal') };
+
+  function openSheet(which){
+    closeSheets();
+    scrim.classList.add('open');
+    sheets[which].classList.add('open');
+  }
+  function closeSheets(){
+    scrim.classList.remove('open');
+    sheets.level.classList.remove('open');
+    sheets.medal.classList.remove('open');
+  }
+  document.getElementById('levelChip').addEventListener('click', function(){ openSheet('level'); });
+  document.getElementById('medalBanner').addEventListener('click', function(){ openSheet('medal'); });
+  scrim.addEventListener('click', closeSheets);
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', closeSheets); });
+
+  // before / after toggle
+  document.getElementById('seg').addEventListener('click', function(e){
+    var btn = e.target.closest('button'); if(!btn) return;
+    document.querySelectorAll('#seg button').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    var mode = btn.dataset.mode;
+    body.classList.toggle('mode-before', mode==='before');
+    body.classList.toggle('mode-after', mode==='after');
+    applyMode(mode);
+  });
+
+  function applyMode(mode){
+    var chip = document.getElementById('levelChip');
+    var inline = document.querySelector('.earn .inline-level');
+    var annoMedal = document.getElementById('annoMedal');
+    if(mode==='before'){
+      chip.style.display = 'none';                 // no level in the bar
+      inline.style.display = 'flex';               // level stacked in the earn card
+      annoMedal.innerHTML = 'BEFORE: medal sits right under the stacked level — both reward systems in one column, neither labelled global vs per-topic.';
+      annoMedal.classList.remove('good');
+    } else {
+      chip.style.display = 'inline-flex';
+      inline.style.display = 'none';
+      annoMedal.innerHTML = 'The <b>medal stays with the topic</b> (Note Names) and is now labelled “this topic”. Different visual language from the level: gold trophy vs. purple ring.';
+      annoMedal.classList.add('good');
+    }
+  }
+
+  // annotation toggle
+  document.getElementById('annoChk').addEventListener('change', function(e){
+    body.classList.toggle('show-anno', e.target.checked);
+  });
+
+  applyMode('after');
+</script>
+</body>
+</html>
