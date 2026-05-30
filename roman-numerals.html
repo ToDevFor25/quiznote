@@ -1528,7 +1528,7 @@
     if (state.isDrill && state.drillPool && state.drillPool.length) {
       const _ds = new Set(state.drillPool);
       let _dg = 0;
-      while (_dg++ < 40 && !_ds.has(q.answer)) q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
+      while (_dg++ < 300 && !_ds.has(q.answer)) q = makeQuestion(state.settings.difficulty, state.settings.keyMode);
     }
     state.current = q;
 
@@ -2279,7 +2279,7 @@
       // Questions are generated fresh each round (no fixed pool to replay),
       // so "drill" just runs another focused round at the same settings.
       state.deck = [];
-      state.total = state.settings.total;
+      state.total = Math.min(state.drillPool.length * 2, state.settings.total);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
       state.history = []; state.lastPitch = null;
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;

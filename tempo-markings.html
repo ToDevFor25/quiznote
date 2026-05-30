@@ -1347,7 +1347,7 @@
     if (state.isDrill && state.drillPool && state.drillPool.length) {
       const _ds = new Set(state.drillPool);
       let _dg = 0;
-      while (_dg++ < 40 && !_ds.has(q.answer)) q = makeQuestion(state.settings.difficulty);
+      while (_dg++ < 300 && !_ds.has(q.answer)) q = makeQuestion(state.settings.difficulty);
     }
     state.current = q;
     state.currentChoices = q.choices;
@@ -2069,7 +2069,7 @@
 
     els['drill-btn'].addEventListener('click', () => {
       state.isDrill = true;   // drill: re-quiz only the missed answers (pure practice)
-      state.total = state.settings.total;
+      state.total = Math.min(state.drillPool.length * 2, state.settings.total);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
       state.history = []; state.lastQ = null;
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
