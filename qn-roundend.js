@@ -50,6 +50,11 @@
     opts = opts || {};
     if (!window.QN || !QN.xp) return;
 
+    // Wire the summary scroll affordances on first round-end (idempotent). The
+    // summary screen isn't visible until endRound, so wiring here is equivalent
+    // to wiring at page init — and it frees modules from needing an init hook.
+    initScroll();
+
     var module     = opts.module;
     var score      = opts.score | 0;
     var total      = opts.total | 0;
