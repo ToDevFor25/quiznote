@@ -211,7 +211,94 @@
 
   /* ============ SUMMARY SCREEN ============ */
 
+  /* ---- Gamification P0: the three-beat round-end (spec §3) ---- */
+  /* Beat 1 — THE EARN: XP gain + level progress. Always something, even at 2/10. */
+  .xp-earn {
+    background: linear-gradient(135deg, var(--grape) 0%, #6f4ff0 100%);
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 0 5px 0 var(--ink);
+    padding: 16px 20px;
+    margin: 0 auto 18px;
+    max-width: 420px;
+    color: white;
+  }
+  .xp-earn-top {
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 10px; margin-bottom: 12px;
+  }
+  .xp-plus {
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    font-size: 34px; line-height: 1; color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+  }
+  .xp-plus-label {
+    font-family: 'Nunito', sans-serif; font-weight: 800;
+    font-size: 15px; letter-spacing: 0.04em; opacity: 0.92;
+  }
+  .xp-level-row {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px;
+  }
+  .xp-level-badge {
+    flex: 0 0 auto;
+    background: rgba(255,255,255,0.18);
+    border-radius: 999px; padding: 4px 12px; white-space: nowrap;
+  }
+  .xp-bar {
+    flex: 1 1 auto; height: 14px;
+    background: rgba(0,0,0,0.22);
+    border-radius: 999px; overflow: hidden;
+    border: 1.5px solid rgba(0,0,0,0.25);
+  }
+  .xp-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--sun) 0%, #ffd75e 100%);
+    border-radius: 999px;
+    transition: width 900ms cubic-bezier(.25,.9,.3,1);
+  }
+  .xp-to-next { flex: 0 0 auto; opacity: 0.9; white-space: nowrap; }
+  .xp-streak-kept {
+    text-align: center; margin-top: 10px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;
+  }
 
+  /* Beat 2 — THE PROGRESS: this round as one step toward the medal. */
+  .mastery-meter {
+    max-width: 420px; margin: 0 auto 16px;
+    background: var(--teal-lt, #e6faf7);
+    border: 2.5px solid var(--teal);
+    border-radius: 16px; padding: 12px 16px;
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    color: var(--ink); font-size: 14px;
+  }
+  .mastery-meter .mm-top {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; margin-bottom: 8px;
+  }
+  .mastery-meter .mm-pips { letter-spacing: 2px; font-size: 16px; }
+  .mastery-meter .mm-note { color: var(--ink-soft); font-weight: 600; }
+
+  /* Beat 3 — THE NEXT STEP: one dominant action, recommender-driven. */
+  .next-step-cta {
+    width: 100%;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    text-decoration: none; text-align: center;
+  }
+  .next-step-cta .nsc-reason {
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 12px;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .summary-actions .btn.secondary-link {
+    background: none; box-shadow: none; border: none;
+    color: var(--ink-soft); font-size: 15px; text-decoration: underline;
+    padding: 6px;
+  }
+  .summary-actions .btn.secondary-link:active { transform: none; box-shadow: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .xp-bar-fill { transition: none; }
+  }
 
 
   /* ============ Accidentals filter ============ */
@@ -365,6 +452,7 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-xp.js" defer></script>
 <script src="qn-nav.js" defer></script>
 <script src="qn-ui.js" defer></script>
 <script src="qn-staff.js" defer></script>
@@ -560,6 +648,29 @@
     <div class="summary-sub" id="summary-sub">You named those notes.</div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
+    <!-- Beat 1 — THE EARN (gamification P0). Always populated, even on a low score. -->
+    <div class="xp-earn" id="xp-earn" hidden>
+      <div class="xp-earn-top">
+        <span class="xp-plus" id="xp-plus">+0</span>
+        <span class="xp-plus-label">XP</span>
+      </div>
+      <div class="xp-level-row">
+        <span class="xp-level-badge" id="xp-level-badge">Lvl 1</span>
+        <span class="xp-bar"><span class="xp-bar-fill" id="xp-bar-fill"></span></span>
+        <span class="xp-to-next" id="xp-to-next"></span>
+      </div>
+      <div class="xp-streak-kept" id="xp-streak-kept" hidden></div>
+    </div>
+
+    <!-- Beat 2 — THE PROGRESS (mastery meter toward the medal). -->
+    <div class="mastery-meter" id="mastery-meter" hidden>
+      <div class="mm-top">
+        <span id="mm-label">Bronze</span>
+        <span class="mm-pips" id="mm-pips"></span>
+      </div>
+      <div class="mm-note" id="mm-note"></div>
+    </div>
+
     <div class="summary-grid">
       <div class="card stat-card">
         <div class="stat-label">Score</div>
@@ -586,10 +697,15 @@
     </div>
 
     <div class="summary-actions">
+      <!-- Beat 3 — THE NEXT STEP: one dominant, recommender-driven action. -->
+      <a href="#" class="next-step-cta" id="next-step-cta" hidden>
+        <span class="nsc-reason" id="nsc-reason"></span>
+        <span class="btn grape huge" id="nsc-btn" style="text-decoration:none;">Next →</span>
+      </a>
       <button class="btn sun big" id="again-btn">↻ Play again</button>
       <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
       <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
-      <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
+      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
     </div>
 
     <div class="pb-row" id="pb-row" hidden>
@@ -1050,6 +1166,9 @@
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
      'pb-row','pb-score','pb-streak',
+     'xp-earn','xp-plus','xp-level-badge','xp-bar-fill','xp-to-next','xp-streak-kept',
+     'mastery-meter','mm-label','mm-pips','mm-note',
+     'next-step-cta','nsc-reason','nsc-btn',
      'save-scores-prompt',
      'timer-row','timer-pill-state','timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
@@ -1984,11 +2103,150 @@
     var ssp = els['save-scores-prompt'];
     if (ssp) ssp.hidden = !(roundOutcome === 'held' && window.QN && QN.events && QN.events.pendingCount() > 0);
 
+    // Gamification P0: the three-beat round-end. Wrapped so the meta-layer can
+    // never block or break the summary (per CLAUDE.md init-throw avoidance).
+    try { renderXPBeats(pct); } catch (e) { if (window.console) console.warn('xp beats skipped', e); }
+
     setTimeout(() => {
       A.playFanfare(tier);
       QN_FX.fire(tier);
     }, 700);
   }
+
+  // ── Gamification P0 (spec §3): EARN → PROGRESS → NEXT STEP ────────────────
+  // Reads the XP core (qn-xp.js) + recommender (qn-profile.js). Degrades to a
+  // no-op if either shared file is missing. note-names is the proof module;
+  // this block is the template for the all-35 rollout.
+  function prettySlug(slug) {
+    return String(slug || '').split('-').map(function (w) {
+      return w ? w.charAt(0).toUpperCase() + w.slice(1) : w;
+    }).join(' ');
+  }
+
+  function renderXPBeats(pct) {
+    if (!window.QN || !QN.xp) return;
+    var prof = QN.profile && QN.profile.getActive ? QN.profile.getActive() : null;
+    var profileId = prof ? prof.id : null;
+
+    // Event shape EXACTLY as stored by QN.events.log (no streak field — the
+    // log whitelists fields and does not persist streak, so the live earn we
+    // show here matches what totalFor() recomputes from history). Persisting
+    // the streak bonus is a flagged P1 Tier-3 item (touches qn-profile.js).
+    var evShape = { correct: state.score, total: state.total, tier: state.settings.difficulty };
+    var roundXP   = QN.xp.roundXP(evShape);
+    var totalAfter  = profileId ? QN.xp.totalFor(profileId) : roundXP;
+    var totalBefore = Math.max(0, totalAfter - roundXP);
+    var after  = QN.xp.levelFor(totalAfter);
+    var delta  = QN.xp.levelDelta(totalBefore, totalAfter);
+
+    // --- Beat 1: THE EARN ---
+    var earn = els['xp-earn'];
+    if (earn) {
+      earn.hidden = false;
+      if (els['xp-level-badge']) els['xp-level-badge'].textContent = 'Lvl ' + after.level + ' · ' + after.name;
+      if (els['xp-to-next'])     els['xp-to-next'].textContent = after.toNext > 0 ? (after.toNext + ' to Lvl ' + (after.level + 1)) : 'maxed';
+
+      var streakEl = els['xp-streak-kept'];
+      if (streakEl) {
+        if (state.bestStreak >= 2) {
+          streakEl.hidden = false;
+          streakEl.textContent = '🔥 Best streak this round: ' + state.bestStreak;
+        } else { streakEl.hidden = true; }
+      }
+
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var plusEl = els['xp-plus'];
+      var barEl  = els['xp-bar-fill'];
+      if (reduce) {
+        if (plusEl) plusEl.textContent = '+' + roundXP;
+        if (barEl)  barEl.style.width = Math.round(after.pct * 100) + '%';
+      } else {
+        // count-up the XP number, then fill the level bar
+        if (plusEl) {
+          var t0 = null, dur = 700;
+          var step = function (ts) {
+            if (t0 === null) t0 = ts;
+            var k = Math.min(1, (ts - t0) / dur);
+            plusEl.textContent = '+' + Math.round(roundXP * k);
+            if (k < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+        if (barEl) {
+          barEl.style.width = '0%';
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () { barEl.style.width = Math.round(after.pct * 100) + '%'; });
+          });
+        }
+      }
+    }
+
+    // --- Beat 2: THE PROGRESS (mastery meter toward the medal) ---
+    // Canonical clear rule (matches recommender + dashboard): >= 2 rounds at a
+    // tier each scoring >= 85%. Medal = highest tier cleared.
+    var meter = els['mastery-meter'];
+    if (meter) {
+      var TIERS = ['easy', 'medium', 'tricky'];
+      var MEDAL = { easy: '🥉 Bronze', medium: '🥈 Silver', tricky: '🥇 Gold' };
+      var good = { easy: 0, medium: 0, tricky: 0 };
+      if (profileId && QN.events && QN.events.query) {
+        var evs = QN.events.query(profileId, { module: 'note-names' }) || [];
+        for (var i = 0; i < evs.length; i++) {
+          var e = evs[i];
+          if (!e.total) continue;
+          var et = e.tier || 'easy';
+          if (good[et] != null && (e.correct / e.total) >= 0.85) good[et]++;
+        }
+      }
+      var cleared = { easy: good.easy >= 2, medium: good.medium >= 2, tricky: good.tricky >= 2 };
+      var earned = cleared.tricky ? 'tricky' : cleared.medium ? 'medium' : cleared.easy ? 'easy' : null;
+      var nextTier = !cleared.easy ? 'easy' : !cleared.medium ? 'medium' : !cleared.tricky ? 'tricky' : null;
+
+      meter.hidden = false;
+      if (els['mm-label']) els['mm-label'].textContent = earned ? MEDAL[earned] : 'No medal yet';
+      if (nextTier) {
+        var have = Math.min(2, good[nextTier]);
+        if (els['mm-pips']) els['mm-pips'].textContent = ('▓ '.repeat(have) + '░ '.repeat(2 - have)).trim();
+        var need = 2 - have;
+        if (els['mm-note']) els['mm-note'].textContent = need > 0
+          ? need + ' more 85%+ round' + (need === 1 ? '' : 's') + ' → ' + MEDAL[nextTier]
+          : 'Ready for ' + MEDAL[nextTier] + '!';
+      } else {
+        if (els['mm-pips']) els['mm-pips'].textContent = '▓ ▓';
+        if (els['mm-note']) els['mm-note'].textContent = 'Gold mastered — every tier cleared! 🎉';
+      }
+    }
+
+    // --- Beat 3: THE NEXT STEP (one dominant, recommender-driven action) ---
+    var cta = els['next-step-cta'];
+    if (cta) {
+      var low = pct < 0.5;
+      if (low) {
+        cta.hidden = false;
+        if (els['nsc-reason']) els['nsc-reason'].textContent = "Let's run that back —";
+        if (els['nsc-btn'])    els['nsc-btn'].textContent = "Try again — you've got this";
+        cta.onclick = function (ev2) { ev2.preventDefault(); els['again-btn'].click(); };
+      } else {
+        var rec = (QN.recommend && QN.recommend.next) ? QN.recommend.next(profileId) : null;
+        if (rec && rec.module) {
+          cta.hidden = false;
+          if (els['nsc-reason']) els['nsc-reason'].textContent = rec.reason || '';
+          var tierLabel = rec.tier ? (' · ' + rec.tier.charAt(0).toUpperCase() + rec.tier.slice(1)) : '';
+          if (els['nsc-btn']) els['nsc-btn'].textContent = 'Next: ' + prettySlug(rec.module) + tierLabel + ' →';
+          cta.onclick = function (ev2) {
+            ev2.preventDefault();
+            var payload = { difficulty: rec.tier || 'easy', total: rec.length || 10 };
+            try { localStorage.setItem(rec.module + '_settings', JSON.stringify(payload)); } catch (e3) {}
+            window.location.href = rec.module + '.html';
+          };
+        } else {
+          cta.hidden = true;
+        }
+      }
+    }
+  }
+
+
 
 
   function scoreToStars(score, total) {
