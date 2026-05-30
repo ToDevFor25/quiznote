@@ -1,5 +1,99 @@
 ---
 
+### Gamified round-end P1 rollout — all 35 modules + drill-awareness — May 2026
+
+**Session type:** the P1 rollout itself. Took the note-names gamification proof
+and shipped the 3-beat round-end (EARN → PROGRESS → NEXT STEP) + sticky action
+bar + scroll scrim/cue to **all 35 live modules**, via a shared file rather than
+35 inline copies. Branch `claude/gamified-learning-roadmap-QxZmK`. Approach was
+Jonathan's explicit call: **shared-file-first, round-end layer only** (status
+bar + tap-to-learn explainers deferred to a later P1 slice).
+
+**Step 1 — shared foundation (proven on note-names before anything else).**
+- `qn-roundend.js` (new shared file): `QN.roundEnd.render({module, score, total,
+  tier, bestStreak, isDrill, onRetry})` — a faithful, parameterized copy of
+  note-names' `renderXPBeats` using `getElementById` on the standard summary IDs;
+  plus `initScroll()` / `updateScrim()` for the fade scrim + "More ▾" cue.
+  Degrades to a no-op if the XP core is absent; every beat self-skips if its
+  anchor is missing. Later improvement: `render()` calls `initScroll()` itself
+  (idempotent), so modules need **no init hook** — this killed the divergent
+  init-anchor problem (18 modules bound `change-btn` differently).
+- Gamification CSS moved byte-for-byte from note-names' inline `<style>` into
+  `qn-theme.css` (Beats 1–3, sticky bar, scrim, cue, `cueBob`).
+- **Regression caught + fixed:** the moved `#summary-screen { padding:0;
+  height:100dvh; flex-column }` is an **ID rule** — once in `qn-theme.css` it hit
+  all 36 modules, but only note-names has the `.summary-scroll` markup it
+  assumes. Two same-specificity `#summary-screen` rules → the moved one won by
+  source order and stripped the baseline center+20px padding from 35 summaries.
+  Fixed by gating the restructure behind a **`.has-roundbar` marker class** on
+  `#summary-screen` (id+class specificity wins where present; baseline wins
+  everywhere else). Marker class, not `:has()`, for older school-iPad Safari.
+  Modules get the marker in the same commit that adds their round-bar markup.
+
+**Step 2 — the rollout (content-preserving, in-place, fail-loud).** A Python
+transformer per module: links `qn-xp.js` + `qn-roundend.js`; adds `.has-roundbar`
++ `.summary-scroll` wrapper + Beat 1/2 cards + pinned `.summary-bar` (scroll-cue,
+Beat 3 next-step-cta, bar-row with the module's **own** again/drill buttons,
+labels preserved); demotes change-btn + all-modules to `.summary-demote` quiet
+links; inserts `QN.roundEnd.render({module:'<slug>',…})` before the fanfare.
+Handles both `setTimeout(()=>{` and `setTimeout(function(){` forms. **Aborts
+without writing** on any unmatched anchor. Sequenced: accidentals (proof) →
+batch 1 (8) → batch 2 (10, incl. ear cluster) → batch 3 (13) → outliers. Each
+file verified: inline JS parses, CSS braces balanced, summary-screen
+div-balanced, all beat/bar IDs present, exactly one again-btn, no stale
+`.summary-actions`.
+
+**Outliers handled by hand (scales, piano-quiz).** scales bit twice, exactly as
+CLAUDE.md warns: (1) the fanfare anchor sat **inside** scales' `if (!timedOut)`
+celebration gate, so render() would skip on timed-out rounds — moved it out
+(round still logs on timeout; only the celebration stays gated); (2) scales uses
+`state.settings.total` and has **no `state.total`**, so the auto-inserted
+`total:state.total` would have been `undefined` and broken the XP/medal math —
+fixed to `state.settings.total`. Audited all 33 others: scales is the only one
+lacking `state.total`. piano-quiz was clean (render unconditional, correct
+field, guided-key-find untouched).
+
+**Drill-awareness (the follow-up Jonathan asked for next).** Drill rounds that
+**re-serve the user's missed items** are pure practice and must read "practice,
+no XP" + write no event (else the XP total rises while Beat 1 claims none).
+**Classification was the hard part** — a naive scan misread `state.deck = []`
+(a fresh-reset) and adjacent handlers' `drillPool` refs as re-serve. Reading each
+drill handler's actual `state.pool = […state.drillPool]` assignment, **only 3**
+modules genuinely re-serve: **ledger-lines, piano-keyboard, piano-quiz**
+(piano-quiz via an intermediate `const pool` var). All other drill-capable
+modules either replay a **fresh graded round** at the same settings (logging +
+XP is correct there) or keep the drill button hidden/unwired (intervals,
+ear-intervals, transposition). Wired the 3 with the note-names pattern:
+`state.isDrill=false` in startRound, `=true` in the drill handler (which never
+calls startRound, so the flag persists), `!state.isDrill` guards on logOrHold +
+both personal-best checks, `isDrill:state.isDrill` into render. **This precision
+prevented wrongly denying XP credit on ~16 real-round "drills."**
+
+**Decisions banked.**
+- `isDrill:false` is correct for fresh-replay drills — not a gap. (Tier 2.)
+- Reused note-names' summary markup verbatim where siblings were byte-identical
+  clones; preserved per-module content (stat labels, miss-text, button labels)
+  everywhere else.
+- `pianoquiz-demo.html` intentionally NOT rolled out — it's a demo with its own
+  inline `#summary-screen`; next task is to give it the **sticky-bar/scroll
+  layout only, minus the XP/mastery/recommender package** (Jonathan's call).
+
+**Still open / next.**
+1. **Pixel QA on real devices** (Jonathan, in progress) — structural
+   verification passed across all 35; rendered-pixel QA owed, esp. an ear
+   module, scales (the structural outlier), and a chord module.
+2. **pianoquiz-demo sticky bar (next build task)** — layout/scroll affordances
+   only, no XP beats / mastery meter / next-step. "Doesn't need the full baked
+   package."
+3. **Status bar + tap-to-learn explainers** — the rest of P1 (persistent Level
+   status bar, level-chip + medal bottom sheets per `specs/progress-explainers-
+   spec.md`). Now unblocked: every module has the round-end surface.
+4. **Dead rule:** note-names still has an orphaned inline `.summary-actions
+   { margin-top:16px }` (no matching element since it uses `.summary-demote`).
+   Harmless; left untouched to avoid re-touching the proof module.
+
+---
+
 ### Gamification P0 polish + progress-explainer design — May 2026
 
 **Session type:** UX polish on the note-names gamification proof + a design
