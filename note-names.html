@@ -296,6 +296,49 @@
   }
   .summary-actions .btn.secondary-link:active { transform: none; box-shadow: none; }
 
+  /* ---- Sticky action bar (mobile-reach proof, spec §3 / §5) ----
+     Inline-only proof on note-names. Overrides the shared #summary-screen
+     centering so the screen is a flex column: a scrolling content area +
+     a pinned, non-scrolling action bar that content can never hide behind.
+     Rolling this into qn-theme.css for all 36 modules is its own Tier-3
+     session once proven on device. */
+  #summary-screen {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    height: 100dvh;
+    padding: 0;                 /* padding moves onto .summary-scroll */
+  }
+  .summary-scroll {
+    flex: 1;
+    min-height: 0;              /* lets the flex child actually shrink + scroll */
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* kills iOS rubber-band bounce */
+    -webkit-overflow-scrolling: touch;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 18px 16px;
+  }
+  .summary-bar {
+    flex: 0 0 auto;            /* natural height, pinned by flex layout */
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--cream);
+    border-top: 2.5px solid var(--ink);
+    box-shadow: 0 -8px 20px -8px rgba(42,42,62,0.18);
+  }
+  .summary-bar .bar-row { display: flex; gap: 9px; }
+  .summary-bar .bar-row > .btn { flex: 1; }
+  /* In the bar, the Next CTA fills width and drops its huge padding so the
+     whole bar stays compact. */
+  .summary-bar .next-step-cta { width: 100%; }
+  .summary-bar .next-step-cta .btn { width: 100%; font-size: 20px; padding: 12px 20px; }
+  /* Demoted low-frequency actions live in the scroll, as quiet links. */
+  .summary-demote {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: center; margin-top: 14px;
+  }
+  .summary-demote .btn.secondary-link { font-size: 15px; }
+
   @media (prefers-reduced-motion: reduce) {
     .xp-bar-fill { transition: none; }
   }
@@ -430,7 +473,19 @@
     .streak-badge { font-size: 15px; padding: 4px 8px; min-width: 50px; }
     .timer-badge { font-size: 16px; padding: 4px 8px; min-width: 64px; }
     .brand h1 { font-size: 44px; }
-    .summary-title { font-size: 40px; }
+    .summary-title { font-size: 36px; }
+    .summary-sub { font-size: 15px; }
+    /* Summary density: stars on ONE line is the root cause of tall pillar
+       cards (base .stars is 36px/4px letter-spacing → wraps in a 3-across
+       cell). Shrink + nowrap so all 3 cards stay wide-and-short, bringing
+       "Play again" into reach. Inline here overrides qn-theme.css base
+       (no shared-file change). */
+    .summary-grid { gap: 8px; margin-top: 14px; }
+    .summary-grid .stat-card { padding: 10px 8px; }
+    .summary-grid .stat-value { font-size: 30px; }
+    .summary-grid .stat-value .of { font-size: 16px; }
+    .summary-grid .stars { font-size: 22px; letter-spacing: 2px; white-space: nowrap; }
+    .summary-actions { margin-top: 16px; }
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
     .staff-svg-wrap { min-height: 100px; }
@@ -643,6 +698,7 @@
 
 <!-- ============ SUMMARY SCREEN ============ -->
 <section class="screen" id="summary-screen">
+ <div class="summary-scroll">
   <div class="summary-wrap">
     <div class="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You named those notes.</div>
@@ -696,25 +752,34 @@
       <a href="profile.html" class="btn teal big" style="text-decoration:none;">Add a name →</a>
     </div>
 
-    <div class="summary-actions">
-      <!-- Beat 3 — THE NEXT STEP: one dominant, recommender-driven action. -->
-      <a href="#" class="next-step-cta" id="next-step-cta" hidden>
-        <span class="nsc-reason" id="nsc-reason"></span>
-        <span class="btn grape huge" id="nsc-btn" style="text-decoration:none;">Next →</span>
-      </a>
-      <button class="btn sun big" id="again-btn">↻ Play again</button>
-      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
-      <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
-      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
-    </div>
-
     <div class="pb-row" id="pb-row" hidden>
       <span class="pb-label">Personal best:</span>
       <span id="pb-score"></span>
       <span class="pb-sep">·</span>
       <span id="pb-streak"></span>
     </div>
+
+    <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
+    <div class="summary-demote">
+      <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
+      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+    </div>
   </div>
+ </div>
+
+ <!-- Pinned action bar: non-scrolling sibling of .summary-scroll. High-frequency
+      actions only; content above can never hide behind it. -->
+ <div class="summary-bar">
+   <!-- Beat 3 — THE NEXT STEP: one dominant, recommender-driven action. -->
+   <a href="#" class="next-step-cta" id="next-step-cta" hidden>
+     <span class="nsc-reason" id="nsc-reason"></span>
+     <span class="btn grape" id="nsc-btn" style="text-decoration:none;">Next →</span>
+   </a>
+   <div class="bar-row">
+     <button class="btn sun" id="again-btn">↻ Play again</button>
+     <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
+   </div>
+ </div>
 </section>
 
 <!-- ============ MODAL ============ -->
