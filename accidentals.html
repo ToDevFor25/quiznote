@@ -1446,7 +1446,9 @@
     const drillSet = drilling ? new Set(state.drillPool) : null;
     let q = makeQuestion(state.settings.difficulty);
     let guard = 0;
-    while (guard++ < 40) {
+    // High cap: makeQuestion spans multiple answer types (effect + note name), so
+    // landing a specific missed answer can take many rolls. makeQuestion is cheap.
+    while (guard++ < 300) {
       const wrongDrill = drilling && !drillSet.has(q.answer);
       const repeat = state.lastQ && q.type === state.lastQ.type && q.answer === state.lastQ.answer
                      && !(drilling && drillSet.size <= 1);
@@ -2233,9 +2235,9 @@
 
     els['drill-btn'].addEventListener('click', () => {
       state.isDrill = true;   // drill: re-quiz only the missed answers (pure practice)
-      // Accidentals generates questions fresh, so "drill" replays a focused
-      // round at the same settings rather than re-serving specific items.
-      state.total = state.settings.total;
+      // Focused drill: a short round (2x the misses) drawn only from the missed
+      // answers — nextQuestion re-rolls makeQuestion until q.answer is in drillPool.
+      state.total = Math.min(state.drillPool.length * 2, state.settings.total);
       state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0;
       state.history = []; state.lastQ = null;
       state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
