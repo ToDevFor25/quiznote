@@ -1,5 +1,83 @@
 ---
 
+### Gamification P0 polish + progress-explainer design — May 2026
+
+**Session type:** UX polish on the note-names gamification proof + a design
+pass (with mockup) on how the two reward systems are explained, separated, and
+awarded. All to branch `claude/gamified-learning-roadmap-QxZmK` (see branch note
+below). note-names stays the single proof module; nothing rolled to all 36 yet.
+
+**Mobile round-end reach (note-names).** The new gamified summary buried "Play
+again" below the fold on phones. Split `#summary-screen` into a scrolling
+`.summary-scroll` + a pinned `.summary-bar` (high-frequency actions can never
+hide behind content). Density fix: stars forced `white-space:nowrap` so the 3
+pillar cards go wide-and-short instead of wrapping tall. Inline-only on
+note-names; promote to `qn-theme.css` during P1.
+
+**Scrollability cues (the "is there more?" problem).** Two industry-standard
+additions, both **honest** (driven by a single `updateSummaryScrim()` that
+toggles `#summary-screen.scroll-end`):
+1. A soft cream→transparent **fade scrim** above the bar (replacing the hard
+   2.5px ink border, which read as a terminal "page ends" edge). Hidden at the
+   bottom / when nothing overflows.
+2. An animated **"More ▾" scroll cue** pill — gentle chevron bob, tap-to-scroll
+   (~70% viewport), auto-hides via the same `.scroll-end`, `prefers-reduced-
+   motion` safe. Measured after render via double-rAF; scroll listener passive.
+
+**Medal model decided — highest-wins (skipping allowed).** A learner who clears
+Tricky (≥2 rounds ≥85%) earns Gold immediately, even if Easy/Medium were never
+played — tiers are difficulty levels of one skill, so back-filling lower tiers
+for the medal is busywork. Matches the recommender's existing source of truth
+(`qn-profile.js nextTierFor` already treats tricky-cleared as "module done").
+**Root-caused a real contradiction:** Beat 2's progress note used *bottom-up*
+logic (`nextTier` = lowest uncleared) while the medal *label* is highest-wins —
+so a Tricky-only learner saw "🥇 Gold" sitting above "2 more rounds → 🥉 Bronze."
+Fixed: `nextTier` now = the tier just **above** the highest cleared; at Gold it
+reads "Gold — top tier mastered! 🎉" (true whether laddered or skipped). Rejected
+the "always show 3 tier pips" option for the round-end card — empty lower pips
+beside an earned Gold reads as broken/hollow; that completionist view belongs on
+the dashboard mastery grid if anywhere.
+
+**Progress-explainer design (approved, not yet built beyond the mockup).**
+Industry standard = explain on tap, not upfront. Tap-to-learn bottom sheets on
+the **level chip** and **medal banner**, each carrying the approved one-liners:
+*levels = how much you've practiced overall · medals = how well you know each
+topic.* Spatial/visual separation: global **Level → persistent status bar** (its
+own identity surface, purple ring); **medal stays on the topic**, tagged "this
+topic" (gold trophy). Levels stay **cosmetic — they unlock nothing** (said
+explicitly in the sheet). Captured in `specs/progress-explainers-spec.md` +
+interactive `_mockups/progress-explainers.html` (Before/After toggle + design
+annotations + working sheets).
+
+**Key sequencing finding.** The explainer + separation rollout is **coupled to
+the XP phase (P1)** and can't precede it: the separation needs the persistent
+status bar (a P1 surface), and the sticky-bar/fade/cue can only land on modules
+that have the new gamified round-end — which only note-names has. So the all-36
+rollout *is* P1, not a step before it. note-names is the reference proof.
+
+**Decisions banked.** Level name bands **confirmed**: Beginner / Apprentice /
+Player / Musician / Virtuoso. Medal model = highest-wins (above).
+
+**Still open / next:**
+- **P1 (the next phase):** XP/Levels live everywhere + persistent status bar +
+  gamified round-end rolled to all 36, applying the highest-wins medal-note fix
+  per module and promoting the sticky-bar/fade/cue CSS into `qn-theme.css`
+  (Tier-3 shared-file change, done as part of the rollout, not an orphan commit).
+  Gated on Jonathan's **final "go" after device QA** of the note-names proof.
+- **Tier-3 / lawyer-gated:** any XP/Level/streak/medal copy that reaches the
+  **landing page** = user-facing promises. Current read: the system is
+  client-side + cosmetic + non-purchasable, so no new privacy/terms disclosure
+  is needed *now*; revisit when cloud sync stores progress (then level/streak/XP
+  fall under the existing child-profile consent scope). Keep marketing
+  descriptive — no outcome guarantees / no implied real-world value.
+- **Device QA owed** on the note-names polish (sticky bar + cue eyeballed live;
+  medal-note fix is pure logic, hard to hit by hand).
+- **Branch policy:** this work went to `claude/gamified-learning-roadmap-QxZmK`,
+  not `Dev` — the session task pinned the feature branch, conflicting with the
+  CLAUDE.md "always Dev" rule. Needs a permanent call.
+
+---
+
 ### play.html tile recalibration: Dotted Notes & Chromatic Scale — May 2026
 
 **Session type:** Visual recalibration of two `play.html` library tiles, with

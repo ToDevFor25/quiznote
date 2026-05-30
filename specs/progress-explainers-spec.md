@@ -129,9 +129,8 @@ orphan commit):
 
 ## 6. Still Tier-3 / open sign-offs (do NOT ship without Jonathan)
 
-- **Level name bands** — tentatively Beginner / Apprentice / Player / Musician /
-  Virtuoso (qn-xp.js `nameBands`). Confirm final list before P1 ships (per
-  overhaul spec §8.4).
+- **Level name bands** — **CONFIRMED May 2026 (Jonathan):** Beginner /
+  Apprentice / Player / Musician / Virtuoso (qn-xp.js `nameBands`). No change.
 - **Any XP / Level / streak / medal claims that reach the landing page** are
   user-facing promises (overhaul spec §8.3) — lawyer/brand gate.
 
