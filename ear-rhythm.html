@@ -562,6 +562,8 @@
 
 <!-- QuizNote shared profile + event helper (loads window.QN) -->
 <script src="qn-profile.js" defer></script>
+<script src="qn-xp.js" defer></script>
+<script src="qn-roundend.js" defer></script>
 <script src="qn-nav.js" defer></script>
 <script src="qn-audio.js" defer></script>
 </head>
@@ -720,10 +722,34 @@
 </section>
 
 <!-- ============ SUMMARY SCREEN ============ -->
-<section class="screen" id="summary-screen">
+<section class="screen has-roundbar" id="summary-screen">
+  <div class="summary-scroll">
   <div class="summary-wrap">
     <div class="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You named those symbols.</div>
+
+     <!-- Beat 1 — THE EARN (gamification). Always populated, even on a low score. -->
+     <div class="xp-earn" id="xp-earn" hidden>
+       <div class="xp-earn-top">
+         <span class="xp-plus" id="xp-plus">+0</span>
+         <span class="xp-plus-label">XP</span>
+       </div>
+       <div class="xp-level-row">
+         <span class="xp-level-badge" id="xp-level-badge">Lvl 1</span>
+         <span class="xp-bar"><span class="xp-bar-fill" id="xp-bar-fill"></span></span>
+         <span class="xp-to-next" id="xp-to-next"></span>
+       </div>
+       <div class="xp-streak-kept" id="xp-streak-kept" hidden></div>
+     </div>
+
+     <!-- Beat 2 — THE PROGRESS (mastery meter toward the medal). -->
+     <div class="mastery-meter" id="mastery-meter" hidden>
+       <div class="mm-top">
+         <span id="mm-label">Bronze</span>
+         <span class="mm-pips" id="mm-pips"></span>
+       </div>
+       <div class="mm-note" id="mm-note"></div>
+     </div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
     <div class="summary-grid">
@@ -751,12 +777,11 @@
       <a href="profile.html" class="btn teal big" style="text-decoration:none;">Add a name →</a>
     </div>
 
-    <div class="summary-actions">
-      <button class="btn sun big" id="again-btn">↻ Play again</button>
-      <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
-      <button class="btn ghost" id="change-btn">⚙️ Game Settings</button>
-      <a href="play.html" class="btn ghost" style="text-decoration:none;">← All modules</a>
-    </div>
+         <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
+     <div class="summary-demote">
+       <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
+       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+     </div>
 
     <div class="pb-row" id="pb-row" hidden>
       <span class="pb-label">Personal best:</span>
@@ -765,6 +790,20 @@
       <span id="pb-streak"></span>
     </div>
   </div>
+  </div>
+ <!-- Pinned action bar: non-scrolling sibling of .summary-scroll. -->
+ <div class="summary-bar">
+   <button type="button" class="scroll-cue" id="scroll-cue" aria-label="Scroll down for more">More <span class="cue-arrow" aria-hidden="true">▾</span></button>
+   <!-- Beat 3 — THE NEXT STEP: one dominant, recommender-driven action. -->
+   <a href="#" class="next-step-cta" id="next-step-cta" hidden>
+     <span class="nsc-reason" id="nsc-reason"></span>
+     <span class="btn grape" id="nsc-btn" style="text-decoration:none;">Next →</span>
+   </a>
+   <div class="bar-row">
+     <button class="btn sun big" id="again-btn">↻ Play again</button>
+     <button class="btn grape" id="drill-btn" hidden>🎯 Drill missed notes</button>
+   </div>
+ </div>
 </section>
 
 <!-- ============ MODAL ============ -->
@@ -1991,6 +2030,15 @@
 
     // Music + shared fireworks/crowd/note-explosion celebration. 700ms delay
     // lets the summary content animate in first, then the celebration lands.
+    // Gamified round-end (3 beats + scroll scrim) — shared qn-roundend.js.
+    try {
+      if (window.QN && QN.roundEnd) QN.roundEnd.render({
+        module: 'ear-rhythm', score: state.score, total: state.total,
+        tier: state.settings.difficulty, bestStreak: state.bestStreak,
+        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+      });
+    } catch (e) { if (window.console) console.warn('round-end skipped', e); }
+
     setTimeout(() => {
       A.playFanfare(tier);
       QN_FX.fire(tier);
