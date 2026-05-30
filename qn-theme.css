@@ -861,10 +861,13 @@ animation: modalFade 200ms ease-out;
   .summary-actions .btn.secondary-link:active { transform: none; box-shadow: none; }
 
   /* ---- Sticky action bar (mobile-reach proof, spec §3 / §5) ----
-     Shared across all modules. Overrides the shared #summary-screen
-     centering so the screen is a flex column: a scrolling content area +
-     a pinned, non-scrolling action bar that content can never hide behind. */
-  #summary-screen {
+     Opt-in per module via the `.has-roundbar` marker class on #summary-screen,
+     added in the same commit that adds the .summary-scroll / .summary-bar
+     markup. Un-migrated modules keep the baseline centered #summary-screen
+     (padding:20px) above — the marker's id+class specificity wins only where
+     present, so this restructure never touches a module that lacks the markup.
+     Marker class (not :has) keeps it working on older school-iPad Safari. */
+  #summary-screen.has-roundbar {
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
