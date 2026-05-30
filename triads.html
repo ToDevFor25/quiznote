@@ -1060,6 +1060,7 @@
   }
 
   function startRound() {
+    state.isDrill = false;   // real round: counts toward medals + XP
     state.total = state.settings.total;
     state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0; state.shownHints = new Set();
     state.history = []; state.lastChordName = null;
@@ -1094,7 +1095,18 @@
     state.locked = false;
     hideToast();
 
+    // In drill mode, q.chord.name MUST be one of the missed chords (state.drillPool);
+    // anti-repeat relaxes when only one missed chord remains.
+    var drilling = state.isDrill && state.drillPool && state.drillPool.length;
+    var drillSet = drilling ? new Set(state.drillPool) : null;
     var q = pickChord(state.settings, state.lastChordName);
+    var dguard = 0;
+    while (dguard++ < 300) {
+      var wrongDrill = drilling && !drillSet.has(q.chord.name);
+      var repeat = q.chord.name === state.lastChordName && !(drilling && drillSet.size <= 1);
+      if (!wrongDrill && !repeat) break;
+      q = pickChord(state.settings, state.lastChordName);
+    }
     state.lastChordName = q.chord.name;
     state.current = q;
 
@@ -1652,6 +1664,9 @@
     state.history.forEach(function (h) {
       if (h.kind !== 'correct') { counts[h.label] = (counts[h.label] || 0) + 1; }
     });
+    // Drill pool = the triads missed this round; show the drill button if any.
+    state.drillPool = Object.keys(counts);
+    if (els['drill-btn']) els['drill-btn'].hidden = (state.drillPool.length === 0);
 
     var sorted = Object.entries(counts).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 3);
     if (sorted.length === 0) {
@@ -1668,8 +1683,8 @@
     var pbKey = 'tr_pb_' + state.settings.difficulty;
     try { pb = JSON.parse(localStorage.getItem(pbKey) || '{}'); pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0; } catch(e) {}
     var thisPct = state.total > 0 ? state.score / state.total : 0;
-    var newScorePB = thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score);
-    var newStreakPB = state.bestStreak > pb.streak;
+    var newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
+    var newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem(pbKey, JSON.stringify(pb)); } catch(e) {}
@@ -1711,7 +1726,7 @@
       }
     } catch (e) { roundSkills = null; }
 
-    if (window.QN && QN.events) {
+    if (!state.isDrill && window.QN && QN.events) {
       roundOutcome = QN.events.logOrHold({
         module:     'triads',
         tier:       state.settings.difficulty,
@@ -1732,7 +1747,7 @@
       if (window.QN && QN.roundEnd) QN.roundEnd.render({
         module: 'triads', score: state.score, total: state.total,
         tier: state.settings.difficulty, bestStreak: state.bestStreak,
-        isDrill: false, onRetry: function () { els['again-btn'].click(); }
+        isDrill: state.isDrill, onRetry: function () { els['again-btn'].click(); }
       });
     } catch (e) { if (window.console) console.warn('round-end skipped', e); }
 
@@ -1784,6 +1799,20 @@
 
     els['again-btn'].addEventListener('click', function () { startRound(); });
     els['change-btn'].addEventListener('click', function () { showScreen('start'); });
+
+    els['drill-btn'].addEventListener('click', function () {
+      if (!state.drillPool || !state.drillPool.length) return;
+      state.isDrill = true;   // drill: re-quiz only the missed triads (pure practice)
+      state.total = Math.min(state.drillPool.length * 2, state.settings.total);
+      state.q = 0; state.score = 0; state.streak = 0; state.bestStreak = 0; state.shownHints = new Set();
+      state.history = []; state.lastChordName = null;
+      state.timedOut = false; state.endedRound = false; state.toastCycle = 0;
+      state.startedAt = Date.now();
+      document.querySelectorAll('.of').forEach(function (el) { el.textContent = ' / ' + state.total; });
+      showScreen('play');
+      nextQuestion();
+      startTimer();
+    });
   }
 
   // Timer
