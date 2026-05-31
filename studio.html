@@ -674,6 +674,9 @@
       total: rec.length || 10,
       timer: { enabled: false, seconds: 60 }
     };
+    // Variety stretch (P2): pass the recommended clef when present, so a
+    // "try bass / both clefs" review actually opens on that clef.
+    if (rec.clef) payload.clef = rec.clef;
     // Write both key forms (full-slug + short-prefix) so we don't depend on
     // which convention the module uses. Harmless where unread.
     try { localStorage.setItem(slug + '_settings', JSON.stringify(payload)); } catch (e) {}
@@ -730,7 +733,10 @@
     $('today-why').textContent = rec.reason || '';
     var meta = $('today-meta');
     meta.innerHTML = '';
-    [prettyTier(rec.tier), (rec.length || 10) + ' questions', '~' + estMinutes(rec.length) + ' min'].forEach(function (txt) {
+    var metaPills = [prettyTier(rec.tier), (rec.length || 10) + ' questions', '~' + estMinutes(rec.length) + ' min'];
+    // Variety stretch (P2): a "try bass / both clefs / 20-question" badge.
+    if (rec.variety) metaPills.push('✦ ' + rec.variety);
+    metaPills.forEach(function (txt) {
       var p = document.createElement('span'); p.className = 'pill'; p.textContent = txt; meta.appendChild(p);
     });
     renderArt(rec.module);

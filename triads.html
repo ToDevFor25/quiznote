@@ -1866,8 +1866,8 @@
     cacheEls();
     if (window.QNNav) { QNNav.mount({ current: null }); }
     setupStart();
-    applyPathHandoff();
     applyProfileDefaults();
+    applyPathHandoff();
     setupActions();
     var nudge = document.getElementById('audio-nudge');
     if (nudge) nudge.addEventListener('click', function () { A.ensureCtx(); nudge.classList.remove('show'); });

@@ -1053,8 +1053,35 @@
                                 //   of either of the last N recommendations-as-played
     TIER_UP_ACCURACY:     0.85, // clear a tier at >= this to advance to the next
     MIN_ROUNDS_PER_TIER:  2,    // and only after this many rounds at the tier
-    DEFAULT_LENGTH:       10
+    DEFAULT_LENGTH:       10,
+    STRETCH_LENGTH:       20    // the "marathon" variety length for review rounds
   };
+
+  // Modules that carry a treble/bass/both clef selector — eligible for the
+  // "try a different clef" variety stretch. (Mirrors the clef-picker roster.)
+  var CLEF_MODULES = {
+    'note-names': 1, 'ledger-lines': 1, 'piano-quiz': 1, 'piano-keyboard': 1,
+    'intervals': 1, 'ear-intervals': 1, 'key-signatures': 1, 'accidentals': 1,
+    'scale-degrees': 1
+  };
+
+  // ── Variety / depth stretch (Studio P2) ───────────────────────────────────
+  // Once a module is mastered, a plain "refresher" is flat. Offer a STRETCH:
+  // a fresh dimension that deepens mastery without changing the topic — a
+  // different clef (treble→bass→both) or a longer "marathon" round. Returns
+  // { clef?, length?, label } or null. Deterministic per (slug, roundCount) so
+  // it varies over time but is stable within a single page render.
+  function varietyFor(slug, info) {
+    var rounds = (info && info.rounds) || 0;
+    if (CLEF_MODULES[slug]) {
+      // Rotate the clef stretch: both clefs is the hardest, so bias toward it.
+      var clefStretch = ['both', 'bass', 'both'][rounds % 3];
+      return { clef: clefStretch, length: REC.DEFAULT_LENGTH,
+        label: clefStretch === 'both' ? 'Try it with both clefs' : 'Try it in bass clef' };
+    }
+    // Non-clef module: a longer marathon is the depth stretch.
+    return { length: REC.STRETCH_LENGTH, label: 'Try a longer 20-question round' };
+  }
 
   function recencyWeight(idx, total) {
     // idx 0 = most recent. Linear decay from 1.0 (newest) to 0.4 (oldest
@@ -1197,12 +1224,17 @@
           weakSkills: [firstNonRecent]
         };
       }
-      // truly all strong: gentle review of the least-recently-played module
+      // truly all strong: gentle review of the least-recently-played module,
+      // offered as a VARIETY STRETCH (different clef or a longer marathon) so a
+      // mastered topic stays fresh instead of a flat repeat. (Studio P2.)
       var lru = path.filter(function (m) { return recentModules.indexOf(m) === -1; })[0] || path[0];
+      var lruVar = varietyFor(lru, perModule[lru]);
       return {
-        module: lru, tier: 'tricky', length: REC.DEFAULT_LENGTH,
+        module: lru, tier: 'tricky', length: lruVar.length || REC.DEFAULT_LENGTH,
+        clef: lruVar.clef || null,
         kind: 'review',
-        reason: 'You\u2019re strong everywhere \u2014 a quick refresher on ' + lru + '.',
+        reason: 'You\u2019re strong everywhere \u2014 ' + lruVar.label.charAt(0).toLowerCase() + lruVar.label.slice(1) + ' in ' + lru + '.',
+        variety: lruVar.label,
         weakSkills: []
       };
 
