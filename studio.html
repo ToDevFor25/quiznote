@@ -301,6 +301,37 @@
   }
   .collection-note { font-size: 13px; color: var(--ink-soft); text-align: center; }
   .collection-note b { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--ink); }
+
+  /* ---- Daily quests ---- */
+  .quests {
+    background: white; border: 2.5px solid var(--ink); border-radius: 20px;
+    box-shadow: 0 5px 0 var(--shadow-cool); overflow: hidden;
+  }
+  .quest {
+    display: flex; align-items: center; gap: 13px; padding: 14px 18px;
+    border-bottom: 1.5px solid var(--line);
+  }
+  .quest:last-child { border-bottom: none; }
+  .quest-check {
+    width: 26px; height: 26px; flex: none; border-radius: 50%;
+    border: 2.5px solid var(--shadow-cool); display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; color: transparent;
+    transition: background 200ms, border-color 200ms, color 200ms;
+  }
+  .quest.done .quest-check { background: var(--teal); border-color: var(--teal-dk); color: white; }
+  .quest-body { flex: 1; min-width: 0; }
+  .quest-title { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; }
+  .quest.done .quest-title { color: var(--ink-faint); text-decoration: line-through; }
+  .quest-sub { font-size: 12px; color: var(--ink-faint); margin-top: 1px; }
+  .quest-xp {
+    flex: none; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px;
+    color: var(--teal-dk); background: var(--teal-lt); border-radius: 999px; padding: 4px 11px;
+  }
+  .quest.done .quest-xp { background: #eee9dd; color: var(--ink-faint); }
+  .quests-foot {
+    padding: 11px 18px; font-size: 12.5px; color: var(--ink-soft); text-align: center;
+    background: #fcfaf3; font-weight: 600;
+  }
 </style>
 <script src="qn-gate.js"></script>
 </head>
@@ -349,6 +380,12 @@
           <div class="today-art" id="today-art" aria-hidden="true"></div>
         </div>
       </div>
+    </div>
+
+    <!-- DAILY QUESTS -->
+    <div class="sec">
+      <div class="sec-h"><span>Today's quests</span><span class="sec-count" id="quest-count">0/3</span></div>
+      <div class="quests" id="quests"></div>
     </div>
 
     <!-- MOMENTUM (streak) -->
@@ -834,6 +871,76 @@
     });
   }
 
+  // ── DAILY QUESTS (P3): 3 quests/day, derived entirely from qn_events — no
+  //    backend. Progress is computed live from TODAY's rounds each render, so
+  //    there's no separate state to persist or get out of sync. The quest SET
+  //    is deterministic per calendar day (so it's stable across reloads but
+  //    refreshes at midnight), seeded off the date.
+  function todaysEvents(events) {
+    var k = dateKey(Date.now());
+    return events.filter(function (ev) { return dateKey(ev.completedAt) === k; });
+  }
+  function dayHash(salt) {
+    var k = dateKey(Date.now()) + (salt || '');
+    var h = 0; for (var i = 0; i < k.length; i++) { h = (h * 31 + k.charCodeAt(i)) | 0; }
+    return Math.abs(h);
+  }
+  // Quest catalogue. Each: id, title, sub, xp, and a test(todayEvents) -> bool.
+  function questCatalogue() {
+    return [
+      { id: 'play1',   title: 'Play a round',            sub: 'Any module counts',        xp: 20, test: function (t) { return t.length >= 1; } },
+      { id: 'play2',   title: 'Play 2 rounds',           sub: 'Keep the momentum going',  xp: 30, test: function (t) { return t.length >= 2; } },
+      { id: 'clean',   title: 'Score 85% or better',     sub: 'A clean round',            xp: 30, test: function (t) { return t.some(function (e) { return e.total > 0 && e.correct / e.total >= 0.85; }); } },
+      { id: 'perfect', title: 'Get a perfect round',     sub: '100% — every question',    xp: 50, test: function (t) { return t.some(function (e) { return e.total > 0 && e.correct === e.total; }); } },
+      { id: 'theory',  title: 'Practice a Theory module', sub: 'Stretch into harmony',    xp: 40, test: function (t) { return t.some(function (e) { return MODULES[e.module] && MODULES[e.module].tier === 'theory'; }); } },
+      { id: 'reading', title: 'Practice a Reading module', sub: 'Build reading fluency',  xp: 40, test: function (t) { return t.some(function (e) { return MODULES[e.module] && MODULES[e.module].tier === 'reading'; }); } },
+      { id: 'long',    title: 'Play a 20-question round', sub: 'A marathon',              xp: 40, test: function (t) { return t.some(function (e) { return (e.total || e.length) >= 20; }); } },
+      { id: 'two-mods',title: 'Practice 2 different modules', sub: 'Mix it up',           xp: 35, test: function (t) { var s = {}; t.forEach(function (e) { s[e.module] = 1; }); return Object.keys(s).length >= 2; } }
+    ];
+  }
+  // Pick 3 for today: always the "play a round" anchor (guaranteed early win),
+  // plus 2 rotated by the day hash so it varies day to day.
+  function todaysQuests() {
+    var cat = questCatalogue();
+    var anchor = cat[0];
+    var rest = cat.slice(1);
+    var picks = [anchor];
+    var n = rest.length;
+    var a = dayHash('a') % n;
+    var b = dayHash('b') % n;
+    if (b === a) b = (b + 1) % n;
+    picks.push(rest[a], rest[b]);
+    return picks;
+  }
+  function renderQuests(events) {
+    var host = $('quests');
+    if (!host) return;
+    var today = todaysEvents(events);
+    var quests = todaysQuests();
+    host.innerHTML = '';
+    var doneCount = 0;
+    quests.forEach(function (q) {
+      var done = !!q.test(today);
+      if (done) doneCount++;
+      var row = document.createElement('div');
+      row.className = 'quest' + (done ? ' done' : '');
+      row.innerHTML =
+        '<span class="quest-check">✓</span>' +
+        '<span class="quest-body"><span class="quest-title">' + q.title + '</span>' +
+        '<span class="quest-sub">' + q.sub + '</span></span>' +
+        '<span class="quest-xp">+' + q.xp + ' XP</span>';
+      host.appendChild(row);
+    });
+    var foot = document.createElement('div');
+    foot.className = 'quests-foot';
+    foot.textContent = doneCount >= quests.length
+      ? '🎉 All quests done — come back tomorrow for more!'
+      : 'Finish quests by playing rounds today. They reset at midnight.';
+    host.appendChild(foot);
+    var cEl = $('quest-count');
+    if (cEl) cEl.textContent = doneCount + '/' + quests.length;
+  }
+
   // ── COLLECTION (P4 skeleton): a wall of ghost badges (the curiosity gap).
   function renderBadgeWall() {
     var wall = $('badge-wall');
@@ -865,6 +972,7 @@
     $('eyebrow-text').textContent = 'Your next beat, ' + active.nickname;
     $('state-studio').hidden = false;
     renderToday(rec, per);
+    renderQuests(events);
     renderMomentum(active, events);
     renderMapBars(events);
     renderBadgeWall();
