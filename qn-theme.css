@@ -529,6 +529,27 @@ animation: modalFade 200ms ease-out;
 .pb-new { color: var(--teal-dk); font-weight: 800; }
 .pb-sep { color: var(--ink-faint); }
 .pb-row[hidden] { display: none; }
+
+/* ── HERO verdict (round-end redesign, May 2026) ──────────────────────────
+   Stars are the round's headline; the score sits beneath as a detail; the PB
+   flag appears only when a record is beaten. The old Score/Best-streak/Stars
+   3-card grid is retired in favour of this. Populated by qn-roundend.js
+   render() (#sum-stars / #sum-score / #sum-score-of / #sum-pct), so every
+   module renders an identical verdict. */
+.summary-hero { display: flex; flex-direction: column; align-items: center; margin-top: 16px; }
+.hero-stars { display: flex; gap: 8px; margin: 4px 0 2px; line-height: 1; }
+.hero-stars .s { font-size: 46px; line-height: 1; filter: drop-shadow(0 2px 0 rgba(0,0,0,0.05)); }
+.hero-stars .s.on { color: var(--sun); }
+.hero-stars .s.off { color: rgba(42,42,62,0.16); }
+.hero-score { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 18px;
+  color: var(--ink-soft); margin: 10px 0 0; }
+.hero-score .of { color: var(--ink-faint); }
+.hero-pct { color: var(--ink-faint); margin-left: 2px; }
+.pb-flag { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; color: #7a4f00;
+  background: linear-gradient(135deg, #FFF1CF, #FFE3A0); border: 2px solid var(--sun);
+  padding: 6px 14px; border-radius: 999px; }
+.pb-flag[hidden] { display: none; }
 .miss-list {
   margin-top: 22px; text-align: left;
   background: white; border: 2.5px solid var(--ink); border-radius: 18px;

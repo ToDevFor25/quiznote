@@ -568,6 +568,15 @@
     <div class="summary-sub" id="summary-sub">You named those notes.</div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
+    </div>
+
     <!-- Beat 1 — THE EARN (gamification P0). Always populated, even on a low score. -->
     <div class="xp-earn" id="xp-earn" hidden>
       <div class="xp-earn-top">
@@ -589,28 +598,6 @@
         <span class="mm-pips" id="mm-pips"></span>
       </div>
       <div class="mm-note" id="mm-note"></div>
-    </div>
-
-    <div class="summary-grid">
-      <div class="card stat-card">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
-      </div>
-      <div class="card stat-card sun-card">
-        <div class="stat-label">Best streak</div>
-        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-label">Stars</div>
-        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
-      </div>
-    </div>
-
-    <div class="pb-row" id="pb-row" hidden>
-      <span class="pb-label">Personal best:</span>
-      <span id="pb-score"></span>
-      <span class="pb-sep">·</span>
-      <span id="pb-streak"></span>
     </div>
 
     <div class="miss-list" id="miss-list">
@@ -1095,10 +1082,10 @@
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','play-note-btn','toast','confetti',
      'q-num','score-num','last-dots',
-     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'sum-score','sum-score-of','sum-pct','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'pb-row','pb-score','pb-streak',
+     'pb-row','pb-score',
      'xp-earn','xp-plus','xp-level-badge','xp-bar-fill','xp-to-next','xp-streak-kept',
      'mastery-meter','mm-label','mm-pips','mm-note',
      'next-step-cta','nsc-reason','nsc-btn',
@@ -1902,15 +1889,10 @@
     const pct = state.total > 0 ? state.score / state.total : 0;
     const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.5 ? 'good' : 'practice';
 
-    if (els['sum-score']) els['sum-score'].textContent = state.score;
-    const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
-    if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
-    if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
-    if (els['sum-stars']) {
-      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
-      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
-      els['sum-stars'].textContent = starStr.trim();
-    }
+    // Hero (stars + score + percent) is owned by QN.roundEnd.render() below —
+    // it populates #sum-stars / #sum-score / #sum-score-of / #sum-pct from this
+    // round's score+total, so every module shows the same verdict. `tier`
+    // (score bucket) is still used below for the title + shimmer.
 
     if (els['summary-sub']) {
       els['summary-sub'].textContent = state.timedOut
