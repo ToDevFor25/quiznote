@@ -929,6 +929,15 @@ animation: modalFade 200ms ease-out;
     position: sticky; bottom: 0; z-index: 5;   /* stays at the viewport bottom */
     display: flex; flex-direction: column; gap: 9px;
     padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+    /* Cap the bar to the same 640px content width as .summary-wrap and center
+       it, so on wide desktop the buttons line up with the cards above instead of
+       stretching the full viewport (which looked goofy). The bar's background is
+       var(--cream) — identical to the page bg — so capping the whole bar shows
+       no background edge; only the buttons narrow and the top hairline/scrim
+       center with them. On phones (<672px) this is a no-op (width:100% wins). */
+    max-width: calc(640px + 32px);   /* 640 content + the 16px L/R padding */
+    margin-left: auto; margin-right: auto;
+    width: 100%;
     background: var(--cream);
     /* Hairline, not a hard ink line: a crisp border reads as "page ends here"
        and kills the scroll affordance. The fade scrim below does the real
