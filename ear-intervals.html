@@ -69,8 +69,6 @@
   }
 
 
-
-
   /* ============ PLAY SCREEN ============ */
   #play-screen { padding: 10px 12px 8px; gap: 8px; position: relative; }
 
@@ -83,7 +81,6 @@
       gap: 6px;
     }
   }
-
 
 
   .staff-card {
@@ -239,8 +236,6 @@
   }
 
   /* ============ SUMMARY SCREEN ============ */
-
-
 
 
   /* ============ Accidentals filter ============ */
@@ -579,6 +574,17 @@
     <div class="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You heard those intervals.</div>
 
+    <div class="summary-speed" id="summary-speed" hidden></div>
+
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
+    </div>
+
      <!-- Beat 1 — THE EARN (gamification). Always populated, even on a low score. -->
      <div class="xp-earn" id="xp-earn" hidden>
        <div class="xp-earn-top">
@@ -601,16 +607,7 @@
        </div>
        <div class="mm-note" id="mm-note"></div>
      </div>
-    <div class="summary-speed" id="summary-speed" hidden></div>
 
-    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
-         flag shown only when beaten. Populated by qn-roundend.js render() so
-         every module shows an identical verdict. -->
-    <div class="summary-hero">
-      <div class="hero-stars stars" id="sum-stars"></div>
-      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
-      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
-    </div>
 
     <div class="miss-list" id="miss-list">
       <h3>Intervals to listen for next time</h3>
@@ -1259,7 +1256,6 @@
       try { localStorage.setItem('ear-intervals_hints', 'false'); } catch(e) {}
       hideHintCard();
     });
-
 
 
     // Settings card — Timer row

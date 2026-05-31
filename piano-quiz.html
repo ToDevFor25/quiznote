@@ -754,6 +754,17 @@
     <div class="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You read notes.</div>
 
+    <div class="summary-speed" id="summary-speed" hidden></div>
+
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
+    </div>
+
      <!-- Beat 1 — THE EARN (gamification). Always populated, even on a low score. -->
      <div class="xp-earn" id="xp-earn" hidden>
        <div class="xp-earn-top">
@@ -776,29 +787,7 @@
        </div>
        <div class="mm-note" id="mm-note"></div>
      </div>
-    <div class="summary-speed" id="summary-speed" hidden></div>
 
-    <div class="summary-grid">
-      <div class="card stat-card">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
-      </div>
-      <div class="card stat-card sun-card">
-        <div class="stat-label">Best streak</div>
-        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-label">Stars</div>
-        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
-      </div>
-    </div>
-
-    <div class="pb-row" id="pb-row" hidden>
-      <span class="pb-label">Personal best:</span>
-      <span id="pb-score"></span>
-      <span class="pb-sep">·</span>
-      <span id="pb-streak"></span>
-    </div>
 
     <div class="miss-list" id="miss-list">
       <h3>Notes to practice next time</h3>
@@ -812,8 +801,8 @@
 
          <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
      <div class="summary-demote">
-       <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
-       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+       <button class="btn secondary-link" id="change-btn">⚙️ Change module settings</button>
+       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose another module</a>
      </div>
 
   </div>
@@ -1584,10 +1573,10 @@
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','play-note-btn','hint-btn','hint-count','toast','confetti',
      'q-num','score-num','last-dots',
-     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'sum-score','sum-score-of','sum-pct','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','drill-btn','change-btn','kb-wrap',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'pb-row','pb-score','pb-streak',
+     'pb-row','pb-score',
      'save-scores-prompt',
      'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
@@ -2502,11 +2491,8 @@
     const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
     showScreen('summary');
 
-    els['sum-score'].textContent = state.score;
-    els['sum-streak'].textContent = state.bestStreak;
-    const stars = scoreToStars(state.score, state.total);
-    const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
-    els['sum-stars'].textContent = starStr.trim();
+    // Hero (stars + score + percent) is owned by QN.roundEnd.render() below — it
+    // populates #sum-stars / #sum-score / #sum-score-of / #sum-pct from this round.
 
     els['summary-sub'].textContent = state.timedOut
       ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
@@ -2561,12 +2547,14 @@
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('qn_pb', JSON.stringify(pb)); } catch(e) {}
     const pbRow = els['pb-row'];
-    if (pb.score > 0 || pb.streak > 0) {
+    // Celebratory flag — shown ONLY when a record is beaten this round.
+    if (newScorePB || newStreakPB) {
       pbRow.hidden = false;
-      const scoreLabel = newScorePB ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
-      const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
-      els['pb-score'].innerHTML = scoreLabel;
-      els['pb-streak'].innerHTML = streakLabel;
+      let pbMsg;
+      if (newScorePB && newStreakPB) pbMsg = '🏆 New best score & streak!';
+      else if (newStreakPB)          pbMsg = '🔥 New best streak: ' + pb.streak + '!';
+      else                           pbMsg = '🏆 New best score: ' + pb.score + '/' + (pb.total || state.total) + '!';
+      if (els['pb-score']) els['pb-score'].textContent = pbMsg;
     } else {
       pbRow.hidden = true;
     }
@@ -2574,7 +2562,7 @@
     // Tiered fanfare
     const pct = state.score / state.total;
     const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.5 ? 'good' : 'practice';
-    const titleMap = { perfect: 'PITCH PERFECT! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practising! 🌱' };
+    const titleMap = { perfect: 'PITCH PERFECT! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practicing! 🌱' };
     const titleEl = document.querySelector('.summary-title');
     if (titleEl) {
       titleEl.textContent = titleMap[tier];
