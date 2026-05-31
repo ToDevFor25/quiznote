@@ -590,6 +590,15 @@
     <div class="summary-sub" id="summary-sub">You named those notes.</div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
+    </div>
+
     <!-- Beat 1 — THE EARN (gamification P0). Always populated, even on a low score. -->
     <div class="xp-earn" id="xp-earn" hidden>
       <div class="xp-earn-top">
@@ -613,28 +622,6 @@
       <div class="mm-note" id="mm-note"></div>
     </div>
 
-    <div class="summary-grid">
-      <div class="card stat-card">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
-      </div>
-      <div class="card stat-card sun-card">
-        <div class="stat-label">Best streak</div>
-        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-label">Stars</div>
-        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
-      </div>
-    </div>
-
-    <div class="pb-row" id="pb-row" hidden>
-      <span class="pb-label">Personal best:</span>
-      <span id="pb-score"></span>
-      <span class="pb-sep">·</span>
-      <span id="pb-streak"></span>
-    </div>
-
     <div class="miss-list" id="miss-list">
       <h3>Notes to practice next time</h3>
       <ul id="miss-items"></ul>
@@ -648,8 +635,8 @@
 
     <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
     <div class="summary-demote">
-      <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
-      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+      <button class="btn secondary-link" id="change-btn">⚙️ Change module settings</button>
+      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose another module</a>
     </div>
   </div>
  </div>
@@ -1202,10 +1189,10 @@
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','play-note-btn','toast','confetti','q-prompt',
      'q-num','score-num','last-dots',
-     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'sum-score','sum-score-of','sum-pct','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'pb-row','pb-score','pb-streak',
+     'pb-row','pb-score',
      'save-scores-prompt',
      'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
@@ -2036,15 +2023,10 @@
     const pct = state.total > 0 ? state.score / state.total : 0;
     const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.5 ? 'good' : 'practice';
 
-    if (els['sum-score']) els['sum-score'].textContent = state.score;
-    const sumScoreOf = document.querySelector('#summary-screen .stat-card .of');
-    if (sumScoreOf) sumScoreOf.textContent = ' / ' + state.total;
-    if (els['sum-streak']) els['sum-streak'].textContent = state.bestStreak;
-    if (els['sum-stars']) {
-      const stars = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
-      const starStr = '★ '.repeat(stars).trim() + ' ' + '☆ '.repeat(4 - stars).trim();
-      els['sum-stars'].textContent = starStr.trim();
-    }
+    // Hero (stars + score + percent) is owned by QN.roundEnd.render() below —
+    // it populates #sum-stars / #sum-score / #sum-score-of / #sum-pct from this
+    // round's score+total, so every module shows the same verdict. `tier`
+    // (score bucket) is still used below for the title + shimmer.
 
     if (els['summary-sub']) {
       els['summary-sub'].textContent = state.timedOut
@@ -2107,21 +2089,25 @@
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; pb.total = state.total; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('accidentals_pb', JSON.stringify(pb)); } catch(e) {}
+    // Celebratory flag — shown ONLY when a record is actually beaten this round
+    // (not a permanent line). Drills can't set a PB (newScorePB/newStreakPB are
+    // already gated !isDrill above).
     const pbRow = els['pb-row'];
     if (pbRow) {
-      if (pb.score > 0 || pb.streak > 0) {
+      if (newScorePB || newStreakPB) {
         pbRow.hidden = false;
-        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
-        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
-        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
-        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+        let msg;
+        if (newScorePB && newStreakPB) msg = '🏆 New best score & streak!';
+        else if (newStreakPB)          msg = '🔥 New best streak: ' + pb.streak + '!';
+        else                           msg = '🏆 New best score: ' + pb.score + '/' + (pb.total || state.total) + '!';
+        if (els['pb-score']) els['pb-score'].textContent = msg;
       } else {
         pbRow.hidden = true;
       }
     }
 
     // Tier-colored title + sub
-    const titleMap = { perfect: 'NOTE WHIZ! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practising! 🌱' };
+    const titleMap = { perfect: 'NOTE WHIZ! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practicing! 🌱' };
     const titleEl = document.querySelector('.summary-title');
     if (titleEl) {
       titleEl.textContent = titleMap[tier];
