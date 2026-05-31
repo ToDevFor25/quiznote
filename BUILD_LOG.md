@@ -1,5 +1,130 @@
 ---
 
+### Round-end redesign + gamification economy overhaul (note-names pilot) — May 2026
+
+**Session type:** Redesigned the round-end summary, unified star logic, fixed a
+widespread iOS audio bug, and overhauled the XP/level economy. Branch
+`claude/gamified-learning-roadmap-QxZmK`. **note-names is the PILOT** — the other
+34 modules are NOT yet migrated to the new summary markup (see Still open). All
+shared-file changes (qn-roundend.js, qn-xp.js, qn-theme.css) ARE live everywhere;
+they're gated so legacy modules are unaffected until migrated.
+
+**1. Round-end redesign (mockup → note-names pilot).** Consolidated six
+overlapping reward signals into a timescale ladder: **stars = the round verdict
+(hero)** with score as a detail beneath; **XP** and **medal/mastery** as the two
+distinct progress tracks; **Personal best demoted to a celebratory flag shown
+only when beaten** (not a permanent line); the redundant standalone "Best streak"
+card removed; 🔥 reserved for the daily streak. Mockup at
+`_mockups/round-end-redesign.html`. Demote links relabeled to the app's "module"
+vocabulary — **"⚙️ Change module settings"** (→ this module's start screen) /
+**"Choose another module"** (→ play.html); both confirmed module-scoped first.
+British→American ("Practising"→"Practicing"). `render()` now OWNS the hero verdict
+so every module renders identically once migrated.
+
+**2. Single-source star formula (qn-roundend v1.2.0).** Stars were computed
+per-module with **three threshold sets** (27 modules `1/.8/.5`; the scales family
+`1/.85/.65`; a 5-module group `1/.8/.6`). Unified to ONE: `QN.roundEnd.starsFor`
+= `≥1→4, ≥.8→3, ≥.5→2, else 1`, exported so the dashboard can match.
+**Regression caught + fixed:** v1.1.0 wrote `#sum-stars` unconditionally, but the
+34 not-yet-migrated modules still carry a legacy `#sum-stars` inside their
+gold-colored 3-card grid → every round showed 4 solid gold stars. Fix: the hero
+block is **gated on `#sum-pct`** (a hero-only anchor), so legacy modules are
+skipped and keep their own inline stars until migrated.
+
+**3. iOS silent-audio fix (all 14 inline-audio modules).** Root cause: inline
+`ensureCtx()` resumed only from `'suspended'`; on iOS the AudioContext drops to
+`'interrupted'` (iOS-only state) when audio goes idle between rounds → rounds 2+
+silent. The shared `qn-audio.js` was already hardened; the 14 inline-audio
+modules (the inline-outlier set) were not. Fix part 1 (all 14): resume from
+`'suspended' || 'interrupted'` — byte-identical block across 13, hash-verified,
+safe scripted replace, no timbre change. Fix part 2 (note-names only): resume the
+ctx **synchronously inside the tap gesture** at `startRound()` — note-names
+auto-plays its first note via a delayed `setTimeout` (outside the gesture
+window); the other note modules already call `ensureCtx()` in their tap handlers,
+so part 1 sufficed. 24 modules use shared `qn-audio.js` (already fine). Confirmed
+on-device.
+
+**4. Perfect-game XP bonus (replaces the dead streak bonus).** Discovery: the
+in-round **streak bonus never fired** — `streak` was never passed into `roundXP`
+NOR persisted in the event log (qn-profile.js `log()` whitelist has no streak
+field). The chip was announcing "+15 bonus XP" the engine never granted.
+**Decision (Jonathan): reward perfect games, not streaks** — a perfect game =
+`correct === total`, and both fields are already persisted, so live round XP and
+replayed `totalFor()` stay consistent **with no schema change** (streak would've
+needed a Tier 3 whitelist change). `perfectBonusPerQ: 2` → 5/10/20-question
+rounds pay **10/20/40**, stacking on the clean-round bonus, scaled by difficulty.
+Chip now reads **"🌟 Perfect game — +N bonus XP!"**, N computed from CONFIG so
+chip == engine. Perfection cliff (9/10 vs 10/10) = **+30** (chose ×2 over ×3 to
+soften it for beginners).
+
+**5. Level-curve rebalance (the real pacing bug).** The old curve (`tailStep
+700`) made a dedicated learner "Virtuoso" (top name) **~halfway through
+Foundations** (~Lvl 50 after 14 modules). Industry standard (Duolingo,
+gamification lit): the top tier is **aspirational, sitting beyond completion**.
+New curve (wider early thresholds + `tailStep 3576`): finish Foundations ≈
+**Player (L16)**, master all 35 ≈ **Musician (L26)**, **Virtuoso (L35) = deep
+practice BEYOND completion**. Also fixed the **module-1 jump**: first cut had one
+module = +8 levels (confetti, not progress); wider early block → ~+5 levels (L6),
+steady climb after. XP is **derived** (replayed from events) → retune is
+retroactive, **no migration**.
+
+**Bugs fixed (root causes):** 4-solid-gold-stars on non-pilot modules (render()
+wrote the legacy gold grid → gated on `#sum-pct`); iOS rounds 2+ silent (inline
+ctx ignored `'interrupted'`); "+15 streak bonus" announced but never granted
+(streak never reached roundXP → replaced with perfect-game); PB "10/5" (showed
+stored score over current total → store/use the PB's own total, recover legacy
+from pct); summary "stiff" (`overscroll-behavior:none` on html,body killed the
+iOS rubber-band → scoped a relax to the active summary via
+`:has(#summary-screen.active)` on BOTH html and body).
+
+**Process notes (mistakes — do not repeat):**
+- Once batched a `git commit` in the SAME message as its own verification, so a
+  half-applied state (6 silently-failed edits) was committed before checks
+  surfaced it. **Rule: verify → read results → THEN commit as a separate step.**
+- Almost overwrote this 232KB BUILD_LOG with `Write` (misread its size as empty);
+  the "file not read" guard blocked it. **Always prepend via Edit; never Write
+  this file.**
+
+**Key decisions banked:**
+- Stars = round hero, ONE formula app-wide (reduces per-module nuance — Jonathan's
+  explicit goal: faster iteration. Once migrated, stars are identical by
+  construction).
+- Perfect-game over streak — sidesteps the Tier 3 event-log schema change.
+- Virtuoso = aspirational (beyond completion), not "= finished."
+- Buttons stay short verb-first; encouragement in supporting copy ("↻ Try again"
+  + "You've got this 💪" above it).
+
+**Still open / next (sequenced):**
+1. **Batch the round-end redesign to the other 34 modules** (the big one). Per
+   module: add the hero block markup (`#sum-stars`/`#sum-score`/`#sum-score-of`/
+   `#sum-pct` + PB flag), remove the legacy 3-card grid + dead stars JS, relabel
+   demote links, "Practising"→"Practicing". **Also normalize each module's
+   title/sub tier thresholds to `1/.8/.5`** (the `.85/.65` and `.8/.6` outliers
+   drive the title tier and must match the unified star tier). Exact-string
+   method; verify BEFORE each commit. Mind the inline-audio vs shared split.
+2. **Per-module mastery-axis recommender (TIER 3 design pass).** Jonathan's idea:
+   progression shouldn't be just "next: tricky" — push length (10→20) and, where
+   present, clef (treble→bass→both) or major→minor. Reconciliation: each module
+   declares the axes it HAS (universal: difficulty, length; variant: clef on 15
+   modules, accidentals on 8, major/minor on 5); recommender walks a universal
+   priority order but SKIPS axes a module lacks — single rule, no per-module
+   special-casing. Changes the mastery definition + progression promise → Tier 3.
+   Also future-proofs the curve (extra practice fuels the Musician→Virtuoso
+   headroom).
+3. **Visual QA** of the note-names pilot on real devices (low/tough/perfect
+   rounds, bounce, PB flag) before propagating.
+4. Pre-existing queue still stands (CLAUDE.md "Ranked build queue"): Mock Exam
+   Mode, Curriculum Mapping (named-method = lawyer-gated), C Clefs +
+   Construction-mode (Tier 3 renderer sessions), PWA, adult/child profile UI,
+   monetization track.
+
+**Files touched:** `qn-roundend.js` (hero, stars, perfect chip, bad-round
+buttons), `qn-xp.js` (perfect bonus + curve), `qn-theme.css` (hero/flag styles,
+card density, summary bounce), `note-names.html` (pilot markup + JS + audio fix),
+13 inline-audio modules (audio fix), `_mockups/round-end-redesign.html` (new).
+
+---
+
 ### Gamified round-end P1 rollout — all 35 modules + drill-awareness — May 2026
 
 **Session type:** the P1 rollout itself. Took the note-names gamification proof
