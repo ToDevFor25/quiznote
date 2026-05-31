@@ -66,9 +66,25 @@ and only reset on a real **inactive→active transition**, ignoring `scroll-end`
 toggles. Verified by mock-DOM: 0 resets on scrim-class mutations, exactly 1 on a
 genuine reactivation. One shared-file change; all 35 benefit.
 
-**Owed:** device/pixel QA (Jonathan running it) — the inner-scroll feel on iOS,
-the scrim/cue honesty at the scroll bottom, and the bar's safe-area padding on
-notched phones.
+**Post-ship fix 2 → `.start-scroll { justify-content: safe center }`.** The new
+scroll container was top-aligned (flex-start), so when the config fits it left a
+big empty gap below the settings card, and the "More" cue scrolled down into
+that gap ("scrolls too high"). Restored the pre-bar feel: `safe center` centres
+the config when it fits and falls back to top-aligned (scrollable, no top clip)
+when it overflows. Shared, one file.
+
+**Open / device-dependent — Start CTA vs mobile browser chrome.** On the Vercel
+preview opened in an in-app/floating-bar browser, the Start Game bar sits partly
+behind the floating URL pill. `#start-screen` uses `height:100dvh` + the bar
+carries `env(safe-area-inset-bottom)` — the correct standard mechanism, which
+real Safari/Chrome honor (the summary bar, on the sticky/window-scroll model,
+wasn't reported as occluded). A floating overlay bar that doesn't inset the
+viewport can't be fully solved in CSS without a fixed buffer that would over-pad
+normal browsers. Decision: QA on real iPhone Safari + Samsung Chrome first; only
+add a fixed bottom buffer if a real browser confirms occlusion. NOT changed yet.
+
+**Owed:** device/pixel QA (Jonathan running it) — inner-scroll feel on iOS, the
+scrim/cue honesty at the scroll bottom, and the Start-CTA-vs-chrome check above.
 
 ---
 
