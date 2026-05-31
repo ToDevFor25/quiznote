@@ -401,6 +401,17 @@
       overflow: hidden;
       min-height: 0;
     }
+    /* Desktop (≥720px): accordion OFF — every tier is always expanded (the
+       original scannable layout). The collapse + the mobile tab picker are
+       phone-only space-savers. Same selector/specificity as the collapse rule
+       above but later in source, so it wins under the media query (no
+       !important). Caret hidden + default cursor since headers aren't
+       collapsible here. */
+    @media (min-width: 720px) {
+      .tier-toggle[aria-expanded="false"] + .tier-body { grid-template-rows: 1fr; }
+      .tier-caret { display: none; }
+      .tier-toggle { cursor: default; }
+    }
     /* Suppress transition during initial state restore from localStorage —
        prevents the "opens then snaps closed" flash on page load. */
     body.tier-no-anim .tier-body,
@@ -483,7 +494,7 @@
 
     <!-- FOUNDATIONS -->
     <div class="tier-section foundations" id="sec-foundations">
-      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-foundations">
+      <button type="button" class="tier-toggle" aria-expanded="false" aria-controls="tb-foundations">
         <span class="tier-caret" aria-hidden="true">▸</span>
         <span class="tier-name">Foundations</span>
         <span class="tier-meta">First notes · Levels 1–2</span>
@@ -1570,11 +1581,19 @@
     // Suppress transitions during initial state restore so the
     // restored state doesn't animate from the HTML default.
     document.body.classList.add('tier-no-anim');
+    // Desktop is always-expanded (accordion is a mobile-only space-saver), so
+    // skip the saved-collapse restore there and keep aria honest for SRs.
+    var DESKTOP = window.matchMedia('(min-width: 720px)');
     document.querySelectorAll('.tier-toggle').forEach(function (btn) {
       var id = btn.getAttribute('aria-controls');
-      if (saved[id] === true)  btn.setAttribute('aria-expanded', 'true');
-      if (saved[id] === false) btn.setAttribute('aria-expanded', 'false');
+      if (DESKTOP.matches) {
+        btn.setAttribute('aria-expanded', 'true');
+      } else {
+        if (saved[id] === true)  btn.setAttribute('aria-expanded', 'true');
+        if (saved[id] === false) btn.setAttribute('aria-expanded', 'false');
+      }
       btn.addEventListener('click', function () {
+        if (DESKTOP.matches) return;  // headers aren't collapsible on desktop
         var open = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', open ? 'false' : 'true');
         saved[id] = !open;

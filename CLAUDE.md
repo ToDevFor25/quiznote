@@ -325,12 +325,20 @@ For any future CSS work:
   open, Reading + Theory **collapsed** by default (~60% less initial scroll);
   `100dvh`; paled category art tints; tightened mobile cards; and a **sticky
   tier tab bar** (mobile-only <720px, Foundations · Reading · Theory) that
-  accordions to the tapped tier + scroll-spies the active one. The collapse
-  applies at ALL widths (Foundations open / Reading + Theory collapsed); the
-  tab bar is the only mobile-only piece (hidden ≥720px) — on desktop you click
-  the section headers to expand. Scroll-restoration is forced to `manual` so
-  every (re)load lands at the top heading (the accordion changes page height
-  between visits, which otherwise stranded a reload mid-section). The
+  accordions to the tapped tier + scroll-spies the active one. **Responsive
+  split (Jonathan's call, May 2026):** on **mobile (<720px)** all three tiers
+  default **collapsed** (all toggles `aria-expanded="false"`) + the tab picker
+  is shown — tap a tier to open it. On **desktop (≥720px)** the accordion is
+  **off**: every tier is always expanded (the original scannable layout), the
+  caret is hidden, header clicks are no-ops, and the tab bar is hidden. Done
+  with a media-query that re-opens `.tier-body` at ≥720px (same selector/
+  specificity as the collapse rule, placed later in source so it wins without
+  `!important`) + a `matchMedia('(min-width:720px)')` guard in the toggle JS
+  (skips the saved-collapse restore and the click handler on desktop, keeps
+  `aria-expanded` honest). Per-tier open state still persists on mobile via
+  `localStorage` key `qn_play_sections_open_v2`. Scroll-restoration is forced
+  to `manual` so every (re)load lands at the top heading (the accordion changes
+  page height between visits, which otherwise stranded a reload mid-section). The
   "have-to-tap-twice" scroll bug is solved by waiting for the 360ms
   `grid-template-rows` `transitionend` (400ms fallback) before measuring, with
   a `lockUntil` freeze on the scroll-spy.

@@ -33,7 +33,37 @@ preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
 7. Section anchors `id="sec-foundations|sec-reading|sec-theory"` as scroll
    targets.
 
-**Post-ship bugfix (same day):** returning users landed with Reading's pane
+**Follow-ups (same day, after Jonathan tested on device):**
+
+- **Scroll-restore strand fixed.** Ending a session scrolled down at Theory then
+  refreshing left you mid-Foundations: the accordion changes page height between
+  visits (and the mobile tab bar reopens tiers without persisting), so the
+  browser's restored scroll Y was stale against the reverted layout. Fix:
+  `history.scrollRestoration = 'manual'` → every (re)load pins to the top
+  heading. Catalog pages landing at their top is standard/expected anyway.
+
+- **Open-state default → responsive split (Jonathan's product call).** Question
+  raised: is force-opening Foundations right? Beginner-friendly, but returning/
+  intermediate users scroll past it every visit. No single industry standard —
+  open-first is the onboarding pattern, collapse-all-with-picker is the
+  repeat-user pattern. Resolved by width: **mobile (<720px)** = all collapsed +
+  tab picker (nothing privileged, compact); **desktop (≥720px)** = all expanded
+  (original scannable layout, plenty of room, picker hidden). Implementation:
+  (1) all three toggles now default `aria-expanded="false"` (mobile all-closed);
+  (2) `@media (min-width:720px)` re-opens every `.tier-body` — same selector +
+  specificity as the collapse rule but later in source, so it wins on desktop
+  with no `!important` — plus hides the caret + `cursor:default`; (3) a
+  `matchMedia('(min-width:720px)')` guard in the toggle JS skips the
+  saved-collapse restore + makes header clicks no-ops on desktop, and sets
+  `aria-expanded="true"` there so SRs match the always-open visual. Mobile
+  per-tier persistence (`qn_play_sections_open_v2`) unchanged. **Known minor
+  edge (documented, accepted):** resizing across 720px mid-session without
+  reload leaves `aria-expanded` stale (CSS keeps the visual correct; click guard
+  is live via matchMedia) — non-breaking, no resize listener added. Also
+  corrected a stale CLAUDE.md note that claimed desktop stayed all-open under
+  the first version of this change — it didn't until this split landed.
+
+**Earlier same-day bugfix:** returning users landed with Reading's pane
 open despite the new collapsed default, while the tab bar correctly showed
 Foundations active — a mismatch. Root cause: a pre-existing localStorage layer
 (`qn_play_sections_open`) persists which tiers you've opened and **overrides the
