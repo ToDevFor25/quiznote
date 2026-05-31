@@ -268,6 +268,31 @@
     .tier-tabs .tt[data-target="sec-foundations"].active { background: var(--sun-lt);   color: var(--sun-dk);   border-color: var(--sun-dk); }
     .tier-tabs .tt[data-target="sec-reading"].active     { background: var(--teal-lt);  color: var(--teal-dk);  border-color: var(--teal-dk); }
     .tier-tabs .tt[data-target="sec-theory"].active      { background: var(--grape-lt); color: var(--grape-dk); border-color: var(--grape-dk); }
+    /* First-run "tap me" hint: each tab fills with its tier color AND breathes a
+       soft feathered halo (large blur + low alpha, no hard ring), cascading L→R.
+       Played 2× via animation-iteration-count; JS staggers the start per tab. */
+    .tier-tabs .tt[data-target="sec-foundations"].tt-hint { animation: ttHintF 2.1s ease-in-out 2; }
+    .tier-tabs .tt[data-target="sec-reading"].tt-hint     { animation: ttHintR 2.1s ease-in-out 2; }
+    .tier-tabs .tt[data-target="sec-theory"].tt-hint      { animation: ttHintT 2.1s ease-in-out 2; }
+    @keyframes ttHintF {
+      0%,100% { background:#fff; border-color:var(--ink); color:var(--sun-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(255,182,39,0), 0 0 0 0 rgba(255,182,39,0); }
+      50% { background:var(--sun-lt); border-color:var(--sun-dk); color:var(--sun-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(255,182,39,.32), 0 0 30px 7px rgba(255,182,39,.15); }
+    }
+    @keyframes ttHintR {
+      0%,100% { background:#fff; border-color:var(--ink); color:var(--teal-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(31,184,168,0), 0 0 0 0 rgba(31,184,168,0); }
+      50% { background:var(--teal-lt); border-color:var(--teal-dk); color:var(--teal-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(31,184,168,.32), 0 0 30px 7px rgba(31,184,168,.15); }
+    }
+    @keyframes ttHintT {
+      0%,100% { background:#fff; border-color:var(--ink); color:var(--grape-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(91,63,228,0), 0 0 0 0 rgba(91,63,228,0); }
+      50% { background:var(--grape-lt); border-color:var(--grape-dk); color:var(--grape-dk);
+        box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(91,63,228,.32), 0 0 30px 7px rgba(91,63,228,.15); }
+    }
+    @media (prefers-reduced-motion: reduce) { .tier-tabs .tt.tt-hint { animation: none; } }
     @media (min-width: 720px) { .tier-tabs { display: none; } }  /* phones only */
     .ltile-body {
       padding: 14px 14px 16px;
@@ -1728,6 +1753,45 @@
   });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  // ── First-run "tap me" hint on the picker ──────────────────────────
+  // Mobile only. Each tab does the fill+glow once, cascaded L→R, played 2×.
+  // Shown until the user taps a tab/header (they "got it") OR after 3 loads —
+  // whichever comes first — then suppressed for good. Any tap cancels it live.
+  const HINT_DONE = 'qn_play_hint_done';   // set once the user engages
+  const HINT_SEEN = 'qn_play_hint_seen';   // loads we've shown it
+  let hintTimers = [];
+  function stopHint(){
+    hintTimers.forEach(clearTimeout); hintTimers = [];
+    tabs.forEach(t => t.classList.remove('tt-hint'));
+  }
+  function hintDone(){
+    try { localStorage.setItem(HINT_DONE, '1'); } catch (e) {}
+    stopHint();
+  }
+  function maybeRunHint(){
+    if (window.matchMedia('(min-width: 720px)').matches) return;  // mobile only
+    let done, seen;
+    try {
+      done = localStorage.getItem(HINT_DONE);
+      seen = parseInt(localStorage.getItem(HINT_SEEN) || '0', 10);
+    } catch (e) { return; }
+    if (done || seen >= 3) return;
+    try { localStorage.setItem(HINT_SEEN, String(seen + 1)); } catch (e) {}
+    tabs.forEach((tab, i) => {
+      hintTimers.push(setTimeout(() => {
+        tab.classList.add('tt-hint');
+        tab.addEventListener('animationend', () => tab.classList.remove('tt-hint'), { once: true });
+      }, 500 + i * 620));
+    });
+  }
+  // Engaging with the picker or any tier header ends the hint permanently.
+  tabs.forEach(t => t.addEventListener('click', hintDone));
+  sections.forEach(sec => {
+    const t = sec.querySelector('.tier-toggle');
+    if (t) t.addEventListener('click', hintDone);
+  });
+  maybeRunHint();
 })();
 </script>
 </body>

@@ -71,6 +71,25 @@ preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
   Also wired header-toggle clicks to refresh the highlight after the 360ms body
   transition (opening via the caret, not just the tab bar, updates the tab).
 
+- **First-run "tap me" hint on the picker (shipped).** To signal the tier tabs
+  are tappable, on mobile load each tab fills with its tier color AND breathes a
+  soft feathered glow (large blur + low alpha, no hard ring — Jonathan's
+  feedback: the first hard `spread` ring was too stark), cascaded L→R. Combined
+  Fill + glow ("the mix") chosen from a 3-option mockup (`_mockups/play-tab-hint.html`:
+  wave glow / press bounce / fill flash, then the combined). Behavior (Jonathan
+  took the recommendation): plays **2×** per load; shown until the user taps a
+  tab/header (`localStorage qn_play_hint_done`) **or** after **3 loads**
+  (`qn_play_hint_seen`), whichever first, then suppressed permanently; any tap
+  cancels it live. Mobile-only (matchMedia ≥720 guard, so desktop visits don't
+  burn a view) + `prefers-reduced-motion` → no animation. Impl: CSS keyframes
+  `ttHintF/R/T` (2.1s ease-in-out, iteration-count 2) targeted by
+  `[data-target=…].tt-hint`; JS in the tab-bar IIFE staggers the class add by
+  620ms and removes on `animationend`. **Rationale for the count/cap:** one pass
+  is missable on load, 2 reliably registers; capping (vs looping until tap)
+  avoids a naggy/distracting forever-pulse; suppressing after engage-or-3-loads
+  keeps it from annoying daily returning users. The localStorage flag is
+  purpose-specific and unrelated to the section-state persistence we removed.
+
 - **Dropped mobile open-state persistence (always start collapsed).** After the
   responsive split, Foundations kept reopening on mobile load — the
   `qn_play_sections_open_v2` localStorage layer was restoring a previously-opened

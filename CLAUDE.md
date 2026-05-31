@@ -341,7 +341,13 @@ For any future CSS work:
   was removed; a stale saved-open state had been reopening Foundations on load).
   Scroll-restoration is forced
   to `manual` so every (re)load lands at the top heading (the accordion changes
-  page height between visits, which otherwise stranded a reload mid-section). The
+  page height between visits, which otherwise stranded a reload mid-section).
+  **First-run picker hint (May 2026):** on mobile load, each tab does a
+  fill-with-tier-color + soft feathered glow, cascaded L→R, played 2× (CSS
+  `ttHintF/R/T` keyframes, JS staggers 620ms). Shown until the user taps a
+  tab/header (`qn_play_hint_done`) OR after 3 loads (`qn_play_hint_seen`),
+  whichever first, then suppressed forever; any tap cancels it live. Mobile-only
+  + `prefers-reduced-motion` safe. Mockup: `_mockups/play-tab-hint.html`. The
   "have-to-tap-twice" scroll bug is solved by waiting for the 360ms
   `grid-template-rows` `transitionend` (400ms fallback) before measuring, with
   a `lockUntil` freeze on the scroll-spy.
