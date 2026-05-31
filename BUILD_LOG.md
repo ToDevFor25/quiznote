@@ -130,10 +130,18 @@ inner container used. Scoped exactly-once replace. (Also built a 3-option
 mockup `_mockups/start-bounce.html`: ① rubber-band [shipped], ② pop-in entrance,
 ③ Start-button tap bounce — Jonathan was curious to compare ②/③; not applied.)
 
+**Post-ship fix 6 → pop-in entrance (qn-roundend.js v1.5.0).** Jonathan picked
+option ② from the bounce mockup. Each `.start-wrap` child springs in cascaded
+top→bottom (`@keyframes startPopIn`, .5s spring cubic-bezier, nth-child stagger
+to .30s, reduced-motion → none). Triggered by `playPopIn()` which toggles a
+`.pop-in` class on `.start-wrap` (remove → reflow → re-add) on initial load AND
+on every `#start-screen` reactivation (hooked into the same MutationObserver as
+the scroll reset). Zero per-module JS / HTML; shared CSS + JS only.
+
 **Owed:** device/pixel QA (Jonathan running it) — confirm on real iOS Safari +
-Samsung Chrome that the Start CTA is pinned at the bottom (short config) AND
-clears the toolbar, sticks correctly while scrolling a long config, and the
-rubber-band bounce is back.
+Samsung Chrome: Start CTA pinned at bottom (short config) + clears the toolbar,
+sticks while scrolling a long config, rubber-band bounce present, and the
+pop-in entrance plays on load + on returning to the start screen.
 
 ---
 

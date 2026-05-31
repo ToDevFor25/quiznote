@@ -413,10 +413,14 @@ For any future CSS work:
   scrolls); `body{min-height:100svh}` (was `100vh`; `vh` is the toolbar-RETRACTED
   height on iOS). qn-roundend.js scrim/cue uses **window scroll** (mirrors the
   summary `updateScrim`). **JS is fully
-  shared — `qn-roundend.js` v1.4.0** adds `initStartScroll()`/`updateStartScrim()`
+  shared — `qn-roundend.js` v1.5.0** adds `initStartScroll()`/`updateStartScrim()`
   (window-scroll, same model as the summary scrim) with a **DOMContentLoaded
   self-init + MutationObserver** auto-reset on `#start-screen` re-activation →
-  **zero per-module JS** (no `showScreen` hook needed).
+  **zero per-module JS** (no `showScreen` hook needed). Also drives the
+  **pop-in entrance** (`playPopIn()` toggles `.pop-in` on `.start-wrap` on
+  load + each reactivation; cascaded `startPopIn` keyframe in qn-theme.css,
+  reduced-motion safe) and the page rubber-band bounce is on
+  (`html,body{overscroll-behavior:contain}`).
   Rolled out via a guarded byte-for-byte replacement script (anchors must be
   exactly-once or the file is skipped, never corrupted). Spec +
   reference build supplied by Jonathan (`startscreenstickybar.md`).

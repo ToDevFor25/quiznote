@@ -310,6 +310,17 @@
     requestAnimationFrame(function () { requestAnimationFrame(updateStartScrim); });
   }
 
+  // Entrance: replay the cascaded pop-in on the config blocks. Remove + reflow +
+  // re-add so it restarts every time the start screen (re)appears (CSS keyframes
+  // + reduced-motion guard live in qn-theme.css).
+  function playPopIn() {
+    var wrap = document.querySelector('#start-screen .start-wrap');
+    if (!wrap) return;
+    wrap.classList.remove('pop-in');
+    void wrap.offsetWidth;   // force reflow so the animation restarts
+    wrap.classList.add('pop-in');
+  }
+
   var startWired = false;
   function initStartScroll() {
     var screen = $('start-screen');
@@ -333,13 +344,14 @@
       var wasActive = screen.classList.contains('active');
       var mo = new MutationObserver(function () {
         var isActive = screen.classList.contains('active');
-        if (isActive && !wasActive) resetStartScroll();
+        if (isActive && !wasActive) { resetStartScroll(); playPopIn(); }
         wasActive = isActive;
       });
       mo.observe(screen, { attributes: true, attributeFilter: ['class'] });
     } catch (e) {}
     startWired = true;
     resetStartScroll();
+    playPopIn();   // entrance on first load (start screen is the default active)
   }
 
   // Auto-init on DOM ready (mirrors how render() wires the summary scrim — no
@@ -359,6 +371,6 @@
     updateStartScrim: updateStartScrim,
     prettySlug:      prettySlug,
     starsFor:        starsFor,
-    version:         '1.4.0'
+    version:         '1.5.0'
   };
 })();

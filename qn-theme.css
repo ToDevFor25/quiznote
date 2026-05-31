@@ -328,6 +328,27 @@ body:has(#summary-screen.active) { overscroll-behavior: auto; }
   .settings-card { margin-top: 16px; }
 }
 
+/* Start-screen entrance: each config block springs in, cascaded top→bottom.
+   qn-roundend.js adds `.pop-in` to `.start-wrap` on #start-screen (re)activation
+   (initial load + returning from a round). `both` holds the 0% state pre-start
+   so there's no flash of un-animated content. */
+@keyframes startPopIn {
+  0%   { transform: scale(.92) translateY(8px); opacity: 0; }
+  55%  { transform: scale(1.03) translateY(0);  opacity: 1; }
+  78%  { transform: scale(.99); }
+  100% { transform: scale(1); }
+}
+.start-wrap.pop-in > * { animation: startPopIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+.start-wrap.pop-in > *:nth-child(2) { animation-delay: .05s; }
+.start-wrap.pop-in > *:nth-child(3) { animation-delay: .10s; }
+.start-wrap.pop-in > *:nth-child(4) { animation-delay: .15s; }
+.start-wrap.pop-in > *:nth-child(5) { animation-delay: .20s; }
+.start-wrap.pop-in > *:nth-child(6) { animation-delay: .25s; }
+.start-wrap.pop-in > *:nth-child(n+7) { animation-delay: .30s; }
+@media (prefers-reduced-motion: reduce) {
+  .start-wrap.pop-in > * { animation: none; }
+}
+
 .timer-toggle {
   display: inline-flex; align-items: center; gap: 10px;
   background: white;
