@@ -603,26 +603,13 @@
      </div>
     <div class="summary-speed" id="summary-speed" hidden></div>
 
-    <div class="summary-grid">
-      <div class="card stat-card">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
-      </div>
-      <div class="card stat-card sun-card">
-        <div class="stat-label">Best streak</div>
-        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-label">Stars</div>
-        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
-      </div>
-    </div>
-
-    <div class="pb-row" id="pb-row" hidden>
-      <span class="pb-label">Personal best:</span>
-      <span id="pb-score"></span>
-      <span class="pb-sep">·</span>
-      <span id="pb-streak"></span>
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
     </div>
 
     <div class="miss-list" id="miss-list">
@@ -637,8 +624,8 @@
 
          <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
      <div class="summary-demote">
-       <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
-       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+       <button class="btn secondary-link" id="change-btn">⚙️ Change module settings</button>
+       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose another module</a>
      </div>
 
   </div>
@@ -1122,10 +1109,10 @@
      'exit-btn','progress-fill','streak-badge','streak-num',
      'staff-wrap','play-note-btn','toast','confetti',
      'q-num','score-num','last-dots',
-     'sum-score','sum-streak','sum-stars','summary-sub','miss-items','miss-list',
+     'sum-score','sum-score-of','sum-pct','sum-stars','summary-sub','miss-items','miss-list',
      'again-btn','drill-btn','change-btn','choices-grid',
      'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
-     'pb-row','pb-score','pb-streak',
+     'pb-row','pb-score',
      'save-scores-prompt',
      'timer-pills','timer-badge','timer-num',
      'summary-speed','mute-btn',
@@ -1902,10 +1889,9 @@
     const elapsed = Math.max(1, Math.round((Date.now() - state.startedAt) / 1000));
     showScreen('summary');
 
-    els['sum-score'].textContent = state.score;
-    els['sum-streak'].textContent = state.bestStreak;
-    const stars = scoreToStars(state.score, state.total);
-    els['sum-stars'].textContent = ('★ '.repeat(stars) + '☆ '.repeat(4 - stars)).trim();
+    // Hero (stars + score + percent) is owned by QN.roundEnd.render() below —
+    // it populates #sum-stars / #sum-score / #sum-score-of / #sum-pct from this
+    // round's score+total, so every module shows the same verdict.
 
     els['summary-sub'].textContent = state.timedOut
       ? "Time's up! You answered " + state.history.length + ' of ' + state.total + '.'
@@ -1950,10 +1936,14 @@
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; pb.total = state.total; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('ei_pb', JSON.stringify(pb)); } catch(e) {}
-    if (pb.score > 0 || pb.streak > 0) {
+    // Celebratory flag — shown ONLY when a record is beaten this round.
+    if (newScorePB || newStreakPB) {
       els['pb-row'].hidden = false;
-      els['pb-score'].innerHTML = newScorePB ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
-      els['pb-streak'].innerHTML = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
+      var pbMsg;
+      if (newScorePB && newStreakPB) pbMsg = '🏆 New best score & streak!';
+      else if (newStreakPB)          pbMsg = '🔥 New best streak: ' + pb.streak + '!';
+      else                           pbMsg = '🏆 New best score: ' + pb.score + '/' + (pb.total || state.total) + '!';
+      els['pb-score'].textContent = pbMsg;
     } else { els['pb-row'].hidden = true; }
 
     const pct = state.score / state.total;
