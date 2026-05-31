@@ -38,6 +38,13 @@
     }).join(' ');
   }
 
+  // The ONE star formula for the whole app. Score percentage → 1–4 stars.
+  // Single threshold set (1 / .8 / .5); modules must not define their own.
+  // Exposed as QN.roundEnd.starsFor so any surface (dashboard, etc.) can match.
+  function starsFor(pct) {
+    return pct >= 1 ? 4 : pct >= 0.8 ? 3 : pct >= 0.5 ? 2 : 1;
+  }
+
   // ── The three-beat round-end ──────────────────────────────────────────────
   // opts: { module, score, total, tier, bestStreak, isDrill, onRetry }
   //   module     : slug, e.g. 'note-names' (scopes the medal query)
@@ -66,21 +73,26 @@
     var prof = QN.profile && QN.profile.getActive ? QN.profile.getActive() : null;
     var profileId = prof ? prof.id : null;
 
-    // --- HERO: the round verdict (stars + score), owned here so every module
-    // renders an identical verdict. Stars derive from pct (1/.8/.5 buckets,
-    // the common scale); score is this round's raw count + percent. The module
-    // markup just provides the anchors (#sum-stars hero, #sum-score, #sum-score-of,
-    // #sum-pct); a module with no hero markup self-skips each line. ---
-    var starN = pct >= 1 ? 4 : pct >= 0.8 ? 3 : pct >= 0.5 ? 2 : 1;
-    var starsEl = $('sum-stars');
-    if (starsEl) {
-      var sHtml = '';
-      for (var si = 0; si < 4; si++) sHtml += '<span class="s ' + (si < starN ? 'on' : 'off') + '">★</span>';
-      starsEl.innerHTML = sHtml;   // computed only, no user data
+    // --- HERO: the round verdict (stars + score). This is the SINGLE SOURCE of
+    // star calculation for the whole app — one formula, no per-module nuance:
+    //   stars(pct) = pct≥1→4, ≥.8→3, ≥.5→2, else 1   (QN.roundEnd.starsFor)
+    // Gated on #sum-pct, a hero-ONLY anchor: a migrated module (hero markup)
+    // gets stars+score+percent from here; a not-yet-migrated module (no #sum-pct,
+    // but still has a legacy #sum-stars in its old grid) is skipped entirely so
+    // render() never writes uncolored spans into the old grid. As modules adopt
+    // the hero, their stars become identical by construction. ---
+    if ($('sum-pct')) {
+      var starN = starsFor(pct);
+      var starsEl = $('sum-stars');
+      if (starsEl) {
+        var sHtml = '';
+        for (var si = 0; si < 4; si++) sHtml += '<span class="s ' + (si < starN ? 'on' : 'off') + '">★</span>';
+        starsEl.innerHTML = sHtml;   // computed only, no user data
+      }
+      if ($('sum-score'))    $('sum-score').textContent = score;
+      if ($('sum-score-of')) $('sum-score-of').textContent = ' / ' + total;
+      $('sum-pct').textContent = total ? ('· ' + Math.round(pct * 100) + '%') : '';
     }
-    if ($('sum-score'))    $('sum-score').textContent = score;
-    if ($('sum-score-of')) $('sum-score-of').textContent = ' / ' + total;
-    if ($('sum-pct'))      $('sum-pct').textContent = total ? ('· ' + Math.round(pct * 100) + '%') : '';
 
     // Event shape EXACTLY as stored by QN.events.log (no streak field — the log
     // whitelists fields and does not persist streak, so the live earn matches
@@ -282,6 +294,7 @@
     initScroll:  initScroll,
     updateScrim: updateScrim,
     prettySlug:  prettySlug,
-    version:     '1.1.0'
+    starsFor:    starsFor,
+    version:     '1.2.0'
   };
 })();
