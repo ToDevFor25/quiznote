@@ -46,6 +46,14 @@ anything. This is the handshake — it catches stale docs before they cause dama
   `qn-music.js`, `qn-theme.css`, `qn-ui.js`. Flat repo at root — do NOT
   introduce folders, a bundler, or a build step. The flat static structure
   is correct and deliberate.
+  - **⚠️ Planned exception (approved by Jonathan, May 2026): a POST-LAUNCH
+    migration to 11ty (Eleventy)** to de-duplicate the per-module scaffold
+    (~1,900 identical lines copy-pasted ×35 → one shared layout; goal is
+    one-file changes instead of 35-file changes, ~90K→~15-20K HTML lines).
+    **Until that migration actually ships, every rule above remains in force**
+    — keep building flat-static / no-build. The migration is sequenced AFTER
+    launch (terms/privacy/pricing) deliberately, so it can't destabilize the
+    shippable MVP. Executable plan: `specs/eleventy-migration-spec.md`.
 - **35 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster +
   Phase 5 Tier B #6–#8 (Circle of Fifths, Chord Function, Transposition)
   shipped (May 2026).** 14 Foundations + 10 Reading + 11 Theory. The 27 → 32

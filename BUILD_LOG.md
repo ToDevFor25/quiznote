@@ -1,5 +1,39 @@
 ---
 
+### Architecture decision — POST-LAUNCH 11ty migration (approved, not started) — May 2026
+
+Jonathan raised the build-velocity question after a session full of N-file
+(×35) cross-cutting changes (start-bar saga, footer year). Diagnosis: the repo
+isn't over-engineered — it's **under-abstracted**. ~1,900 lines of identical
+scaffold are copy-pasted into every module; only ~150–400 lines/module are
+unique. So every shared change is a 35-file edit.
+
+**Decision (Jonathan):**
+- **Migrate to 11ty (Eleventy)** — pure templating → plain static HTML, no JS
+  framework, keeps all vanilla JS, deploys to Vercel with a build step
+  (push-to-Dev flow preserved). Chosen over Astro for the smallest leap.
+- **Timing: AFTER launch.** The migration's whole value is faster *future*
+  iteration, which is post-launch by definition; doing it before launch would
+  risk destabilizing a shippable MVP for no pre-launch benefit. Launch first
+  (terms/privacy sign-off + pricing/Stripe), migrate second on a branch with no
+  time pressure.
+- Expected: HTML ~90K → ~15–20K; the real prize is **one-file changes instead
+  of 35-file changes**.
+- **Tradeoff acknowledged:** trades "never breaks, painful to change" (static,
+  no toolchain) for "easy to change, has a build toolchain that needs care."
+  Worth it given Jonathan will keep iterating + add modules.
+
+Executable, turnkey plan written to **`specs/eleventy-migration-spec.md`** (tool,
+target structure, shared/unique split, pilot-on-note-names method, outlier list,
+Vercel build, verification gates, risk controls). CLAUDE.md "no build step"
+constraint annotated with this planned exception (rules stay in force until the
+migration actually ships).
+
+**Until then: keep building flat-static / no-build.** Next session should NOT
+start the migration unless launch is done or Jonathan redirects.
+
+---
+
 ### Footer copyright + auto-updating year — May 2026
 
 Added **"All rights reserved"** to the footer copyright and made the **year
