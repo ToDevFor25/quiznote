@@ -22,13 +22,26 @@
     xpPerCorrect:     10,    // base XP per correct answer
     cleanRoundPct:    0.85,  // accuracy at/above this earns the clean-round bonus
     cleanRoundBonus:  25,
-    inRoundStreak:    5,     // best-in-round streak at/above this earns streak bonus
-    streakBonus:      15,
+    // Perfect-game bonus: ALL correct (correct === total). Scales with round
+    // length so the 5/10/20 lengths pay 10/20/40. Replaces the old in-round
+    // streak bonus, which never fired (streak was never passed into roundXP nor
+    // persisted to the event log) — perfect-game is computable from fields the
+    // event log already stores (correct/total), so live XP and replayed totals
+    // stay consistent with NO schema change. May 2026.
+    perfectBonusPerQ: 2,
     difficultyMult:   { easy: 1.0, medium: 1.25, tricky: 1.5 },
     // Cumulative XP required to REACH each level (index = level-1). Beyond the
     // table, each further level costs `tailStep` more than the last gap.
-    levelThresholds:  [0, 50, 120, 220, 360, 540, 770, 1060, 1420, 1860, 2390],
-    tailStep:         700,
+    // Curve rebalanced May 2026 so named tiers map to curriculum milestones and
+    // levels feel meaningful (no giant early jumps): mastering 1 module ≈ L6,
+    // finishing Foundations ≈ Player (L16), mastering all 35 ≈ Musician (L26),
+    // and Virtuoso (L35) is ASPIRATIONAL — earned by deep practice BEYOND
+    // completion (industry standard: top tier sits past course completion).
+    // Early thresholds are spaced wider than v1 so one module is ~+5 levels, not
+    // +8. XP is derived (replayed from events), so this re-tunes retroactively
+    // with no migration. Tunable (Tier 2).
+    levelThresholds:  [0, 150, 400, 750, 1200, 1750, 2400, 3150, 4000, 5000, 6200],
+    tailStep:         3576,
     // Friendly tier names by level band. [minLevel, name].
     nameBands: [
       [1,  'Beginner'],
@@ -40,8 +53,7 @@
   };
 
   // ── XP for a single round ────────────────────────────────────────────────
-  // Accepts a round/event-shaped object: { correct, total, tier, streak }.
-  // `streak` is the best in-round streak (qn_events stores this as `streak`).
+  // Accepts a round/event-shaped object: { correct, total, tier }.
   // Defensive against missing fields so it can replay historical events.
   function roundXP(ev) {
     if (!ev) return 0;
@@ -54,13 +66,16 @@
     var pct = total > 0 ? correct / total : 0;
     var accuracyBonus = pct >= CONFIG.cleanRoundPct ? CONFIG.cleanRoundBonus : 0;
 
-    var bestStreak = ev.streak || 0;
-    var streakBonus = bestStreak >= CONFIG.inRoundStreak ? CONFIG.streakBonus : 0;
+    // Perfect game: every question correct. Bonus scales with round length so
+    // longer flawless rounds are worth more (5/10/20 → 15/30/60). Stacks on top
+    // of the clean-round bonus. Computed from correct/total only — both are in
+    // the stored event, so totalFor() (which replays events) counts it too.
+    var perfectBonus = (total > 0 && correct === total) ? total * CONFIG.perfectBonusPerQ : 0;
 
     var mult = CONFIG.difficultyMult[tier];
     if (typeof mult !== 'number') mult = 1.0;
 
-    return Math.round((baseXP + accuracyBonus + streakBonus) * mult);
+    return Math.round((baseXP + accuracyBonus + perfectBonus) * mult);
   }
 
   // ── Total XP for a profile (replay all events) ───────────────────────────

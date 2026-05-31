@@ -114,19 +114,18 @@
         if (isDrill) {
           streakEl.hidden = false;
           streakEl.textContent = '🎯 Practice round — no XP, just sharpening up';
-        } else {
-          // Streak now surfaces ONLY when it earned the XP bonus — otherwise the
-          // standalone "best streak" was redundant with the hero. Threshold +
-          // amount come from qn-xp CONFIG (single source of truth; 5/15 default).
+        } else if (total > 0 && score === total) {
+          // Perfect game: surface the bonus that was actually earned (computed
+          // from CONFIG so chip == engine). Replaces the old streak chip, whose
+          // bonus never fired. perfectBonusPerQ × total, then difficulty mult.
           var cfg = (QN.xp && QN.xp.CONFIG) || {};
-          var streakMin = cfg.inRoundStreak || 5;
-          var streakBonus = cfg.streakBonus || 15;
-          if (bestStreak >= streakMin) {
-            streakEl.hidden = false;
-            streakEl.textContent = '🔥 ' + bestStreak + '-streak — +' + streakBonus + ' bonus XP!';
-          } else {
-            streakEl.hidden = true;
-          }
+          var perfQ = cfg.perfectBonusPerQ || 3;
+          var dmult = (cfg.difficultyMult && cfg.difficultyMult[tier]) || 1;
+          var perfectXP = Math.round(total * perfQ * dmult);
+          streakEl.hidden = false;
+          streakEl.textContent = '🌟 Perfect game — +' + perfectXP + ' bonus XP!';
+        } else {
+          streakEl.hidden = true;
         }
       }
 
