@@ -335,8 +335,11 @@ For any future CSS work:
   specificity as the collapse rule, placed later in source so it wins without
   `!important`) + a `matchMedia('(min-width:720px)')` guard in the toggle JS
   (skips the saved-collapse restore and the click handler on desktop, keeps
-  `aria-expanded` honest). Per-tier open state still persists on mobile via
-  `localStorage` key `qn_play_sections_open_v2`. Scroll-restoration is forced
+  `aria-expanded` honest). **Mobile open-state is NOT persisted** — the accordion
+  is transient navigation via the tab picker, so the page always starts all-
+  collapsed every visit (the old `localStorage` key `qn_play_sections_open_v2`
+  was removed; a stale saved-open state had been reopening Foundations on load).
+  Scroll-restoration is forced
   to `manual` so every (re)load lands at the top heading (the accordion changes
   page height between visits, which otherwise stranded a reload mid-section). The
   "have-to-tap-twice" scroll bug is solved by waiting for the 360ms

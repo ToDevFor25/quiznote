@@ -71,6 +71,23 @@ preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
   Also wired header-toggle clicks to refresh the highlight after the 360ms body
   transition (opening via the caret, not just the tab bar, updates the tab).
 
+- **Dropped mobile open-state persistence (always start collapsed).** After the
+  responsive split, Foundations kept reopening on mobile load — the
+  `qn_play_sections_open_v2` localStorage layer was restoring a previously-opened
+  state, fighting the new collapse-all-+-picker intent. Removed persistence
+  entirely: desktop is force-open anyway (ignored it), and on mobile the
+  accordion is transient navigation, not a saved preference, so the HTML default
+  (all `aria-expanded="false"`) now stands every visit. Net simplification —
+  the STORAGE_KEY read/write and the saved-restore branch are gone.
+
+- **Mobile vertical rhythm tightened.** `.page-header` margin-bottom 36→20px and
+  `.tier-section` margin-bottom 48→**10px** inside the `≤560px` block (+ trimmed
+  `main` padding 28/48 → 24/40). The collapsed tiers were floating in whitespace;
+  10px between tiers reads as a tight clean list. Desktop untouched. (Watch the
+  expanded-tier case: 10px now sits between an open tier's last tile and the next
+  header — fine so far; if it reads cramped when expanded, move the gap below the
+  open body via an `aria-expanded="true"` rule rather than raising the base.)
+
 - **Breakpoint / tablets:** the split is a single 720px CSS-px cutoff. Tablets
   are ≥720 in both orientations (iPad portrait 768, iPad Pro 834, any landscape
   1024+), so **tablets get the desktop all-expanded view**, no tab picker. Only

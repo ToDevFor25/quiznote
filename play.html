@@ -1572,36 +1572,22 @@
     if (window.QNNav) QNNav.mount({ current: 'modules' });
 
     // ── Collapsible level sections ──────────────────────────────────
-    // Default = all expanded (matches genre convention for "library /
-    // browse" UIs: Coursera, edX, Notion, VSCode). Per-section state
-    // persists in localStorage and overrides the default on reload.
-    // v2: bumped when the default flipped to Foundations-open / Reading+Theory-
-    // collapsed (May 2026). The old key persisted all-expanded state and would
-    // otherwise override the new collapsed default for returning users.
-    var STORAGE_KEY = 'qn_play_sections_open_v2';
-    var saved = {};
-    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) {}
-
-    // Suppress transitions during initial state restore so the
-    // restored state doesn't animate from the HTML default.
-    document.body.classList.add('tier-no-anim');
-    // Desktop is always-expanded (accordion is a mobile-only space-saver), so
-    // skip the saved-collapse restore there and keep aria honest for SRs.
+    // Desktop (≥720px): always expanded (the original scannable layout;
+    //   accordion off, headers not collapsible).
+    // Mobile (<720px): always starts ALL collapsed. The accordion is transient
+    //   navigation via the tab picker, not a remembered preference — so we do
+    //   NOT persist/restore open-state. (Old localStorage key
+    //   qn_play_sections_open_v2 is intentionally dropped; a stale saved-open
+    //   state was reopening Foundations on load.) The HTML default
+    //   (all aria-expanded="false") stands every visit.
+    document.body.classList.add('tier-no-anim');  // no open/close flash on load
     var DESKTOP = window.matchMedia('(min-width: 720px)');
     document.querySelectorAll('.tier-toggle').forEach(function (btn) {
-      var id = btn.getAttribute('aria-controls');
-      if (DESKTOP.matches) {
-        btn.setAttribute('aria-expanded', 'true');
-      } else {
-        if (saved[id] === true)  btn.setAttribute('aria-expanded', 'true');
-        if (saved[id] === false) btn.setAttribute('aria-expanded', 'false');
-      }
+      if (DESKTOP.matches) btn.setAttribute('aria-expanded', 'true');  // SR-honest
       btn.addEventListener('click', function () {
         if (DESKTOP.matches) return;  // headers aren't collapsible on desktop
         var open = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', open ? 'false' : 'true');
-        saved[id] = !open;
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(saved)); } catch (e) {}
       });
     });
     requestAnimationFrame(function () {
