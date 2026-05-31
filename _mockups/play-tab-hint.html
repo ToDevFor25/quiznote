@@ -57,24 +57,24 @@
   .tt.f{color:var(--sun-dk);}  .tt.r{color:var(--teal-dk);}  .tt.t{color:var(--grape-dk);}
 
   /* ================= OPTION A — Wave glow ================= */
-  /* Each tab pulses a colored glow ring, one at a time, L→R. */
-  .optA .tt.hint{animation:glowF .7s ease-out;}
+  /* Each tab breathes a soft, feathered colored halo, one at a time, L→R.
+     Feathering = large BLUR + tiny spread + low alpha, two layered shadows for
+     a gradient falloff (no hard ring). Slow ease-in-out so it fades gently in
+     and out. */
+  .optA .tt.hint{animation:glowF 2.1s ease-in-out;}
   .optA .tt.r.hint{animation-name:glowR;}
   .optA .tt.t.hint{animation-name:glowT;}
   @keyframes glowF{
-    0%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(255,182,39,.0);}
-    35%{box-shadow:0 3px 0 var(--ink),0 0 0 7px rgba(255,182,39,.45);}
-    100%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(255,182,39,0);}
+    0%,100%{box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(255,182,39,0),  0 0 0 0 rgba(255,182,39,0);}
+    50%    {box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(255,182,39,.30), 0 0 30px 6px rgba(255,182,39,.14);}
   }
   @keyframes glowR{
-    0%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(31,184,168,0);}
-    35%{box-shadow:0 3px 0 var(--ink),0 0 0 7px rgba(31,184,168,.45);}
-    100%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(31,184,168,0);}
+    0%,100%{box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(31,184,168,0),  0 0 0 0 rgba(31,184,168,0);}
+    50%    {box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(31,184,168,.30), 0 0 30px 6px rgba(31,184,168,.14);}
   }
   @keyframes glowT{
-    0%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(91,63,228,0);}
-    35%{box-shadow:0 3px 0 var(--ink),0 0 0 7px rgba(91,63,228,.42);}
-    100%{box-shadow:0 3px 0 var(--ink),0 0 0 0 rgba(91,63,228,0);}
+    0%,100%{box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(91,63,228,0),  0 0 0 0 rgba(91,63,228,0);}
+    50%    {box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(91,63,228,.30), 0 0 30px 6px rgba(91,63,228,.14);}
   }
 
   /* ================= OPTION B — Press bounce ================= */
@@ -117,7 +117,7 @@
   <div class="page-sub">On mobile load, the picker nudges once — left to right — to show the tabs open a section. Tap <b>Replay</b> on each to compare.</div>
 
   <!-- OPTION A -->
-  <section class="opt optA" data-opt="A">
+  <section class="opt optA" data-opt="A" data-stagger="620">
     <div class="opt-head"><div class="opt-title">Option <b>A</b> · Wave glow</div><button class="replay">Replay ▸</button></div>
     <div class="opt-desc">A soft colored halo pulses out from each tab in turn. Subtle, premium, color-coded to each tier. Least "busy."</div>
     <div class="tier-tabs">
@@ -128,7 +128,7 @@
   </section>
 
   <!-- OPTION B -->
-  <section class="opt optB" data-opt="B">
+  <section class="opt optB" data-opt="B" data-stagger="260">
     <div class="opt-head"><div class="opt-title">Option <b>B</b> · Press bounce</div><button class="replay">Replay ▸</button></div>
     <div class="opt-desc">Each tab physically dips and pops like a finger tap, one after another. Most literal "these are buttons — press them" cue.</div>
     <div class="tier-tabs">
@@ -139,7 +139,7 @@
   </section>
 
   <!-- OPTION C -->
-  <section class="opt optC" data-opt="C">
+  <section class="opt optC" data-opt="C" data-stagger="300">
     <div class="opt-head"><div class="opt-title">Option <b>C</b> · Fill flash</div><button class="replay">Replay ▸</button></div>
     <div class="opt-desc">Each tab briefly fills with its tier color — the exact "selected" look — then fades back. Teaches what tapping <em>does</em>, not just that it's tappable.</div>
     <div class="tier-tabs">
@@ -154,12 +154,13 @@
 <script>
   // Stagger the three tabs of one section, left→right.
   function runHint(section){
+    var step = parseInt(section.dataset.stagger || '260', 10);
     var tabs = section.querySelectorAll('.tt');
     tabs.forEach(function(t){ t.classList.remove('hint'); });
     // force reflow so re-adding the class restarts the animation
     void section.offsetWidth;
     tabs.forEach(function(t, i){
-      setTimeout(function(){ t.classList.add('hint'); }, i * 260);
+      setTimeout(function(){ t.classList.add('hint'); }, i * step);
     });
   }
   // Run all three once on load, lightly offset so you can read them top-to-bottom.
