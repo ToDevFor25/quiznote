@@ -1,5 +1,40 @@
 ---
 
+### Round-end redesign rollout — continued to 30/35 (gen-2 standard-11 done) — May 2026
+
+**Continuation of the same session as the entry below.** After logging the 19/35
+state, kept going on the gen-2 modules with corrected discipline (dry-run → write
+→ verify in a SEPARATE step → READ results → commit; no more batching commit with
+verification). Got to **30/35**.
+
+- `8d2f3e1` gen-2 **entity-form** batch (8): cadences, chord-progressions,
+  ear-cadences, ear-chords, ear-progressions, seventh-chords, triad-inversions,
+  triads. Anchors: `&#x2699; Game Settings`, `&#x2605;` stars, `&middot;`,
+  `var stars = scoreToStars(...)`, no-guard pb. All verified ALL_PASS.
+- `3a9f4c2` gen-2 **hybrid** batch (3): intervals, ear-intervals, transposition.
+  Hybrid = plain-unicode markup (`⚙️`, `★`, `·`) but gen-2 JS
+  (`const stars = scoreToStars`). Verified ALL_PASS.
+
+The pb-flag for gen-2 reuses each module's existing `newScorePB`/`newStreakPB`
+(the verifier checks they exist so the flag can't throw).
+
+**Remaining 5 (next session) — the genuinely hard ones, do NOT batch blindly:**
+- **4 scales-family**: chromatic-scale, ear-scales, scale-modes, scales. They
+  lack the `summary-speed` line anchor, still carry `.85/.65` thresholds (need
+  normalize), British title, and a different stars block. **scales** is also the
+  structural outlier (uses `state.settings.total`, no `state.total`; render call
+  is hand-shaped) — hand-transform it, verify the render args survive.
+- **1 piano-quiz**: guarded-pb shape (`const pbRow = els['pb-row']; if(pbRow)`).
+  Its guided-key-find is a separate play-screen system — leave untouched.
+
+Recommended next-session approach: audit each of the 5 individually (they may each
+be their own micro-variant), dry-run → show → commit on go. Then the rollout is
+35/35 and Dev can be synced as the uniform stopping point (Jonathan deferred the
+Dev push until whole). Use the state probe in the entry below to confirm DONE/TODO
+from the files, not memory.
+
+---
+
 ### Round-end redesign rollout — 19/35 done; the gen-1 vs gen-2 markup split — May 2026
 
 **Session type:** Rolling the round-end redesign (piloted on note-names last
