@@ -320,8 +320,16 @@ For any future CSS work:
   privacy.html / terms.html — for lawyer review).**
 - **play.html redesigned (May 2026):** three collapsible level sections
   (Foundations / Reading / Theory) with progress chips. FOUC-prevention via
-  `body.tier-no-anim` + 2×rAF (documented in BUILD_LOG.md). All-expanded by
-  default per the catalog-UI genre standard.
+  `body.tier-no-anim` + 2×rAF (documented in BUILD_LOG.md). **Mobile-first
+  pass (May 2026, supersedes the earlier all-expanded default):** Foundations
+  open, Reading + Theory **collapsed** by default (~60% less initial scroll);
+  `100dvh`; paled category art tints; tightened mobile cards; and a **sticky
+  tier tab bar** (mobile-only <720px, Foundations · Reading · Theory) that
+  accordions to the tapped tier + scroll-spies the active one. Desktop is
+  unchanged (still effectively all-open; tab bar hidden ≥720px). The
+  "have-to-tap-twice" scroll bug is solved by waiting for the 360ms
+  `grid-template-rows` `transitionend` (400ms fallback) before measuring, with
+  a `lockUntil` freeze on the scroll-spy.
 - **index.html "What's Inside" replaced (May 2026):** vertical-spine concept
   view, not module tiles. Decoupled from per-module tiering. Class names
   prefixed `wi-` to avoid collisions. Landing copy scrub May 2026 removed

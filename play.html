@@ -40,6 +40,7 @@
       --coral-dk:   #c2453f;
       --grape:      #5B3FE4;
       --grape-dk:   #3d28a8;
+      --grape-lt:   #e7e2fb;
       --slate:      #6b7a99;
       --white:      #ffffff;
       --shadow:     #d8d6cc;
@@ -52,7 +53,7 @@
       font-family: 'Nunito', sans-serif;
       background: var(--cream);
       color: var(--ink);
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       background-image:
@@ -224,9 +225,50 @@
     /* skill-family tints (Option B) — repeat across all three tiers */
     .ltile-art.th-ear     { background: #ffe6f1; }  /* ear / listen */
     .ltile-art.th-read    { background: #e9eff9; }  /* read the score */
-    .ltile-art.th-rhythm  { background: #fff2cf; }  /* rhythm & meter */
-    .ltile-art.th-pitch   { background: #e4f3e0; }  /* keys · scales · pitch */
-    .ltile-art.th-harmony { background: #efe9fb; }  /* harmony · chords */
+    .ltile-art.th-ear     { background: #fdf1f6; }  /* ear / listen   — pale pink */
+    .ltile-art.th-read    { background: #f2f6fc; }  /* read the score — pale blue */
+    .ltile-art.th-rhythm  { background: #fdf8e9; }  /* rhythm & meter — pale gold */
+    .ltile-art.th-pitch   { background: #eef8ea; }  /* keys · scales  — pale green */
+    .ltile-art.th-harmony { background: #f5f1fd; }  /* harmony · chords — pale purple */
+
+    /* ---- Sticky tier tab bar (mobile only) ---- */
+    .tier-tabs {
+      position: sticky; top: 0; z-index: 30;
+      display: flex; gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,250,240,0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tier-tabs::-webkit-scrollbar { display: none; }
+    .tier-tabs .tt {
+      all: unset;
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      font-family: 'Fredoka', sans-serif; font-weight: 700;
+      font-size: 14px;
+      padding: 9px 14px;
+      border-radius: 11px;
+      border: 2px solid var(--ink);
+      box-shadow: 0 3px 0 var(--ink);
+      background: white;
+      cursor: pointer;
+      transition: transform 100ms, box-shadow 100ms, background 160ms, color 160ms;
+    }
+    .tier-tabs .tt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+    /* Per-tier text colors (match the section headings) */
+    .tier-tabs .tt[data-target="sec-foundations"] { color: var(--sun-dk); }
+    .tier-tabs .tt[data-target="sec-reading"]     { color: var(--teal-dk); }
+    .tier-tabs .tt[data-target="sec-theory"]      { color: var(--grape-dk); }
+    /* Active = light tier fill + dark tier text (matches the "completed" chip) */
+    .tier-tabs .tt[data-target="sec-foundations"].active { background: var(--sun-lt);   color: var(--sun-dk);   border-color: var(--sun-dk); }
+    .tier-tabs .tt[data-target="sec-reading"].active     { background: var(--teal-lt);  color: var(--teal-dk);  border-color: var(--teal-dk); }
+    .tier-tabs .tt[data-target="sec-theory"].active      { background: var(--grape-lt); color: var(--grape-dk); border-color: var(--grape-dk); }
+    @media (min-width: 720px) { .tier-tabs { display: none; } }  /* phones only */
     .ltile-body {
       padding: 14px 14px 16px;
       text-align: center;
@@ -376,6 +418,9 @@
     @media (max-width: 560px) {
       main { padding: 28px 16px 48px; }
       .tile-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .ltile-art { height: 92px; }
+      .ltile-body { padding: 10px 10px 12px; gap: 2px; }
+      .ltile-blurb { font-size: 0.78rem; line-height: 1.35; }
       .page-header h1 { font-size: 1.8rem; }
       .ltile-name { font-size: 0.98rem; }
       .ltile-body { padding: 12px 10px 14px; }
@@ -423,6 +468,13 @@
     </div>
   </nav>
 
+  <!-- Sticky tier tab bar (mobile) -->
+  <div class="tier-tabs" id="tier-tabs">
+    <button type="button" class="tt" data-target="sec-foundations">Foundations</button>
+    <button type="button" class="tt" data-target="sec-reading">Reading</button>
+    <button type="button" class="tt" data-target="sec-theory">Theory</button>
+  </div>
+
   <main>
     <div class="page-header">
       <h1>Ready to practice?</h1>
@@ -430,7 +482,7 @@
     </div>
 
     <!-- FOUNDATIONS -->
-    <div class="tier-section foundations">
+    <div class="tier-section foundations" id="sec-foundations">
       <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-foundations">
         <span class="tier-caret" aria-hidden="true">▸</span>
         <span class="tier-name">Foundations</span>
@@ -886,8 +938,8 @@
     </div>
 
     <!-- READING -->
-    <div class="tier-section reading">
-      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-reading">
+    <div class="tier-section reading" id="sec-reading">
+      <button type="button" class="tier-toggle" aria-expanded="false" aria-controls="tb-reading">
         <span class="tier-caret" aria-hidden="true">▸</span>
         <span class="tier-name">Reading</span>
         <span class="tier-meta">Building fluency · Levels 2–4</span>
@@ -1292,8 +1344,8 @@
     </div>
 
     <!-- THEORY -->
-    <div class="tier-section theory">
-      <button type="button" class="tier-toggle" aria-expanded="true" aria-controls="tb-theory">
+    <div class="tier-section theory" id="sec-theory">
+      <button type="button" class="tier-toggle" aria-expanded="false" aria-controls="tb-theory">
         <span class="tier-caret" aria-hidden="true">▸</span>
         <span class="tier-name">Theory</span>
         <span class="tier-meta">Fluent reader · Levels 4–6</span>
@@ -1581,6 +1633,68 @@
       if (denom) denom.textContent = '/' + total;
     });
   });
+</script>
+
+<script>
+(function(){
+  const tabs = Array.from(document.querySelectorAll('.tier-tabs .tt'));
+  const bar = document.getElementById('tier-tabs');
+  if (!bar) return;
+  const ids = ['sec-foundations','sec-reading','sec-theory'];
+  const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
+
+  function setActive(id){
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.target === id));
+  }
+  function setExpanded(section, open){
+    const toggle = section.querySelector('.tier-toggle');
+    if (toggle && (toggle.getAttribute('aria-expanded') === 'true') !== open) {
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+  }
+  // Accordion: open the chosen tier, collapse the other two.
+  function accordion(targetId){
+    sections.forEach(sec => setExpanded(sec, sec.id === targetId));
+  }
+
+  let lockUntil = 0;  // freeze scroll-spy during a programmatic scroll
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const sec = document.getElementById(tab.dataset.target);
+      if (!sec) return;
+      setActive(tab.dataset.target);
+      accordion(tab.dataset.target);
+      // Tier bodies expand/collapse over a 360ms grid-template-rows transition.
+      // Wait for it to finish before measuring, or we scroll to a stale position.
+      lockUntil = Date.now() + 1300;
+      const tb = sec.querySelector('.tier-body');
+      let scrolled = false;
+      const go = () => {
+        if (scrolled) return;
+        scrolled = true;
+        const barH = bar.offsetHeight + 10;
+        const y = sec.getBoundingClientRect().top + window.pageYOffset - barH;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        lockUntil = Date.now() + 700;
+      };
+      if (tb) tb.addEventListener('transitionend', go, { once: true });
+      setTimeout(go, 400);
+    });
+  });
+
+  function onScroll(){
+    if (Date.now() < lockUntil) return;
+    const probe = bar.offsetHeight + 24;
+    let best = sections[0] ? sections[0].id : null;
+    for (const sec of sections) {
+      if (sec.getBoundingClientRect().top - probe <= 0) best = sec.id;
+    }
+    if (best) setActive(best);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
 </script>
 </body>
 </html>

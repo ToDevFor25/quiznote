@@ -1,5 +1,56 @@
 ---
 
+### play.html mobile-first pass — collapsed tiers + sticky tier tab bar — May 2026
+
+Dropped in a drop-in `play.html` (Jonathan-supplied FINAL + CHANGELOG, folded
+externally). **Single-file change**; no four-surface concern (catalog page, not
+a module). Live file now 1700 lines, Dev at the commit below.
+
+**Pre-flight (file-verification rule, before the swap):** diffed the upload vs
+live `play.html`. Confirmed it = current + ONLY the 7 documented changes —
+module-link set byte-identical (md5 match, 38 links: 35 modules + index/privacy/
+terms), `qn-gate/qn-profile/qn-nav` script tags preserved, footer legal links
+preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
+`sec-*` IDs present once each. Only after that passed did I copy it in.
+
+**The 7 changes:**
+1. `100vh → 100dvh` on body — kills the phantom scroll past the footer when
+   mobile browser chrome shows.
+2. Added missing `--grape-lt: #e7e2fb` to `:root` — Theory's "0/x completed"
+   chip had no background without it.
+3. Paled the category art tints (ear/read/rhythm/pitch/harmony) so saturated
+   art (e.g. Circle of Fifths wheel) stops melting into its panel.
+4. Mobile card tightening (`@media max-width:560px`): art panel 116→92px, body
+   padding + blurb (0.78rem/1.35) — big vertical-scroll cut on phones.
+5. **Reading + Theory collapsed by default** (`aria-expanded="false"`);
+   Foundations stays open. ~60% less initial scroll. **This reverses the
+   earlier "all-expanded by default per catalog-UI genre standard" decision**
+   — deliberate, Jonathan-directed; CLAUDE.md updated to match.
+6. **Sticky tier tab bar** (mobile-only, hidden ≥720px): Foundations · Reading
+   · Theory, per-tier colored, active tab fills with the light-tier scheme.
+   Tap → accordion (open that tier, collapse the other two) + smooth-scroll +
+   scroll-spy.
+7. Section anchors `id="sec-foundations|sec-reading|sec-theory"` as scroll
+   targets.
+
+**The notable engineering detail (banked):** the "have-to-tap-twice" scroll
+bug. Tier bodies expand/collapse over a 360ms `grid-template-rows` transition;
+if you measure the target's position immediately you get a mid-animation layout
+and land at a stale (often bottom-of-page) spot. Fix: listen for the real
+`transitionend` on the opening `.tier-body` (400ms `setTimeout` fallback for
+already-open / reduced-motion), THEN measure + smooth-scroll, clamped
+`Math.max(0, y)`. A `lockUntil` timestamp freezes the scroll-spy during the
+programmatic scroll so the highlight can't land on the wrong tier. Desktop
+unchanged (tab bar `display:none` ≥720px).
+
+**Open follow-up (optional, from the CHANGELOG note):** the Circle-of-Fifths
+wheel still has teal-green sharp wedges on the (now paler) green pitch panel —
+the paling fixes most of it; deepen the sharp-side wedge outlines in that SVG
+if we want it perfectly crisp. Low priority. Otherwise: device/pixel QA of this
+on real phones (tab-bar accordion timing, collapsed-default feel, dvh footer).
+
+---
+
 ### Round-end visual polish — desktop bar, section spacing, mobile footer — May 2026
 
 Post-redesign polish pass, all via shared files (the payoff of the centralized
