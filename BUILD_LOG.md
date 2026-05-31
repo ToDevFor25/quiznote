@@ -1,5 +1,123 @@
 ---
 
+### Round-end redesign rollout — 19/35 done; the gen-1 vs gen-2 markup split — May 2026
+
+**Session type:** Rolling the round-end redesign (piloted on note-names last
+entry) out to the rest of the roster. Got **19 of 35 modules** done, verified,
+committed, pushed. Stopped deliberately at a clean point — the remaining 16 are a
+**different markup generation** that needs its own transform recipe, best done
+fresh. Branch `claude/gamified-learning-roadmap-QxZmK`, in sync at the batch-3a
+commit.
+
+**State of the rollout (READ THIS FIRST next session):**
+- **19/35 DONE** (hero block + flag, single starsFor, perfect chip, demote
+  relabel, threshold-normalized where needed; verified per file): note-names,
+  accidentals, articulation, cadences-NO (see below), chord-function,
+  circle-of-fifths, dynamics, ledger-lines, ornaments, piano-keyboard,
+  primary-chords, roman-numerals, scale-degrees, score-navigation,
+  tempo-markings, chord-progressions-NO, dotted-notes, ear-rhythm,
+  key-signatures, note-values, time-signatures.
+  *Authoritative check:* a module is DONE iff its `#summary-screen` section
+  contains `class="summary-hero"` and NOT `class="summary-grid"`. Run the state
+  probe below — don't trust this prose list, trust the files.
+- **16 NOT done** (still original P1 round-end, fully functional): cadences,
+  chord-progressions, chromatic-scale, ear-cadences, ear-chords, ear-intervals,
+  ear-progressions, ear-scales, intervals, piano-quiz, scale-modes, scales,
+  seventh-chords, transposition, triad-inversions, triads.
+- **0 modules half-transformed.** Everything parses and works.
+
+State probe (paste to regenerate the exact split):
+```
+python3 - <<'PY'
+import re, glob
+for f in sorted(glob.glob('*.html')):
+    if f=='pianoquiz-demo.html' or 'has-roundbar' not in open(f).read(): continue
+    seg=re.search(r'<section class="screen has-roundbar" id="summary-screen">.*?</section>',open(f).read(),re.S)
+    seg=seg.group(0) if seg else ''
+    hero='class="summary-hero"' in seg; grid='class="summary-grid"' in seg
+    print(f"{'DONE' if hero and not grid else 'TODO' if grid and not hero else 'BROKEN'} {f[:-5]}")
+PY
+```
+
+**The key finding — there are TWO summary-markup generations.** The redesign
+transform (the 6-edit recipe proven on note-names + accidentals) only matches
+**gen-1** modules. note-names + the 19 done are gen-1. The remaining 16 came from
+the **original P1 rollout transformer** and are structurally different:
+- Emoji as **HTML entities** (`&#x2699;&#xFE0F; Game Settings`, `&#x1F525;`,
+  `&#x2605;`, `&middot;`) — but NOTE: a few (intervals, ear-intervals,
+  transposition) use plain unicode `⚙️`/`★`, so even within gen-2 the markup
+  varies; do NOT assume entity form.
+- Different dead-JS shape: gen-2 uses `var stars = scoreToStars(...)` +
+  `'★ '.repeat(stars)...` (a function call), not gen-1's inline tier ternary.
+- Different PB block: gen-2 `els['pb-row'].hidden = false; els['pb-score']
+  .innerHTML = ...` with NO `pbRow` local var / no `if(pbRow)` guard; uses
+  `els['pb-streak']`. PB key is often per-difficulty (`cd_pb_<diff>`) and NOT
+  `!isDrill`-gated.
+- gen-2 title often already says "Keep Practicing" (American) and sets
+  `titleEl.className = 'summary-title tier-'+tier` in one assignment.
+- scales-family (chromatic-scale, ear-scales, scale-modes, scales) additionally
+  lack the `summary-speed` line anchor and still carry `.85/.65` thresholds.
+
+**Sub-variant breakdown of the 16 (for the gen-2 recipe):**
+- **~11 "standard gen-2"**: cadences, chord-progressions, ear-cadences,
+  ear-chords, ear-intervals, ear-progressions, intervals, seventh-chords,
+  transposition, triad-inversions, triads. (But intervals/ear-intervals/
+  transposition use plain-unicode demote+stars — closer to gen-1; re-audit each.)
+- **4 scales-family**: chromatic-scale, ear-scales, scale-modes, scales
+  (no speed-line, `.85/.65`, British title). scales also the structural outlier.
+- **1 piano-quiz**: its own guarded PB shape; guided-key-find is separate, leave
+  it alone.
+
+**Commits this session (all pushed):**
+- `8d916db` accidentals (batch proof, 2/35)
+- `8cd4470` batch 1/3 (12 modules) — gen-1
+- `5d8c1f8` batch 2/3 (12 modules) — gen-1
+- `26c1d78` "batch 3a/3 (8 threshold modules, 34/35)" — **message OVERSTATES.**
+  Only 5 of the 8 actually transformed (dotted-notes, ear-rhythm, key-signatures,
+  note-values, time-signatures); the 3 scales-family (chromatic-scale,
+  ear-scales, scale-modes) silently no-op'd because they're gen-2. The commit
+  itself is clean (those 3 files unchanged) — only the message count is wrong.
+  Decision: leave the pushed message, correct the count here. True total = 19/35.
+
+**Process mistakes this session (REPEATED — must internalize):**
+1. **Committed in the same message as the verification** that would have caught
+   the failures — the exact "do not repeat" from the prior entry. Did it three
+   times. The ONLY reason no damage: the transform script was **fail-loud**
+   (wrote nothing on anchor-mismatch) and `git add` of an unchanged file is a
+   no-op, so the batch commits only ever captured genuinely-transformed files.
+   **Rule, now twice-burned: transform → verify → READ results → THEN commit in a
+   SEPARATE turn. Never batch a commit with its own verification.**
+2. Over-promised "autonomous all 33" without first auditing markup uniformity;
+   the gen-1/gen-2 split made that estimate wrong. **Audit structural uniformity
+   BEFORE committing to a batch approach.**
+
+**Decisions banked:**
+- Autonomous batching is fine ONLY for a verified-uniform group; the moment a
+  variant appears, drop to dry-run → show → commit-on-go.
+- DONE/TODO is defined by the file (hero present, grid absent in the summary
+  section), never by a remembered list.
+
+**Still open / next (sequenced):**
+1. **gen-2 batch — the remaining 16.** Build a gen-2 transform (or hand-do the
+   sub-variants): re-audit each of the 11 "standard" first (3 are actually
+   plain-unicode/closer to gen-1), then the 4 scales-family (+threshold
+   normalize, scales by hand), then piano-quiz. **Dry-run → show → commit on go.**
+   Do NOT reuse the gen-1 script's anchors blind.
+2. **Visual QA** the gen-1 done-modules on a real device (esp. the threshold
+   ones — dotted-notes/note-values/etc. — where the title tier changed).
+3. Then the round-end redesign is roster-complete and Dev can be synced as a
+   uniform stopping point (Jonathan deferred the Dev push until the rollout is
+   whole — see the "commit to Dev only at a proper stopping point" decision).
+4. Pre-existing queue unchanged (Tier-3 mastery-axis recommender; CLAUDE.md
+   "Ranked build queue").
+
+**Files touched:** 19 module HTML files (summary markup + endRound JS). No
+shared-file changes this session (qn-roundend.js / qn-xp.js / qn-theme.css were
+all done in the prior entry). Transform/verify helper scripts were temporary
+(`_batch_redesign.py`, `_verify_batch.py`) and removed before close.
+
+---
+
 ### Round-end redesign + gamification economy overhaul (note-names pilot) — May 2026
 
 **Session type:** Redesigned the round-end summary, unified star logic, fixed a
