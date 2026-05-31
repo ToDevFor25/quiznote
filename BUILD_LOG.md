@@ -1,5 +1,35 @@
 ---
 
+### Bug fix — frozen answer buttons after wrong-answer hint (3 scale-family modules) — May 2026
+
+Jonathan found it on **ear-scales** + **chromatic-scale** (also **scale-modes**):
+on a wrong answer the answer buttons froze, while other buttons (home/exit/replay)
+still worked. Classic "dead buttons = a JS throw" signature, but mid-game not
+init. **Root cause:** `showHintCard()`'s first line is `pauseTimer()`, but
+`pauseTimer`/`resumeTimer` were **never defined** in these 3 modules (the
+scale-family clones dropped them; `scales.html` — the parent — has them). Flow:
+wrong answer sets `state.answered = true` + disables the choice buttons, then the
+500ms `showHintCard()` throws `ReferenceError: pauseTimer is not defined`
+**before** the overlay shows → no hint card, `answered` stuck `true` forever, so
+the `if (state.answered) return;` guard at the top of `onAnswer` makes every
+choice click a no-op. Other buttons aren't gated by `answered`, so they worked —
+exactly the reported symptom.
+
+**Fix:** restored the canonical `pauseTimer`/`resumeTimer` (copied verbatim from
+`scales.html`; the 3 clones share identical timer internals — `state.timerInterval`,
+`state.timerRemaining`, `state.settings.timer.enabled`, `els['timer-num']`/
+`['timer-badge']`, `finishRound`, and their `startTimerIfNeeded` tick is
+byte-identical to scales' `resumeTimer` body). Injected before
+`startTimerIfNeeded` in each.
+
+**Scope:** scanned all 35 modules for the signature "calls pauseTimer/resumeTimer
+but doesn't define them" — only these 3 were affected. Verified: main game
+script `node -c` clean in all 3, scripts balanced, both fns now defined once.
+**Lesson:** this is exactly the clone-divergence the 11ty migration would prevent
+(shared scaffold = no per-clone missing-function drift).
+
+---
+
 ### Architecture decision — POST-LAUNCH 11ty migration (approved, not started) — May 2026
 
 Jonathan raised the build-velocity question after a session full of N-file
