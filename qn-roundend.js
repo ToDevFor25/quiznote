@@ -100,7 +100,10 @@
     var evShape     = { correct: score, total: total, tier: tier };
     var roundXP     = isDrill ? 0 : QN.xp.roundXP(evShape);
     var totalAfter  = profileId ? QN.xp.totalFor(profileId) : roundXP;
+    var totalBefore = Math.max(0, totalAfter - roundXP);
     var after       = QN.xp.levelFor(totalAfter);
+    // Did this round cross a level boundary? (Drills earn 0, can't level.)
+    var lvDelta     = (!isDrill && QN.xp.levelDelta) ? QN.xp.levelDelta(totalBefore, totalAfter) : { leveled: false };
 
     // --- Beat 1: THE EARN (or, for a drill, honest practice framing) ---
     var earn = $('xp-earn');
@@ -159,6 +162,16 @@
           });
         }
       }
+    }
+
+    // --- The level-up MOMENT: if this round crossed a rank boundary, stage a
+    // center-stage interstitial. Fires after Beat 1's count-up settles (700ms)
+    // so the XP visibly lands before we celebrate; immediate under reduced-motion.
+    if (lvDelta.leveled) {
+      var reduceLU = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var fireLU = function () { showLevelUp(after.level, after.name); };
+      if (reduceLU) fireLU();
+      else setTimeout(fireLU, 780);
     }
 
     // --- Beat 2: THE PROGRESS (mastery meter toward the medal) ---
@@ -376,14 +389,83 @@
     autoInitStart();
   }
 
+  // ── The level-up interstitial ───────────────────────────────────────────
+  // Center-stage moment: dim the page, a gold ring + new level + rank morph,
+  // a confetti burst, a rising chime, one "Nice →" dismiss. Reduced-motion safe
+  // (static card, no particles). Built fresh each time, removed on dismiss.
+  function showLevelUp(level, name) {
+    if (document.querySelector('.levelup-overlay')) return;   // never stack
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var R = 42, CIRC = 2 * Math.PI * R;
+
+    var ov = document.createElement('div');
+    ov.className = 'levelup-overlay';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-label', 'Level up! You reached level ' + level + ', ' + name);
+
+    var parts = '';
+    if (!reduce) {
+      for (var i = 0; i < 14; i++) {
+        var ang = (Math.PI * 2 * i) / 14 + (Math.random() - 0.5) * 0.4;
+        var dist = 70 + Math.random() * 50;
+        var dx = Math.round(Math.cos(ang) * dist);
+        var dy = Math.round(Math.sin(ang) * dist) - 30;
+        var glyph = ['♪', '♫', '✨', '🌟', '🎵'][i % 5];
+        parts += '<span class="levelup-particle" style="--dx:' + dx + 'px;--dy:' + dy + 'px;animation-delay:' + (0.2 + Math.random() * 0.25).toFixed(2) + 's">' + glyph + '</span>';
+      }
+    }
+
+    ov.innerHTML =
+      '<div class="levelup-card">' +
+        '<div class="levelup-particles">' + parts + '</div>' +
+        '<div class="levelup-eyebrow">Level up</div>' +
+        '<div class="levelup-ring">' +
+          '<svg viewBox="0 0 96 96" aria-hidden="true">' +
+            '<circle class="qn-ring-track" cx="48" cy="48" r="' + R + '"></circle>' +
+            '<circle class="qn-ring-fill" cx="48" cy="48" r="' + R + '" stroke-dasharray="' + CIRC.toFixed(2) + '" stroke-dashoffset="' + (reduce ? 0 : CIRC.toFixed(2)) + '"></circle>' +
+          '</svg>' +
+          '<span class="levelup-num">' + level + '</span>' +
+        '</div>' +
+        '<div class="levelup-rank">' + name + '</div>' +
+        '<div class="levelup-sub">You reached Level ' + level + '</div>' +
+        '<button type="button" class="levelup-btn">Nice →</button>' +
+      '</div>';
+
+    document.body.appendChild(ov);
+    var fillEl = ov.querySelector('.qn-ring-fill');
+    requestAnimationFrame(function () {
+      ov.classList.add('show');
+      if (fillEl && !reduce) {
+        fillEl.style.transition = 'stroke-dashoffset 700ms cubic-bezier(.4,0,.2,1) .25s';
+        requestAnimationFrame(function () { fillEl.style.strokeDashoffset = '0'; });
+      }
+    });
+
+    // Rising chime (honors global mute inside qn-audio).
+    try { if (window.QN && QN.audio && QN.audio.playChime) QN.audio.playChime(64, 6); } catch (e) {}
+
+    var close = function () {
+      ov.classList.remove('show');
+      setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 260);
+      document.removeEventListener('keydown', onKey);
+    };
+    var onKey = function (e) { if (e.key === 'Escape' || e.key === 'Enter') close(); };
+    ov.querySelector('.levelup-btn').addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    document.addEventListener('keydown', onKey);
+    var btn = ov.querySelector('.levelup-btn');
+    if (btn) btn.focus();
+  }
+
   QN.roundEnd = {
     render:          render,
+    showLevelUp:     showLevelUp,
     initScroll:      initScroll,
     updateScrim:     updateScrim,
     initStartScroll: initStartScroll,
     updateStartScrim: updateStartScrim,
     prettySlug:      prettySlug,
     starsFor:        starsFor,
-    version:         '1.6.0'
+    version:         '1.7.0'
   };
 })();
