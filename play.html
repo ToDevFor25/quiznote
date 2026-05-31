@@ -1783,13 +1783,19 @@
   }
   function maybeRunHint(){
     if (window.matchMedia('(min-width: 720px)').matches) return;  // mobile only
-    let done, seen;
-    try {
-      done = localStorage.getItem(HINT_DONE);
-      seen = parseInt(localStorage.getItem(HINT_SEEN) || '0', 10);
-    } catch (e) { return; }
-    if (done || seen >= 3) return;
-    try { localStorage.setItem(HINT_SEEN, String(seen + 1)); } catch (e) {}
+    // QA test mode: play.html?hint replays the glow every load, bypassing the
+    // localStorage gate AND not burning the 3-load budget. (Reduced-motion still
+    // suppresses it via CSS — that's intentional.)
+    var force = /[?&]hint(=|&|$)/.test(location.search);
+    if (!force) {
+      let done, seen;
+      try {
+        done = localStorage.getItem(HINT_DONE);
+        seen = parseInt(localStorage.getItem(HINT_SEEN) || '0', 10);
+      } catch (e) { return; }
+      if (done || seen >= 3) return;
+      try { localStorage.setItem(HINT_SEEN, String(seen + 1)); } catch (e) {}
+    }
     tabs.forEach((tab, i) => {
       hintTimers.push(setTimeout(() => {
         tab.classList.add('tt-hint');
