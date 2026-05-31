@@ -152,6 +152,12 @@
   align-items: center; justify-content: safe center;
   padding: 20px;
 }
+/* Bounce-back on the summary. The modules set `overscroll-behavior: none` on
+   html,body to lock the fixed game screens (no rubber-band, no pull-to-refresh
+   mid-quiz). But the summary page-scrolls, and `none` made it feel stiff at the
+   top/bottom. Scope the relax to the active summary via :has() — game screens
+   stay locked, the summary gets its native iOS rubber-band back. */
+body:has(#summary-screen.active) { overscroll-behavior: auto; }
 .summary-wrap { width: 100%; max-width: 640px; text-align: center; }
 .summary-title {
   font-family: 'Fredoka', sans-serif; font-weight: 700;

@@ -86,10 +86,12 @@
         if (isDrill) {
           streakEl.hidden = false;
           streakEl.textContent = '🎯 Practice round — no XP, just sharpening up';
-        } else if (bestStreak >= 2) {
-          streakEl.hidden = false;
-          streakEl.textContent = '🔥 Best streak this round: ' + bestStreak;
-        } else { streakEl.hidden = true; }
+        } else {
+          // The round's best streak already has a dedicated stat card below
+          // ("Best streak"), so don't repeat it here — that double-print was
+          // the "streaks look wrong" confusion. XP card stays about XP/level.
+          streakEl.hidden = true;
+        }
       }
 
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -184,7 +186,7 @@
       if (nsc) { nsc.classList.remove('grape'); nsc.classList.add('sun'); }  // friendly retry colour
       if (cta) {
         cta.hidden = false;
-        if ($('nsc-reason')) $('nsc-reason').textContent = "Let's run that back —";
+        if ($('nsc-reason')) $('nsc-reason').textContent = "You've got this 💪";
         if (nsc) nsc.textContent = '↻ Try again';
         cta.onclick = function (ev2) {
           ev2.preventDefault();
