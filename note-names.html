@@ -697,7 +697,11 @@
       masterGain.gain.value = muted ? 0 : 0.6;
       masterGain.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') {
+    // 'suspended' (autoplay policy) AND 'interrupted' (iOS-only — the context
+    // drops here after audio goes idle, e.g. between rounds, or on a route
+    // change / call) both need a resume. Only checking 'suspended' was why
+    // rounds 2+ were silent on iOS. Matches the shared qn-audio.js fix.
+    if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
       ctx.resume().then(() => {
         const n = document.getElementById('audio-nudge');
         if (n) n.classList.remove('show');
@@ -1289,6 +1293,11 @@
   }
 
   function startRound() {
+    // Resume the AudioContext NOW, synchronously inside the click gesture that
+    // called startRound (Play again / Start). The first note plays ~320ms later
+    // via setTimeout — outside the gesture window — so iOS would reject a resume
+    // issued there, leaving rounds 2+ silent. Resuming here keeps it in-gesture.
+    if (typeof A !== 'undefined' && A.ensureCtx) A.ensureCtx();
     state.isDrill = false;   // a real round: counts toward medals + XP
     state.pool = buildPool(state.settings.clef, state.settings.difficulty, state.settings.accidentals);
     state.deck = [];
