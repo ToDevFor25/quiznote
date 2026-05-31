@@ -1984,19 +1984,19 @@
     let pb = { score: 0, pct: 0, streak: 0 };
     try {
       pb = JSON.parse(localStorage.getItem('dynamics_pb') || '{}');
-      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0; pb.total = pb.total || (pb.pct ? Math.round(pb.score / pb.pct) : 0);
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
     const newScorePB = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
     const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
-    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; pb.total = state.total; }
     if (newStreakPB) pb.streak = state.bestStreak;
     try { localStorage.setItem('dynamics_pb', JSON.stringify(pb)); } catch(e) {}
     const pbRow = els['pb-row'];
     if (pbRow) {
       if (pb.score > 0 || pb.streak > 0) {
         pbRow.hidden = false;
-        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
         const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
         if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
         if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;

@@ -346,16 +346,8 @@
     .brand h1 { font-size: 44px; }
     .summary-title { font-size: 36px; }
     .summary-sub { font-size: 15px; }
-    /* Summary density: stars on ONE line is the root cause of tall pillar
-       cards (base .stars is 36px/4px letter-spacing → wraps in a 3-across
-       cell). Shrink + nowrap so all 3 cards stay wide-and-short, bringing
-       "Play again" into reach. Inline here overrides qn-theme.css base
-       (no shared-file change). */
-    .summary-grid { gap: 8px; margin-top: 14px; }
-    .summary-grid .stat-card { padding: 10px 8px; }
-    .summary-grid .stat-value { font-size: 30px; }
-    .summary-grid .stat-value .of { font-size: 16px; }
-    .summary-grid .stars { font-size: 22px; letter-spacing: 2px; white-space: nowrap; }
+    /* Summary card density now lives in qn-theme.css (shared mobile @media) so
+       all modules match — the inline duplicate was removed May 2026. */
     .summary-actions { margin-top: 16px; }
     .tile-emoji { font-size: 30px; }
     .tile-title { font-size: 17px; }
@@ -1974,19 +1966,19 @@
     let pb = { score: 0, pct: 0, streak: 0 };
     try {
       pb = JSON.parse(localStorage.getItem('qn_fq_pb') || '{}');
-      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0;
+      pb.score = pb.score || 0; pb.pct = pb.pct || 0; pb.streak = pb.streak || 0; pb.total = pb.total || (pb.pct ? Math.round(pb.score / pb.pct) : 0);
     } catch(e) {}
     const thisPct = state.total > 0 ? state.score / state.total : 0;
     const newScorePB  = !state.isDrill && (thisPct > pb.pct || (thisPct === pb.pct && state.score > pb.score));
     const newStreakPB = !state.isDrill && (state.bestStreak > pb.streak);
-    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; }
+    if (newScorePB) { pb.score = state.score; pb.pct = thisPct; pb.total = state.total; }
     if (newStreakPB) pb.streak = state.bestStreak;
     if (newScorePB || newStreakPB) { try { localStorage.setItem('qn_fq_pb', JSON.stringify(pb)); } catch(e) {} }
     const pbRow = els['pb-row'];
     if (pbRow) {
       if (pb.score > 0 || pb.streak > 0) {
         pbRow.hidden = false;
-        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + state.total + ' NEW!</span>' : pb.score + '/' + state.total;
+        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
         const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
         if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
         if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
