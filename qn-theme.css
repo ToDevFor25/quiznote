@@ -955,7 +955,10 @@ animation: modalFade 200ms ease-out;
   .summary-bar .bar-row > .btn {
     flex: 1 1 0; min-width: 0;
     white-space: normal; line-height: 1.15;
-    padding-left: 10px; padding-right: 10px;
+    /* Compact — overrides .btn.big so the row stays low-profile. */
+    font-size: 16px;
+    padding: 9px 10px;
+    border-radius: 13px;
   }
   /* In the bar, the Next CTA fills width and drops its huge padding so the
      whole bar stays compact. */

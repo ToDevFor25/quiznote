@@ -175,14 +175,9 @@
     if (cta) {
       var low = pct < 0.5;
       if (low) {
-        cta.hidden = false;
-        if ($('nsc-reason')) $('nsc-reason').textContent = "Let's run that back —";
-        if ($('nsc-btn'))    $('nsc-btn').textContent = "Try again — you've got this";
-        cta.onclick = function (ev2) {
-          ev2.preventDefault();
-          if (typeof opts.onRetry === 'function') opts.onRetry();
-          else if ($('again-btn')) $('again-btn').click();
-        };
+        // Low score: "Play again" already covers retrying, so don't add a second
+        // redundant "Try again" CTA in the bar. Just hide the next-step.
+        cta.hidden = true;
       } else {
         var rec = (QN.recommend && QN.recommend.next) ? QN.recommend.next(profileId) : null;
         if (rec && rec.module) {
