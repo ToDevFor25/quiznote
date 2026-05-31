@@ -1,5 +1,50 @@
 ---
 
+### FUTURE CLEANUP OPTION — centralize summary markup into qn-roundend.js (Tier 3) — May 2026
+
+**Why this is here:** the round-end redesign (entries below) was painful far out
+of proportion to a "visual tweak" because of how the three layers are split:
+
+| Layer | Location | Change cost today |
+|---|---|---|
+| Visual styling (CSS) | `qn-theme.css` (shared, 0 inline copies) | ✅ edit once → all 35 |
+| Behavior/logic | `qn-roundend.js` `render()` (shared) | ✅ edit once → all 35 |
+| **Markup** (the `#summary-screen` HTML skeleton) | **inline in all 35 modules** | ❌ **35 edits, ~5 drifted variants** |
+
+So styling + behavior changes ARE fast now (one file each). The pain was a
+**structural markup** change (add hero div, remove grid, reorder blocks) — the
+one layer still duplicated 35×, and the copies had drifted (indentation,
+`&middot;` vs `·`, `state.total` vs `state.settings.total`, scales'
+querySelectorAll, piano-quiz's guarded pb). That made a "simple" change into 35
+individually-verified edits. **It was a one-time tax** (won't recur unless the
+next change again alters the HTML skeleton) — but it WILL recur for any future
+structural redesign.
+
+**The cleanup option (NOT scheduled — Jonathan's call, flagged Tier 3):**
+Render the summary markup from JS instead of hardcoding it per file —
+`qn-roundend.js` injects the whole `#summary-screen` innards into an empty
+`<div id="summary-mount">` in each module. Then the skeleton lives in ONE place
+too, and the next structural redesign is one edit, not 35.
+
+**Trade-offs to weigh before doing it (why it's Tier 3, not automatic):**
+- Conflicts with the founding "self-contained static HTML, no build step"
+  principle (CLAUDE.md) — markup shifts from static to JS-generated.
+- First-paint/FOUC: the summary is hidden until round-end anyway, so risk is
+  low, but the mount must exist before `render()` runs.
+- Migration risk: a one-time pass to strip the inline block from 35 files and
+  prove the injected version renders identically (incl. the outliers — scales,
+  piano-quiz, the score-literacy modules with module-specific sub-text/labels
+  like miss-list headings "Notes/Scales/Cadences to practice next time", which
+  would need to become parameters).
+- Net: a real engineering session up front to make every future round-end visual
+  change an afternoon instead of two days.
+
+**Decision: deferred.** Logged as an option so the next person feels the same
+pain and knows the escape hatch exists. Revisit if/when another structural
+round-end change is on the table.
+
+---
+
 ### Round-end redesign GENUINELY complete — 35/35 verified-from-files — May 2026
 
 **This entry supersedes the one below it, which falsely claimed "35/35 COMPLETE"
