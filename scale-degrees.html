@@ -724,7 +724,11 @@
       masterGain.gain.value = muted ? 0 : 0.6;
       masterGain.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended') {
+    // 'suspended' (autoplay policy) AND 'interrupted' (iOS-only — the context
+    // drops here after audio goes idle, e.g. between rounds, or on a route
+    // change / call) both need a resume. Only checking 'suspended' was why
+    // rounds 2+ were silent on iOS. Matches the shared qn-audio.js fix.
+    if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
       ctx.resume().then(() => {
         const n = document.getElementById('audio-nudge');
         if (n) n.classList.remove('show');
