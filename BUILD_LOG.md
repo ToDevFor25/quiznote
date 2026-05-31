@@ -1,5 +1,41 @@
 ---
 
+### Session close — production deploy + QA tooling + data-durability flag — May 2026
+
+**Deployed to production.** Promoted **Dev → main** at Jonathan's call ("deploy
+to main; if anything's broken I'll circle back"). This shipped the whole backlog
+that had accumulated on Dev: the start-screen sticky-CTA saga (window-scroll +
+sticky bar, iOS svh fix, pop-in, tap-bounce, rubber-band — qn-roundend.js through
+v1.6.0), round-end spacing polish, the play.html mobile-first / tab-picker /
+first-run glow-hint work, the footer copyright + auto-year, this session's
+scale-family bug fix, and the `?hint` QA tooling. Branch `claude/gamified-
+learning-roadmap-QxZmK` ("gamify") deleted after merge — fully contained in main,
+nothing stranded. **Starting clean next session.**
+
+**`?hint` QA test-mode for the play.html tab glow.** The first-run tab-picker
+glow is gated once-only (`qn_play_hint_done` / `qn_play_hint_seen`, 3-load budget,
+mobile-only), which made it hard to re-QA. Added `play.html?hint` → sets a
+**persistent** `qn_play_hint_force` flag so the glow replays on every load
+(survives refresh, navigation, reopening, and Safari bfcache via a `pageshow`
+handler); `play.html?hint=off` clears it. In force mode a tap doesn't end it.
+Real users never hit those URLs, so first-run-only behavior is untouched.
+**Root-caused two false alarms along the way:** (1) Safari's targeted per-site
+"Website Data" delete is unreliable for deep preview subdomains / can serve a
+bfcache page that doesn't re-run init — vs the global clear which works but wipes
+everything; (2) the URL-only `?hint` dropped its param on navigation, reverting
+to the normal gate ("works a little then stops") — hence the persistent flag.
+
+**⚠️ Data-durability gap surfaced (pre-launch consideration).** Clearing Safari
+site data to test wiped all progress, because **everything lives in localStorage
+(`qn_profiles`) with no backup** — `qn-cloud.js` exists but all sync flags are
+off. Any real user who clears their browser, switches devices, or uses private
+mode loses everything. Recommended a lightweight **local export/import ("Back up
+my progress")** as a fast pre-launch stopgap — no server, no accounts, **not
+lawyer-gated** (user's own data, their file) — with full cloud sync remaining the
+post-launch/monetization milestone. **Not yet built; awaiting Jonathan's go.**
+
+---
+
 ### Bug fix — frozen answer buttons after wrong-answer hint (3 scale-family modules) — May 2026
 
 Jonathan found it on **ear-scales** + **chromatic-scale** (also **scale-modes**):
