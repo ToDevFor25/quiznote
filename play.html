@@ -1553,7 +1553,10 @@
     // Default = all expanded (matches genre convention for "library /
     // browse" UIs: Coursera, edX, Notion, VSCode). Per-section state
     // persists in localStorage and overrides the default on reload.
-    var STORAGE_KEY = 'qn_play_sections_open';
+    // v2: bumped when the default flipped to Foundations-open / Reading+Theory-
+    // collapsed (May 2026). The old key persisted all-expanded state and would
+    // otherwise override the new collapsed default for returning users.
+    var STORAGE_KEY = 'qn_play_sections_open_v2';
     var saved = {};
     try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; } catch (e) {}
 

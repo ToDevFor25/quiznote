@@ -33,6 +33,19 @@ preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
 7. Section anchors `id="sec-foundations|sec-reading|sec-theory"` as scroll
    targets.
 
+**Post-ship bugfix (same day):** returning users landed with Reading's pane
+open despite the new collapsed default, while the tab bar correctly showed
+Foundations active — a mismatch. Root cause: a pre-existing localStorage layer
+(`qn_play_sections_open`) persists which tiers you've opened and **overrides the
+HTML `aria-expanded` default on reload**; the CHANGELOG author flipped the markup
+default but didn't account for it, so stale all-expanded state (`reading:true`)
+reopened Reading. Fix = bump the key to `qn_play_sections_open_v2` (standard
+"bump the cache key when the default changes" pattern): old state discarded once,
+everyone restarts from the new collapsed default, subsequent toggles persist
+forward. (Note left in code: the mobile tab-bar accordion sets `aria-expanded`
+directly and intentionally does NOT write to the persistence key — tab nav is
+transient, not a saved preference.)
+
 **The notable engineering detail (banked):** the "have-to-tap-twice" scroll
 bug. Tier bodies expand/collapse over a 360ms `grid-template-rows` transition;
 if you measure the target's position immediately you get a mid-animation layout
