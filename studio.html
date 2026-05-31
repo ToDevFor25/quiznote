@@ -293,12 +293,27 @@
     background: white; border: 2.5px solid var(--ink); border-radius: 20px;
     box-shadow: 0 5px 0 var(--shadow-cool); padding: 18px 20px;
   }
-  .badge-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(54px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .badge-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 12px; margin-bottom: 14px; }
   .badge {
-    aspect-ratio: 1; border-radius: 14px; border: 2px dashed #cfc9b0; background: #faf7ee;
-    display: flex; align-items: center; justify-content: center; font-size: 24px;
-    color: #cfc9b0; opacity: 0.7;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    text-align: center;
   }
+  .badge-ico {
+    width: 52px; height: 52px; border-radius: 15px;
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    border: 2.5px solid var(--shadow-cool); background: #faf7ee;
+    filter: grayscale(1) opacity(0.4);
+    transition: filter 240ms, border-color 240ms, transform 240ms;
+  }
+  .badge.earned .badge-ico {
+    filter: none; border-color: var(--rank-gold, #E6B422);
+    background: #fff8e6; box-shadow: 0 3px 0 rgba(230,180,34,0.35);
+  }
+  .badge.next .badge-ico { border-style: dashed; animation: badgePulse 2.4s ease-in-out infinite; }
+  .badge-name { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 10px; line-height: 1.15; color: var(--ink-faint); }
+  .badge.earned .badge-name { color: var(--ink); }
+  @keyframes badgePulse { 0%,100% { border-color: var(--shadow-cool); } 50% { border-color: var(--teal); } }
+  @media (prefers-reduced-motion: reduce) { .badge.next .badge-ico { animation: none; } }
   .collection-note { font-size: 13px; color: var(--ink-soft); text-align: center; }
   .collection-note b { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--ink); }
 
@@ -425,12 +440,12 @@
       <div class="banner"><b>Your path guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.</div>
     </div>
 
-    <!-- COLLECTION (P4 skeleton — the curiosity gap) -->
+    <!-- COLLECTION (P4 — earned + next-to-unlock badge wall) -->
     <div class="sec">
-      <div class="sec-h"><span>Your collection</span><span class="sec-count">arriving soon</span></div>
+      <div class="sec-h"><span>Your collection</span><span class="sec-count" id="badge-count">0 badges</span></div>
       <div class="collection">
-        <div class="badge-wall" id="badge-wall" aria-hidden="true"></div>
-        <div class="collection-note"><b>Badges are coming.</b> Keep practicing — soon you'll earn collectibles for streaks, perfect games, and graduating each level.</div>
+        <div class="badge-wall" id="badge-wall"></div>
+        <div class="collection-note" id="badge-note"></div>
       </div>
     </div>
 
@@ -449,6 +464,7 @@
 
 <script src="qn-profile.js" defer></script>
 <script src="qn-xp.js" defer></script>
+<script src="qn-badges.js" defer></script>
 <script src="qn-audio.js" defer></script>
 <script src="qn-home.js" defer></script>
 
@@ -941,18 +957,49 @@
     if (cEl) cEl.textContent = doneCount + '/' + quests.length;
   }
 
-  // ── COLLECTION (P4 skeleton): a wall of ghost badges (the curiosity gap).
-  function renderBadgeWall() {
+  // ── COLLECTION (P4): the real badge wall. Earned badges (bright) float to the
+  //    front; the single "next up" badge gets a pulsing dashed ring (the
+  //    curiosity gap); the rest sit locked/greyed. Powered by qn-badges.js
+  //    (pure predicates over the event log). Falls back to a ghost wall if the
+  //    engine somehow isn't present.
+  function renderBadgeWall(active) {
     var wall = $('badge-wall');
     if (!wall) return;
     wall.innerHTML = '';
-    var ghosts = ['🏅', '🎖️', '⭐', '🔥', '🎵', '🌟', '🏆', '◌'];
-    ghosts.forEach(function (g) {
-      var b = document.createElement('div');
-      b.className = 'badge';
-      b.textContent = g;
-      wall.appendChild(b);
+    if (!window.QN || !QN.badges) {
+      ['🏅','🎖️','⭐','🔥','🎵','🌟','🏆','◌'].forEach(function (g) {
+        var b = document.createElement('div'); b.className = 'badge';
+        b.innerHTML = '<span class="badge-ico">' + g + '</span>';
+        wall.appendChild(b);
+      });
+      return;
+    }
+    var res = QN.badges.evaluate(active.id);
+    // Order: earned first (catalogue order), then the "next" badge, then the
+    // remaining locked ones.
+    var earned = [], locked = [];
+    QN.badges.LIST.forEach(function (b) {
+      if (res.byId[b.id]) earned.push(b); else locked.push(b);
     });
+    var ordered = earned.concat(locked);
+    ordered.forEach(function (b) {
+      var got = res.byId[b.id];
+      var isNext = res.next && b.id === res.next.id;
+      var el = document.createElement('div');
+      el.className = 'badge' + (got ? ' earned' : '') + (isNext ? ' next' : '');
+      el.setAttribute('title', b.name + ' — ' + b.desc);
+      el.innerHTML = '<span class="badge-ico">' + b.icon + '</span>' +
+        '<span class="badge-name">' + (got ? b.name : (isNext ? b.name : '???')) + '</span>';
+      wall.appendChild(el);
+    });
+    var cEl = $('badge-count');
+    if (cEl) cEl.textContent = res.count + ' / ' + res.total + ' badges';
+    var nEl = $('badge-note');
+    if (nEl) {
+      if (res.count === 0) nEl.innerHTML = '<b>Your collection starts now.</b> Play a round to earn your first badge.';
+      else if (res.next) nEl.innerHTML = '<b>Next up: ' + res.next.name + '</b> — ' + res.next.desc + '.';
+      else nEl.innerHTML = '<b>Collection complete!</b> You\'ve earned every badge. 🎉';
+    }
   }
 
   // ── Boot ──────────────────────────────────────────────────────
@@ -975,7 +1022,7 @@
     renderQuests(events);
     renderMomentum(active, events);
     renderMapBars(events);
-    renderBadgeWall();
+    renderBadgeWall(active);
   });
 })();
 </script>
