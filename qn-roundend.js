@@ -335,6 +335,19 @@
         window.scrollBy({ top: Math.round(window.innerHeight * 0.6), behavior: 'smooth' });
       });
     }
+    // Tap bounce on the start-screen tiles + Start button. Fire on POINTERDOWN
+    // (the press) so it's visible even though tapping Start navigates away on
+    // release. remove→reflow→re-add restarts it; cleared on animationend.
+    screen.addEventListener('pointerdown', function (ev) {
+      var el = ev.target && ev.target.closest && ev.target.closest('.tile, #start-btn');
+      if (!el) return;
+      el.classList.remove('tap-bounce');
+      void el.offsetWidth;          // reflow → restart the animation
+      el.classList.add('tap-bounce');
+    }, { passive: true });
+    screen.addEventListener('animationend', function (ev) {
+      if (ev.animationName === 'tapBounce' && ev.target.classList) ev.target.classList.remove('tap-bounce');
+    }, true);
     // Re-reset + re-measure ONLY on a real inactive→active transition (e.g. the
     // user returns from a round). Must track prior state: updateStartScrim()
     // toggles the `scroll-end` class on #start-screen, which is also a class
@@ -371,6 +384,6 @@
     updateStartScrim: updateStartScrim,
     prettySlug:      prettySlug,
     starsFor:        starsFor,
-    version:         '1.5.0'
+    version:         '1.6.0'
   };
 })();

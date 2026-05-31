@@ -138,10 +138,23 @@ to .30s, reduced-motion → none). Triggered by `playPopIn()` which toggles a
 on every `#start-screen` reactivation (hooked into the same MutationObserver as
 the scroll reset). Zero per-module JS / HTML; shared CSS + JS only.
 
-**Owed:** device/pixel QA (Jonathan running it) — confirm on real iOS Safari +
-Samsung Chrome: Start CTA pinned at bottom (short config) + clears the toolbar,
-sticks while scrolling a long config, rubber-band bounce present, and the
-pop-in entrance plays on load + on returning to the start screen.
+**Post-ship fix 7 → tap bounce (qn-roundend.js v1.6.0, option ③).** Scale
+squish→overshoot (`@keyframes tapBounce`, .4s spring) on the start-screen tiles +
+Start button. **Fired on `pointerdown` (the PRESS), not click** — because tapping
+Start runs `startRound()`→`showScreen('play')` immediately, so a post-release
+bounce on that button would never be seen; firing on press shows the squish while
+the finger is down. On the non-navigating tiles the full overshoot is visible
+(every clef/tier/length tap). Wired as ONE delegated `pointerdown` listener on
+`#start-screen` (`closest('.tile, #start-btn')` → remove→reflow→re-add
+`.tap-bounce`; cleared on `animationend`). Zero per-module JS/HTML; the keyframe
+animation cleanly overrides the existing `:active{translateY}` press during its
+run. reduced-motion safe.
+
+**Start screen is now feature-complete** (sticky CTA bar + window-scroll model +
+svh/flex sizing + rubber-band + pop-in entrance + tap bounce), all shared-only.
+**Owed:** device/pixel QA (Jonathan running it) on real iOS Safari + Samsung
+Chrome: CTA pinned/clears toolbar, sticks while scrolling long config, rubber-band
+present, pop-in on load + on return, tap bounce on tiles (+ press squish on Start).
 
 ---
 
