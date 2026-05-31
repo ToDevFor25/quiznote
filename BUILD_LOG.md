@@ -56,9 +56,19 @@ an `@media (max-width:560px)` density block (tightens the shared `.tile`/
 **Excluded: `pianoquiz-demo.html`** — loads neither shared file (standalone demo)
 and has a non-uniform start-cta (extra "Start muted" toggle). Left as-is.
 
+**Post-ship bugfix → qn-roundend.js v1.3.1 (snap-to-top on scroll).** Device QA
+hit a snap-to-top: scrolling toward the bottom settings yanked back up, so you
+couldn't reach Sound/Teaching. Root cause = a feedback loop in the
+MutationObserver: `updateStartScrim()` toggles the `scroll-end` **class** on
+`#start-screen`, and the observer (watching `class`) fired on that, calling
+`resetStartScroll()` → `scrollTop=0` mid-scroll. Fix: track prior `active` state
+and only reset on a real **inactive→active transition**, ignoring `scroll-end`
+toggles. Verified by mock-DOM: 0 resets on scrim-class mutations, exactly 1 on a
+genuine reactivation. One shared-file change; all 35 benefit.
+
 **Owed:** device/pixel QA (Jonathan running it) — the inner-scroll feel on iOS,
 the scrim/cue honesty at the scroll bottom, and the bar's safe-area padding on
-notched phones. No code follow-ups expected.
+notched phones.
 
 ---
 

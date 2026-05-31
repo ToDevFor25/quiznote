@@ -326,11 +326,17 @@
         scroll.scrollBy({ top: Math.round(scroll.clientHeight * 0.7), behavior: 'smooth' });
       });
     }
-    // Re-reset + re-measure whenever the start screen re-activates (e.g. the
-    // user returns from a round). Avoids any per-module showScreen hook.
+    // Re-reset + re-measure ONLY on a real inactive→active transition (e.g. the
+    // user returns from a round). Must track prior state: updateStartScrim()
+    // toggles the `scroll-end` class on #start-screen, which is also a class
+    // mutation — reacting to that would reset scrollTop mid-scroll (snap-to-top
+    // feedback loop). So we ignore changes where `active` didn't actually flip.
     try {
+      var wasActive = screen.classList.contains('active');
       var mo = new MutationObserver(function () {
-        if (screen.classList.contains('active')) resetStartScroll();
+        var isActive = screen.classList.contains('active');
+        if (isActive && !wasActive) resetStartScroll();
+        wasActive = isActive;
       });
       mo.observe(screen, { attributes: true, attributeFilter: ['class'] });
     } catch (e) {}
@@ -355,6 +361,6 @@
     updateStartScrim: updateStartScrim,
     prettySlug:      prettySlug,
     starsFor:        starsFor,
-    version:         '1.3.0'
+    version:         '1.3.1'
   };
 })();
