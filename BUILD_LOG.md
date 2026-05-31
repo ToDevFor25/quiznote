@@ -1,5 +1,72 @@
 ---
 
+### Round-end redesign ROLLOUT COMPLETE — 35/35 + hero-position fix — May 2026
+
+**Same session, pushed through to done.** All 35 modules now carry the unified
+hero/track round-end. Verified clean across the whole roster (state probe below):
+DONE 35/35, hero correctly positioned (before xp-earn) everywhere, no
+stat-card-in-summary, all divs balanced, all inline JS parses, no Practising /
+no .85.65 or .8.6 verdict thresholds / no "Game Settings" left.
+
+**Two things finished here:**
+1. **Hero-position fix (28 modules).** The earlier batches replaced the grid
+   *in place*, but the grid sits BELOW the xp/mastery cards — so stars rendered
+   under them instead of as the headline. Wrote a move-hero pass: relocate the
+   hero block to right after the `summary-speed` line (before Beat 1) in all 28.
+   Caught by a position audit (`hero-line < xp-earn-line`); the earlier
+   structural checks passed while visual ORDER was wrong. **Lesson: verify
+   element order, not just presence/balance.** Commit covers all 28.
+2. **The final 5 (the hard outliers), each hand/script-verified:**
+   - **scales** (structural outlier): hero after `summary-sub` (no speed-line);
+     removed the hazardous `document.querySelectorAll('#summary-screen
+     .stat-value .of')` line (it targeted the deleted grid's `.of` spans;
+     hero's `#sum-score-of` is set by render()); dead `starCount`/`starStr`
+     removed; verdict tier `.85/.65`→`1/.8/.5` (left encouragingLine's `.85/.65`
+     FLAVOR buckets intact); pb→flag via `newScoreBest`/`newStreakBest`,
+     `best.score`, `state.settings.total`; **render() quirk preserved**
+     (`total: state.settings.total` — scales has no `state.total`).
+   - **chromatic-scale, ear-scales, scale-modes**: turned out to be scales-clones
+     (same `starCount`/querySelectorAll/`newScoreBest` shape); same treatment.
+   - **piano-quiz**: guarded-pb variant (`const pbRow = els['pb-row']; if(pbRow)`
+     with `sLabel`/`kLabel` + `newScorePB`/`newStreakPB`) → flag inside the same
+     guard; std threshold (no normalize); **guided key-find (key-halo) untouched.**
+
+**Process notes:** the terminal/Read DISPLAY started duplicating+truncating lines
+mid-session (environment degrading). Mitigated by working through exact-string,
+fail-loud transform scripts + writing all verification to /tmp files and reading
+those (file I/O stayed correct; only stdout rendering was garbled). This is the
+reliable pattern when the terminal is flaky: never edit from a possibly-garbled
+read — match exact bytes, dry-run (writes nothing), verify to file, then commit.
+
+**Commits (all pushed):** 28-module hero-position fix; scales (31/35);
+scales-family siblings (34/35); piano-quiz (35/35). Plus the gen-1/gen-2 batches
+from the entries below. Helper scripts were temporary, removed before close.
+
+**Still open / next:**
+1. **Push Dev** — the rollout is now a uniform 35/35, the stopping point Jonathan
+   gated the Dev sync on. origin/Dev was far behind (at `4904478`); this branch
+   fast-forwards it. (Doing this next.)
+2. **Visual/device QA** the redesigned round-end on real screens — esp. the
+   threshold-normalized modules (their title tier changed) and scales-family
+   (heaviest edits). Structural verification is complete; pixel QA is owed.
+3. **Tier-3 mastery-axis recommender** (length/clef/mode progression) — still
+   queued, unchanged.
+
+State probe (run to reconfirm 35/35 from files, not memory):
+```
+python3 - <<'PY'
+import re, glob
+for f in sorted(glob.glob('*.html')):
+    if f=='pianoquiz-demo.html' or 'has-roundbar' not in open(f).read(): continue
+    seg=re.search(r'<section class="screen has-roundbar" id="summary-screen">.*?</section>',open(f).read(),re.S).group(0)
+    hero='class="summary-hero"' in seg; grid='class="summary-grid"' in seg
+    hi=open(f).read().find('<div class="summary-hero">'); xi=open(f).read().find('id="xp-earn"')
+    print(('DONE' if hero and not grid and hi<xi else 'CHECK'), f[:-5])
+PY
+```
+
+---
+
 ### Round-end redesign — final-5 attempt aborted cleanly; hero-position recipe nailed down — May 2026
 
 **Still at 30/35** (HEAD `810935f`). Attempted the final 5 (scales-family +
