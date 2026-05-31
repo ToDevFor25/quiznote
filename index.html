@@ -1505,7 +1505,7 @@
       var slot = document.getElementById('nav-actions');
       if (slot) {
         var a = slot.querySelector('a.nav-btn.primary') || slot.querySelector('a');
-        if (a) { a.href = 'path.html'; a.textContent = 'Continue \u2192'; }
+        if (a) { a.href = 'studio.html'; a.textContent = 'Continue \u2192'; }
       }
     }
     buildBar(active);      // skipped if dismissed this session
@@ -1533,7 +1533,7 @@
 
     var right = document.createElement('div'); right.className = 'wb-right';
     var btn = document.createElement('a'); btn.className = 'wb-btn';
-    btn.href = 'path.html'; btn.textContent = 'Continue \u2192';
+    btn.href = 'studio.html'; btn.textContent = 'Continue \u2192';
     var notYou = document.createElement('a'); notYou.className = 'wb-switch';
     notYou.href = 'profile.html';
     notYou.textContent = 'Not ' + active.nickname + '? Switch \u2192';
