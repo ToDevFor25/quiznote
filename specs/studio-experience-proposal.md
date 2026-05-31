@@ -155,16 +155,22 @@ Added to `/specs/` as we reach each phase: `studio-p0-spec.md` (next),
 
 ## Known bugs to fix in their natural phase (don't patch early)
 
-- **[P2] Next-step CTA tier mismatch.** Found in P0 testing (note-names, May 2026):
-  the round-end Beat-3 CTA reads "Next: Note Names · Medium" (label from
-  `rec.tier`) and writes `localStorage[module+'_settings'] = {difficulty: rec.tier,
-  total: rec.length}` (qn-roundend.js ~L254–261) — label and written payload agree
-  (Medium). But the target module's start screen restores its OWN last-used
-  difficulty (Tricky, from the round just played) with precedence over the
-  `_settings` handoff key, so it LANDS on Tricky. Two stores of truth disagree:
-  the recommender handoff vs the module's last-used restore. **Fix belongs in P2**
-  because P2 rebuilds exactly this handoff (passing difficulty/clef/length/timed
-  from the Next Beat into the module) — the fix is: a recommender-driven launch's
-  handoff key must win over the module's last-used restore. Patching before P2
-  would be thrown away. Touch points: qn-roundend.js Beat-3 onclick + each module's
-  start-screen settings-restore precedence (the `_settings` read).
+- **[P2] Next-step CTA tier mismatch — ROOT CAUSE CONFIRMED (init-order override).**
+  Found in P0 testing (note-names, May 2026). Label "Medium" and the handoff
+  payload AGREE — both are `rec.tier` from the recommender: qn-roundend.js ~L254
+  (label) and ~L258–260 (writes `localStorage[module+'_settings'] =
+  {difficulty: rec.tier, total: rec.length}`, then navigates). The mismatch is on
+  the TARGET page, where three steps set difficulty IN SEQUENCE and the last wins:
+  (1) `setupStart()` defaults `medium`; (2) `applyPathHandoff()` reads
+  `note-names_settings` and correctly applies `medium` ✓; (3) **`applyProfileDefaults()`
+  runs LAST** (note-names.html ~L1147–1161) and does "if selected tile is `medium`,
+  switch to `prof.defaultDifficulty`" → clobbers the handoff to `tricky`. The
+  profile's `defaultDifficulty` is `tricky` because onboarding's "I've been playing
+  a while" sets it (it is NOT the last-played tier — it's the onboarding default).
+  **Fix (P2):** a fresh path/recommender handoff must win over the profile default —
+  e.g. `applyPathHandoff()` sets a "handoff applied" flag that makes
+  `applyProfileDefaults()` no-op, or profile-default only fills in when no handoff
+  key was present. Belongs in P2 because P2 rebuilds this exact handoff (Next Beat →
+  module, passing difficulty/clef/length/timed). Touch points: each module's
+  `applyProfileDefaults` vs `applyPathHandoff` ordering/precedence (note-names is the
+  reference; the same pattern is cloned across modules — verify per module).
