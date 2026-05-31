@@ -626,8 +626,8 @@
 
     <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
     <div class="summary-demote">
-      <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
-      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+      <button class="btn secondary-link" id="change-btn">⚙️ Change module settings</button>
+      <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose another module</a>
     </div>
   </div>
  </div>
@@ -1974,21 +1974,25 @@
     if (newScorePB) { pb.score = state.score; pb.pct = thisPct; pb.total = state.total; }
     if (newStreakPB) pb.streak = state.bestStreak;
     if (newScorePB || newStreakPB) { try { localStorage.setItem('qn_fq_pb', JSON.stringify(pb)); } catch(e) {} }
+    // Celebratory flag — shown ONLY when a record is actually beaten this round
+    // (not a permanent line). Drills can't set a PB (newScorePB/newStreakPB are
+    // already gated !isDrill above).
     const pbRow = els['pb-row'];
     if (pbRow) {
-      if (pb.score > 0 || pb.streak > 0) {
+      if (newScorePB || newStreakPB) {
         pbRow.hidden = false;
-        const scoreLabel  = newScorePB  ? '<span class="pb-new">🏆 ' + pb.score + '/' + (pb.total || state.total) + ' NEW!</span>' : pb.score + '/' + (pb.total || state.total);
-        const streakLabel = newStreakPB ? '<span class="pb-new">🔥 ' + pb.streak + ' streak NEW!</span>' : '🔥 ' + pb.streak + ' streak';
-        if (els['pb-score'])  els['pb-score'].innerHTML  = scoreLabel;
-        if (els['pb-streak']) els['pb-streak'].innerHTML = streakLabel;
+        let msg;
+        if (newScorePB && newStreakPB) msg = '🏆 New best score & streak!';
+        else if (newStreakPB)          msg = '🔥 New best streak: ' + pb.streak + '!';
+        else                           msg = '🏆 New best score: ' + pb.score + '/' + (pb.total || state.total) + '!';
+        if (els['pb-score']) els['pb-score'].textContent = msg;
       } else {
         pbRow.hidden = true;
       }
     }
 
     // Tier-colored title + sub
-    const titleMap = { perfect: 'NOTE WHIZ! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practising! 🌱' };
+    const titleMap = { perfect: 'NOTE WHIZ! 🎵', great: 'Amazing Round! ⭐', good: 'Nice Playing! 🎶', practice: 'Keep Practicing! 🌱' };
     const titleEl = document.querySelector('.summary-title');
     if (titleEl) {
       titleEl.textContent = titleMap[tier];

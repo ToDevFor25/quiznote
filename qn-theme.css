@@ -138,6 +138,8 @@
   .summary-grid .stat-value { font-size: 25px; }
   .summary-grid .stat-value .of { font-size: 14px; }
   .summary-grid .stars { font-size: 18px; letter-spacing: 1px; white-space: nowrap; }
+  .hero-stars .s { font-size: 40px; }
+  .hero-score { font-size: 16.5px; }
 }
 @media (min-width: 1100px) {
   .choice-btn { font-size: 26px; padding: 18px 14px; }

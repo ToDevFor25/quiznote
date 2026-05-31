@@ -66,6 +66,22 @@
     var prof = QN.profile && QN.profile.getActive ? QN.profile.getActive() : null;
     var profileId = prof ? prof.id : null;
 
+    // --- HERO: the round verdict (stars + score), owned here so every module
+    // renders an identical verdict. Stars derive from pct (1/.8/.5 buckets,
+    // the common scale); score is this round's raw count + percent. The module
+    // markup just provides the anchors (#sum-stars hero, #sum-score, #sum-score-of,
+    // #sum-pct); a module with no hero markup self-skips each line. ---
+    var starN = pct >= 1 ? 4 : pct >= 0.8 ? 3 : pct >= 0.5 ? 2 : 1;
+    var starsEl = $('sum-stars');
+    if (starsEl) {
+      var sHtml = '';
+      for (var si = 0; si < 4; si++) sHtml += '<span class="s ' + (si < starN ? 'on' : 'off') + '">★</span>';
+      starsEl.innerHTML = sHtml;   // computed only, no user data
+    }
+    if ($('sum-score'))    $('sum-score').textContent = score;
+    if ($('sum-score-of')) $('sum-score-of').textContent = ' / ' + total;
+    if ($('sum-pct'))      $('sum-pct').textContent = total ? ('· ' + Math.round(pct * 100) + '%') : '';
+
     // Event shape EXACTLY as stored by QN.events.log (no streak field — the log
     // whitelists fields and does not persist streak, so the live earn matches
     // what totalFor() recomputes). Drills earn 0 and were never logged.
@@ -87,10 +103,18 @@
           streakEl.hidden = false;
           streakEl.textContent = '🎯 Practice round — no XP, just sharpening up';
         } else {
-          // The round's best streak already has a dedicated stat card below
-          // ("Best streak"), so don't repeat it here — that double-print was
-          // the "streaks look wrong" confusion. XP card stays about XP/level.
-          streakEl.hidden = true;
+          // Streak now surfaces ONLY when it earned the XP bonus — otherwise the
+          // standalone "best streak" was redundant with the hero. Threshold +
+          // amount come from qn-xp CONFIG (single source of truth; 5/15 default).
+          var cfg = (QN.xp && QN.xp.CONFIG) || {};
+          var streakMin = cfg.inRoundStreak || 5;
+          var streakBonus = cfg.streakBonus || 15;
+          if (bestStreak >= streakMin) {
+            streakEl.hidden = false;
+            streakEl.textContent = '🔥 ' + bestStreak + '-streak — +' + streakBonus + ' bonus XP!';
+          } else {
+            streakEl.hidden = true;
+          }
         }
       }
 
@@ -135,6 +159,7 @@
     if (meter) {
       var TIERS = ['easy', 'medium', 'tricky'];
       var MEDAL = { easy: '🥉 Bronze', medium: '🥈 Silver', tricky: '🥇 Gold' };
+      var TIERNAME = { easy: 'Easy', medium: 'Medium', tricky: 'Tricky' };
       var good = { easy: 0, medium: 0, tricky: 0 };
       if (profileId && QN.events && QN.events.query) {
         var evs = QN.events.query(profileId, { module: module }) || [];
@@ -164,7 +189,7 @@
         if ($('mm-pips')) $('mm-pips').innerHTML = pipBar(have, 2);
         var need = 2 - have;
         if ($('mm-note')) $('mm-note').textContent = need > 0
-          ? need + ' more 85%+ round' + (need === 1 ? '' : 's') + ' → ' + MEDAL[nextTier]
+          ? need + ' more ' + TIERNAME[nextTier] + ' round' + (need === 1 ? '' : 's') + ' at 85%+ → ' + MEDAL[nextTier]
           : 'Ready for ' + MEDAL[nextTier] + '!';
       } else {
         if ($('mm-pips')) $('mm-pips').innerHTML = pipBar(2, 2);
@@ -257,6 +282,6 @@
     initScroll:  initScroll,
     updateScrim: updateScrim,
     prettySlug:  prettySlug,
-    version:     '1.0.0'
+    version:     '1.1.0'
   };
 })();
