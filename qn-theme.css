@@ -536,7 +536,11 @@ animation: modalFade 200ms ease-out;
    3-card grid is retired in favour of this. Populated by qn-roundend.js
    render() (#sum-stars / #sum-score / #sum-score-of / #sum-pct), so every
    module renders an identical verdict. */
-.summary-hero { display: flex; flex-direction: column; align-items: center; margin-top: 16px; }
+/* Unified summary section rhythm (May 2026): every top-level summary block uses
+   margin-top:18 and NO margin-bottom, so inter-section gaps are an even 18px
+   instead of the old 6/16/0/18/22/14 mishmash (margin-collapse made them
+   unpredictable). xp-earn/mastery keep `auto` L/R to stay centered. */
+.summary-hero { display: flex; flex-direction: column; align-items: center; margin-top: 18px; }
 .hero-stars { display: flex; gap: 8px; margin: 4px 0 2px; line-height: 1; }
 .hero-stars .s { font-size: 46px; line-height: 1; filter: drop-shadow(0 2px 0 rgba(0,0,0,0.05)); }
 .hero-stars .s.on { color: var(--sun); }
@@ -545,13 +549,13 @@ animation: modalFade 200ms ease-out;
   color: var(--ink-soft); margin: 10px 0 0; }
 .hero-score .of { color: var(--ink-faint); }
 .hero-pct { color: var(--ink-faint); margin-left: 2px; }
-.pb-flag { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
+.pb-flag { margin-top: 16px; display: inline-flex; align-items: center; gap: 6px;
   font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; color: #7a4f00;
   background: linear-gradient(135deg, #FFF1CF, #FFE3A0); border: 2px solid var(--sun);
   padding: 6px 14px; border-radius: 999px; }
 .pb-flag[hidden] { display: none; }
 .miss-list {
-  margin-top: 22px; text-align: left;
+  margin-top: 18px; text-align: left;
   background: white; border: 2.5px solid var(--ink); border-radius: 18px;
   box-shadow: 0 5px 0 var(--ink);
   padding: 14px 18px;
@@ -814,7 +818,7 @@ animation: modalFade 200ms ease-out;
     border-radius: 20px;
     box-shadow: 0 5px 0 var(--ink);
     padding: 16px 20px;
-    margin: 0 auto 18px;
+    margin: 18px auto 0;
     max-width: 420px;
     color: white;
   }
@@ -860,7 +864,7 @@ animation: modalFade 200ms ease-out;
 
   /* Beat 2 — THE PROGRESS: this round as one step toward the medal. */
   .mastery-meter {
-    max-width: 420px; margin: 0 auto 16px;
+    max-width: 420px; margin: 18px auto 0;
     background: var(--teal-lt, #e6faf7);
     border: 2.5px solid var(--teal);
     border-radius: 16px; padding: 12px 16px;
@@ -1018,7 +1022,7 @@ animation: modalFade 200ms ease-out;
   /* Demoted low-frequency actions live in the scroll, as quiet links. */
   .summary-demote {
     display: flex; flex-direction: column; gap: 6px;
-    align-items: center; margin-top: 14px;
+    align-items: center; margin-top: 18px;
   }
   .summary-demote .btn.secondary-link { font-size: 15px; }
 
