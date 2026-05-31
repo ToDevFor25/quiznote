@@ -394,6 +394,20 @@ For any future CSS work:
   Timer, Teaching hints, Sound) using pill-state indicators. All 32
   modules. Shared CSS in `qn-theme.css` (`.settings-card`, `.setting-row`,
   `.pill-state`). Mockup at `_mockups/start-screen-settings.html`.
+- **Start-screen sticky CTA bar: SHIPPED (May 2026).** The `Start Game` button
+  pins to the bottom in a `.start-bar` (honest fade-scrim + animated "More ▾"
+  cue, twin of the summary bar); the config scrolls in an inner `.start-scroll`
+  container. **All 35 real modules** (pianoquiz-demo excluded — no shared deps).
+  Shared CSS in `qn-theme.css` (`.start-scroll`, `.start-bar`, `.scroll-cue`,
+  `#start-screen.scroll-end`, reuses `cueBob`); the `#start-screen` base rule
+  stays inline per-module (flex column / 100dvh / padding:0). **JS is fully
+  shared — `qn-roundend.js` v1.3.0** adds `initStartScroll()`/`updateStartScrim()`
+  with a **DOMContentLoaded self-init + MutationObserver** auto-reset on
+  `#start-screen` re-activation → **zero per-module JS** (no `showScreen` hook
+  needed; the inner-scroll model differs from the summary's window-scroll model).
+  Rolled out via a guarded byte-for-byte replacement script (anchors must be
+  exactly-once or the file is skipped, never corrupted). Spec +
+  reference build supplied by Jonathan (`startscreenstickybar.md`).
 - **Onboarding interactive toggles: SHIPPED (May 2026).** Level selection
   shows difficulty + hints pills when selected. "Just starting" = Easy +
   hints on, "I know some" = Medium + hints on, "I've been playing a

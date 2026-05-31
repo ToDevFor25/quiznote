@@ -1,5 +1,67 @@
 ---
 
+### Start-screen sticky CTA bar — rollout across 35 modules — May 2026
+
+Brought the start/settings screen in line with the summary screen: the
+`Start Game` button now pins to the bottom in a `.start-bar`, with the honest
+fade-scrim + animated "More ▾" cue, while the config (clef/tier/length/settings)
+scrolls in an inner `.start-scroll` container. Source: Jonathan-supplied spec
+(`startscreenstickybar.md`) + reference build. **Shipped to all 35 real modules
+in one pass + 2 shared files.**
+
+**Spec-vs-reality reconciliation (did this BEFORE touching anything).** The spec
+was written against a wrong mental model; corrected on three counts:
+1. Spec said "replace `#start-screen` in qn-theme.css" — but `#start-screen` is
+   **inline in all 36 modules** (byte-identical), not shared. So that rule was
+   edited per-module; only the NEW `.start-*` classes went to the shared file.
+2. Spec said mirror `updateSummaryScrim()` per module — **no such function
+   exists**; the summary scrim lives in shared **`qn-roundend.js`**
+   (`initScroll`/`updateScrim`, auto-wired by `render()`).
+3. Therefore the start scrim was built **shared too**, not per-module.
+
+**Architecture (the key call — chosen over the spec's per-module JS).** Extended
+`qn-roundend.js` → **v1.3.0** with `initStartScroll()` + `updateStartScrim()`
+(inner-container scroll model, vs the summary's window-scroll model) and a
+**DOMContentLoaded self-init** + a **MutationObserver** that re-resets/re-measures
+whenever `#start-screen` re-activates. Net result: **ZERO per-module JS** — no
+`showScreen` surgery, which also sidesteps the 4 modules that lack `showScreen`
+(scales, scale-modes, ear-scales, chromatic-scale). No-ops cleanly where
+`.start-scroll` is absent.
+
+**Per-module change = two uniform string replacements** (HTML wrapper + inline
+`#start-screen` rule). All 35 were **byte-identical** on every anchor (section
+line, `.start-cta`→`</section>` tail, the `#start-screen` rule), so this was
+scripted, not hand-edited 35×. The script (`/tmp/convert_start.py`) **extracts
+the canonical OLD blocks byte-for-byte from a reference module** (no retyping),
+and **refuses to write any file whose anchors aren't exactly-once** + a
+div/section balance delta guard — so a non-uniform file is skipped, never
+corrupted. (This is the explicit antidote to the prior bulk-edit brace-corruption
+incident.)
+
+**Verification:** pilot on note-names first (reverted after, to keep the
+reference canonical — caught a self-reference bug where the converted pilot
+poisoned the OLD-block extraction; the skip-guard flagged it as `cssx0` instead
+of mis-replacing). Then all 35: every file passed structure-present-exactly-once
++ div/section/script balance + no-canonical-remnant + no risky structural
+selectors (`#start-screen >`, direct scrollTop reads) + start-btn still
+id-resolvable + both shared files loaded. Shared CSS brace-balanced (259/259);
+qn-roundend.js `node -c` clean + mock-DOM smoke (scroll-end math verified).
+
+**Shared CSS** went into `qn-theme.css` near the start cluster: `.start-scroll`,
+`.start-bar` (+ `::before` scrim), `.start-bar .scroll-cue` (reuses the shared
+`cueBob` keyframe), `#start-screen.scroll-end` toggles, reduced-motion guard, and
+an `@media (max-width:560px)` density block (tightens the shared `.tile`/
+`.q-block`/`.settings-card` so each step fits ~one screen).
+
+**Excluded: `pianoquiz-demo.html`** — loads neither shared file (standalone demo)
+and has a non-uniform start-cta (extra "Start muted" toggle). Left as-is.
+
+**Owed:** device/pixel QA (Jonathan running it) — the inner-scroll feel on iOS,
+the scrim/cue honesty at the scroll bottom, and the bar's safe-area padding on
+notched phones. No code follow-ups expected.
+
+---
+
 ### play.html mobile-first pass — collapsed tiers + sticky tier tab bar — May 2026
 
 Dropped in a drop-in `play.html` (Jonathan-supplied FINAL + CHANGELOG, folded

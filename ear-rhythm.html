@@ -145,8 +145,11 @@
 
   /* ============ START SCREEN ============ */
   #start-screen {
-    align-items: center; justify-content: safe center;
-    padding: 24px 20px 40px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    height: 100dvh;
+    padding: 0;                 /* padding moves onto .start-scroll */
   }
   /* .brand* → qn-theme.css */
 
@@ -571,6 +574,7 @@
 
 <!-- ============ START SCREEN ============ -->
 <section class="screen active" id="start-screen">
+  <div class="start-scroll">
   <div class="start-wrap">
     <a href="play.html" class="start-back-link">← All modules</a>
     <div class="brand">
@@ -649,6 +653,10 @@
       </div>
     </div>
 
+  </div><!-- /.start-wrap -->
+  </div><!-- /.start-scroll -->
+  <div class="start-bar">
+    <button type="button" class="scroll-cue" id="start-scroll-cue" aria-label="Scroll down for more">More <span class="cue-arrow" aria-hidden="true">▾</span></button>
     <div class="start-cta">
       <button class="btn sun huge" id="start-btn">Start Game →</button>
     </div>
