@@ -170,21 +170,38 @@
       }
     }
 
-    // --- Beat 3: THE NEXT STEP (one dominant, recommender-driven action) ---
+    // --- Beat 3: THE NEXT STEP (one dominant action, adapts to the score) ---
+    // There's always one prime action: a good round advances (recommender's
+    // "Next: <module>"); a bad round retries ("Try again"). "Play again" and
+    // "Try again" are the same action, so they never both appear — on a bad
+    // round Play again is hidden and the row is just Try again + Drill missed.
     var cta = $('next-step-cta');
-    if (cta) {
-      var low = pct < 0.5;
-      if (low) {
-        // Low score: "Play again" already covers retrying, so don't add a second
-        // redundant "Try again" CTA in the bar. Just hide the next-step.
-        cta.hidden = true;
-      } else {
+    var againBtn = $('again-btn');
+    var nsc = $('nsc-btn');
+    var low = pct < 0.5;
+    if (low) {
+      if (againBtn) againBtn.hidden = true;                 // retry is the prime CTA
+      if (nsc) { nsc.classList.remove('grape'); nsc.classList.add('sun'); }  // friendly retry colour
+      if (cta) {
+        cta.hidden = false;
+        if ($('nsc-reason')) $('nsc-reason').textContent = "Let's run that back —";
+        if (nsc) nsc.textContent = '↻ Try again';
+        cta.onclick = function (ev2) {
+          ev2.preventDefault();
+          if (typeof opts.onRetry === 'function') opts.onRetry();
+          else if (againBtn) againBtn.click();
+        };
+      }
+    } else {
+      if (againBtn) againBtn.hidden = false;                // Play again returns to the row
+      if (nsc) { nsc.classList.remove('sun'); nsc.classList.add('grape'); }
+      if (cta) {
         var rec = (QN.recommend && QN.recommend.next) ? QN.recommend.next(profileId) : null;
         if (rec && rec.module) {
           cta.hidden = false;
           if ($('nsc-reason')) $('nsc-reason').textContent = rec.reason || '';
           var tierLabel = rec.tier ? (' · ' + rec.tier.charAt(0).toUpperCase() + rec.tier.slice(1)) : '';
-          if ($('nsc-btn')) $('nsc-btn').textContent = 'Next: ' + prettySlug(rec.module) + tierLabel + ' →';
+          if (nsc) nsc.textContent = 'Next: ' + prettySlug(rec.module) + tierLabel + ' →';
           cta.onclick = function (ev2) {
             ev2.preventDefault();
             var payload = { difficulty: rec.tier || 'easy', total: rec.length || 10 };
