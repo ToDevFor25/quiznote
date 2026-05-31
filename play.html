@@ -427,7 +427,11 @@
 
     /* ---- Responsive ---- */
     @media (max-width: 560px) {
-      main { padding: 28px 16px 48px; }
+      main { padding: 24px 16px 40px; }
+      /* Tighten vertical rhythm on phones: the desktop 36/48px gaps leave the
+         collapsed accordion looking sparse (each tier is just a header). */
+      .page-header { margin-bottom: 20px; }
+      .tier-section { margin-bottom: 20px; }
       .tile-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
       .ltile-art { height: 92px; }
       .ltile-body { padding: 10px 10px 12px; gap: 2px; }
