@@ -400,10 +400,15 @@ For any future CSS work:
   container. **All 35 real modules** (pianoquiz-demo excluded — no shared deps).
   Shared CSS in `qn-theme.css` (`.start-scroll`, `.start-bar`, `.scroll-cue`,
   `#start-screen.scroll-end`, reuses `cueBob`); the `#start-screen` base rule
-  stays inline per-module (flex column / **100svh** / padding:0). svh (not dvh)
-  because the start screen uses inner-scroll → the iOS Safari bottom toolbar
-  stays expanded, and svh = the toolbar-expanded viewport, so the Start CTA is
-  never tucked under the toolbar (dvh could resolve taller and occlude it). **JS is fully
+  stays inline per-module (flex column / padding:0 / **NO forced height** — it
+  fills via `.screen { flex:1 }` below the in-flow `.site-header`). **Sizing
+  gotcha (cost a few rounds):** an early version forced `#start-screen{height:
+  100dvh/svh}`, which ignored the ~64px header above it (header + 100vh > screen)
+  and pushed the Start bar below the fold / behind the iOS Safari toolbar. Fix =
+  let `flex:1` fill the space below the header, AND set `body{min-height:100svh}`
+  (was `100vh`; `vh` is the toolbar-RETRACTED height on iOS, taller than visible).
+  The `.start-scroll` (flex:1, overflow-y:auto, `justify-content:safe center`)
+  scrolls internally; the bar sits at the visible bottom. **JS is fully
   shared — `qn-roundend.js` v1.3.0** adds `initStartScroll()`/`updateStartScrim()`
   with a **DOMContentLoaded self-init + MutationObserver** auto-reset on
   `#start-screen` re-activation → **zero per-module JS** (no `showScreen` hook

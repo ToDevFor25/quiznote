@@ -73,23 +73,33 @@ that gap ("scrolls too high"). Restored the pre-bar feel: `safe center` centres
 the config when it fits and falls back to top-aligned (scrollable, no top clip)
 when it overflows. Shared, one file.
 
-**Post-ship fix 3 → `#start-screen` `100dvh` → `100svh` (iOS Safari toolbar
-occlusion).** Jonathan confirmed it was real Safari (not an in-app browser): the
-Start Game bar sat behind Safari's bottom toolbar. Root cause: the start screen
-uses an INNER scroll container, so the window never scrolls → Safari keeps its
-bottom toolbar EXPANDED, but `100dvh` can resolve to the larger (toolbar-
-collapsed) viewport, running the container taller than the visible area and
-tucking the CTA under the toolbar. Fix = `svh` (small viewport height = the
-toolbar-EXPANDED viewport), the canonical fix for "must never be obscured by
-browser UI." No downside here since the window can't scroll (the usual svh
-"gap when chrome hides" can't occur). Applied to all 35 via a scoped replace
-(the `height:100dvh` + `padding:0` comment anchor, exactly-once per file —
-`#play-screen`'s own `dvh` left untouched). `env(safe-area-inset-bottom)` on the
-bar still handles the home indicator.
+**Post-ship fix 3 (TWO attempts — the second is the real one).** Start Game bar
+sat behind Safari's bottom toolbar.
+- *Attempt A (wrong): `100dvh`→`100svh` on `#start-screen`.* Reasoned it was the
+  iOS toolbar-collapse ambiguity. Didn't fix it — was treating a symptom.
+- *Attempt B (correct): the forced height was the bug.* Real root cause, found by
+  reading the actual layout (Jonathan's nudge: "same problem on the end screen?"
+  — no, because summary doesn't force a height). `body` is `display:flex;
+  flex-direction:column` with an **in-flow `.site-header` (~64px)** above the
+  screens, and `.screen{flex:1}`. Forcing `#start-screen{height:100svh}` made it
+  a FULL viewport tall *below* the 64px header → total `header + 100svh` >
+  viewport → the bar pushed ~64px below the fold (behind the toolbar). `svh` vs
+  `dvh` was irrelevant. Compounding: `body{min-height:100vh}` — `vh` is the
+  toolbar-RETRACTED height on iOS (taller than visible), adding a second
+  overshoot.
+- **Fix:** (1) remove the forced height from `#start-screen` so `.screen{flex:1}`
+  fills the space *below the header*; (2) `body{min-height:100vh}` →
+  `min-height:100svh` so the page is bounded to the visible area. `.start-scroll`
+  (flex:1 + overflow-y:auto + `justify-content:safe center`, fix 2) scrolls
+  internally; the bar lands at the visible bottom. The summary screen already
+  did this implicitly (no forced height + sticky bar + window scroll). Applied to
+  all 35 via two scoped exactly-once replacements (start-screen `height` line;
+  body `min-height`). `env(safe-area-inset-bottom)` still handles the home
+  indicator. Lesson: read the layout before reaching for viewport units.
 
-**Owed:** device/pixel QA (Jonathan running it) — confirm the svh fix on real
-iOS Safari + Samsung Chrome, inner-scroll feel on iOS, scrim/cue honesty at the
-scroll bottom.
+**Owed:** device/pixel QA (Jonathan running it) — confirm the Start CTA clears
+the toolbar on real iOS Safari + Samsung Chrome now, inner-scroll feel, scrim/cue
+honesty at the scroll bottom.
 
 ---
 
