@@ -73,18 +73,23 @@ that gap ("scrolls too high"). Restored the pre-bar feel: `safe center` centres
 the config when it fits and falls back to top-aligned (scrollable, no top clip)
 when it overflows. Shared, one file.
 
-**Open / device-dependent — Start CTA vs mobile browser chrome.** On the Vercel
-preview opened in an in-app/floating-bar browser, the Start Game bar sits partly
-behind the floating URL pill. `#start-screen` uses `height:100dvh` + the bar
-carries `env(safe-area-inset-bottom)` — the correct standard mechanism, which
-real Safari/Chrome honor (the summary bar, on the sticky/window-scroll model,
-wasn't reported as occluded). A floating overlay bar that doesn't inset the
-viewport can't be fully solved in CSS without a fixed buffer that would over-pad
-normal browsers. Decision: QA on real iPhone Safari + Samsung Chrome first; only
-add a fixed bottom buffer if a real browser confirms occlusion. NOT changed yet.
+**Post-ship fix 3 → `#start-screen` `100dvh` → `100svh` (iOS Safari toolbar
+occlusion).** Jonathan confirmed it was real Safari (not an in-app browser): the
+Start Game bar sat behind Safari's bottom toolbar. Root cause: the start screen
+uses an INNER scroll container, so the window never scrolls → Safari keeps its
+bottom toolbar EXPANDED, but `100dvh` can resolve to the larger (toolbar-
+collapsed) viewport, running the container taller than the visible area and
+tucking the CTA under the toolbar. Fix = `svh` (small viewport height = the
+toolbar-EXPANDED viewport), the canonical fix for "must never be obscured by
+browser UI." No downside here since the window can't scroll (the usual svh
+"gap when chrome hides" can't occur). Applied to all 35 via a scoped replace
+(the `height:100dvh` + `padding:0` comment anchor, exactly-once per file —
+`#play-screen`'s own `dvh` left untouched). `env(safe-area-inset-bottom)` on the
+bar still handles the home indicator.
 
-**Owed:** device/pixel QA (Jonathan running it) — inner-scroll feel on iOS, the
-scrim/cue honesty at the scroll bottom, and the Start-CTA-vs-chrome check above.
+**Owed:** device/pixel QA (Jonathan running it) — confirm the svh fix on real
+iOS Safari + Samsung Chrome, inner-scroll feel on iOS, scrim/cue honesty at the
+scroll bottom.
 
 ---
 
