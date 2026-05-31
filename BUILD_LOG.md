@@ -1,5 +1,74 @@
 ---
 
+### Round-end redesign — final-5 attempt aborted cleanly; hero-position recipe nailed down — May 2026
+
+**Still at 30/35** (HEAD `810935f`). Attempted the final 5 (scales-family +
+piano-quiz) but **reverted the in-progress work** to protect the clean 30/35
+after hitting (a) a hero-POSITION inconsistency and (b) terminal/Read output
+truncation that made verification unreliable. Nothing committed; tree clean.
+
+**THE KEY LEARNING for next session — hero placement.** The canonical position
+(note-names + all 31 done correctly) is: `summary-title → summary-sub →
+summary-speed → HERO → xp-earn(Beat1) → mastery(Beat2) → miss-list`. i.e. the
+HERO block is inserted **right after the summary-sub/speed line, BEFORE Beat 1**.
+The gen-1 and gen-2 scripts did this correctly (they inserted the hero after the
+speed line as a *separate* step from removing the grid). **My scales-family /
+sibling transform got this WRONG**: it replaced the grid *in place*, and in those
+modules the grid sits *after* the mastery meter — so the stars landed BELOW the
+XP/mastery cards instead of on top. Functional but visually inconsistent, which
+defeats the uniformity goal. **Fix for next session: insert the hero block after
+`summary-sub` (scales has no speed line; insert right after the sub `<div>`),
+and SEPARATELY delete the grid+pb-row block — do NOT replace grid-in-place.**
+
+**The final-5 recipe (all anchors confirmed this session, JS transforms verified
+ALL_PASS before revert — only the markup POSITION needs the fix above):**
+- **3 siblings — chromatic-scale, ear-scales, scale-modes** (byte-uniform):
+  no speed-line; `const stars = scoreToStars(state.score, state.total)`; pb vars
+  `newScore`/`newStreak`; pb block is no-guard innerHTML; threshold `.85/.65`
+  (normalize → `1/.8/.5`); British title (→ Practicing); plain-unicode markup
+  (`⚙️ Game Settings`, `★`, `·`); els-cache has `'sum-score','sum-streak',
+  'sum-stars'` + `'pb-row','pb-score','pb-streak'`. pb-flag should use
+  `newScore || newStreak`.
+- **scales** (the structural outlier — extra hazards, hand-do):
+  • markup grid has `style="color: var(--teal-dk);"` on the score stat-value;
+  no speed-line (insert hero after `summary-sub` id="summary-sub").
+  • dead-JS uses `starCount`/`starStr` AND a hazardous line
+  `document.querySelectorAll('#summary-screen .stat-value .of').forEach(...)` —
+  that selector targets the GRID's `.of` spans which no longer exist after
+  removal; the hero's `.of` (`id="sum-score-of"`) is set by render(), so DELETE
+  that querySelectorAll line (don't keep it).
+  • threshold `.85/.65` in renderSummary tier (normalize). NOTE scales also has
+  a separate `encouragingLine()` with its own `.85/.65` *message* buckets — that
+  one is flavor text, leave it (not the verdict tier).
+  • pb vars `newScoreBest`/`newStreakBest`, `best.score`/`best.streak`,
+  `state.settings.total` (NOT state.total). pb-flag uses `newScoreBest ||
+  newStreakBest`.
+  • scales has TWO els-cache lines: one with `'sum-score','sum-streak',
+  'sum-stars'` (drop sum-streak) and one with `'pb-row','pb-score','pb-streak'`
+  (drop pb-streak; add 'sum-score-of','sum-pct').
+  • PRESERVE the render() call exactly: `total: state.settings.total`,
+  `tier: state.settings.difficulty` (scales has no `state.total`).
+- **piano-quiz** (guarded-pb variant): speed-line present; `const stars =
+  scoreToStars`; pb vars `newScorePB`/`newStreakPB`; **guarded** pb block
+  (`const pbRow = els['pb-row']; if (pbRow) { if (pb.score>0||...) {...} else
+  {...} }`) using `sLabel`/`kLabel` + `els['pb-streak']`; std threshold (no
+  normalize); British title (→ Practicing); plain markup. **Leave guided-key-find
+  untouched** (separate play-screen system). pb-flag uses `newScorePB ||
+  newStreakPB`.
+
+**Recommended next-session flow:** healthy terminal; do each of the 5 by hand or
+a per-variant script, **insert hero after summary-sub (NOT grid-in-place)**,
+verify each (no stat-card in summary, divs balanced, parses, pb-vars present,
+scales render args preserved), confirm hero-BEFORE-xp position
+(`hero line < xp-earn line`), commit. Then 35/35 → push Dev as the uniform
+stopping point (Jonathan deferred Dev until whole).
+
+**Process win this time:** caught the position bug + the degrading environment and
+**stopped/reverted instead of committing unverifiable, inconsistent work** — the
+opposite of the earlier commit-on-faith mistakes.
+
+---
+
 ### Round-end redesign rollout — continued to 30/35 (gen-2 standard-11 done) — May 2026
 
 **Continuation of the same session as the entry below.** After logging the 19/35
