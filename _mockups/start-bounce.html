@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start screen — 3 "bounce" options</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0; --ink:#2A2A3E; --ink-soft:#5a5a6e; --line:rgba(42,42,62,0.09);
+    --teal:#1FB8A8; --teal-dk:#0e8475; --teal-lt:#d3f1ec;
+    --sun:#FFB627; --sun-dk:#c98800; --sun-lt:#fff3cc; --grape:#5B3FE4;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:'Nunito',sans-serif;padding:22px 16px 60px;-webkit-font-smoothing:antialiased;}
+  .h{font-family:'Fredoka',sans-serif;font-weight:700;text-align:center;font-size:1.45rem;margin:2px 0 2px;}
+  .sub{text-align:center;color:var(--ink-soft);font-weight:600;max-width:32ch;margin:0 auto 24px;font-size:.92rem;}
+
+  .opt{max-width:420px;margin:0 auto 26px;background:#fff;border:2px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--ink);overflow:hidden;}
+  .opt-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);}
+  .opt-title{font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.02rem;}
+  .opt-title b{color:var(--grape);}
+  .opt-desc{padding:10px 16px;color:var(--ink-soft);font-size:.82rem;line-height:1.4;}
+  .replay{all:unset;cursor:pointer;font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;color:var(--ink);background:var(--sun-lt);border:2px solid var(--ink);border-radius:10px;box-shadow:0 2px 0 var(--ink);padding:5px 12px;white-space:nowrap;}
+  .replay:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink);}
+
+  /* mini start-screen content */
+  .mini{padding:16px;}
+  .q-label{font-family:'Fredoka',sans-serif;font-weight:700;font-size:1rem;margin:0 0 8px;}
+  .tile-row{display:flex;gap:8px;margin-bottom:14px;}
+  .tile{flex:1;border:2px solid var(--ink);border-radius:14px;box-shadow:0 3px 0 var(--ink);background:#fff;text-align:center;padding:12px 6px;font-family:'Fredoka',sans-serif;font-weight:700;}
+  .tile.on{background:var(--teal);color:#fff;}
+  .tile .em{font-size:24px;display:block;}
+  .settings{border:2px solid var(--ink);border-radius:16px;box-shadow:0 3px 0 var(--ink);background:#fff;padding:4px 14px;}
+  .srow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-weight:700;}
+  .srow:last-child{border-bottom:0;}
+  .pill{font-family:'Fredoka',sans-serif;font-weight:700;font-size:12px;background:var(--teal-lt);color:var(--teal-dk);border-radius:999px;padding:3px 12px;}
+  .startbtn{display:block;width:100%;margin-top:16px;border:2px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);background:var(--sun);color:var(--ink);font-family:'Fredoka',sans-serif;font-weight:700;font-size:20px;padding:14px;cursor:pointer;}
+
+  /* ===== Option 1 — Rubber-band scroll ===== */
+  /* The config scrolls inside a fixed-height panel with iOS momentum + contained
+     overscroll, so flicking past the top/bottom springs back. Best felt on a
+     phone (the bounce is iOS-native; desktop just scrolls). */
+  .scroll-panel{height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-top:1px dashed var(--line);}
+
+  /* ===== Option 2 — Pop-in entrance ===== */
+  @keyframes popIn{
+    0%{transform:scale(.90) translateY(8px);opacity:0;}
+    55%{transform:scale(1.03) translateY(0);opacity:1;}
+    78%{transform:scale(.99);}
+    100%{transform:scale(1);}
+  }
+  .optC.run .mini > *{animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;}
+  .optC.run .mini > *:nth-child(2){animation-delay:.06s;}
+  .optC.run .mini > *:nth-child(3){animation-delay:.12s;}
+  .optC.run .mini > *:nth-child(4){animation-delay:.18s;}
+
+  /* ===== Option 3 — Button tap bounce ===== */
+  @keyframes btnPop{
+    0%{transform:scale(1);}
+    28%{transform:scale(.93);}
+    60%{transform:scale(1.05);}
+    100%{transform:scale(1);}
+  }
+  .startbtn.pop{animation:btnPop .42s cubic-bezier(.34,1.56,.64,1);}
+
+  @media(prefers-reduced-motion:reduce){ .optC.run .mini > *, .startbtn.pop{animation:none;} }
+  .foot{text-align:center;color:var(--ink-soft);font-size:.78rem;max-width:36ch;margin:6px auto 0;line-height:1.5;}
+</style>
+</head>
+<body>
+  <div class="h">Start screen — "bounce" options</div>
+  <div class="sub">Open on your phone. #1 is the one being shipped; #2 and #3 are extras you were curious about.</div>
+
+  <!-- OPTION 1 -->
+  <section class="opt opt1">
+    <div class="opt-head"><div class="opt-title">① <b>Rubber-band scroll</b> · SHIPPING</div></div>
+    <div class="opt-desc">Flick the config to the very top or bottom — it springs back (iOS-native momentum + contained overscroll). This is what the page now does live. Best felt on a phone.</div>
+    <div class="scroll-panel">
+      <div class="mini">
+        <div class="q-label">① Which clef?</div>
+        <div class="tile-row"><div class="tile on">Treble</div><div class="tile">Bass</div><div class="tile">Both</div></div>
+        <div class="q-label">② How tricky?</div>
+        <div class="tile-row"><div class="tile"><span class="em">🐢</span>Easy</div><div class="tile on"><span class="em">🐰</span>Medium</div><div class="tile"><span class="em">🐆</span>Tricky</div></div>
+        <div class="q-label">③ How many?</div>
+        <div class="tile-row"><div class="tile"><span class="em">⚡</span>Quick</div><div class="tile on"><span class="em">🎯</span>Standard</div><div class="tile"><span class="em">🏋️</span>Long</div></div>
+        <div class="settings">
+          <div class="srow">⏱ Timer <span class="pill" style="background:#eee;color:#777;">off</span></div>
+          <div class="srow">💡 Teaching hints <span class="pill">on</span></div>
+          <div class="srow">🔊 Sound <span class="pill">on</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPTION 2 -->
+  <section class="opt optC" data-opt="2">
+    <div class="opt-head"><div class="opt-title">② <b>Pop-in entrance</b></div><button class="replay">Replay ▸</button></div>
+    <div class="opt-desc">Each block springs in (scale + slight overshoot), cascaded top→bottom, when the screen appears.</div>
+    <div class="mini">
+      <div class="q-label">① Which clef?</div>
+      <div class="tile-row"><div class="tile on">Treble</div><div class="tile">Bass</div><div class="tile">Both</div></div>
+      <div class="tile-row"><div class="tile"><span class="em">🐰</span>Medium</div><div class="tile"><span class="em">🎯</span>Standard</div></div>
+      <button class="startbtn">Start Game →</button>
+    </div>
+  </section>
+
+  <!-- OPTION 3 -->
+  <section class="opt opt3">
+    <div class="opt-head"><div class="opt-title">③ <b>Button tap bounce</b></div></div>
+    <div class="opt-desc">Tap the Start button — it springs (squish then overshoot back). Tap it below to feel it.</div>
+    <div class="mini">
+      <button class="startbtn" id="popbtn">Start Game →</button>
+    </div>
+  </section>
+
+  <div class="foot">All respect <code>prefers-reduced-motion</code>. #1 is live in the app now; #2/#3 are mockups only until you pick.</div>
+
+<script>
+  // Option 2 — replay the pop-in
+  document.querySelectorAll('.optC .replay').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var sec = btn.closest('.optC');
+      sec.classList.remove('run'); void sec.offsetWidth; sec.classList.add('run');
+    });
+  });
+  // run option 2 once on load
+  window.addEventListener('load', function(){
+    var c=document.querySelector('.optC'); if(c){ setTimeout(function(){c.classList.add('run');},300); }
+  });
+  // Option 3 — button tap bounce
+  var pb=document.getElementById('popbtn');
+  if(pb) pb.addEventListener('click', function(){
+    pb.classList.remove('pop'); void pb.offsetWidth; pb.classList.add('pop');
+  });
+</script>
+</body>
+</html>

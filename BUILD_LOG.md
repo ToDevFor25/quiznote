@@ -120,9 +120,20 @@ bottom + when short, false when tall-at-top). **Takeaway for next time: the
 start screen and summary screen should share ONE scroll model (window+sticky);
 don't reintroduce an inner-scroll container.**
 
+**Post-ship fix 5 → restore the scroll "bounce" (rubber-band).** Switching to
+window-scroll lost the springy elastic overscroll the inner-scroll interim had
+(`-webkit-overflow-scrolling:touch` + `overscroll-behavior:contain`). The page
+didn't bounce because `html, body { overscroll-behavior: none }` kills it. Fix =
+`none` → `contain` on `html, body` (all 35): `contain` keeps pull-to-refresh /
+scroll-chaining disabled but RESTORES the rubber-band bounce — exactly what the
+inner container used. Scoped exactly-once replace. (Also built a 3-option
+mockup `_mockups/start-bounce.html`: ① rubber-band [shipped], ② pop-in entrance,
+③ Start-button tap bounce — Jonathan was curious to compare ②/③; not applied.)
+
 **Owed:** device/pixel QA (Jonathan running it) — confirm on real iOS Safari +
 Samsung Chrome that the Start CTA is pinned at the bottom (short config) AND
-clears the toolbar, and sticks correctly while scrolling a long config.
+clears the toolbar, sticks correctly while scrolling a long config, and the
+rubber-band bounce is back.
 
 ---
 
