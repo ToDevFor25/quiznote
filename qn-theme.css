@@ -709,6 +709,15 @@ animation: modalFade 200ms ease-out;
 }
 .site-footer a:hover { text-decoration: underline; }
 .site-footer .sep { margin: 0 8px; }
+/* On mobile, hide the game-screen footer (.site-footer is used ONLY by the 35
+   game pages; catalog pages — index/play/path/dashboard — use a plain <footer>
+   and are unaffected). The legal links stay reachable on desktop here, on every
+   catalog page, and on the landing page, which satisfies app-store policy.
+   When a "More/Settings" menu destination exists, Privacy/Terms move there and
+   this game footer can retire entirely. May 2026. */
+@media (max-width: 760px) {
+  .site-footer { display: none; }
+}
 
 /* ============ TEACHING HINTS ============ */
 /* Mobile: modal overlay with centered card. Desktop: inline banner between question and choices. */
