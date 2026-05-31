@@ -401,18 +401,22 @@ For any future CSS work:
   Shared CSS in `qn-theme.css` (`.start-scroll`, `.start-bar`, `.scroll-cue`,
   `#start-screen.scroll-end`, reuses `cueBob`); the `#start-screen` base rule
   stays inline per-module (flex column / padding:0 / **NO forced height** — it
-  fills via `.screen { flex:1 }` below the in-flow `.site-header`). **Sizing
-  gotcha (cost a few rounds):** an early version forced `#start-screen{height:
-  100dvh/svh}`, which ignored the ~64px header above it (header + 100vh > screen)
-  and pushed the Start bar below the fold / behind the iOS Safari toolbar. Fix =
-  let `flex:1` fill the space below the header, AND set `body{min-height:100svh}`
-  (was `100vh`; `vh` is the toolbar-RETRACTED height on iOS, taller than visible).
-  The `.start-scroll` (flex:1, overflow-y:auto, `justify-content:safe center`)
-  scrolls internally; the bar sits at the visible bottom. **JS is fully
-  shared — `qn-roundend.js` v1.3.0** adds `initStartScroll()`/`updateStartScrim()`
-  with a **DOMContentLoaded self-init + MutationObserver** auto-reset on
-  `#start-screen` re-activation → **zero per-module JS** (no `showScreen` hook
-  needed; the inner-scroll model differs from the summary's window-scroll model).
+  fills via `.screen { flex:1 }` below the in-flow `.site-header`). **Scroll
+  model = WINDOW scroll + sticky bar (twin of the summary screen), NOT inner
+  scroll** — this is the version that actually works on iOS Safari after several
+  wrong turns: (a) forcing `#start-screen{height:100dvh/svh}` ignored the ~64px
+  header and pushed the bar below the fold; (b) an inner `.start-scroll`
+  overflow container fought Safari's `min-height` flex chain (bar occluded, then
+  un-pinned). Final: `.start-scroll` is a plain content wrapper; `.start-bar` is
+  `position:sticky; bottom:0` + `margin-top:auto` (pins to bottom when the config
+  is short, sticks to the viewport bottom when it overflows and the window
+  scrolls); `body{min-height:100svh}` (was `100vh`; `vh` is the toolbar-RETRACTED
+  height on iOS). qn-roundend.js scrim/cue uses **window scroll** (mirrors the
+  summary `updateScrim`). **JS is fully
+  shared — `qn-roundend.js` v1.4.0** adds `initStartScroll()`/`updateStartScrim()`
+  (window-scroll, same model as the summary scrim) with a **DOMContentLoaded
+  self-init + MutationObserver** auto-reset on `#start-screen` re-activation →
+  **zero per-module JS** (no `showScreen` hook needed).
   Rolled out via a guarded byte-for-byte replacement script (anchors must be
   exactly-once or the file is skipped, never corrupted). Spec +
   reference build supplied by Jonathan (`startscreenstickybar.md`).

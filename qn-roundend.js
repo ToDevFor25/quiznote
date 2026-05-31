@@ -295,35 +295,33 @@
   // metrics. Fully self-contained: it wires listeners once, and a
   // MutationObserver re-resets + re-measures every time #start-screen
   // re-activates — so modules need NO per-file JS (auto-init below).
-  function startScrollEl() { return document.querySelector('#start-screen .start-scroll'); }
-
   function updateStartScrim() {
-    var scroll = startScrollEl();
     var screen = $('start-screen');
-    if (!scroll || !screen) return;
-    var remaining = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
+    if (!screen) return;
+    // Window scroll (the page scrolls; .start-bar is position:sticky), mirroring
+    // the summary scrim. True when nothing more is below.
+    var y = window.scrollY || window.pageYOffset || 0;
+    var remaining = document.documentElement.scrollHeight - window.innerHeight - y;
     screen.classList.toggle('scroll-end', remaining <= 4);
   }
 
   function resetStartScroll() {
-    var scroll = startScrollEl();
-    if (scroll) scroll.scrollTop = 0;
+    // The window is reset to top by showScreen(); just re-measure after layout.
     requestAnimationFrame(function () { requestAnimationFrame(updateStartScrim); });
   }
 
   var startWired = false;
   function initStartScroll() {
-    var scroll = startScrollEl();
     var screen = $('start-screen');
-    if (!scroll || !screen) { return; }       // module not yet converted — no-op
+    if (!screen || !document.querySelector('#start-screen .start-scroll')) { return; }  // not converted — no-op
     if (startWired) { resetStartScroll(); return; }   // idempotent
-    scroll.addEventListener('scroll', updateStartScrim, { passive: true });
+    window.addEventListener('scroll', updateStartScrim, { passive: true });
     window.addEventListener('resize', updateStartScrim);
     var cue = $('start-scroll-cue');
     if (cue) {
       cue.addEventListener('click', function () {
-        // ~70% of the visible container, smooth; the browser clamps at bottom.
-        scroll.scrollBy({ top: Math.round(scroll.clientHeight * 0.7), behavior: 'smooth' });
+        // ~60% of a viewport, smooth; the browser clamps at the page bottom.
+        window.scrollBy({ top: Math.round(window.innerHeight * 0.6), behavior: 'smooth' });
       });
     }
     // Re-reset + re-measure ONLY on a real inactive→active transition (e.g. the
@@ -361,6 +359,6 @@
     updateStartScrim: updateStartScrim,
     prettySlug:      prettySlug,
     starsFor:        starsFor,
-    version:         '1.3.1'
+    version:         '1.4.0'
   };
 })();

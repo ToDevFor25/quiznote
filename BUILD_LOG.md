@@ -97,9 +97,32 @@ sat behind Safari's bottom toolbar.
   body `min-height`). `env(safe-area-inset-bottom)` still handles the home
   indicator. Lesson: read the layout before reaching for viewport units.
 
-**Owed:** device/pixel QA (Jonathan running it) — confirm the Start CTA clears
-the toolbar on real iOS Safari + Samsung Chrome now, inner-scroll feel, scrim/cue
-honesty at the scroll bottom.
+**Post-ship fix 4 → switch start screen to the summary's WINDOW-scroll + sticky
+model (qn-roundend.js v1.4.0).** Fix 3 removed the forced height — which then
+*un-pinned* the bar (it floated up under the config). Root cause: the inner
+`.start-scroll` overflow container needs its flex ancestor to have a *definite*
+height; `#start-screen{flex:1}` of a `min-height` body is indefinite enough on
+Safari that the nested `flex:1`+overflow didn't fill → bar collapsed up. Rather
+than keep forcing definite heights (which broke the toolbar case), aligned the
+start screen to the model the summary screen already uses and that works on this
+Safari:
+- `.start-scroll` → plain content wrapper (no flex:1 / no overflow). The PAGE
+  scrolls.
+- `.start-bar` → `position:sticky; bottom:0; z-index:5` + `margin-top:auto`
+  (margin-auto pins it to the bottom when the config is short; sticky pins it to
+  the viewport bottom when the config overflows and the window scrolls).
+- qn-roundend.js `updateStartScrim`/`initStartScroll` → WINDOW scroll (mirror the
+  summary `updateScrim`/`initScroll`): scrim/cue driven by
+  `documentElement.scrollHeight − innerHeight − scrollY`, cue does `window.scrollBy`.
+Shared-only (CSS + JS); the 35 module HTMLs/inline rules unchanged this round.
+Verified: CSS 259/259, `node -c` clean, mock-DOM smoke (scroll-end true at
+bottom + when short, false when tall-at-top). **Takeaway for next time: the
+start screen and summary screen should share ONE scroll model (window+sticky);
+don't reintroduce an inner-scroll container.**
+
+**Owed:** device/pixel QA (Jonathan running it) — confirm on real iOS Safari +
+Samsung Chrome that the Start CTA is pinned at the bottom (short config) AND
+clears the toolbar, and sticks correctly while scrolling a long config.
 
 ---
 
