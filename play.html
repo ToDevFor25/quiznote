@@ -391,6 +391,18 @@
       outline-offset: 2px;
       border-radius: 8px;
     }
+    /* Section headers pop in on load, cascaded Foundations → Reading → Theory.
+       Placed after the base `.tier-toggle { all: unset }` so it isn't reset.
+       `both` holds the hidden 0% pre-start (no flash); CSS-only, runs once. */
+    @keyframes secPop {
+      0%   { opacity: 0; transform: translateY(10px) scale(.97); }
+      60%  { opacity: 1; transform: translateY(0) scale(1.012); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    .tier-toggle { animation: secPop .5s cubic-bezier(.34, 1.56, .64, 1) both; }
+    .tier-section.reading .tier-toggle { animation-delay: .09s; }
+    .tier-section.theory  .tier-toggle { animation-delay: .18s; }
+    @media (prefers-reduced-motion: reduce) { .tier-toggle { animation: none; } }
     .tier-caret {
       display: inline-block;
       font-family: 'Fredoka', sans-serif;

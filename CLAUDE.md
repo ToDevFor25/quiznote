@@ -347,7 +347,11 @@ For any future CSS work:
   `ttHintF/R/T` keyframes, JS staggers 620ms). Shown until the user taps a
   tab/header (`qn_play_hint_done`) OR after 3 loads (`qn_play_hint_seen`),
   whichever first, then suppressed forever; any tap cancels it live. Mobile-only
-  + `prefers-reduced-motion` safe. Mockup: `_mockups/play-tab-hint.html`. The
+  + `prefers-reduced-motion` safe. Mockup: `_mockups/play-tab-hint.html`.
+  **Section-header pop-in (May 2026):** the three tier headers (`.tier-toggle`)
+  spring in on load, cascaded Foundations→Reading→Theory (`@keyframes secPop`,
+  inline in play.html — it doesn't link qn-theme.css; CSS-only, reduced-motion
+  safe). Both widths. The
   "have-to-tap-twice" scroll bug is solved by waiting for the 360ms
   `grid-template-rows` `transitionend` (400ms fallback) before measuring, with
   a `lockUntil` freeze on the scroll-spy.
