@@ -599,6 +599,15 @@
     <div class="summary-title" id="summary-title">Round done! 🎉</div>
     <div class="summary-sub" id="summary-sub">You named those scales.</div>
 
+    <!-- HERO — the round verdict: stars (big) + score detail + a celebratory PB
+         flag shown only when beaten. Populated by qn-roundend.js render() so
+         every module shows an identical verdict. -->
+    <div class="summary-hero">
+      <div class="hero-stars stars" id="sum-stars"></div>
+      <p class="hero-score"><span id="sum-score">0</span><span class="of" id="sum-score-of"> / 10</span> correct <span class="hero-pct" id="sum-pct"></span></p>
+      <div class="pb-flag" id="pb-row" hidden><span id="pb-score"></span></div>
+    </div>
+
      <!-- Beat 1 — THE EARN (gamification). Always populated, even on a low score. -->
      <div class="xp-earn" id="xp-earn" hidden>
        <div class="xp-earn-top">
@@ -622,28 +631,6 @@
        <div class="mm-note" id="mm-note"></div>
      </div>
 
-    <div class="summary-grid">
-      <div class="card stat-card">
-        <div class="stat-label">Score</div>
-        <div class="stat-value" style="color: var(--teal-dk);"><span id="sum-score">0</span><span class="of"> / 10</span></div>
-      </div>
-      <div class="card stat-card sun-card">
-        <div class="stat-label">Best streak</div>
-        <div class="stat-value">🔥 <span id="sum-streak">0</span></div>
-      </div>
-      <div class="card stat-card">
-        <div class="stat-label">Stars</div>
-        <div class="stat-value stars" id="sum-stars">★ ★ ★ ☆</div>
-      </div>
-    </div>
-
-    <div class="pb-row" id="pb-row" hidden>
-      <span class="pb-label">Personal best:</span>
-      <span id="pb-score"></span>
-      <span class="pb-sep">·</span>
-      <span id="pb-streak"></span>
-    </div>
-
     <div class="miss-list" id="miss-list">
       <h3>Scales to practice next time</h3>
       <ul id="miss-items"></ul>
@@ -656,8 +643,8 @@
 
          <!-- Demoted low-frequency actions: quiet links inside the scroll. -->
      <div class="summary-demote">
-       <button class="btn secondary-link" id="change-btn">⚙️ Game Settings</button>
-       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose something else</a>
+       <button class="btn secondary-link" id="change-btn">⚙️ Change module settings</button>
+       <a href="play.html" class="btn secondary-link" style="text-decoration:none;">Choose another module</a>
      </div>
 
   </div>
@@ -1412,8 +1399,8 @@
    'start-btn',
    'exit-btn','mute-btn','timer-badge','timer-num','progress-fill','streak-num',
    'staff-wrap','replay-btn','toast','q-num','score-num','last-dots','choices-grid',
-   'confetti','summary-title','summary-sub','sum-score','sum-streak','sum-stars',
-   'miss-list','miss-items','again-btn','change-btn','pb-row','pb-score','pb-streak',
+   'confetti','summary-title','summary-sub','sum-score','sum-score-of','sum-pct','sum-stars',
+   'miss-list','miss-items','again-btn','change-btn','pb-row','pb-score',
    'modal-overlay','modal-title','modal-body','modal-cancel','modal-confirm',
    'save-scores-prompt'
   ].forEach(id => els[id] = document.getElementById(id));
@@ -2411,27 +2398,19 @@
   }
 
   function renderSummary(timedOut) {
-    els['sum-score'].textContent = state.score;
-    document.querySelectorAll('#summary-screen .stat-value .of').forEach(of => {
-      of.textContent = ' / ' + state.settings.total;
-    });
-    els['sum-streak'].textContent = state.bestStreak;
-
-    // Tier (preserves scales' stricter thresholds: 0.85 for great, 0.65 for good)
+    // Hero (stars + score + percent) is owned by QN.roundEnd.render() below — it
+    // populates #sum-stars / #sum-score / #sum-score-of / #sum-pct from this
+    // round's score+total, so every module shows the same verdict. `tier` (score
+    // bucket, now the canonical 1/.8/.5) is still used below for title + shimmer.
     const pct = state.settings.total > 0 ? state.score / state.settings.total : 0;
-    const tier = pct >= 1 ? 'perfect' : pct >= 0.85 ? 'great' : pct >= 0.65 ? 'good' : 'practice';
-
-    // 4-star arrangement
-    const starCount = tier === 'perfect' ? 4 : tier === 'great' ? 3 : tier === 'good' ? 2 : 1;
-    const starStr = '★ '.repeat(starCount).trim() + ' ' + '☆ '.repeat(4 - starCount).trim();
-    els['sum-stars'].textContent = starStr.trim();
+    const tier = pct >= 1 ? 'perfect' : pct >= 0.8 ? 'great' : pct >= 0.5 ? 'good' : 'practice';
 
     // Branded tier titles
     const titleMap = {
       perfect:  'SCALE MASTER! 🎼',
       great:    'Amazing Round! ⭐',
       good:     'Nice Playing! 🎶',
-      practice: 'Keep Practising! 🌱'
+      practice: 'Keep Practicing! 🌱'
     };
     const titleEl = els['summary-title'];
     const subEl = els['summary-sub'];
@@ -2478,10 +2457,14 @@
     if (newScoreBest)  best.score  = state.score;
     if (newStreakBest) best.streak = state.bestStreak;
     saveBest(best);
-    if (best.score > 0 || best.streak > 0) {
+    // Celebratory flag — shown ONLY when a record is beaten this round.
+    if (newScoreBest || newStreakBest) {
       els['pb-row'].hidden = false;
-      els['pb-score'].innerHTML  = newScoreBest  ? '<span class="pb-new">🏆 ' + best.score + '/' + state.settings.total + ' NEW!</span>' : best.score + '/' + state.settings.total;
-      els['pb-streak'].innerHTML = newStreakBest ? '<span class="pb-new">🔥 ' + best.streak + ' streak NEW!</span>' : '🔥 ' + best.streak + ' streak';
+      let pbMsg;
+      if (newScoreBest && newStreakBest) pbMsg = '🏆 New best score & streak!';
+      else if (newStreakBest)            pbMsg = '🔥 New best streak: ' + best.streak + '!';
+      else                               pbMsg = '🏆 New best score: ' + best.score + '/' + state.settings.total + '!';
+      els['pb-score'].textContent = pbMsg;
     } else {
       els['pb-row'].hidden = true;
     }
