@@ -1546,6 +1546,13 @@
 <script src="qn-nav.js" defer></script>
 
 <script defer>
+  // Land at the top of the catalog on every (re)load. The tier accordion
+  // changes page height between visits (and the mobile tab bar reopens tiers
+  // without persisting), so the browser's restored scroll Y is stale on reload
+  // — it stranded you mid-Foundations after ending a session on Theory.
+  // Manual restoration keeps the page pinned to its top heading on load.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
   document.addEventListener("DOMContentLoaded", function () {
     if (window.QNNav) QNNav.mount({ current: 'modules' });
 

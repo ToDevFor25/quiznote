@@ -325,8 +325,12 @@ For any future CSS work:
   open, Reading + Theory **collapsed** by default (~60% less initial scroll);
   `100dvh`; paled category art tints; tightened mobile cards; and a **sticky
   tier tab bar** (mobile-only <720px, Foundations · Reading · Theory) that
-  accordions to the tapped tier + scroll-spies the active one. Desktop is
-  unchanged (still effectively all-open; tab bar hidden ≥720px). The
+  accordions to the tapped tier + scroll-spies the active one. The collapse
+  applies at ALL widths (Foundations open / Reading + Theory collapsed); the
+  tab bar is the only mobile-only piece (hidden ≥720px) — on desktop you click
+  the section headers to expand. Scroll-restoration is forced to `manual` so
+  every (re)load lands at the top heading (the accordion changes page height
+  between visits, which otherwise stranded a reload mid-section). The
   "have-to-tap-twice" scroll bug is solved by waiting for the 360ms
   `grid-template-rows` `transitionend` (400ms fallback) before measuring, with
   a `lockUntil` freeze on the scroll-spy.
