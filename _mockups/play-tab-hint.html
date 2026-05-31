@@ -106,6 +106,34 @@
     25%,60%{background:var(--grape-lt);border-color:var(--grape-dk);color:var(--grape-dk);}
   }
 
+  /* ============ COMBINED — Fill + feathered glow (the pick) ============ */
+  /* Each tab fills with its tier "selected" color AND breathes the soft halo,
+     one at a time L→R. iteration-count handles "play N times". */
+  .optD .tt.f.hint{animation:mixF 2.1s ease-in-out 2;}
+  .optD .tt.r.hint{animation:mixR 2.1s ease-in-out 2;}
+  .optD .tt.t.hint{animation:mixT 2.1s ease-in-out 2;}
+  @keyframes mixF{
+    0%,100%{background:#fff;border-color:var(--ink);color:var(--sun-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(255,182,39,0), 0 0 0 0 rgba(255,182,39,0);}
+    50%{background:var(--sun-lt);border-color:var(--sun-dk);color:var(--sun-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(255,182,39,.32), 0 0 30px 7px rgba(255,182,39,.15);}
+  }
+  @keyframes mixR{
+    0%,100%{background:#fff;border-color:var(--ink);color:var(--teal-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(31,184,168,0), 0 0 0 0 rgba(31,184,168,0);}
+    50%{background:var(--teal-lt);border-color:var(--teal-dk);color:var(--teal-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(31,184,168,.32), 0 0 30px 7px rgba(31,184,168,.15);}
+  }
+  @keyframes mixT{
+    0%,100%{background:#fff;border-color:var(--ink);color:var(--grape-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 0 0 rgba(91,63,228,0), 0 0 0 0 rgba(91,63,228,0);}
+    50%{background:var(--grape-lt);border-color:var(--grape-dk);color:var(--grape-dk);
+      box-shadow:0 3px 0 var(--ink), 0 0 14px 1px rgba(91,63,228,.32), 0 0 30px 7px rgba(91,63,228,.15);}
+  }
+
+  .opt.star{border-color:var(--grape);box-shadow:0 5px 0 var(--grape-dk);}
+  .opt.star .opt-head{background:linear-gradient(0deg,#fff, #faf7ff);}
+
   @media (prefers-reduced-motion:reduce){
     .tt.hint{animation:none !important;}
   }
@@ -115,6 +143,17 @@
 <body>
   <div class="page-title">Tier-tab "tap me" hint</div>
   <div class="page-sub">On mobile load, the picker nudges once — left to right — to show the tabs open a section. Tap <b>Replay</b> on each to compare.</div>
+
+  <!-- COMBINED (the pick) -->
+  <section class="opt star optD" data-opt="D" data-stagger="620">
+    <div class="opt-head"><div class="opt-title">★ Combined · <b>Fill + glow</b></div><button class="replay">Replay ▸</button></div>
+    <div class="opt-desc">Each tab fills with its tier color (the "selected" look) <em>and</em> breathes the soft feathered halo, cascading left→right. Plays through <b>2×</b> here. This is the mix you asked for.</div>
+    <div class="tier-tabs">
+      <button class="tt f">Foundations</button>
+      <button class="tt r">Reading</button>
+      <button class="tt t">Theory</button>
+    </div>
+  </section>
 
   <!-- OPTION A -->
   <section class="opt optA" data-opt="A" data-stagger="620">
