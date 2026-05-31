@@ -1,5 +1,31 @@
 ---
 
+### Footer copyright + auto-updating year — May 2026
+
+Added **"All rights reserved"** to the footer copyright and made the **year
+self-update** into a growing range. Every footer already had "© 2026 QuizNote"
+(no rights line); now reads "© 2026 QuizNote · All rights reserved · …links".
+
+- **Year is dynamic, no build step.** The year is wrapped in
+  `<span data-qn-year>2026</span>`; `qn-nav.js` `setCopyrightYear()` (self-runs on
+  DOM ready, also exposed on `window.QNNav`) reads `new Date().getFullYear()` and
+  writes **"2026"** through 2026, then **"2026–<year>"** after (en-dash). Computed
+  at page load from the device clock → rolls over automatically on Jan 1 each
+  year. Fallback text "2026" shows if JS is off.
+- **Scope: 43 footer files**, two `©` formats handled (literal `© 2026 QuizNote`
+  ×35 incl. catalog/legal/demo; entity `&copy; 2026 QuizNote` ×8 — the Phase-4
+  chord modules). Guarded exactly-once substring replace per format.
+- **qn-nav.js coverage = 40 of 43.** The 3 that don't load it — `privacy.html`,
+  `terms.html` (legal pages, must be correct) — got a tiny inline year script;
+  `pianoquiz-demo.html` (demo) left on the static "2026" fallback.
+- Verified: qn-nav.js `node -c` clean; year logic mock (2026→"2026",
+  2027→"2026–2027", 2030→"2026–2030"); all footer files div/script-balanced.
+
+**Reusable convention for future footers:** wrap the year in
+`<span data-qn-year>2026</span>` and it auto-updates wherever qn-nav.js loads.
+
+---
+
 ### Start-screen sticky CTA bar — rollout across 35 modules — May 2026
 
 Brought the start/settings screen in line with the summary screen: the

@@ -256,11 +256,24 @@
       '</div>';
     document.body.appendChild(el);
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectRotateHint);
-  } else {
-    injectRotateHint();
+
+  // Footer copyright year. Shows "2026" through 2026, then a growing range
+  // "2026–<currentYear>" afterwards. Computed at page load from the device
+  // clock, so it rolls over automatically on Jan 1 each year (no build step).
+  // Fallback text "2026" stays put if JS is disabled.
+  function setCopyrightYear() {
+    var y = new Date().getFullYear();
+    var txt = y > 2026 ? ('2026–' + y) : '2026';   // en-dash for the range
+    var els = document.querySelectorAll('[data-qn-year]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = txt;
   }
 
-  window.QNNav = { mount: mount, DESTS: DESTS };
+  function qnNavBoot() { injectRotateHint(); setCopyrightYear(); }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', qnNavBoot);
+  } else {
+    qnNavBoot();
+  }
+
+  window.QNNav = { mount: mount, DESTS: DESTS, setCopyrightYear: setCopyrightYear };
 })();
