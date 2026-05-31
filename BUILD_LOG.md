@@ -63,6 +63,20 @@ preserved. Structural: scripts 5/5, braces 223/223, parens 263/263, the three
   corrected a stale CLAUDE.md note that claimed desktop stayed all-open under
   the first version of this change — it didn't until this split landed.
 
+- **Scroll-spy now highlights only OPEN tiers.** On mobile load (all collapsed)
+  the tab bar lit Foundations even though nothing was open — a highlight with no
+  open tier read as confusing (Jonathan flagged). Fixed: `onScroll()` filters to
+  expanded sections and `setActive(null)` clears all when none are open. So load
+  = no tab highlighted; tapping a tab/header opens a tier and lights its tab.
+  Also wired header-toggle clicks to refresh the highlight after the 360ms body
+  transition (opening via the caret, not just the tab bar, updates the tab).
+
+- **Breakpoint / tablets:** the split is a single 720px CSS-px cutoff. Tablets
+  are ≥720 in both orientations (iPad portrait 768, iPad Pro 834, any landscape
+  1024+), so **tablets get the desktop all-expanded view**, no tab picker. Only
+  sub-720 widths (phones; the smallest 7" tablets in portrait, ~600) get the
+  collapse + picker. No tablet-specific branch — intentional.
+
 **Earlier same-day bugfix:** returning users landed with Reading's pane
 open despite the new collapsed default, while the tab bar correctly showed
 Foundations active — a mismatch. Root cause: a pre-existing localStorage layer

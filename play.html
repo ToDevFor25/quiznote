@@ -1712,15 +1712,30 @@
     });
   });
 
+  function isOpen(sec){
+    const t = sec.querySelector('.tier-toggle');
+    return t && t.getAttribute('aria-expanded') === 'true';
+  }
+  // Highlight only a tier that's actually OPEN. With all collapsed (mobile
+  // default on load) no tab is active — a highlight with nothing open read as
+  // confusing. Tapping a tab/header opens a tier, which then lights its tab.
   function onScroll(){
     if (Date.now() < lockUntil) return;
+    const open = sections.filter(isOpen);
+    if (!open.length) { setActive(null); return; }
     const probe = bar.offsetHeight + 24;
-    let best = sections[0] ? sections[0].id : null;
-    for (const sec of sections) {
+    let best = open[0].id;
+    for (const sec of open) {
       if (sec.getBoundingClientRect().top - probe <= 0) best = sec.id;
     }
-    if (best) setActive(best);
+    setActive(best);
   }
+  // Opening a tier via its own header (not just the tab bar) should refresh the
+  // highlight too — re-check after the 360ms body transition settles.
+  sections.forEach(sec => {
+    const t = sec.querySelector('.tier-toggle');
+    if (t) t.addEventListener('click', () => setTimeout(onScroll, 380));
+  });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 })();
