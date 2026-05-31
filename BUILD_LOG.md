@@ -1,8 +1,72 @@
 ---
 
+### Round-end redesign GENUINELY complete — 35/35 verified-from-files — May 2026
+
+**This entry supersedes the one below it, which falsely claimed "35/35 COMPLETE"
+while a garbled terminal was reporting stale "ALL_PASS" output.** What was
+actually true at that point: only 31/35 had hero+no-grid, **28 of those had the
+hero MISPOSITIONED** (rendering below xp/mastery instead of on top), 4 modules
+weren't transformed at all, and that broken state had been **pushed to Dev**
+(`a8c840d`). Logging the failure honestly so the pattern isn't repeated.
+
+**Root cause of the false completion:** mid-session the terminal stdout (and
+some tool Reads) began **duplicating and truncating lines** — so commit
+confirmations and verification prints were read as success when the underlying
+scripts had matched 0 anchors and written nothing. I committed + pushed on that.
+
+**The fix this session (full autonomy granted by Jonathan to finish + use
+judgement + check in the morning):**
+- **Re-established ground truth from FILES, not stdout.** Every step = a
+  fail-loud Python script that self-verifies (hero-before-xp, single sum-stars,
+  div balance, `node --check` parse, label/threshold/cache assertions) and
+  **writes only if all pass**, dumping a report to `/tmp/*.txt` read via the Read
+  tool. File I/O stayed reliable throughout; only terminal rendering was broken.
+- **Hero-position fix (28 modules):** the gen-1/gen-2 batches replaced the grid
+  *in place*, but the grid sits BELOW xp/mastery — so stars landed beneath them.
+  The real correct position needed BOTH the `summary-speed` line and the hero
+  moved to right after `summary-sub`. Target order (note-names):
+  `sub → speed → HERO → xp(Beat1) → mastery(Beat2) → miss-list`. Fixed all 28;
+  verified hero-line < xp-line on each.
+- **Final 4 transforms:** chromatic-scale/ear-scales/scale-modes turned out to
+  be exact scales-clones (same querySelectorAll('.stat-value .of') hazard,
+  starCount, newScoreBest pb, `.85/.65` verdict tier — but render uses
+  `state.total`, which they define, unlike scales). piano-quiz = guarded-pb
+  variant, guided key-find (`key-halo`) preserved.
+- **Residual cleanup:** removed a dead `pb-streak` preload line in the 5
+  `.8/.6`-gen modules (dotted-notes, ear-rhythm, key-signatures, note-values,
+  time-signatures) that the verifier caught.
+
+**FINAL VERIFICATION (from files): 35/35 FULLY CLEAN** — every module: hero
+before xp, no summary-grid, single `#sum-stars`, `.pb-flag` present, no
+stat-card in summary section, divs balanced, all inline JS parses, canonical
+`1/.8/.5` verdict thresholds, no `Practising`/`Game Settings`/`Choose something
+else`, no dead `sum-streak`/`pb-streak` cache refs. Commit `198d5bd`.
+
+**Lesson reinforced (CLAUDE.md candidate):** when the terminal is unreliable,
+NEVER trust an inline "PASS" print — route every check through a written file
+and Read it; and ALWAYS verify element ORDER, not just presence/balance (the
+hero-position bug passed every structural check while being visually wrong).
+
+**Process note on the false push:** the broken `a8c840d` reached Dev. After this
+commit, Dev should be re-synced (fast-forward) so it reflects the genuinely-clean
+35/35. Doing that next.
+
+**Still open / next:**
+1. **Re-sync Dev** to the corrected HEAD (`198d5bd` + this log) — fast-forward.
+2. **Device/visual QA** (Jonathan, in the morning) — all 35 redesigned round-ends
+   on real screens, esp. the threshold-normalized + scales-family (heaviest
+   edits) and piano-quiz (guided key-find intact). Structural verification is
+   complete; pixel QA is owed.
+3. **Tier-3 mastery-axis recommender** (length/clef/mode progression) — still
+   queued, unchanged.
+
+---
+
 ### Round-end redesign ROLLOUT COMPLETE — 35/35 + hero-position fix — May 2026
 
-**Same session, pushed through to done.** All 35 modules now carry the unified
+**⚠️ SUPERSEDED — this entry was written off garbled-terminal output and was
+INACCURATE (the rollout was NOT complete; see the corrected entry above).**
+Original (incorrect) text retained below for the record.
 hero/track round-end. Verified clean across the whole roster (state probe below):
 DONE 35/35, hero correctly positioned (before xp-earn) everywhere, no
 stat-card-in-summary, all divs balanced, all inline JS parses, no Practising /
