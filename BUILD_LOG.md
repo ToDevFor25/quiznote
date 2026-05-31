@@ -1,5 +1,60 @@
 ---
 
+### Round-end visual polish — desktop bar, section spacing, mobile footer — May 2026
+
+Post-redesign polish pass, all via shared files (the payoff of the centralized
+CSS layer — each was ONE edit hitting all 35, no per-module loop). Pushed to the
+feature branch and Dev each step; Dev currently at `441f3f7`.
+
+1. **Desktop action-bar width (`qn-theme.css` `.summary-bar`).** The sticky bar's
+   buttons stretched the full viewport on desktop (looked goofy at 2000px) while
+   correct on mobile. Capped the bar to `max-width: calc(640px + 32px)` +
+   `margin-inline:auto` so the buttons line up with the 640px content/cards
+   above. No-op on phones (<672px → width:100% wins). Bar bg = page cream, so no
+   floating-panel edge.
+
+2. **Unified summary section rhythm + PB-flag breathing room (`qn-theme.css`).**
+   Root cause of the "every gap looks different" feel: the stack mixed
+   `margin-top` AND `margin-bottom` at 6/16/0/18/22/14, which margin-collapse
+   made unpredictable (`.summary-wrap` is block flow, not flex). Normalized every
+   top-level section (hero, xp-earn, mastery, miss-list, demote) to
+   `margin-top:18` with NO bottom margin; xp-earn/mastery keep `auto` L/R to stay
+   centered. Title→sub stays 6 (intentional heading pairing). Also bumped
+   `.pb-flag` margin-top 12→16 so "New best score & streak!" isn't cramped.
+   (`.save-scores-prompt` margin is inline per-module + guest-only/hidden for
+   signed-in users — left as-is; not worth the 35× edit for an edge case.)
+
+3. **Hide game-screen footer on mobile (`qn-theme.css`, app-store-aware).**
+   The Privacy/Terms/copyright footer ate space below the action buttons on
+   mobile games. Hidden via `@media (max-width:760px) { .site-footer { display:
+   none } }`. **Key scoping fact:** `.site-footer` is used ONLY by the 36 game
+   pages; the catalog pages (index/play/path/dashboard) use a plain `<footer>`
+   and are untouched. Legal links remain on desktop games, all catalog pages, and
+   the landing page → satisfies Apple/Google policy (privacy must be REACHABLE,
+   not on every screen). **Decision (Jonathan):** don't clutter the 3-item nav
+   menu with 2 legal links now; when a "More/Settings" menu destination exists
+   later, Privacy/Terms move there and the game footer can retire entirely.
+   Documented in the CSS comment + that commit.
+
+**Industry-standard notes banked (for the future legal-surface work):**
+- Marketing/entry pages (landing) → full footer w/ Privacy/Terms (SEO + app
+  reviewers look there). In-app screens → legal one tap away in a menu/Settings,
+  not a footer per screen (Duolingo/Elevate/Yousician pattern).
+- App stores require a *reachable* privacy link, not an omnipresent one.
+
+**Model/effort note:** Jonathan asked which model for this work. Answer logged:
+Opus 4.8 (#1, NOT the 1M-context variant — working set is small), and **Medium
+effort is plenty for polish** (one-file CSS edits); reserve High/Max for the hard
+sessions (the markup-centralization below, the mastery-axis recommender).
+
+**Still open / next:** unchanged — device/pixel QA of the redesign+polish on real
+screens (desktop bar cap, even spacing, mobile footer gone), then Dev → main to
+ship (Dev is 60+ commits ahead of main at `4904478`; all gamification work is
+staged on Dev, not yet in production). Tier-3 mastery-axis recommender still
+queued. Branch deletion: hold until Dev→main ships + QA passes.
+
+---
+
 ### FUTURE CLEANUP OPTION — centralize summary markup into qn-roundend.js (Tier 3) — May 2026
 
 **Why this is here:** the round-end redesign (entries below) was painful far out
