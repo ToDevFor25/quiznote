@@ -150,3 +150,21 @@ macro-loop = Studio itself (P1).
 ## Per-phase build specs
 Added to `/specs/` as we reach each phase: `studio-p0-spec.md` (next),
 `studio-p1-spec.md`, etc. This file is the master; the P-specs are the buildable detail.
+
+---
+
+## Known bugs to fix in their natural phase (don't patch early)
+
+- **[P2] Next-step CTA tier mismatch.** Found in P0 testing (note-names, May 2026):
+  the round-end Beat-3 CTA reads "Next: Note Names · Medium" (label from
+  `rec.tier`) and writes `localStorage[module+'_settings'] = {difficulty: rec.tier,
+  total: rec.length}` (qn-roundend.js ~L254–261) — label and written payload agree
+  (Medium). But the target module's start screen restores its OWN last-used
+  difficulty (Tricky, from the round just played) with precedence over the
+  `_settings` handoff key, so it LANDS on Tricky. Two stores of truth disagree:
+  the recommender handoff vs the module's last-used restore. **Fix belongs in P2**
+  because P2 rebuilds exactly this handoff (passing difficulty/clef/length/timed
+  from the Next Beat into the module) — the fix is: a recommender-driven launch's
+  handoff key must win over the module's last-used restore. Patching before P2
+  would be thrown away. Touch points: qn-roundend.js Beat-3 onclick + each module's
+  start-screen settings-restore precedence (the `_settings` read).
