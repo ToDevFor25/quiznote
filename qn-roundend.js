@@ -208,25 +208,31 @@
   }
 
   // ── Summary scroll affordances (honest fade scrim + cue) ──────────────────
+  // The page (window) scrolls — the summary action bar is position:sticky, so
+  // there's no inner scroll container. Tracking window scroll keeps the fade
+  // scrim + "More" cue honest, and window.scrollBy clamps at the document
+  // bounds so the cue can never over-scroll past the content.
   function updateScrim() {
-    var scroll = document.querySelector('#summary-screen .summary-scroll');
     var screen = $('summary-screen');
-    if (!scroll || !screen) return;
-    // 4px slop absorbs sub-pixel rounding so the fade fully clears at the end.
-    var remaining = scroll.scrollHeight - scroll.clientHeight - scroll.scrollTop;
+    if (!screen) return;
+    var doc = document.documentElement;
+    var y = window.scrollY || window.pageYOffset || 0;
+    // 4px slop absorbs sub-pixel rounding. True when nothing more is below
+    // (including when the page is too short to scroll at all).
+    var remaining = doc.scrollHeight - window.innerHeight - y;
     screen.classList.toggle('scroll-end', remaining <= 4);
   }
 
   var scrollWired = false;
   function initScroll() {
     if (scrollWired) { updateScrim(); return; }   // idempotent
-    var sumScroll = document.querySelector('#summary-screen .summary-scroll');
-    if (sumScroll) sumScroll.addEventListener('scroll', updateScrim, { passive: true });
+    window.addEventListener('scroll', updateScrim, { passive: true });
     window.addEventListener('resize', updateScrim);
     var cue = $('scroll-cue');
-    if (cue && sumScroll) {
+    if (cue) {
       cue.addEventListener('click', function () {
-        sumScroll.scrollBy({ top: Math.round(sumScroll.clientHeight * 0.7), behavior: 'smooth' });
+        // ~60% of a viewport, smooth; the browser clamps at the page bottom.
+        window.scrollBy({ top: Math.round(window.innerHeight * 0.6), behavior: 'smooth' });
       });
     }
     scrollWired = true;
