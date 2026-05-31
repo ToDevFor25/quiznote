@@ -1699,6 +1699,14 @@
   const ids = ['sec-foundations','sec-reading','sec-theory'];
   const sections = ids.map(id => document.getElementById(id)).filter(Boolean);
 
+  // Remember the last-opened tier so returning to All Modules reopens it (mobile
+  // only — desktop is always all-expanded). Single value derived only from a
+  // genuine open, so it can't get "stuck" the way the old multi-section key
+  // qn_play_sections_open_v2 did.
+  const LAST_TIER = 'qn_play_last_tier';
+  const isMobile = () => !window.matchMedia('(min-width: 720px)').matches;
+  function saveLastTier(id){ if (isMobile()) { try { localStorage.setItem(LAST_TIER, id); } catch (e) {} } }
+
   function setActive(id){
     tabs.forEach(t => t.classList.toggle('active', t.dataset.target === id));
   }
@@ -1721,6 +1729,7 @@
       if (!sec) return;
       setActive(tab.dataset.target);
       accordion(tab.dataset.target);
+      saveLastTier(tab.dataset.target);
       // Tier bodies expand/collapse over a 360ms grid-template-rows transition.
       // Wait for it to finish before measuring, or we scroll to a stale position.
       lockUntil = Date.now() + 1300;
@@ -1761,10 +1770,30 @@
   // highlight too — re-check after the 360ms body transition settles.
   sections.forEach(sec => {
     const t = sec.querySelector('.tier-toggle');
-    if (t) t.addEventListener('click', () => setTimeout(onScroll, 380));
+    if (t) t.addEventListener('click', () => setTimeout(() => {
+      onScroll();
+      if (isOpen(sec)) saveLastTier(sec.id);   // remember it if it ended up open
+    }, 380));
   });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  // Reopen the tier the user last had open ("pick up where you left off"). Runs
+  // on DOMContentLoaded so it lands AFTER the first script adds body.tier-no-anim
+  // (registered earlier) — the reopen applies with transitions suppressed, so no
+  // load flash — and the page still starts at the top (scrollRestoration manual).
+  // First-ever visit has no saved tier, so the all-collapsed default stands; by
+  // the time a tier is saved the user has already tapped (hint dismissed), so
+  // this never fights the first-run picker hint.
+  function restoreLastTier(){
+    if (!isMobile()) return;
+    var id; try { id = localStorage.getItem(LAST_TIER); } catch (e) { return; }
+    if (!id || ids.indexOf(id) === -1 || !document.getElementById(id)) return;
+    accordion(id);
+    setActive(id);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restoreLastTier);
+  else restoreLastTier();
 
   // ── First-run "tap me" hint on the picker ──────────────────────────
   // Mobile only. Each tab does the fill+glow once, cascaded L→R, played 2×.
