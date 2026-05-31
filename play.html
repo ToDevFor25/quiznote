@@ -1772,22 +1772,32 @@
   // whichever comes first — then suppressed for good. Any tap cancels it live.
   const HINT_DONE = 'qn_play_hint_done';   // set once the user engages
   const HINT_SEEN = 'qn_play_hint_seen';   // loads we've shown it
+  const HINT_FORCE = 'qn_play_hint_force'; // QA: persistent "always show" flag
   let hintTimers = [];
+  // QA test mode: `play.html?hint` sets a PERSISTENT flag so the glow replays on
+  // every load — surviving refresh, navigation, and reopening, with no need to
+  // keep ?hint in the URL. `play.html?hint=off` clears it. Real users never hit
+  // these URLs, so they keep the normal first-run-only behavior. (Reduced-motion
+  // still suppresses the animation via CSS — intentional.)
+  try {
+    if (/[?&]hint=off\b/.test(location.search)) localStorage.removeItem(HINT_FORCE);
+    else if (/[?&]hint\b/.test(location.search)) localStorage.setItem(HINT_FORCE, '1');
+  } catch (e) {}
+  function hintForced(){
+    try { return localStorage.getItem(HINT_FORCE) === '1'; } catch (e) { return false; }
+  }
   function stopHint(){
     hintTimers.forEach(clearTimeout); hintTimers = [];
     tabs.forEach(t => t.classList.remove('tt-hint'));
   }
   function hintDone(){
+    if (hintForced()) return;   // QA force mode: a tap shouldn't end it
     try { localStorage.setItem(HINT_DONE, '1'); } catch (e) {}
     stopHint();
   }
   function maybeRunHint(){
     if (window.matchMedia('(min-width: 720px)').matches) return;  // mobile only
-    // QA test mode: play.html?hint replays the glow every load, bypassing the
-    // localStorage gate AND not burning the 3-load budget. (Reduced-motion still
-    // suppresses it via CSS — that's intentional.)
-    var force = /[?&]hint(=|&|$)/.test(location.search);
-    if (!force) {
+    if (!hintForced()) {
       let done, seen;
       try {
         done = localStorage.getItem(HINT_DONE);
@@ -1796,6 +1806,7 @@
       if (done || seen >= 3) return;
       try { localStorage.setItem(HINT_SEEN, String(seen + 1)); } catch (e) {}
     }
+    stopHint();   // clear any in-flight run before restarting (safe for replays)
     tabs.forEach((tab, i) => {
       hintTimers.push(setTimeout(() => {
         tab.classList.add('tt-hint');
@@ -1808,6 +1819,11 @@
   sections.forEach(sec => {
     const t = sec.querySelector('.tier-toggle');
     if (t) t.addEventListener('click', hintDone);
+  });
+  // Safari restores pages from its back/forward cache WITHOUT re-running this
+  // script — so in QA force mode, replay on bfcache restore too.
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && hintForced()) maybeRunHint();
   });
   maybeRunHint();
 })();
