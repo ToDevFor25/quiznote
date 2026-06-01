@@ -579,9 +579,12 @@
   .trend-empty { color:var(--ink-faint); font-weight:600; font-size:14px; padding:8px 0; }
 
   /* ── Module mastery grid ── */
-  .mastery-note { background:var(--grape-lt); border:2px solid var(--grape); border-radius:14px; padding:11px 16px; margin:4px 0 18px; font-size:13px; color:var(--grape-dk); line-height:1.45; }
+  .mastery-note { position:relative; background:var(--grape-lt); border:2px solid var(--grape); border-radius:14px; padding:11px 34px 11px 16px; margin:11px 0 0; font-size:13px; color:var(--grape-dk); line-height:1.45; }
+  .mastery-note[hidden] { display:none; }
   .mastery-note b { font-family:'Fredoka',sans-serif; font-weight:600; }
   .mastery-note .medal { font-weight:700; white-space:nowrap; }
+  .medal-x { color:var(--grape); }
+  .medal-x:hover { background:rgba(91,63,228,0.12); }
   .tier-head { font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.05rem; margin:0 0 12px; padding:10px 4px; border-radius:8px; display:flex; align-items:baseline; gap:10px; cursor:pointer; user-select:none; transition:background 100ms; }
   .tier-head:active { background:rgba(31,184,168,0.05); }
   .tier-head .tier-count { font-family:'Nunito'; font-weight:700; font-size:13px; color:var(--ink-faint); }
@@ -786,6 +789,13 @@
         <span class="jk"><span class="jdot none"></span>not yet</span>
       </div>
       <div class="j-cue">tap a tier to see its modules ▾</div>
+      <div class="mastery-note" id="medal-note">
+        <button type="button" class="banner-x medal-x" id="medal-x" aria-label="Dismiss this tip">×</button>
+        <b>Earn a medal by mastering each level.</b> Clear a level by scoring 85%+ accuracy in 2 rounds — your medal shows the hardest level you’ve cleared:
+        <span class="medal" style="color:var(--bronze);">Bronze</span> (Easy),
+        <span class="medal" style="color:var(--silver);">Silver</span> (Medium),
+        <span class="medal" style="color:var(--gold);">Gold</span> (Tricky).
+      </div>
       <div class="banner" id="journey-banner">
         <button type="button" class="banner-x" id="banner-x" aria-label="Dismiss this tip">×</button>
         <b>Your journey guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.
@@ -815,9 +825,6 @@
       <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
       <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
     </div>
-
-    <!-- MODULE MASTERY GRID (migrated from dashboard) -->
-    <div class="sec mastery-section" id="mastery-section"></div>
 
     <!-- SHARE / SAVE AS PDF (migrated from dashboard) -->
     <div class="sec share-sec">
@@ -1796,49 +1803,20 @@
     });
     return result;
   }
-  function drawMastery(events) {
-    var section = $('mastery-section');
-    if (!section) return;
-    var mastery = computeMasteryD(events);
-    section.innerHTML = '';
-    var head0 = document.createElement('div'); head0.className = 'section-head'; head0.textContent = 'Module mastery'; section.appendChild(head0);
-    var note = document.createElement('div'); note.className = 'mastery-note';
-    note.innerHTML = '<b>Earn a medal by mastering each level.</b> Clear a level by scoring 85%+ accuracy in 2 rounds — your medal shows the hardest level you’ve cleared: ' +
-      '<span class="medal" style="color:var(--bronze);">Bronze</span> (Easy), <span class="medal" style="color:var(--silver);">Silver</span> (Medium), <span class="medal" style="color:var(--gold);">Gold</span> (Tricky).';
-    section.appendChild(note);
-    Object.keys(ROSTER_D).forEach(function (tierName) {
-      var slugs = ROSTER_D[tierName], goldInTier = 0, startedInTier = 0;
-      slugs.forEach(function (s) { if (mastery[s] && mastery[s].level === 'gold') goldInTier++; if (mastery[s] && mastery[s].level !== 'untouched') startedInTier++; });
-      var head = document.createElement('div'); head.className = 'tier-head collapsed';
-      head.innerHTML = '<span class="tier-caret">▾</span>' + tierName + ' <span class="tier-count">' + goldInTier + '/' + slugs.length + ' mastered · ' + startedInTier + ' started</span>';
-      head.addEventListener('click', function () { head.classList.toggle('collapsed'); });
-      section.appendChild(head);
-      var grid = document.createElement('div'); grid.className = 'mastery-grid';
-      slugs.forEach(function (slug) {
-        var m = mastery[slug] || { level: 'untouched', cleared: {}, acc: {} }, meta = metaFor(slug);
-        var card = document.createElement('div'); card.className = 'm-card';
-        if (m.level === 'gold') card.classList.add('gold-shimmer');
-        var circ = 2 * Math.PI * 18;
-        var progress = m.level === 'gold' ? 1 : m.level === 'silver' ? 0.66 : m.level === 'bronze' ? 0.33 : m.level === 'started' ? 0.1 : 0;
-        var offset = circ * (1 - progress);
-        var ringClass = (m.level === 'untouched' || m.level === 'started') ? '' : m.level;
-        var tierLabel = m.level === 'untouched' ? 'Not started' : m.level === 'started' ? 'In progress' : m.level.charAt(0).toUpperCase() + m.level.slice(1);
-        var ringLabelText = m.level === 'gold' ? '★' : m.level === 'silver' ? '◐' : m.level === 'bronze' ? '◔' : m.level === 'started' ? '·' : '';
-        card.innerHTML = '<div class="m-card-top"><div class="m-ring ' + ringClass + '"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="18"/>' +
-          '<circle class="ring-fill ' + ringClass + '" cx="22" cy="22" r="18" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg>' +
-          '<div class="m-ring-label ' + ringClass + '">' + ringLabelText + '</div></div>' +
-          '<div><div class="m-name">' + meta.name + '</div><div class="m-tier-label ' + m.level + '">' + tierLabel + '</div></div></div>' +
-          '<div class="m-detail"><div class="m-detail-inner">' +
-          TIERS_D.map(function (t) {
-            var label = t.charAt(0).toUpperCase() + t.slice(1);
-            var pct = m.acc[t] !== null && m.acc[t] !== undefined ? fmtPct(m.acc[t] * 100) : '—';
-            var check = m.cleared[t] ? '<span class="m-check">✓</span>' : '';
-            return '<div class="m-tier-row"><span>' + label + ' ' + check + '</span><span class="m-pct">' + pct + '</span></div>';
-          }).join('') + '</div></div>';
-        card.addEventListener('click', function () { card.classList.toggle('expanded'); });
-        grid.appendChild(card);
-      });
-      section.appendChild(grid);
+  // The standalone Module-mastery grid was removed (it duplicated the journey
+  // bars' per-module mastery dots). computeMasteryD above is kept — the Share
+  // cards still use it. The "Earn a medal" explainer now lives as a dismissible
+  // note under the journey cue:
+  var MEDAL_NOTE_KEY = 'qn_studio_medal_note_dismissed';
+  function wireMedalNote() {
+    var note = $('medal-note'), x = $('medal-x');
+    if (!note) return;
+    var done;
+    try { done = localStorage.getItem(MEDAL_NOTE_KEY); } catch (e) { done = null; }
+    if (done === '1') { note.hidden = true; return; }
+    if (x) x.addEventListener('click', function () {
+      note.hidden = true;
+      try { localStorage.setItem(MEDAL_NOTE_KEY, '1'); } catch (e) {}
     });
   }
 
@@ -2134,12 +2112,12 @@
     renderBadgeWall(active);
     renderWeak(events);
     drawTrend(events);
-    drawMastery(events);
     _shareEvents = events;
     initShare(active);
     initPicker(active);
     wireGlance();
     wireJourneyBanner();
+    wireMedalNote();
     // P5: cascaded section pop-in on load (reduced-motion safe via CSS).
     requestAnimationFrame(function () { studioEl.classList.add('pop'); });
     // "Nice work today" — conditional, once/day, after a real session.
