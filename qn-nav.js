@@ -25,7 +25,7 @@
   'use strict';
 
   var DESTS = [
-    { key: 'studio',   label: 'Studio',      href: 'studio.html',    icon: '\u25B6' },
+    { key: 'studio',   label: 'My Studio',   href: 'studio.html',    icon: '\u25B6' },
     { key: 'modules',  label: 'All Modules', href: 'play.html',      icon: '\u266B' },
     { key: 'progress', label: 'My Progress', href: 'dashboard.html', icon: '\u25D0' }
   ];
