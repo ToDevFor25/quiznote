@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Studio glance-row — 5 options</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0;--ink:#2A2A3E;--ink-soft:#5a5a6e;--ink-faint:#8a8472;
+    --line:rgba(42,42,62,0.09);--teal:#1FB8A8;--teal-dk:#0e8475;--teal-lt:#d3f1ec;
+    --sun:#FFB627;--sun-dk:#c98800;--sun-lt:#fff3cc;--grape:#5B3FE4;--grape-dk:#3d28a8;--grape-lt:#ede8ff;
+    --coral:#FF6B6B;--white:#fff;--shadow-cool:#d8d6cc;--rank-gold:#E6B422;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
+  .wrap{max-width:440px;margin:0 auto;padding:18px 14px 60px;}
+  h1{font-family:'Fredoka',sans-serif;font-size:21px;margin:0 0 4px;}
+  .lede{font-size:13px;color:var(--ink-soft);margin:0 0 18px;line-height:1.45;}
+  .opt-label{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13px;color:var(--white);background:var(--ink);
+    display:inline-block;padding:4px 12px;border-radius:999px;margin:26px 0 4px;}
+  .opt-desc{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.4;}
+  .stage{background:var(--cream);border:2px dashed var(--shadow-cool);border-radius:18px;padding:14px;}
+  .sec-h{font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;margin:0 0 9px;display:flex;justify-content:space-between;align-items:baseline;}
+  .sec-h .cnt{font-size:12px;color:var(--ink-faint);font-weight:600;}
+  .tap-hint{font-size:11px;color:var(--teal-dk);font-weight:700;}
+  .chev{display:inline-block;transition:transform .25s;font-size:11px;color:var(--ink-faint);}
+  .open .chev{transform:rotate(180deg);}
+  .expand{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease;}
+  .open .expand{grid-template-rows:1fr;}
+  .expand-in{overflow:hidden;min-height:0;}
+
+  /* ===== shared glance tile bases ===== */
+  .grow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+  .gt{background:#fff;border:2.5px solid var(--ink);border-radius:15px;box-shadow:0 4px 0 var(--shadow-cool);
+    padding:11px 8px;text-align:center;cursor:pointer;position:relative;transition:transform .08s,box-shadow .08s;}
+  .gt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow-cool);}
+  .gt .ico{font-size:21px;line-height:1;}
+  .gt .num{font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;line-height:1.05;font-variant-numeric:tabular-nums;}
+  .gt .lab{font-size:10.5px;color:var(--ink-faint);font-weight:700;letter-spacing:.02em;line-height:1.15;margin-top:1px;}
+  .gt .ex{position:absolute;top:6px;right:8px;font-size:10px;color:var(--ink-faint);}
+  .gt.on{border-color:var(--teal-dk);background:var(--teal-lt);}
+
+  /* expanded detail blocks (shared) */
+  .det{background:#fff;border:2px solid var(--line);border-radius:13px;padding:12px 14px;margin-top:9px;}
+  .qrow{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .qrow:last-child{border:none;}
+  .qck{width:20px;height:20px;border-radius:50%;border:2px solid var(--shadow-cool);flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;}
+  .qrow.done .qck{background:var(--teal);border-color:var(--teal-dk);color:#fff;}
+  .qrow.done span{color:var(--ink-faint);text-decoration:line-through;}
+  .qxp{margin-left:auto;font-family:'Fredoka';font-weight:700;font-size:12px;color:var(--teal-dk);}
+  .wkdots{display:flex;gap:5px;margin:2px 0 8px;}
+  .wd{flex:1;height:24px;border-radius:6px;background:#efeadd;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink-faint);font-family:'Fredoka';}
+  .wd.on{background:var(--teal);color:#fff;}
+  .wd.today{box-shadow:0 0 0 2px var(--sun);}
+  .bwall{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:9px;}
+  .bg{display:flex;flex-direction:column;align-items:center;gap:3px;}
+  .bg .bi{width:42px;height:42px;border-radius:12px;border:2px solid var(--shadow-cool);background:#faf7ee;display:flex;align-items:center;justify-content:center;font-size:20px;filter:grayscale(1) opacity(.4);}
+  .bg.e .bi{filter:none;border-color:var(--rank-gold);background:#fff8e6;}
+  .bg .bn{font-size:8.5px;color:var(--ink-faint);font-family:'Fredoka';font-weight:600;line-height:1;}
+
+  /* ===== JOURNEY BARS (shared, expandable) ===== */
+  .jbar{margin-bottom:10px;}
+  .jbar-head{display:flex;align-items:center;gap:11px;cursor:pointer;padding:3px 0;}
+  .jbar-name{font-family:'Fredoka';font-weight:600;font-size:13px;width:92px;flex:none;}
+  .jbar-name.f{color:var(--sun-dk);}.jbar-name.r{color:var(--teal-dk);}.jbar-name.t{color:var(--grape-dk);}
+  .jtrack{flex:1;height:11px;border-radius:99px;background:#efeadd;overflow:hidden;}
+  .jfill{height:100%;border-radius:99px;}
+  .jfill.f{background:var(--sun);}.jfill.r{background:var(--teal);}.jfill.t{background:var(--grape);}
+  .jcnt{font-family:'Fredoka';font-weight:600;font-size:11px;color:var(--ink-faint);width:54px;flex:none;text-align:right;display:flex;align-items:center;justify-content:flex-end;gap:5px;}
+  .mods{display:flex;flex-wrap:wrap;gap:6px;padding:9px 0 4px;}
+  .mod{display:flex;align-items:center;gap:5px;font-size:11.5px;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:4px 8px;font-family:'Fredoka';font-weight:500;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .dot.gold{background:var(--rank-gold);}.dot.silver{background:#A8A8B0;}.dot.bronze{background:#CD7F32;}
+  .dot.started{background:var(--teal-lt);border:1.5px solid var(--teal);}.dot.none{background:#e8e3d6;}
+
+  /* option-specific: segmented bar (opt 2) */
+  .seg{display:flex;background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--shadow-cool);overflow:hidden;}
+  .segc{flex:1;padding:10px 6px;text-align:center;cursor:pointer;border-right:2px solid var(--line);}
+  .segc:last-child{border:none;}
+  .segc:active{background:var(--teal-lt);}
+  .segc .num{font-family:'Fredoka';font-weight:700;font-size:18px;}
+  .segc .lab{font-size:10px;color:var(--ink-faint);font-weight:700;}
+  .segc .ico{font-size:15px;}
+
+  /* option-specific: accordion rows (opt 4) */
+  .accrow{background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 3px 0 var(--shadow-cool);margin-bottom:8px;overflow:hidden;}
+  .accrow-h{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer;}
+  .accrow-h .ico{font-size:19px;}
+  .accrow-h .ttl{font-family:'Fredoka';font-weight:600;font-size:14px;}
+  .accrow-h .val{margin-left:auto;font-family:'Fredoka';font-weight:700;font-size:14px;color:var(--teal-dk);}
+  .accrow .expand-in{padding:0 15px 13px;}
+
+  /* option-specific: peek cards (opt 5) */
+  .peek{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+  .pk{background:#fff;border:2.5px solid var(--ink);border-radius:15px;box-shadow:0 4px 0 var(--shadow-cool);padding:10px;cursor:pointer;}
+  .pk .top{display:flex;align-items:center;justify-content:space-between;}
+  .pk .num{font-family:'Fredoka';font-weight:700;font-size:20px;}
+  .pk .ico{font-size:17px;}
+  .pk .lab{font-size:10px;color:var(--ink-faint);font-weight:700;}
+  .pk .peekln{font-size:10px;color:var(--teal-dk);font-weight:700;margin-top:5px;border-top:1px solid var(--line);padding-top:5px;}
+
+  /* option-specific: ring mini-viz (opt 3) */
+  .ring{width:34px;height:34px;margin:0 auto;}
+  .note{font-size:11px;color:var(--ink-faint);text-align:center;margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Studio glance row — 5 options</h1>
+  <p class="lede">Each shows the same idea: <b>Quests · Momentum · Collection</b> collapsed into a compact glance, tap to expand. Below every option, the <b>Journey</b> bars double as the expand control for the 35-module path — tap a tier bar to reveal its modules. Try them on your phone. Tell me the option number (glance) + whether the journey-bar expand feels right.</p>
+
+  <!-- ============ OPTION 1: stat tiles + chevron ============ -->
+  <span class="opt-label">Option 1 · Stat tiles + chevron</span>
+  <p class="opt-desc">Three chunky number-tiles with a ▾ corner cue. Tap → the matching detail panel drops below the row. Cleanest, most "dashboard".</p>
+  <div class="stage">
+    <div class="grow" id="o1row">
+      <div class="gt" data-t="o1-q"><span class="ex">▾</span><div class="ico">🎯</div><div class="num">2/3</div><div class="lab">QUESTS</div></div>
+      <div class="gt" data-t="o1-m"><span class="ex">▾</span><div class="ico">🔥</div><div class="num">7</div><div class="lab">DAY STREAK</div></div>
+      <div class="gt" data-t="o1-b"><span class="ex">▾</span><div class="ico">🏅</div><div class="num">9</div><div class="lab">BADGES</div></div>
+    </div>
+    <div id="o1-q" class="det" hidden>
+      <div class="qrow done"><span class="qck">✓</span><span>Play a round</span><span class="qxp">+20</span></div>
+      <div class="qrow done"><span class="qck">✓</span><span>Score 85%+</span><span class="qxp">+30</span></div>
+      <div class="qrow"><span class="qck">✓</span><span>Try a Theory module</span><span class="qxp">+40</span></div>
+    </div>
+    <div id="o1-m" class="det" hidden>
+      <div class="wkdots"><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd today">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span></div>
+      <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">3 of 5 days this week · best streak 12</div>
+    </div>
+    <div id="o1-b" class="det" hidden>
+      <div class="bwall">
+        <div class="bg e"><span class="bi">🎵</span><span class="bn">First Note</span></div>
+        <div class="bg e"><span class="bi">🌟</span><span class="bn">Flawless</span></div>
+        <div class="bg e"><span class="bi">🔥</span><span class="bn">On a Roll</span></div>
+        <div class="bg"><span class="bi">⚡</span><span class="bn">Week</span></div>
+        <div class="bg"><span class="bi">🎯</span><span class="bn">???</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 2: segmented summary bar ============ -->
+  <span class="opt-label">Option 2 · One segmented bar</span>
+  <p class="opt-desc">A single pill split in three. Most compact (one row, no tile gaps). Tap a segment → detail drops below. Reads as one "status strip".</p>
+  <div class="stage">
+    <div class="seg" id="o2row">
+      <div class="segc" data-t="o2-q"><div class="ico">🎯</div><div class="num">2/3</div><div class="lab">QUESTS</div></div>
+      <div class="segc" data-t="o2-m"><div class="ico">🔥</div><div class="num">7</div><div class="lab">STREAK</div></div>
+      <div class="segc" data-t="o2-b"><div class="ico">🏅</div><div class="num">9</div><div class="lab">BADGES</div></div>
+    </div>
+    <div id="o2-q" class="det" hidden>
+      <div class="qrow done"><span class="qck">✓</span><span>Play a round</span><span class="qxp">+20</span></div>
+      <div class="qrow done"><span class="qck">✓</span><span>Score 85%+</span><span class="qxp">+30</span></div>
+      <div class="qrow"><span class="qck">✓</span><span>Try a Theory module</span><span class="qxp">+40</span></div>
+    </div>
+    <div id="o2-m" class="det" hidden>
+      <div class="wkdots"><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd today">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span></div>
+      <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">3 of 5 days this week · best streak 12</div>
+    </div>
+    <div id="o2-b" class="det" hidden>
+      <div class="bwall">
+        <div class="bg e"><span class="bi">🎵</span><span class="bn">First Note</span></div>
+        <div class="bg e"><span class="bi">🌟</span><span class="bn">Flawless</span></div>
+        <div class="bg e"><span class="bi">🔥</span><span class="bn">On a Roll</span></div>
+        <div class="bg"><span class="bi">⚡</span><span class="bn">Week</span></div>
+        <div class="bg"><span class="bi">🎯</span><span class="bn">???</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 3: mini-viz tiles ============ -->
+  <span class="opt-label">Option 3 · Mini-viz tiles</span>
+  <p class="opt-desc">Each tile carries a tiny visual (quest ring, streak flames, badge cluster) instead of a bare number — more alive, slightly taller. "Tap to open" line.</p>
+  <div class="stage">
+    <div class="grow" id="o3row">
+      <div class="gt" data-t="o3-q">
+        <svg class="ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#efeadd" stroke-width="5"/><circle cx="18" cy="18" r="15" fill="none" stroke="var(--teal)" stroke-width="5" stroke-dasharray="94.2" stroke-dashoffset="31.4" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg>
+        <div class="lab">2/3 QUESTS</div>
+      </div>
+      <div class="gt" data-t="o3-m">
+        <div class="ico" style="font-size:24px;letter-spacing:-3px;">🔥<span style="font-size:14px;">🔥🔥</span></div>
+        <div class="num" style="font-size:18px;">7</div><div class="lab">STREAK</div>
+      </div>
+      <div class="gt" data-t="o3-b">
+        <div style="font-size:15px;letter-spacing:-2px;">🎵🌟🔥</div>
+        <div class="num" style="font-size:18px;">9</div><div class="lab">BADGES</div>
+      </div>
+    </div>
+    <div class="note">tap any tile to open</div>
+    <div id="o3-q" class="det" hidden>
+      <div class="qrow done"><span class="qck">✓</span><span>Play a round</span><span class="qxp">+20</span></div>
+      <div class="qrow done"><span class="qck">✓</span><span>Score 85%+</span><span class="qxp">+30</span></div>
+      <div class="qrow"><span class="qck">✓</span><span>Try a Theory module</span><span class="qxp">+40</span></div>
+    </div>
+    <div id="o3-m" class="det" hidden>
+      <div class="wkdots"><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd today">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span></div>
+      <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">3 of 5 days this week · best streak 12</div>
+    </div>
+    <div id="o3-b" class="det" hidden>
+      <div class="bwall">
+        <div class="bg e"><span class="bi">🎵</span><span class="bn">First Note</span></div>
+        <div class="bg e"><span class="bi">🌟</span><span class="bn">Flawless</span></div>
+        <div class="bg e"><span class="bi">🔥</span><span class="bn">On a Roll</span></div>
+        <div class="bg"><span class="bi">⚡</span><span class="bn">Week</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 4: accordion rows ============ -->
+  <span class="opt-label">Option 4 · Accordion rows</span>
+  <p class="opt-desc">Three full-width thin rows (not side-by-side), each opens in place. Most legible labels; reads top-to-bottom. Slightly taller collapsed than a 3-up row.</p>
+  <div class="stage">
+    <div class="accrow" data-acc>
+      <div class="accrow-h"><span class="ico">🎯</span><span class="ttl">Today's quests</span><span class="val">2/3 <span class="chev">▾</span></span></div>
+      <div class="expand"><div class="expand-in"><div style="padding-top:4px">
+        <div class="qrow done"><span class="qck">✓</span><span>Play a round</span><span class="qxp">+20</span></div>
+        <div class="qrow done"><span class="qck">✓</span><span>Score 85%+</span><span class="qxp">+30</span></div>
+        <div class="qrow"><span class="qck">✓</span><span>Try a Theory module</span><span class="qxp">+40</span></div>
+      </div></div></div>
+    </div>
+    <div class="accrow" data-acc>
+      <div class="accrow-h"><span class="ico">🔥</span><span class="ttl">Your momentum</span><span class="val">7 days <span class="chev">▾</span></span></div>
+      <div class="expand"><div class="expand-in"><div style="padding-top:6px">
+        <div class="wkdots"><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd today">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span></div>
+        <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">3 of 5 days this week · best streak 12</div>
+      </div></div></div>
+    </div>
+    <div class="accrow" data-acc>
+      <div class="accrow-h"><span class="ico">🏅</span><span class="ttl">Your collection</span><span class="val">9/14 <span class="chev">▾</span></span></div>
+      <div class="expand"><div class="expand-in"><div style="padding-top:6px">
+        <div class="bwall">
+          <div class="bg e"><span class="bi">🎵</span><span class="bn">First</span></div>
+          <div class="bg e"><span class="bi">🌟</span><span class="bn">Flawless</span></div>
+          <div class="bg e"><span class="bi">🔥</span><span class="bn">Roll</span></div>
+          <div class="bg"><span class="bi">⚡</span><span class="bn">Week</span></div>
+          <div class="bg"><span class="bi">🎯</span><span class="bn">???</span></div>
+        </div>
+      </div></div></div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 5: peek cards ============ -->
+  <span class="opt-label">Option 5 · Peek cards</span>
+  <p class="opt-desc">Number + a one-line "peek" of the most useful next bit ("Next: Week Warrior"). Gives value without expanding; tap for full. Most informative collapsed.</p>
+  <div class="stage">
+    <div class="peek" id="o5row">
+      <div class="pk" data-t="o5-q"><div class="top"><span class="ico">🎯</span><span class="num">2/3</span></div><div class="lab">QUESTS</div><div class="peekln">1 left: Theory</div></div>
+      <div class="pk" data-t="o5-m"><div class="top"><span class="ico">🔥</span><span class="num">7</span></div><div class="lab">STREAK</div><div class="peekln">3/5 this week</div></div>
+      <div class="pk" data-t="o5-b"><div class="top"><span class="ico">🏅</span><span class="num">9</span></div><div class="lab">BADGES</div><div class="peekln">Next: Week Warrior</div></div>
+    </div>
+    <div id="o5-q" class="det" hidden>
+      <div class="qrow done"><span class="qck">✓</span><span>Play a round</span><span class="qxp">+20</span></div>
+      <div class="qrow done"><span class="qck">✓</span><span>Score 85%+</span><span class="qxp">+30</span></div>
+      <div class="qrow"><span class="qck">✓</span><span>Try a Theory module</span><span class="qxp">+40</span></div>
+    </div>
+    <div id="o5-m" class="det" hidden>
+      <div class="wkdots"><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd on">✓</span><span class="wd today">T</span><span class="wd">F</span><span class="wd">S</span><span class="wd">S</span></div>
+      <div style="font-size:12px;color:var(--ink-soft);font-weight:600;">3 of 5 days this week · best streak 12</div>
+    </div>
+    <div id="o5-b" class="det" hidden>
+      <div class="bwall">
+        <div class="bg e"><span class="bi">🎵</span><span class="bn">First Note</span></div>
+        <div class="bg e"><span class="bi">🌟</span><span class="bn">Flawless</span></div>
+        <div class="bg e"><span class="bi">🔥</span><span class="bn">On a Roll</span></div>
+        <div class="bg"><span class="bi">⚡</span><span class="bn">Week</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ THE JOURNEY BARS (shared expand control) ============ -->
+  <span class="opt-label" style="background:var(--grape);">The Journey bars — path folds into the bar</span>
+  <p class="opt-desc">This is shared across all 5 options. The tier progress bar IS the expand control: tap it to reveal that tier's modules (with mastery dots). The bar shows the glance (7/14); the ▾ invites the click. Below: two affordance styles — pick A or B.</p>
+
+  <div class="stage">
+    <div class="sec-h">Your journey <span class="tap-hint">tap a bar ▾</span></div>
+
+    <!-- affordance A: chevron on the count -->
+    <div class="jbar" data-acc>
+      <div class="jbar-head">
+        <span class="jbar-name f">Foundations</span>
+        <span class="jtrack"><span class="jfill f" style="width:50%"></span></span>
+        <span class="jcnt">7/14 <span class="chev">▾</span></span>
+      </div>
+      <div class="expand"><div class="expand-in"><div class="mods">
+        <span class="mod"><span class="dot gold"></span>Note Names</span>
+        <span class="mod"><span class="dot gold"></span>Piano Quiz</span>
+        <span class="mod"><span class="dot silver"></span>Ledger Lines</span>
+        <span class="mod"><span class="dot bronze"></span>Note Values</span>
+        <span class="mod"><span class="dot started"></span>Rhythm</span>
+        <span class="mod"><span class="dot none"></span>Accidentals</span>
+        <span class="mod"><span class="dot none"></span>Dynamics</span>
+      </div></div></div>
+    </div>
+
+    <div class="jbar" data-acc>
+      <div class="jbar-head">
+        <span class="jbar-name r">Reading</span>
+        <span class="jtrack"><span class="jfill r" style="width:0%"></span></span>
+        <span class="jcnt">0/10 <span class="chev">▾</span></span>
+      </div>
+      <div class="expand"><div class="expand-in"><div class="mods">
+        <span class="mod"><span class="dot none"></span>Key Signatures</span>
+        <span class="mod"><span class="dot none"></span>Scales</span>
+        <span class="mod"><span class="dot none"></span>Intervals</span>
+      </div></div></div>
+    </div>
+
+    <div class="jbar" data-acc>
+      <div class="jbar-head">
+        <span class="jbar-name t">Theory</span>
+        <span class="jtrack"><span class="jfill t" style="width:0%"></span></span>
+        <span class="jcnt">0/11 <span class="chev">▾</span></span>
+      </div>
+      <div class="expand"><div class="expand-in"><div class="mods">
+        <span class="mod"><span class="dot none"></span>Triads</span>
+        <span class="mod"><span class="dot none"></span>Cadences</span>
+      </div></div></div>
+    </div>
+
+    <div style="font-size:11px;color:var(--ink-faint);margin-top:10px;line-height:1.4;">
+      Dot legend: <span class="dot gold" style="display:inline-block;vertical-align:middle"></span> gold ·
+      <span class="dot silver" style="display:inline-block;vertical-align:middle"></span> silver ·
+      <span class="dot bronze" style="display:inline-block;vertical-align:middle"></span> bronze ·
+      <span class="dot started" style="display:inline-block;vertical-align:middle"></span> started ·
+      <span class="dot none" style="display:inline-block;vertical-align:middle"></span> not yet
+    </div>
+  </div>
+
+  <p class="lede" style="margin-top:26px;">Reply with: <b>glance option # (1–5)</b> + <b>expand style</b> (drop-below vs in-row accordion) + whether the <b>journey-bar fold</b> feels right. I'll wire the winner into studio.html.</p>
+</div>
+
+<script>
+  // tile→detail (drop-below): close siblings in the same row group, toggle target
+  function wireRow(rowId, prefix){
+    var row=document.getElementById(rowId); if(!row)return;
+    row.querySelectorAll('[data-t]').forEach(function(tile){
+      tile.addEventListener('click',function(){
+        var id=tile.getAttribute('data-t');
+        var panel=document.getElementById(id);
+        var wasOpen=panel && !panel.hidden;
+        // close all in this group
+        ['q','m','b'].forEach(function(k){var p=document.getElementById(prefix+'-'+k);if(p)p.hidden=true;});
+        row.querySelectorAll('.gt,.segc,.pk').forEach(function(t){t.classList.remove('on');});
+        if(panel && !wasOpen){panel.hidden=false;tile.classList.add('on');}
+      });
+    });
+  }
+  wireRow('o1row','o1'); wireRow('o2row','o2'); wireRow('o3row','o3'); wireRow('o5row','o5');
+
+  // accordion (in-row expand): grid-rows trick
+  document.querySelectorAll('[data-acc]').forEach(function(acc){
+    var head=acc.querySelector('.accrow-h,.jbar-head');
+    if(!head)return;
+    head.addEventListener('click',function(){ acc.classList.toggle('open'); });
+  });
+</script>
+</body>
+</html>
