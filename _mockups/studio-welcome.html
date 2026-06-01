@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Welcome back — 5 ideas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0;--ink:#2A2A3E;--ink-soft:#5a5a6e;--ink-faint:#8a8472;--line:rgba(42,42,62,0.09);
+    --teal:#1FB8A8;--teal-dk:#0e8475;--teal-lt:#d3f1ec;--sun:#FFB627;--sun-dk:#c98800;--sun-lt:#fff3cc;
+    --grape:#5B3FE4;--grape-dk:#3d28a8;--grape-lt:#ede8ff;--white:#fff;--shadow-cool:#d8d6cc;--rank-gold:#E6B422;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
+  .wrap{max-width:440px;margin:0 auto;padding:16px 14px 40px;}
+  h1{font-family:'Fredoka';font-size:20px;margin:0 0 4px;}
+  .lede{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.45;}
+  .opt{margin-bottom:14px;}
+  .opt-bar{font-family:'Fredoka';font-weight:700;font-size:13px;color:#fff;background:var(--ink);padding:8px 14px;border-radius:11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .opt-bar:active{transform:translateY(2px);}
+  .opt-desc{font-size:12px;color:var(--ink-soft);padding:8px 6px 0;line-height:1.4;}
+  .play{font-family:'Fredoka';font-weight:700;font-size:11px;color:var(--teal-lt);}
+
+  /* fake studio behind the welcome, so you see context */
+  .stage{position:fixed;inset:0;z-index:1;pointer-events:none;}
+  .fakehdr{position:fixed;top:0;left:0;right:0;height:58px;background:#fff;border-bottom:2px solid var(--shadow-cool);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:2;}
+  .fakehdr .b{font-family:'Fredoka';font-weight:700;font-size:19px;}.fakehdr .b span{color:var(--teal);}
+  .fakehdr .t{font-family:'Fredoka';font-weight:700;font-size:13px;background:var(--teal-lt);color:var(--teal-dk);border:2px solid var(--ink);border-radius:10px;padding:6px 12px;}
+
+  /* ============ 1. CENTER TOAST (fade) ============ */
+  .w1{position:fixed;top:78px;left:14px;right:14px;z-index:20;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 var(--shadow-cool);
+    padding:14px 18px;display:flex;align-items:center;gap:13px;opacity:0;transform:translateY(-12px);transition:opacity .4s,transform .4s;}
+  .w1.show{opacity:1;transform:none;}
+  .w1 .ico{font-size:28px;}
+  .w1 .tx b{font-family:'Fredoka';font-weight:700;font-size:16px;display:block;}
+  .w1 .tx span{font-size:12.5px;color:var(--ink-soft);}
+  .w1 .x{margin-left:auto;background:none;border:none;font-size:20px;color:var(--ink-faint);cursor:pointer;}
+
+  /* ============ 2. FULL OVERLAY HERO (fade) ============ */
+  .w2{position:fixed;inset:0;z-index:20;background:linear-gradient(150deg,var(--grape),var(--teal));
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;opacity:0;transition:opacity .45s;}
+  .w2.show{opacity:1;}
+  .w2 .ring{width:84px;height:84px;border-radius:50%;border:4px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;font-size:34px;margin-bottom:16px;}
+  .w2 h2{font-family:'Fredoka';font-weight:700;font-size:30px;margin:0 0 6px;}
+  .w2 p{font-size:15px;opacity:.92;margin:0;}
+  .w2 .tap{position:absolute;bottom:40px;font-size:12px;opacity:.8;}
+
+  /* ============ 3. BOTTOM SLIDE-UP PILL (fade) ============ */
+  .w3{position:fixed;bottom:24px;left:14px;right:14px;z-index:20;background:var(--ink);color:#fff;border-radius:14px;box-shadow:0 6px 20px rgba(42,42,62,.3);
+    padding:13px 16px;display:flex;align-items:center;gap:12px;transform:translateY(140%);transition:transform .4s cubic-bezier(.34,1.5,.64,1);}
+  .w3.show{transform:none;}
+  .w3 .ico{font-size:24px;}
+  .w3 .tx b{font-family:'Fredoka';font-weight:700;font-size:15px;}
+  .w3 .tx span{font-size:12px;color:rgba(255,255,255,.72);display:block;}
+
+  /* ============ 4. MASTHEAD GREETING (inline, gentle) ============ */
+  .w4{position:fixed;top:58px;left:0;right:0;z-index:20;background:linear-gradient(120deg,var(--sun-lt),var(--teal-lt));
+    border-bottom:2px solid var(--shadow-cool);overflow:hidden;max-height:0;transition:max-height .45s ease;}
+  .w4.show{max-height:90px;}
+  .w4 .in{padding:14px 18px;display:flex;align-items:center;gap:12px;}
+  .w4 .ico{font-size:26px;}
+  .w4 b{font-family:'Fredoka';font-weight:700;font-size:17px;}
+  .w4 span{font-size:12.5px;color:var(--ink-soft);display:block;}
+
+  /* ============ 5. CONFETTI BURST + FLOAT (fade) ============ */
+  .w5{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);z-index:20;
+    background:#fff;border:2.5px solid var(--ink);border-radius:22px;box-shadow:0 8px 0 var(--shadow-cool);
+    padding:24px 30px;text-align:center;opacity:0;transition:opacity .4s,transform .4s cubic-bezier(.34,1.56,.64,1);}
+  .w5.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  .w5 .ico{font-size:38px;}
+  .w5 h2{font-family:'Fredoka';font-weight:700;font-size:24px;margin:8px 0 4px;}
+  .w5 p{font-size:13px;color:var(--ink-soft);margin:0;}
+  .w5 .conf{position:fixed;inset:0;z-index:19;pointer-events:none;overflow:hidden;}
+  .w5 .c{position:absolute;top:48%;left:50%;font-size:16px;opacity:0;animation:burst 1.1s ease-out forwards;}
+  @keyframes burst{0%{opacity:0;transform:translate(0,0) scale(.5);}15%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1);}}
+  .scrim{position:fixed;inset:0;background:rgba(42,42,62,.3);z-index:18;opacity:0;transition:opacity .35s;pointer-events:none;}
+  .scrim.show{opacity:1;}
+
+  @media (prefers-reduced-motion: reduce){
+    .w1,.w2,.w3,.w4,.w5{transition:opacity .2s;}
+    .w5 .c{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="fakehdr"><span class="b">Quiz<span>Note</span></span><span class="t">My Studio ☰</span></div>
+
+<div class="wrap" style="padding-top:74px;">
+  <h1>"Welcome back" — 5 ideas</h1>
+  <p class="lede">All auto-fade after ~2.5s and are dismissible. Tap each black bar to <b>preview it live</b> over the mock header. Pick one (or mix). Note: this fires only on a fresh login/landing, not on every Studio visit.</p>
+
+  <div class="opt"><div class="opt-bar" data-w="1"><span>1 · Top toast (slides down, fades)</span><span class="play">▶ preview</span></div>
+    <div class="opt-desc">A compact card drops from under the header. Least intrusive — the page is fully usable behind it. "Welcome back, Panda · 7-day streak 🔥". Auto-fades; × to dismiss.</div></div>
+
+  <div class="opt"><div class="opt-bar" data-w="2"><span>2 · Full hero splash (fades through)</span><span class="play">▶ preview</span></div>
+    <div class="opt-desc">A brief full-screen gradient moment with the level ring + "Welcome back, Panda". Most premium/ceremonial. Fades to reveal Studio. Tap anywhere to skip.</div></div>
+
+  <div class="opt"><div class="opt-bar" data-w="3"><span>3 · Bottom slide-up pill</span><span class="play">▶ preview</span></div>
+    <div class="opt-desc">Rises from the bottom (twin of the recap sheet, so it shares a language). "Welcome back, Panda — ready to play?" Auto-fades. Note: shares space with the Play bar.</div></div>
+
+  <div class="opt"><div class="opt-bar" data-w="4"><span>4 · Masthead greeting (expands inline)</span><span class="play">▶ preview</span></div>
+    <div class="opt-desc">A warm band unfurls just under the header, then collapses away after a beat. Feels built-in, not a pop-up. Quietest. "Welcome back, Panda 👋".</div></div>
+
+  <div class="opt"><div class="opt-bar" data-w="5"><span>5 · Center card + confetti</span><span class="play">▶ preview</span></div>
+    <div class="opt-desc">A centered card springs in with a small music-note confetti burst. Most celebratory/playful (good for kids). Dimmed scrim behind. Fades after a beat.</div></div>
+
+  <p class="lede" style="margin-top:18px;">My lean: <b>#1 (top toast)</b> for daily use — warm but never in the way — possibly escalating to <b>#5</b> only on milestone logins (new level reached while away). Tell me your pick.</p>
+</div>
+
+<!-- the 5 welcomes -->
+<div class="scrim" id="scrim"></div>
+<div class="w1" id="w1"><span class="ico">👋</span><div class="tx"><b>Welcome back, Panda!</b><span>7-day streak going strong 🔥</span></div><button class="x" data-close>×</button></div>
+<div class="w2" id="w2"><div class="ring">3</div><h2>Welcome back, Panda</h2><p>Level 3 · Beginner · 137 XP to Lvl 4</p><div class="tap">tap to continue</div></div>
+<div class="w3" id="w3"><span class="ico">🎵</span><div class="tx"><b>Welcome back, Panda!</b><span>Ready to play your next beat?</span></div></div>
+<div class="w4" id="w4"><div class="in"><span class="ico">👋</span><div><b>Welcome back, Panda!</b><span>Pick up right where you left off.</span></div></div></div>
+<div class="w5" id="w5"><div class="ico">🎉</div><h2>Welcome back!</h2><p>Good to see you, Panda. Let's make today count.</p></div>
+<div class="conf" id="conf" style="display:none;"></div>
+
+<script>
+  var openTimer=null;
+  function clearAll(){
+    ['w1','w2','w3','w4','w5'].forEach(function(id){document.getElementById(id).classList.remove('show');});
+    document.getElementById('scrim').classList.remove('show');
+    document.getElementById('conf').style.display='none';
+    if(openTimer){clearTimeout(openTimer);openTimer=null;}
+  }
+  function preview(n){
+    clearAll();
+    var el=document.getElementById('w'+n);
+    if(n==='5'){
+      document.getElementById('scrim').classList.add('show');
+      var conf=document.getElementById('conf');conf.style.display='block';conf.innerHTML='';
+      var g=['♪','♫','✨','🎵','🌟'];
+      for(var i=0;i<16;i++){var a=Math.PI*2*i/16+(Math.random()-.5)*.4,d=80+Math.random()*70;
+        var s=document.createElement('span');s.className='c';s.textContent=g[i%5];
+        s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');s.style.setProperty('--dy',(Math.round(Math.sin(a)*d)-30)+'px');
+        s.style.animationDelay=(Math.random()*.2).toFixed(2)+'s';conf.appendChild(s);}
+    }
+    requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('show');});});
+    openTimer=setTimeout(clearAll,2600);  // auto-fade ~2.6s
+  }
+  document.querySelectorAll('[data-w]').forEach(function(b){b.addEventListener('click',function(){preview(b.getAttribute('data-w'));});});
+  document.querySelectorAll('[data-close]').forEach(function(x){x.addEventListener('click',clearAll);});
+  // tap the welcome itself to dismiss (overlay/hero/scrim)
+  ['w2','w5','scrim'].forEach(function(id){document.getElementById(id).addEventListener('click',clearAll);});
+</script>
+</body>
+</html>
