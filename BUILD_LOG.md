@@ -1,5 +1,119 @@
 ---
 
+### The Studio build — gamification UX overhaul on `feature/studio` (June 2026)
+
+**Status: built + self-verified on the isolated branch `feature/studio` (cut from
+`main`), NOT merged.** `Dev`/`main` untouched at `a293083`. Branch head `dadda02`.
+Awaiting Jonathan's QA pass, then a decision to merge. ~34 commits. This was a
+long, highly-iterative session driven almost entirely by Jonathan's running QA
+feedback on the Vercel preview; the doc below is the consolidated record.
+
+#### The thesis
+The Path page (future) and Progress page (past) were two renderings of one model
+(`qn_events`), split across unlinked surfaces, with the already-built XP engine
+(`qn-xp.js`) rendering nothing between rounds. We merged them into ONE scroll-home
+— **"My Studio"** — that opens on identity + what's next and scrolls down into how
+far you've come, and finally surfaced the dormant progression engine. Full agency
+proposal + chosen direction ("The Journey, told in the Conservatory's voice") in
+`specs/studio-experience-proposal.md`; per-phase detail in `specs/studio-p0/p1-spec.md`.
+
+#### What shipped (phases P0–P5, then heavy QA iteration)
+- **P0 — persistent progression + level-up moment.** New shared file `qn-home.js`
+  (status masthead: level ring, rank, XP-to-next, streak, weekly goal — reads
+  `QN.xp.summaryFor`). `qn-roundend.js` v1.7.0 adds the **level-up interstitial**
+  via `QN.xp.levelDelta()`. KEY CORRECTION caught in recon: the round-end XP was
+  NEVER dormant (Beat 1 already showed it); what was missing was *cross-round
+  persistence* + the level-up celebration. qn-home self-injects its own CSS (hub
+  pages don't link qn-theme.css + have colliding class names).
+- **P1 — the merge.** `studio.html` cloned from path.html, restructured into the
+  funnel. `path.html` → redirect to studio. Reuses the proven recommender card +
+  spine verbatim. dashboard kept (then) as the deep-dive.
+- **P2 — variety/depth recommender + the tier-mismatch fix.** `qn-profile.js`
+  recommender now returns a "stretch" (try bass / both clefs / 20-question) in the
+  all-strong review branch. **Fixed the P0-found Next-step tier bug** (label said
+  Medium, landed Tricky) — root cause was an init-ORDER override: swapped
+  `applyProfileDefaults()` ↔ `applyPathHandoff()` across all 27 handoff modules so
+  a recommender launch wins over the profile default.
+- **P3 — daily quests** (3/day from `qn_events`, deterministic per day, anchor +2).
+- **P4 — collection wall.** New shared file `qn-badges.js` (14 achievements as pure
+  predicates over the event log; `QN.badges.evaluate`).
+- **P5 — polish** (Practice Story recap, section pop-in, breathing current node).
+
+#### Major UX iterations (all from Jonathan's QA on real device)
+- **Glance-row redesign (Option 3 mini-viz).** Quests/Momentum/Collection collapsed
+  into one compact mini-viz tile row (tap to roll-open detail); the 35-module spine
+  folded INTO the journey tier bars (tap a bar → its modules with mastery dots).
+  Big mobile-length cut. Collection wall reveals locked badge names + requirements
+  (the curiosity gap), not "???".
+- **"Nice work today" → conditional bottom sheet.** Was an always-on inline greeting;
+  now a once-per-day, earned-after-≥3-rounds bottom sheet (a reward, not a greeting).
+- **Next Beat → sticky Play bar (Option 4).** The Next Beat card became a fixed
+  bottom Play bar; when the recap fires it CARRIES the Play CTA and the bar tucks
+  away, springing back with a bounce on dismiss. Dropped "~3 min" (old time-as-
+  marketing); a contextual variety pill takes its slot.
+- **Layout/copy:** glance row moved above Next Beat; masthead de-duped (streak/week
+  removed there since the glance shows them); journey color key restored under "tap
+  a tier"; "Your next beat" → "Play your next beat"; "Your path guides" → "Your
+  journey guides"; dismissible journey tip + dismissible "Earn a medal" note.
+
+#### The consolidation (dashboard retirement) — staged 1–5
+Jonathan's call: Studio becomes the one-stop shop, dashboard.html is duplicative.
+- **Renamed** Studio → **My Studio** (nav + title).
+- **Return users auto-land on My Studio** — `index.html` `location.replace`s to
+  studio for anyone with a profile; index stays reachable via `?stay` + the brand
+  logo (so nobody loses the marketing page).
+- **App splash** on arrival — Style #5 / Variant A (real QuizNote icon from
+  index.html, sun→teal wash, note-confetti, "Welcome back, <name>"), shown once per
+  day (`qn_studio_splash_day`).
+- **Migrated into Studio** (verbatim, wired to Studio's own stats): Focus areas,
+  Accuracy-over-time trend chart, and Share / Save-as-PDF (3 canvas social cards +
+  print stylesheet). The **Module mastery grid was first migrated, then REMOVED**
+  as duplicative of the journey bars' mastery dots — its "Earn a medal" explainer
+  became the dismissible note under the journey cue. `computeMasteryD` kept (Share
+  cards use it).
+- **Deleted dashboard.html**; nav → 2 destinations (My Studio · All Modules).
+- **New `rewards.html`** ("How progress works") — the single success-path reference
+  for all 5 reward systems (Levels/XP, Medals, Badges, Streaks, Quests). Level bands,
+  XP rules, and the full 14-badge list are pulled LIVE from `qn-xp.js`/`qn-badges.js`
+  so it can't drift. Linked from the footer (studio + play) + a "How it works →"
+  on the collection wall. NOT in the 2-tab nav (it's reference, not a destination).
+- **Play bar restyled** — was dark `--ink` (read as a foreign dock); recolored to
+  match the existing `.start-bar` (cream, hairline top border, soft shadow, tapered
+  fade scrim, chunky teal button). Footer lifted above the bar; added
+  `scrollRestoration='manual'` (the proven play.html fix) so it lands at the top.
+
+#### New shared files
+`qn-home.js` (status masthead) · `qn-badges.js` (achievement engine). Both pure
+read-only over existing data, no schema. `qn-roundend.js` → v1.7.0.
+
+#### Verification discipline (and a real bug it caught)
+Every change was checked with `node -c` + brace/script balance + a **DOM-mock init
+trace**. MID-BUILD BUG: removing `#eyebrow-text` left a stale `$('eyebrow-text')
+.textContent` ref that threw at boot → the page rendered blank except the masthead
+(classic "init throw"). My trace had passed because the MOCK stubbed an element the
+real DOM lacked. **Fix to the methodology:** the trace now parses the real `id="..."`
+set from the markup and returns `null` for any id NOT present — reproducing the
+exact browser null. This class of "removed-an-element-but-left-a-ref" bug can no
+longer slip past. Two mockup-preview bugs also root-caused to the same cause: an
+`opacity:0` full-screen overlay still captures taps (fixed with `pointer-events:none`
+when hidden) — now applied proactively to the splash too.
+
+#### Still open / next (Studio)
+1. **Jonathan's QA pass** on the whole branch, then a merge decision (Dev→main).
+   Flagged for his eyes specifically: the **PDF print layout** (adapted the
+   dashboard's print CSS to Studio's very different structure via `:has()` — logic
+   sound but print rendering is browser-specific), the **cream Play bar contrast**
+   against the cream page on a real screen, and the **swipe/bounce feel** of the
+   recap + Play bar.
+2. **No real app icon** — the splash uses the index.html PNG. A proper QuizNote
+   app icon is its own small task.
+3. **rewards.html naming** — file is `rewards.html`, page title is "How progress
+   works"; rename either if they should match.
+4. Mockups left in `_mockups/` (studio-glance, studio-playbar, studio-welcome,
+   studio-splash, studio-splash5) — internal tooling, harmless.
+
+---
+
 ### Session close — production deploy + QA tooling + data-durability flag — May 2026
 
 **Deployed to production.** Promoted **Dev → main** at Jonathan's call ("deploy
