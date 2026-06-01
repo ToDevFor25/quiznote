@@ -634,6 +634,7 @@
 
   /* ── Share button + dropdown (migrated from dashboard) ── */
   .share-sec { display:flex; justify-content:center; }
+  .share-sec[hidden] { display:none; }   /* [hidden] alone loses to display:flex */
   .share-wrap { position:relative; display:inline-block; }
   .share-btn { font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; color:var(--teal-dk); background:var(--teal-lt); border:2px solid var(--teal); border-radius:12px; padding:9px 18px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; transition:background 120ms, transform 80ms; }
   .share-btn:active { transform:translateY(1px); }
