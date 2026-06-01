@@ -43,9 +43,15 @@ anything. This is the handshake — it catches stale docs before they cause dama
 - **No build step. No framework. No package.json.** Every module is a single
   self-contained HTML file with inline CSS + JS. Shared code lives in sibling
   files: `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`,
-  `qn-music.js`, `qn-theme.css`, `qn-ui.js`. Flat repo at root — do NOT
+  `qn-music.js`, `qn-theme.css`, `qn-ui.js`, `qn-roundend.js`, `qn-xp.js`,
+  `qn-home.js`, `qn-badges.js`. Flat repo at root — do NOT
   introduce folders, a bundler, or a build step. The flat static structure
   is correct and deliberate.
+  - **Gamification shared files (Studio build, June 2026, on Dev — see BUILD_LOG):**
+    `qn-xp.js` (XP/level engine, derived from `qn_events`, no schema), `qn-home.js`
+    (the My Studio status masthead — self-injects its own CSS), `qn-badges.js`
+    (achievements as pure predicates over the event log), `qn-roundend.js` (the
+    three-beat round-end + the level-up interstitial, v1.7.0).
   - **⚠️ Planned exception (approved by Jonathan, May 2026): a POST-LAUNCH
     migration to 11ty (Eleventy)** to de-duplicate the per-module scaffold
     (~1,900 identical lines copy-pasted ×35 → one shared layout; goal is
@@ -230,12 +236,14 @@ When adding a new module, ALL FOUR surfaces must be updated in the **same
 atomic commit**:
 1. `index.html` — landing-page tile + module-count stat
 2. `play.html` — Practice library tile
-3. `path.html` — MODULES object, PATH array, SHORT_PREFIX map
+3. `studio.html` — MODULES object, PATH array, SHORT_PREFIX map (these moved from
+   `path.html` in the June 2026 Studio build; `path.html` is now just a redirect
+   to `studio.html`)
 4. `qn-profile.js` — recommender PATH array
 
-Pre-existing drift (modules in play.html but not path.html, or vice versa) was
-repaired in May 2026. The fix is treating the four-surface update as a single
-atomic step. Drift is a bug.
+Pre-existing drift (modules in play.html but not the path/Studio surface, or vice
+versa) was repaired in May 2026. The fix is treating the four-surface update as a
+single atomic step. Drift is a bug.
 
 ---
 
@@ -291,6 +299,29 @@ For any future CSS work:
 
 ## Current in-progress state (read carefully)
 
+- **⚠️ Studio gamification overhaul: BUILT + ON DEV, NOT YET ON MAIN (June 2026).**
+  Big architectural change — read the BUILD_LOG "Studio build" entry before
+  touching path/progress/nav/gamification. Summary of what changed vs. the rest of
+  this doc:
+    - **Path page + dashboard merged into one home: `studio.html` ("My Studio").**
+      `path.html` is now a redirect to `studio.html`. **`dashboard.html` was
+      DELETED** — its content (Focus areas, Accuracy trend, Share/PDF) migrated
+      into Studio; the module-mastery grid was dropped as duplicative of Studio's
+      journey bars. So "My Progress" / dashboard.html **no longer exists** — much
+      of this doc still references them; treat `studio.html` as the home.
+    - **Nav is now 2 destinations** (My Studio · All Modules), not 3 — the
+      progress/dashboard DEST was removed from `qn-nav.js`.
+    - **New shared files:** `qn-xp.js`, `qn-home.js`, `qn-badges.js` (+ `qn-roundend.js`
+      v1.7.0). New page `rewards.html` ("How progress works") — the success-path
+      reference, pulls level/badge defs LIVE from the engines; linked from footers,
+      not the nav.
+    - **Return users auto-land on My Studio** (`index.html` redirects profiles to
+      studio; index stays reachable via `?stay` + the brand logo). Once-a-day app
+      splash on Studio arrival.
+    - Branch `feature/studio` fast-forwarded into Dev (June 2026). **Awaiting
+      Jonathan's QA before Dev→main.** When it merges, the curriculum/roster
+      sections of this file + QUIZNOTE_PROJECT_DOC.md §5 need a reconciliation pass
+      (they still describe the pre-Studio Path/dashboard world).
 - **CSS extraction: COMPLETE.** All 6 clusters extracted. qn-theme.css covers
   all shared selectors for the original 9 modules.
 - **QN.ui.confirm rollout: COMPLETE.** All 9 modules use shared confirm dialog;
