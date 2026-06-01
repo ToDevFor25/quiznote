@@ -391,6 +391,13 @@
     /* the bounce: a springy curve so tuck-away + spring-back overshoot slightly */
     transition: transform .36s cubic-bezier(.34,1.56,.64,1);
   }
+  /* Tapered fade above the bar — content softly dissolves into it instead of
+     ending in a hard line (same scrim the .start-bar / .summary-bar use). */
+  .play-bar::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -26px; height: 26px;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--cream) 18%, rgba(255,250,240,0));
+  }
   .play-bar[hidden] { display: none; }
   .play-bar.tucked { transform: translateY(130%); }
   .play-bar .pb-l { min-width: 0; flex: 1; }
