@@ -1497,6 +1497,13 @@
     var active = QN.profile.getActive();
     if (!active) return;  // first-timers: keep "Test drive", no bar, no menu
 
+    // App-like behavior: a returning user (has a profile) is auto-forwarded to
+    // their Studio — index is the marketing page, not their home. They can still
+    // reach index deliberately: the brand logo links here with ?stay (see below),
+    // and a fresh "?stay" visit is honored. location.replace so Back doesn't bounce.
+    var staying = /[?&]stay\b/.test(location.search);
+    if (!staying) { location.replace('studio.html'); return; }
+
     if (window.QNNav) {
       QNNav.mount({ current: null });  // pill + "Menu" hamburger (shared component)
     } else {
