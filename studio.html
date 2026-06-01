@@ -197,11 +197,21 @@
   .ptile .pn { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; }
   .ptile .ps { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
   .banner {
+    position: relative;
     background: var(--grape-lt); border: 2px solid var(--grape);
-    border-radius: 14px; padding: 11px 16px; margin-top: 16px;
+    border-radius: 14px; padding: 11px 34px 11px 16px; margin-top: 16px;
     font-size: 13px; color: var(--grape-dk); line-height: 1.45;
   }
   .banner b { font-family: 'Fredoka', sans-serif; font-weight: 600; }
+  .banner[hidden] { display: none; }
+  .banner-x {
+    position: absolute; top: 6px; right: 8px;
+    width: 22px; height: 22px; border: none; background: transparent;
+    color: var(--grape); font-size: 19px; line-height: 1; cursor: pointer;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    transition: background 120ms;
+  }
+  .banner-x:hover { background: rgba(91,63,228,0.12); }
 
   /* ---- Anonymous / empty states ---- */
   .empty {
@@ -391,16 +401,39 @@
     .jbar-body { transition: none; }
   }
 
-  /* ---- P5: Practice Story recap ---- */
-  .story {
-    background: linear-gradient(120deg, var(--grape-lt), var(--teal-lt));
-    border: 2.5px solid var(--ink); border-radius: 18px;
-    box-shadow: 0 5px 0 var(--shadow-cool); padding: 16px 20px;
-    display: flex; align-items: center; gap: 16px;
+  /* ---- "Nice work today" bottom-sheet recap (conditional, once/day) ---- */
+  .recap-scrim {
+    position: fixed; inset: 0; z-index: 900; background: rgba(42,42,62,0.4);
+    opacity: 0; transition: opacity .28s ease;
   }
-  .story-ico { font-size: 30px; flex: none; }
-  .story-text { font-family: 'Nunito', sans-serif; font-size: 14.5px; color: var(--ink); line-height: 1.45; }
-  .story-text b { font-family: 'Fredoka', sans-serif; font-weight: 700; }
+  .recap-scrim.show { opacity: 1; }
+  .recap-scrim[hidden] { display: none; }
+  .recap-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 901;
+    max-width: 480px; margin: 0 auto;
+    background: linear-gradient(135deg, var(--grape-lt), var(--teal-lt));
+    border: 2.5px solid var(--ink); border-bottom: none;
+    border-radius: 22px 22px 0 0; box-shadow: 0 -6px 24px rgba(42,42,62,0.18);
+    padding: 14px 24px calc(24px + env(safe-area-inset-bottom)); text-align: center;
+    transform: translateY(110%); transition: transform .34s cubic-bezier(.34,1.4,.64,1);
+    touch-action: none;
+  }
+  .recap-sheet.show { transform: translateY(0); }
+  .recap-sheet[hidden] { display: none; }
+  .recap-grab { width: 42px; height: 5px; border-radius: 99px; background: rgba(42,42,62,0.22); margin: 0 auto 12px; }
+  .recap-x {
+    position: absolute; top: 12px; right: 14px; width: 28px; height: 28px;
+    border: none; background: rgba(255,255,255,0.55); border-radius: 50%;
+    color: var(--ink); font-size: 19px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .recap-ico { font-size: 36px; margin-bottom: 6px; }
+  .recap-text { font-family: 'Nunito', sans-serif; font-size: 15.5px; color: var(--ink); line-height: 1.45; max-width: 360px; margin: 0 auto 10px; }
+  .recap-text b { font-family: 'Fredoka', sans-serif; font-weight: 700; }
+  .recap-hint { font-size: 11.5px; color: var(--ink-faint); font-weight: 700; letter-spacing: 0.02em; }
+  @media (prefers-reduced-motion: reduce) {
+    .recap-scrim, .recap-sheet { transition: none; }
+  }
 
   /* ---- P5: funnel section pop-in (cascaded on load) ---- */
   @keyframes secPopIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
@@ -478,14 +511,6 @@
 
   <!-- HAS PROFILE: the Studio funnel — Story → Next Beat → Quests → Momentum → Map → Collection -->
   <section id="state-studio" hidden>
-
-    <!-- PRACTICE STORY (P5: a one-line recap of where you are) -->
-    <div class="sec" id="story-sec" hidden>
-      <div class="story">
-        <span class="story-ico" id="story-ico">👋</span>
-        <span class="story-text" id="story-text"></span>
-      </div>
-    </div>
 
     <!-- GLANCE ROW: Quests · Momentum · Collection (mini-viz, tap to expand) -->
     <div class="sec">
@@ -571,7 +596,10 @@
         <span class="jk"><span class="jdot none"></span>not yet</span>
       </div>
       <div class="j-cue">tap a tier to see its modules ▾</div>
-      <div class="banner"><b>Your journey guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.</div>
+      <div class="banner" id="journey-banner">
+        <button type="button" class="banner-x" id="banner-x" aria-label="Dismiss this tip">×</button>
+        <b>Your journey guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.
+      </div>
     </div>
 
     <!-- JUMP AHEAD (stands alone — the journey pills are the per-module links now) -->
@@ -584,6 +612,19 @@
     </div>
 
   </section>
+
+  <!-- "Nice work today" — a once-per-day, earned-after-a-real-session bottom
+       sheet. NOT shown on a fresh load / at login; only when the learner returns
+       after playing enough rounds today (see maybeShowRecap). Swipe down / tap × /
+       tap scrim to clear. -->
+  <div class="recap-scrim" id="recap-scrim" hidden></div>
+  <div class="recap-sheet" id="recap-sheet" hidden role="dialog" aria-label="Today's recap">
+    <div class="recap-grab" id="recap-grab"></div>
+    <button type="button" class="recap-x" id="recap-x" aria-label="Dismiss">×</button>
+    <div class="recap-ico" id="recap-ico">🎵</div>
+    <div class="recap-text" id="recap-text"></div>
+    <div class="recap-hint">swipe down to clear</div>
+  </div>
 </main>
 
 <footer>
@@ -1080,38 +1121,81 @@
     });
   }
 
-  // ── PRACTICE STORY (P5): a single warm sentence summarizing where the learner
-  //    is, turning the cold stats into a small narrative they want to read.
-  //    Picks the most motivating true statement from the data.
-  function renderStory(active, events) {
-    var sec = $('story-sec'), txt = $('story-text'), ico = $('story-ico');
-    if (!sec || !txt) return;
-    var name = active.nickname || 'there';
-    var streak = (window.QN && QN.home && QN.home.streakFor) ? QN.home.streakFor(active.id).current : 0;
-    var xp = (window.QN && QN.xp && QN.xp.summaryFor) ? QN.xp.summaryFor(active.id) : null;
-    var badges = (window.QN && QN.badges) ? QN.badges.evaluate(active.id) : null;
+  // ── "Nice work today" recap (conditional, once per day, earned) ──────────
+  //    A reward, not a greeting: it only appears when the learner RETURNS to
+  //    Studio after a real session today — not on a fresh load, not at login.
+  //    Gate: today's rounds >= RECAP_MIN_ROUNDS AND not already shown today.
+  //    So landing here with 0 rounds shows nothing; play a few, come back, it
+  //    pops up from the bottom. Reload again the same day → suppressed.
+  var RECAP_MIN_ROUNDS = 3;             // "a real session", tunable
+  var RECAP_KEY = 'qn_studio_recap_day';
+  function maybeShowRecap(active, events) {
     var today = todaysEvents(events);
+    if (today.length < RECAP_MIN_ROUNDS) return;        // not enough progress yet
+    var todayK = dateKey(Date.now());
+    var shown;
+    try { shown = localStorage.getItem(RECAP_KEY); } catch (e) { shown = null; }
+    if (shown === todayK) return;                       // already celebrated today
+    try { localStorage.setItem(RECAP_KEY, todayK); } catch (e) {}
 
-    var msg = '', icon = '👋';
-    if (today.length > 0) {
-      icon = '🎵';
-      msg = '<b>Nice work today, ' + name + '.</b> You\'ve played ' + today.length + ' round' + (today.length === 1 ? '' : 's') + ' so far — keep the momentum going.';
-    } else if (streak >= 2) {
-      icon = '🔥';
-      msg = '<b>' + streak + '-day streak, ' + name + '!</b> Play a round today to keep it alive.';
-    } else if (xp && xp.toNext > 0 && xp.totalXP > 0) {
-      icon = '⚡';
-      msg = '<b>Welcome back, ' + name + '.</b> You\'re ' + xp.toNext + ' XP from ' + QN.xp.nameForLevel(xp.level + 1) + ' — one good round could get you there.';
-    } else if (badges && badges.next) {
-      icon = '🏅';
-      msg = '<b>Hey ' + name + '!</b> Your next badge — ' + badges.next.name + ' — is within reach: ' + badges.next.desc.toLowerCase() + '.';
-    } else {
-      icon = '✨';
-      msg = '<b>Welcome, ' + name + '!</b> Your music-theory journey starts with one round. Let\'s go.';
+    // Build the message from data already on hand (rounds + XP earned today).
+    var name = active.nickname || 'there';
+    var xpToday = 0;
+    if (window.QN && QN.xp && QN.xp.roundXP) {
+      today.forEach(function (ev) { try { xpToday += QN.xp.roundXP(ev); } catch (e) {} });
     }
-    txt.innerHTML = msg;
-    ico.textContent = icon;
-    sec.hidden = false;
+    var perfect = today.filter(function (e) { return e.total > 0 && e.correct === e.total; }).length;
+    var msg = '<b>Nice work today, ' + name + '!</b> You\'ve played ' + today.length + ' rounds';
+    if (xpToday > 0) msg += ' and earned ' + xpToday + ' XP';
+    msg += perfect > 0 ? ' — including ' + perfect + ' perfect ' + (perfect === 1 ? 'game' : 'games') + '. 🌟' : '. Keep it up!';
+    var ico = perfect > 0 ? '🌟' : '🎵';
+
+    var sheet = $('recap-sheet'), scrim = $('recap-scrim');
+    if (!sheet || !scrim) return;
+    var tEl = $('recap-text'); if (tEl) tEl.innerHTML = msg;
+    var iEl = $('recap-ico'); if (iEl) iEl.textContent = ico;
+
+    scrim.hidden = false; sheet.hidden = false;
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      scrim.classList.add('show'); sheet.classList.add('show');
+    }); });
+
+    function close() {
+      sheet.classList.remove('show'); scrim.classList.remove('show');
+      setTimeout(function () { sheet.hidden = true; scrim.hidden = true; }, 360);
+    }
+    scrim.addEventListener('click', close);
+    var xBtn = $('recap-x'); if (xBtn) xBtn.addEventListener('click', close);
+
+    // Swipe-down to dismiss (touch): follow the finger, release past a threshold.
+    var startY = null, dy = 0;
+    sheet.addEventListener('touchstart', function (e) { startY = e.touches[0].clientY; dy = 0; }, { passive: true });
+    sheet.addEventListener('touchmove', function (e) {
+      if (startY === null) return;
+      dy = Math.max(0, e.touches[0].clientY - startY);
+      sheet.style.transform = 'translateY(' + dy + 'px)';
+    }, { passive: true });
+    sheet.addEventListener('touchend', function () {
+      sheet.style.transform = '';
+      if (dy > 70) close();
+      startY = null;
+    });
+  }
+
+  // Journey tip banner: dismiss permanently (it's a tip, not data — once you
+  // understand "practice never locks" you don't need it again). No restore UI by
+  // design; clearing site data is the only reset, which is fine.
+  var BANNER_KEY = 'qn_studio_journey_tip_dismissed';
+  function wireJourneyBanner() {
+    var banner = $('journey-banner'), x = $('banner-x');
+    if (!banner) return;
+    var done;
+    try { done = localStorage.getItem(BANNER_KEY); } catch (e) { done = null; }
+    if (done === '1') { banner.hidden = true; return; }
+    if (x) x.addEventListener('click', function () {
+      banner.hidden = true;
+      try { localStorage.setItem(BANNER_KEY, '1'); } catch (e) {}
+    });
   }
 
   // ── DAILY QUESTS (P3): 3 quests/day, derived entirely from qn_events — no
@@ -1266,15 +1350,17 @@
     $('eyebrow-text').textContent = 'Play your next beat, ' + active.nickname;
     var studioEl = $('state-studio');
     studioEl.hidden = false;
-    renderStory(active, events);
     renderToday(rec, per);
     renderQuests(events);
     renderMomentum(active, events);
     renderJourney(events);
     renderBadgeWall(active);
     wireGlance();
+    wireJourneyBanner();
     // P5: cascaded section pop-in on load (reduced-motion safe via CSS).
     requestAnimationFrame(function () { studioEl.classList.add('pop'); });
+    // "Nice work today" — conditional, once/day, after a real session.
+    maybeShowRecap(active, events);
   });
 })();
 </script>
