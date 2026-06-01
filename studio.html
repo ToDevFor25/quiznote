@@ -41,6 +41,7 @@
     --coral-dk: #c2453f;
     --white: #ffffff;
     --shadow-cool: #d8d6cc;
+    --bronze: #CD7F32; --silver: #A8A8B0; --gold: #E6B422;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -551,6 +552,70 @@
     .splash.show .splash-badge, .splash.show h2, .splash.show p { animation: none; }
     .splash-conf .c { display: none; }
   }
+
+  /* ============================================================
+     Migrated from the retired dashboard: Focus areas · Accuracy
+     over time · Module mastery grid. Card chrome matches Studio.
+     ============================================================ */
+  .dcard { background:#fff; border:2.5px solid var(--ink); border-radius:18px; box-shadow:0 4px 0 var(--shadow-cool); padding:16px 18px; }
+  .section-head { font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px; margin-bottom:12px; }
+
+  /* ── Focus areas (weak spots) ── */
+  .weak-card .section-head { margin-bottom:12px; }
+  .weak-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0ede4; cursor:pointer; transition:background 100ms; }
+  .weak-row:last-of-type { border-bottom:none; }
+  .weak-row:active { background:rgba(31,184,168,0.05); }
+  .weak-name { font-family:'Fredoka',sans-serif; font-weight:700; font-size:15px; }
+  .weak-meta { font-size:12px; color:var(--ink-faint); font-weight:600; }
+  .weak-acc { font-family:'Fredoka',sans-serif; font-weight:700; font-size:18px; color:var(--coral-dk); }
+  .weak-arrow { color:var(--ink-faint); font-size:18px; margin-left:10px; }
+  .weak-note { font-size:13px; color:var(--ink-faint); font-weight:600; margin-top:10px; line-height:1.5; }
+
+  /* ── Accuracy trend ── */
+  .trend-card .section-head { margin-bottom:8px; display:flex; align-items:baseline; gap:8px; }
+  .trend-card .hint { font-family:'Nunito'; font-weight:600; font-size:13px; color:var(--ink-faint); }
+  .trend-compare { font-family:'Fredoka',sans-serif; font-weight:700; font-size:13px; color:var(--teal-dk); margin-bottom:8px; }
+  .trend-svg { width:100%; height:180px; display:block; overflow:visible; }
+  .trend-empty { color:var(--ink-faint); font-weight:600; font-size:14px; padding:8px 0; }
+
+  /* ── Module mastery grid ── */
+  .mastery-note { background:var(--grape-lt); border:2px solid var(--grape); border-radius:14px; padding:11px 16px; margin:4px 0 18px; font-size:13px; color:var(--grape-dk); line-height:1.45; }
+  .mastery-note b { font-family:'Fredoka',sans-serif; font-weight:600; }
+  .mastery-note .medal { font-weight:700; white-space:nowrap; }
+  .tier-head { font-family:'Fredoka',sans-serif; font-weight:700; font-size:1.05rem; margin:0 0 12px; padding:10px 4px; border-radius:8px; display:flex; align-items:baseline; gap:10px; cursor:pointer; user-select:none; transition:background 100ms; }
+  .tier-head:active { background:rgba(31,184,168,0.05); }
+  .tier-head .tier-count { font-family:'Nunito'; font-weight:700; font-size:13px; color:var(--ink-faint); }
+  .tier-caret { font-size:14px; color:var(--ink-faint); transition:transform 200ms; display:inline-block; margin-right:4px; }
+  .tier-head.collapsed .tier-caret { transform:rotate(-90deg); }
+  .mastery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; max-height:3000px; opacity:1; margin-bottom:20px; transition:max-height 300ms ease, opacity 200ms; }
+  .tier-head.collapsed + .mastery-grid { max-height:0; overflow:hidden; opacity:0; margin:0; transition:max-height 250ms ease, opacity 150ms, margin 250ms; }
+  .m-card { background:#fff; border:2px solid var(--ink); border-radius:14px; box-shadow:0 3px 0 var(--shadow-cool); padding:14px; cursor:pointer; transition:transform 100ms; position:relative; overflow:hidden; }
+  .m-card:active { transform:translateY(2px); box-shadow:0 1px 0 var(--shadow-cool); }
+  .m-card-top { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .m-ring { width:44px; height:44px; flex-shrink:0; position:relative; }
+  .m-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+  .m-ring .ring-bg { fill:none; stroke:#eeebe2; stroke-width:4; }
+  .m-ring .ring-fill { fill:none; stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset 800ms ease-out; }
+  .m-ring .ring-fill.bronze { stroke:var(--bronze); } .m-ring .ring-fill.silver { stroke:var(--silver); } .m-ring .ring-fill.gold { stroke:var(--gold); }
+  .m-ring-label { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-weight:700; font-size:11px; color:var(--ink-faint); }
+  .m-ring-label.bronze { color:var(--bronze); } .m-ring-label.silver { color:var(--silver); } .m-ring-label.gold { color:var(--gold); }
+  .m-name { font-family:'Fredoka',sans-serif; font-weight:700; font-size:14px; }
+  .m-tier-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
+  .m-tier-label.bronze { color:var(--bronze); } .m-tier-label.silver { color:var(--silver); } .m-tier-label.gold { color:var(--gold); }
+  .m-tier-label.started { color:var(--ink-faint); }
+  .m-tier-label.untouched { color:var(--ink-faint); font-style:italic; font-weight:600; text-transform:none; }
+  .m-detail { max-height:0; overflow:hidden; transition:max-height 250ms ease, opacity 200ms; opacity:0; }
+  .m-card.expanded .m-detail { max-height:120px; opacity:1; }
+  .m-detail-inner { padding-top:10px; border-top:1px solid #f0ede4; margin-top:6px; }
+  .m-tier-row { display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; color:var(--ink-soft); padding:3px 0; }
+  .m-tier-row .m-check { color:var(--teal); font-weight:800; }
+  .m-tier-row .m-pct { font-family:'Fredoka',sans-serif; font-weight:700; color:var(--ink); }
+  @keyframes goldShimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+  .m-card.gold-shimmer::after { content:''; position:absolute; inset:0; border-radius:14px; pointer-events:none; background:linear-gradient(90deg,transparent 30%,rgba(230,180,34,0.12) 50%,transparent 70%); background-size:200% 100%; animation:goldShimmer 3s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .m-ring .ring-fill, .mastery-grid, .m-detail { transition:none; }
+    .m-card.gold-shimmer::after { animation:none; }
+  }
 </style>
 <script src="qn-gate.js"></script>
 </head>
@@ -675,6 +740,24 @@
         <span class="jump-arrow" aria-hidden="true">→</span>
       </a>
     </div>
+
+    <!-- FOCUS AREAS (migrated from dashboard) -->
+    <div class="sec dcard weak-card" id="weak-card" hidden>
+      <div class="section-head">Focus areas</div>
+      <div id="weak-list"></div>
+      <div class="weak-note">These are your trickiest spots. Your learning path is already drilling them.</div>
+    </div>
+
+    <!-- ACCURACY OVER TIME (migrated from dashboard) -->
+    <div class="sec dcard trend-card">
+      <div class="section-head">Accuracy over time <span class="hint" id="trend-hint"></span></div>
+      <div class="trend-compare" id="trend-compare" hidden></div>
+      <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
+      <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
+    </div>
+
+    <!-- MODULE MASTERY GRID (migrated from dashboard) -->
+    <div class="sec mastery-section" id="mastery-section"></div>
 
     <!-- spacer so the fixed Play bar never covers the last card -->
     <div class="play-bar-spacer" aria-hidden="true"></div>
@@ -1446,6 +1529,205 @@
   }
 
   // ── Boot ──────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════
+  //  Migrated from the retired dashboard: Focus areas, Accuracy trend,
+  //  Module mastery grid. Reuses Studio's dateKey + MODULES; ROSTER/metaFor/
+  //  fmtPct derived locally so there's no dashboard dependency.
+  // ══════════════════════════════════════════════════════════════════════
+  var ROSTER_D = {
+    Foundations: ['note-names','piano-quiz','piano-keyboard','ledger-lines','note-values','dotted-notes','ear-rhythm','time-signatures','accidentals','tempo-markings','dynamics','articulation','score-navigation','ornaments'],
+    Reading: ['key-signatures','circle-of-fifths','scales','chromatic-scale','scale-degrees','scale-modes','intervals','ear-intervals','ear-scales','transposition'],
+    Theory: ['triads','triad-inversions','seventh-chords','primary-chords','roman-numerals','chord-function','chord-progressions','cadences','ear-chords','ear-cadences','ear-progressions']
+  };
+  var TIERS_D = ['easy','medium','tricky'];
+  var SKILL_LABELS = {
+    'time-signatures/label':'Name the signature','time-signatures/top':'Beats per measure','time-signatures/bottom':'Which note gets the beat','time-signatures/whichBeats':'Top vs bottom (beats)','time-signatures/whichUnit':'Top vs bottom (unit)',
+    'note-names/treble':'Treble clef','note-names/bass':'Bass clef','piano-quiz/treble':'Treble clef','piano-quiz/bass':'Bass clef',
+    'scales/major':'Major','scales/minor-natural':'Natural minor','scales/minor-harmonic':'Harmonic minor','scales/minor-melodic':'Melodic minor','scales/pentatonic-major':'Major pentatonic','scales/pentatonic-minor':'Minor pentatonic',
+    'ear-scales/pentatonic-major':'Major pentatonic','ear-scales/pentatonic-minor':'Minor pentatonic',
+    'scale-modes/ionian':'Ionian','scale-modes/dorian':'Dorian','scale-modes/phrygian':'Phrygian','scale-modes/lydian':'Lydian','scale-modes/mixolydian':'Mixolydian','scale-modes/aeolian':'Aeolian','scale-modes/locrian':'Locrian',
+    'accidentals/effect':'Symbol effect','accidentals/name':'Naming altered notes','accidentals/enharmonic':'Enharmonic equivalents',
+    'scale-degrees/number':'Degree numbers','scale-degrees/name':'Degree names','scale-degrees/whichDegree':'Finding a degree',
+    'primary-chords/function':'Numeral to chord','primary-chords/numeral':'Chord to numeral','primary-chords/name':'Function name to chord',
+    'roman-numerals/numeral-to-chord':'Numeral to chord','roman-numerals/chord-to-numeral':'Chord to numeral','roman-numerals/quality':'Chord quality',
+    'chord-function/categorize':'Naming the function','chord-function/identify':'Picking the right chord','chord-function/motion':'Recognizing harmonic motion','chord-function/exception':'Minor-key conventions',
+    'circle-of-fifths/position':'Reading the wheel','circle-of-fifths/count':'Sharps & flats per key','circle-of-fifths/neighbor':'Clockwise/counterclockwise','circle-of-fifths/relative':'Relative minor pairings','circle-of-fifths/enharmonic':'Enharmonic intersections',
+    'transposition/interval':'Transposing by an interval','transposition/instrument':'Transposing instruments','transposition/direction':'Naming the transposition','transposition/melodic':'Transposing a phrase',
+    'bass':'Bass clef','treble':'Treble clef'
+  };
+  function skillLabel(slug, key) { return SKILL_LABELS[slug + '/' + key] || SKILL_LABELS[key] || key; }
+  function metaFor(slug) {
+    if (MODULES[slug]) return { name: MODULES[slug].name };
+    var pretty = String(slug).split('-').map(function (w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : w; }).join(' ');
+    return { name: pretty || slug };
+  }
+  function fmtPct(n) { return Math.round(n) + '%'; }
+
+  function computeWeakSpots(events) {
+    var bySkill = {};
+    events.forEach(function (ev) {
+      if (!ev.skills) return;
+      for (var sk in ev.skills) {
+        if (!Object.prototype.hasOwnProperty.call(ev.skills, sk)) continue;
+        var key = ev.module + '/' + sk;
+        if (!bySkill[key]) bySkill[key] = { c: 0, t: 0, module: ev.module, skill: sk };
+        bySkill[key].c += ev.skills[sk].c; bySkill[key].t += ev.skills[sk].t;
+      }
+    });
+    var weak = [];
+    Object.keys(bySkill).forEach(function (key) {
+      var s = bySkill[key];
+      if (s.t < 5) return;
+      var acc = s.c / s.t;
+      if (acc < 0.80) weak.push({ module: s.module, skill: s.skill, acc: acc, total: s.t });
+    });
+    weak.sort(function (a, b) { return a.acc - b.acc; });
+    return weak.slice(0, 4);
+  }
+  function renderWeak(events) {
+    var weak = computeWeakSpots(events);
+    var card = $('weak-card'), list = $('weak-list');
+    if (!card || !list) return;
+    if (!weak.length) { card.hidden = true; return; }
+    card.hidden = false; list.innerHTML = '';
+    weak.forEach(function (ws) {
+      var meta = metaFor(ws.module);
+      var row = document.createElement('div');
+      row.className = 'weak-row';
+      row.innerHTML = '<div><div class="weak-name">' + meta.name + '</div><div class="weak-meta">' + skillLabel(ws.module, ws.skill) + '</div></div>' +
+        '<div style="display:flex;align-items:center;"><span class="weak-acc">' + fmtPct(ws.acc * 100) + '</span><span class="weak-arrow">→</span></div>';
+      row.addEventListener('click', function () { window.location.href = ws.module + '.html'; });
+      list.appendChild(row);
+    });
+  }
+
+  function computeWeeklyTrend(events) {
+    var chrono = events.slice().reverse();
+    var byWeek = {};
+    chrono.forEach(function (ev) {
+      var d = new Date(ev.completedAt);
+      var day = d.getDay(); var diff = (day + 6) % 7;
+      var mon = new Date(d); mon.setDate(mon.getDate() - diff); mon.setHours(0, 0, 0, 0);
+      var wk = dateKey(mon.getTime());
+      if (!byWeek[wk]) byWeek[wk] = { c: 0, t: 0 };
+      byWeek[wk].c += ev.correct; byWeek[wk].t += ev.total;
+    });
+    var weeks = Object.keys(byWeek).sort().slice(-12);
+    return weeks.map(function (wk) { var w = byWeek[wk]; return { week: wk, acc: w.t > 0 ? w.c / w.t : 0 }; });
+  }
+  function drawTrend(events) {
+    var weekly = computeWeeklyTrend(events);
+    var svg = $('trend-svg'), emptyMsg = $('trend-empty'), hint = $('trend-hint'), compare = $('trend-compare');
+    if (!svg) return;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    if (weekly.length < 2) { svg.setAttribute('hidden', ''); if (emptyMsg) emptyMsg.hidden = false; return; }
+    svg.removeAttribute('hidden'); if (emptyMsg) emptyMsg.hidden = true;
+    if (hint) hint.textContent = 'Last ' + weekly.length + ' weeks';
+    if (compare) {
+      var diff = Math.round((weekly[weekly.length - 1].acc - weekly[weekly.length - 2].acc) * 100);
+      if (diff > 0) { compare.textContent = '+' + diff + '% vs last week'; compare.style.color = 'var(--teal-dk)'; }
+      else if (diff < 0) { compare.textContent = diff + '% vs last week'; compare.style.color = 'var(--coral-dk)'; }
+      else { compare.textContent = 'Steady vs last week'; compare.style.color = 'var(--ink-faint)'; }
+      compare.hidden = false;
+    }
+    var W = 700, H = 180, padX = 40, padY = 18, n = weekly.length;
+    var x = function (i) { return padX + (W - 2 * padX) * (n === 1 ? 0.5 : i / (n - 1)); };
+    var y = function (v) { return padY + (H - 2 * padY) * (1 - v); };
+    var NS = 'http://www.w3.org/2000/svg';
+    [0, 0.5, 1].forEach(function (g) {
+      var ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('x1', padX); ln.setAttribute('x2', W - padX); ln.setAttribute('y1', y(g)); ln.setAttribute('y2', y(g));
+      ln.setAttribute('stroke', '#e9e4d6'); ln.setAttribute('stroke-width', '1'); ln.setAttribute('stroke-dasharray', g === 0.5 ? '4 5' : '0');
+      svg.appendChild(ln);
+      var lbl = document.createElementNS(NS, 'text');
+      lbl.setAttribute('x', padX - 6); lbl.setAttribute('y', y(g) + 4); lbl.setAttribute('text-anchor', 'end');
+      lbl.setAttribute('font-size', '11'); lbl.setAttribute('font-family', 'Nunito'); lbl.setAttribute('font-weight', '700'); lbl.setAttribute('fill', '#b0b0c0');
+      lbl.textContent = Math.round(g * 100) + '%'; svg.appendChild(lbl);
+    });
+    var areaD = 'M ' + x(0) + ' ' + y(weekly[0].acc);
+    for (var i = 1; i < n; i++) areaD += ' L ' + x(i) + ' ' + y(weekly[i].acc);
+    areaD += ' L ' + x(n - 1) + ' ' + (H - padY) + ' L ' + x(0) + ' ' + (H - padY) + ' Z';
+    var area = document.createElementNS(NS, 'path'); area.setAttribute('d', areaD); area.setAttribute('fill', 'rgba(31,184,168,0.10)'); svg.appendChild(area);
+    var lineD = 'M ' + x(0) + ' ' + y(weekly[0].acc);
+    for (var j = 1; j < n; j++) lineD += ' L ' + x(j) + ' ' + y(weekly[j].acc);
+    var line = document.createElementNS(NS, 'path'); line.setAttribute('d', lineD); line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', '#1FB8A8'); line.setAttribute('stroke-width', '3'); line.setAttribute('stroke-linejoin', 'round'); line.setAttribute('stroke-linecap', 'round'); svg.appendChild(line);
+    for (var k = 0; k < n; k++) {
+      var c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', x(k)); c.setAttribute('cy', y(weekly[k].acc));
+      c.setAttribute('r', '4.5'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0e8475'); c.setAttribute('stroke-width', '2.5'); svg.appendChild(c);
+    }
+  }
+
+  function computeMasteryD(events) {
+    var byModuleTier = {};
+    events.forEach(function (ev) {
+      var key = ev.module + '|' + ev.tier;
+      if (!byModuleTier[key]) byModuleTier[key] = [];
+      byModuleTier[key].push(ev.total > 0 ? ev.correct / ev.total : 0);
+    });
+    var result = {}, allSlugs = [];
+    Object.keys(ROSTER_D).forEach(function (tier) { ROSTER_D[tier].forEach(function (s) { allSlugs.push(s); }); });
+    allSlugs.forEach(function (slug) {
+      var cleared = { easy: false, medium: false, tricky: false }, acc = { easy: null, medium: null, tricky: null }, played = false;
+      TIERS_D.forEach(function (t) {
+        var rounds = byModuleTier[slug + '|' + t] || [];
+        if (rounds.length > 0) played = true;
+        var good = rounds.filter(function (a) { return a >= 0.85; });
+        if (good.length >= 2) cleared[t] = true;
+        if (rounds.length > 0) { var sum = 0; rounds.forEach(function (a) { sum += a; }); acc[t] = sum / rounds.length; }
+      });
+      var level = 'untouched';
+      if (cleared.tricky) level = 'gold'; else if (cleared.medium) level = 'silver'; else if (cleared.easy) level = 'bronze'; else if (played) level = 'started';
+      result[slug] = { level: level, cleared: cleared, acc: acc, played: played };
+    });
+    return result;
+  }
+  function drawMastery(events) {
+    var section = $('mastery-section');
+    if (!section) return;
+    var mastery = computeMasteryD(events);
+    section.innerHTML = '';
+    var head0 = document.createElement('div'); head0.className = 'section-head'; head0.textContent = 'Module mastery'; section.appendChild(head0);
+    var note = document.createElement('div'); note.className = 'mastery-note';
+    note.innerHTML = '<b>Earn a medal by mastering each level.</b> Clear a level by scoring 85%+ accuracy in 2 rounds — your medal shows the hardest level you’ve cleared: ' +
+      '<span class="medal" style="color:var(--bronze);">Bronze</span> (Easy), <span class="medal" style="color:var(--silver);">Silver</span> (Medium), <span class="medal" style="color:var(--gold);">Gold</span> (Tricky).';
+    section.appendChild(note);
+    Object.keys(ROSTER_D).forEach(function (tierName) {
+      var slugs = ROSTER_D[tierName], goldInTier = 0, startedInTier = 0;
+      slugs.forEach(function (s) { if (mastery[s] && mastery[s].level === 'gold') goldInTier++; if (mastery[s] && mastery[s].level !== 'untouched') startedInTier++; });
+      var head = document.createElement('div'); head.className = 'tier-head collapsed';
+      head.innerHTML = '<span class="tier-caret">▾</span>' + tierName + ' <span class="tier-count">' + goldInTier + '/' + slugs.length + ' mastered · ' + startedInTier + ' started</span>';
+      head.addEventListener('click', function () { head.classList.toggle('collapsed'); });
+      section.appendChild(head);
+      var grid = document.createElement('div'); grid.className = 'mastery-grid';
+      slugs.forEach(function (slug) {
+        var m = mastery[slug] || { level: 'untouched', cleared: {}, acc: {} }, meta = metaFor(slug);
+        var card = document.createElement('div'); card.className = 'm-card';
+        if (m.level === 'gold') card.classList.add('gold-shimmer');
+        var circ = 2 * Math.PI * 18;
+        var progress = m.level === 'gold' ? 1 : m.level === 'silver' ? 0.66 : m.level === 'bronze' ? 0.33 : m.level === 'started' ? 0.1 : 0;
+        var offset = circ * (1 - progress);
+        var ringClass = (m.level === 'untouched' || m.level === 'started') ? '' : m.level;
+        var tierLabel = m.level === 'untouched' ? 'Not started' : m.level === 'started' ? 'In progress' : m.level.charAt(0).toUpperCase() + m.level.slice(1);
+        var ringLabelText = m.level === 'gold' ? '★' : m.level === 'silver' ? '◐' : m.level === 'bronze' ? '◔' : m.level === 'started' ? '·' : '';
+        card.innerHTML = '<div class="m-card-top"><div class="m-ring ' + ringClass + '"><svg viewBox="0 0 44 44"><circle class="ring-bg" cx="22" cy="22" r="18"/>' +
+          '<circle class="ring-fill ' + ringClass + '" cx="22" cy="22" r="18" stroke-dasharray="' + circ + '" stroke-dashoffset="' + offset + '"/></svg>' +
+          '<div class="m-ring-label ' + ringClass + '">' + ringLabelText + '</div></div>' +
+          '<div><div class="m-name">' + meta.name + '</div><div class="m-tier-label ' + m.level + '">' + tierLabel + '</div></div></div>' +
+          '<div class="m-detail"><div class="m-detail-inner">' +
+          TIERS_D.map(function (t) {
+            var label = t.charAt(0).toUpperCase() + t.slice(1);
+            var pct = m.acc[t] !== null && m.acc[t] !== undefined ? fmtPct(m.acc[t] * 100) : '—';
+            var check = m.cleared[t] ? '<span class="m-check">✓</span>' : '';
+            return '<div class="m-tier-row"><span>' + label + ' ' + check + '</span><span class="m-pct">' + pct + '</span></div>';
+          }).join('') + '</div></div>';
+        card.addEventListener('click', function () { card.classList.toggle('expanded'); });
+        grid.appendChild(card);
+      });
+      section.appendChild(grid);
+    });
+  }
+
   // ── App splash (Style #5 / Variant A): shown ONCE PER DAY on arrival at
   //    Studio (the post-login / app-open landing), then fades away. Skipped on
   //    same-day revisits. Auto-fades ~2s; tap / Skip clears early. Reduced-motion
@@ -1518,6 +1800,9 @@
     renderMomentum(active, events);
     renderJourney(events);
     renderBadgeWall(active);
+    renderWeak(events);
+    drawTrend(events);
+    drawMastery(events);
     wireGlance();
     wireJourneyBanner();
     // P5: cascaded section pop-in on load (reduced-motion safe via CSS).
