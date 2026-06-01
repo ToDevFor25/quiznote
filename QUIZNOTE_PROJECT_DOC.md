@@ -1,30 +1,42 @@
 # QuizNote — Project Doc (v2)
 
-> ## ⚠️ AHEAD OF THIS DOC: the Studio build (June 2026, on Dev — read first)
-> A large gamification/architecture change is **built and on Dev, not yet on
-> main**, and **much of the text below is now stale** where it describes the Path
-> page, the dashboard / "My Progress" page, the 3-destination nav, or the
-> progress-dashboard feature set. What actually exists on Dev:
-> - **`studio.html` ("My Studio")** is the signed-in home — it MERGED the old
->   `path.html` (Today/recommender) and the progress dashboard. `path.html` is now
->   a redirect to it. **`dashboard.html` was DELETED** (Focus areas, Accuracy
->   trend, Share/PDF migrated into Studio; the mastery grid dropped as duplicative
->   of Studio's journey bars). So wherever this doc says "dashboard.html" /
->   "My Progress" as a live page, that page **no longer exists** — Studio is home.
-> - **Nav = 2 destinations** (My Studio · All Modules), not the 3-ring
->   Path/Practice/Progress IA this doc describes.
-> - **New shared files:** `qn-xp.js` (XP/level engine), `qn-home.js` (status
->   masthead), `qn-badges.js` (achievements), `qn-roundend.js` (round-end +
->   level-up). New page **`rewards.html`** ("How progress works") — success-path
->   reference, pulls level/badge defs live from the engines.
-> - Return users **auto-land on My Studio**; once-a-day app splash on arrival.
+> ## ⚠️ THE STUDIO BUILD IS LIVE ON MAIN (June 2026) — read first
+> A large gamification/architecture change **shipped to production.** Where the
+> older text below still says "Path page," "dashboard.html / My Progress," or the
+> "3-destination (Path/Practice/Progress) nav," **that describes the pre-Studio
+> world and is superseded by this summary.** What's true now:
+> - **`studio.html` ("My Studio") is the signed-in home** — it MERGED the old
+>   `path.html` (Today/recommender) and the progress dashboard into one scroll-home:
+>   status masthead (level/rank/XP/streak) → glance row (Quests · Momentum ·
+>   Collection, tap to expand) → "Play your next beat" (a fixed cream sticky bar)
+>   → journey tier bars (tap to reveal modules + mastery dots) → Jump ahead →
+>   Focus areas → Accuracy trend. A "Nice work today" recap sheet appears once/day
+>   after a real session.
+> - **`path.html` is now a redirect** to studio.html. **`dashboard.html` was
+>   DELETED** — Focus areas, Accuracy trend, and Share/PDF migrated into Studio;
+>   the standalone mastery grid was dropped as duplicative of the journey bars'
+>   per-module mastery dots. **"My Progress" no longer exists as a page.**
+> - **Nav = 2 destinations:** My Studio · All Modules (the old 3-ring IA is gone).
+> - **New shared files:** `qn-xp.js` (XP/level engine, derived from `qn_events`),
+>   `qn-home.js` (status masthead, self-injects its CSS), `qn-badges.js`
+>   (achievements as pure predicates), `qn-roundend.js` v1.7.0 (three-beat
+>   round-end + level-up interstitial).
+> - **`rewards.html`** ("How progress works") — the single success-path reference
+>   for all five reward systems (Levels/XP · Medals · Badges · Streaks · Quests);
+>   level/badge defs pulled LIVE from the engines so it can't drift. Linked from
+>   footers + the Collection wall, NOT the 2-tab nav.
+> - **Return users auto-land on My Studio** — index.html has a blocking head
+>   redirect (reads `qn_activeProfile`) so there's no marketing-page flash; index
+>   stays reachable via `?stay` + the brand logo. Once-a-day app splash on arrival.
 > - The **four-surface rule's surface #3 moved `path.html` → `studio.html`**
 >   (MODULES/PATH/SHORT_PREFIX live in studio.html now).
+> - **Share button is currently HIDDEN** on Studio (`.share-sec[hidden]`) pending a
+>   share/PDF refinement phase — code intact, resurface by removing the attribute.
 >
-> **Full record:** BUILD_LOG.md "The Studio build" entry. **Awaiting Jonathan's QA
-> before Dev→main.** When it merges, this doc (§5 roster surfaces, the progress-
-> dashboard sections, the nav/IA description) needs a proper reconciliation pass —
-> deferred until merge so it doesn't churn against a branch still in QA.
+> Full history: BUILD_LOG.md "The Studio build" + "Studio shipped to production"
+> entries. The §-by-§ text below has been updated at the load-bearing spots
+> (§4 architecture, §6 IA + progress surfaces); incidental older "dashboard"
+> word-mentions may remain but are covered by this summary.
 
 _Last revised: May 2026 — **All 32 modules live + progress dashboard redesign (May 2026): 3 switchable streak visualizations (calendar/rings/flames), user-configurable practice goal (3/5/7 days), progressive mastery grid (Bronze/Silver/Gold), weekly accuracy trend, weak spots from recommender, share button with one-page PDF + 3 swipeable social cards branded "Practice Notes by QuizNote." Onboarding adds practice goal to level toggles. Prior: Teaching hints layer + settings card + retry universal across 32.** Prior: **All 27 modules live (Phases 1–4 complete).** Phase 2 expansions (pentatonic scales, minor keys + selectors across 7 modules), Phase 3 chord renderer (qn-staff.js v1.3.0 `buildChord` + qn-audio.js v1.1.0 `playChord`), Phase 4 chord cluster (8 new Theory modules: Triads, Triad Inversions, Seventh Chords, Chord Progressions, Cadences, Ear: Chord Quality, Ear: Cadences, Ear: Chord Progressions). Four-surface updates atomic. "More to come" placeholders retired from play.html. Prior: **Phase 1 of the curriculum redesign complete**, taking live roster 14 → 18. Shipped: Ledger Lines (clone of note-names, strict on-ledger pool), Dotted Notes & Ties (clone of note-values with dotted-glyph + CSS-tie-arc renderer, beat-value MC choices), Ear: Rhythm (clone of note-values with 🎧 audio placeholder, 60 BPM tick-then-tone cue, notes-only v1), Piano & Keyboard (clone of note-names, new C3..C6 keyboard SVG in NH.render with highlighted target key, clef selector hidden). Landing pages restructured: play.html now three collapsible level sections (Foundations / Reading / Theory) with "X/N completed" progress chips and FOUC-safe state restoration; index.html "What's Inside" replaced with a 3-row vertical-spine concept view (concept pills, not module tiles — decoupled from per-module tiering); hero stats trimmed to "0 Ads / 3 Skill tiers / Lots of fun"; pillars locked to 2×2 desktop / 1-col mobile. New CLAUDE.md working rule: module builds are autonomous (Tier 1/2 decisions made without pausing during clone-and-swap builds; only Tier 3 blockers stop the build). **§5 and §12 reconciled to the 27-module roster** (this session): four Phase 1 modules added with full entries, tier reconciliation locked in (Intervals + ear modules → Reading), dropped-from-roster decisions documented (Rhythm Reading folded in, Circle of Fifths cut, Stretch tier retired). §12 rewritten as a four-phase plan (Phase 1 done, Phase 2 next, Phase 3 chord renderer, Phase 4 chord cluster). Prior: Scale Modes (§5 #12) and Ear: Intervals (§5 #19) shipped earlier in May 2026, taking the live roster from 9 to 11. Both built using the clone-and-swap pattern: Scale Modes off `scales.html` (pure data swap to mode generator), Ear: Intervals off `intervals.html` (one CSS rule hides the staff and shows a 🎧 placeholder; audio + question logic byte-identical to sight Intervals). `index.html` landing roster reconciled with `play.html` (added the previously-missing Time Signatures + Scale Degrees tiles — pre-existing landing-page drift). Triads / 7ths / Primary Chords (§5 #14–16) explicitly deferred this session because they need 3-note chord rendering and no live module has that — queued as their own focused session that starts with a 3-note staff renderer extension. Prior: shared-CSS extraction COMPLETE (all 6 of 6 documented clusters in `qn-theme.css`: tokens + prompt + tiles + summary + start-screen + play-chassis + modal + buttons + page-chrome). Shared feedback toast rolled out to 8 of 9 modules (scales excluded by design — different feedback model). `QN.ui.confirm` rolled out to all 9 modules (was 2-of-9); per-module `showConfirm` definitions retired. Start-timer "Ready, set…" modal in all 9 modules (was 5-of-9). `qn-profile.js` v1.8.0 — `schemaVersion` migration hook installed (today's data IS v1, 0→1 is a no-op stamp; the hook is the value, future breaking shape changes plug into `migrations[]`). Latent timer-badge bug fixed (badge stayed hidden after pause/resume in note-values + time-signatures + key-signatures). All 4 working docs (`BUILD_LOG.md`, `BUILD_LOG_ARCHIVE.md`, `CLAUDE.md`, `QUIZNOTE_PROJECT_DOC.md`) now under version control. Prior: Key-sig clef-clearance made proportional in `qn-staff.js` (`lineGap * 4.5`); 4 CSS clusters extracted; all 9 quit dialogs unified to Option 1; "quiet A" prompt; `QN.ui.confirm` introduced; §8 rendered-result audit rule; roster expanded to 24; path-first three-ring IA; device reset. Two visual-QA items still open: time-signatures `accStartX:72` pin (QA-driven) and the 2 qn-theme.css holdouts (time-sigs prompt-layout + scales tile, both needing a slider harness per §8). Supersedes the v1 doc that locked the seven-module roster._
 
@@ -171,7 +183,7 @@ Single-HTML-per-module survives roughly through module 10–12. Beyond that, the
 
 - **Module template.** A canonical HTML scaffold that every new module is cloned from. The template contains the shared CSS, the audio engine, the profile chip mount, the start-screen pattern, the play-screen scaffolding, and the summary-screen pattern. New modules differ only in (a) their question generator, (b) their renderer, and (c) their localStorage namespace.
 - **Module spec.** A JSON-shaped description of what makes a module a module: difficulty tiers, question types, answer format, scoring rules, audio behavior, explainer copy. A spec is the artifact a human writes. The HTML is generated from the spec plus the template.
-- **Shared script files.** `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`, `qn-music.js`, and `qn-ui.js` are proven shared files. Modules become genuinely thin as more is extracted. **Consolidation caution (investigated May 2026):** the duplicated helpers have drifted — `parsePitch` is identical in 6 modules but scales' version is a *superset* (handles double accidentals `##`/`bb` for harmonic/melodic minor). Any `qn-music.js` extraction must diff each helper across all 7 files and lift the superset, not the first copy found. Likewise `qn-staff.js` covers staff lines/clef/key-sig/time-sig but NOT noteheads, so consolidating Note Names & Piano Quiz onto it requires adding notehead rendering first; Key Signatures is a clean candidate today (its accidental step arrays are byte-identical to the shared renderer). These are grouped as a future "consolidation pass" — see build log. **`qn-ui.js` (May 2026):** the home for visual shared helpers in the `QN.ui` namespace. v1.0.0 exports `QN.ui.clefTile({clef})` (canonical treble / bass / both clef-picker tile SVG) and `QN.ui.mountClefTiles(scope?)` (auto-mount on DOMContentLoaded). Created when the 14 modules with clef pickers were found to have drifted into 3 distinct visual variants per clef; calibration values dialed in via `_clef-calibrator.html` (internal tool, untracked). To change clef tile appearance globally, edit the `SINGLE` / `BOTH` config blocks in `qn-ui.js`.
+- **Shared script files.** `qn-profile.js`, `qn-audio.js`, `qn-staff.js`, `qn-nav.js`, `qn-music.js`, and `qn-ui.js` are proven shared files. Modules become genuinely thin as more is extracted. **Gamification shared files (Studio build, June 2026):** `qn-xp.js` (XP/level engine — derives XP + Beginner→Virtuoso levels from `qn_events`, no schema), `qn-roundend.js` (the three-beat round-end + the level-up interstitial, v1.7.0), `qn-home.js` (the My Studio status masthead — self-injects its own CSS since the hub pages don't link `qn-theme.css`), `qn-badges.js` (achievements as pure predicates over the event log). All read-only over existing data, no schema change. **Consolidation caution (investigated May 2026):** the duplicated helpers have drifted — `parsePitch` is identical in 6 modules but scales' version is a *superset* (handles double accidentals `##`/`bb` for harmonic/melodic minor). Any `qn-music.js` extraction must diff each helper across all 7 files and lift the superset, not the first copy found. Likewise `qn-staff.js` covers staff lines/clef/key-sig/time-sig but NOT noteheads, so consolidating Note Names & Piano Quiz onto it requires adding notehead rendering first; Key Signatures is a clean candidate today (its accidental step arrays are byte-identical to the shared renderer). These are grouped as a future "consolidation pass" — see build log. **`qn-ui.js` (May 2026):** the home for visual shared helpers in the `QN.ui` namespace. v1.0.0 exports `QN.ui.clefTile({clef})` (canonical treble / bass / both clef-picker tile SVG) and `QN.ui.mountClefTiles(scope?)` (auto-mount on DOMContentLoaded). Created when the 14 modules with clef pickers were found to have drifted into 3 distinct visual variants per clef; calibration values dialed in via `_clef-calibrator.html` (internal tool, untracked). To change clef tile appearance globally, edit the `SINGLE` / `BOTH` config blocks in `qn-ui.js`.
 - **Shared stylesheet — `qn-theme.css` (NEW, May 2026).** The first shared *CSS* file; the CSS sibling to the shared JS. Single source of truth for the design tokens (the 16 `--ink`/`--teal`/etc. variables, previously copied byte-identically into all 9 modules) and cross-module question-area styling (the canonical question prompt `.staff-label` and the answer-tile `.choice-btn` system). Each module links it in `<head>` (after the font link) and must NOT also define those rules inline — an inline copy at equal specificity but later source order silently overrides the shared file, so migration = add the link AND delete the duplicated rules. Loaded by all 9 live modules as of the May 2026 shared-CSS pass. Grows incrementally (same option-A adoption model as `qn-music.js`): the measured opportunity was **41 byte-identical selectors** shared across all 9 modules. **Four clusters now extracted (May 2026):** summary, start screen (tiles/timer/CTA), play-screen chassis (stat cards/progress/streak/topbar/dots), and modal (overlay/card/actions/miss-list/PB rows) — taking each module from ~765 to ~450 lines of inline CSS (~41% cut). The shared **feedback toast** (Option-2 placement: praise high over the staff, retry/reveal lower) now also lives here, but **only scale-degrees is wired to it** — the other 8 keep their inline `.toast` (which overrides the shared rule via source order) pending a per-module rollout. **2 clusters remain** inline: buttons (~81, `.btn/.ghost`), cards/structure (~72). Method per cluster: audit identity programmatically → copy exact rule bytes (never retype) → append to qn-theme.css → byte-verify → strip from 9 preserving @media overrides → verify braces/parse/tokens/JS. Recurring: scales is the lone outlier in most clusters and its divergence is usually a *subset* — lift the superset, flag visible changes (the toast is the exception — scales has genuinely different feedback *styling*: 40px correct, `.toast.wrong` — kept separate, not flattened. (Note: scales gained the standard 2-try retry + hint card in May 2026; only its toast *styling* stays custom now). Two known per-module holdouts kept inline deliberately: time-signatures' `.staff-label` (absolute-positioned layout, needs a separate conversion) and scales' `.choice-btn` (24px desktop for long "harmonic minor" labels, pending the wrap-as-designed tile reconciliation).
 - **`qn-ui.js` (folded into `qn-profile.js`'s `QN.ui`, not a separate file).** Shared widgets live under `QN.ui`: `chip` (profile chip) and `confirm` (the shared quit/confirm modal component, added v1.7.0; **rolled out to all 9 modules in the May 2026 finishing session** — per-module `showConfirm` definitions retired, hardcoded-modal markup ids swapped so ghost-left=`modal-cancel` matches the component convention). The originally-planned standalone `qn-ui.js` was unnecessary; `QN.ui` is the home.
 - **Supabase migration, when warranted.** The current localStorage schema in `qn-profile.js` is already shaped to mirror a backend cleanly: opaque profile IDs, `syncedAt` field on profiles, append-only event log with `profileId`/`module`/`tier`/`correct`/`total`/`durationMs`/`completedAt`. When we go to backend, profiles and events become tables with this exact shape. No schema rework needed.
@@ -379,7 +391,18 @@ Default landing experience for a signed-in profile. The IA is **three concentric
 
 **Placement / "clep out" — performance-driven, not a test (v1).** A real upfront placement test stays a v2 feature (per the branching-paths note below) and is deferred. The v1 version: let people play anything from Practice, and let their performance quietly advance the path. If someone scores 95% on Intervals from the buffet, the recommender already knows not to send them back to easy note-naming — placement comes free from the weak-spot data already collected, no test gate, no friction.
 
-**Surfaces (planned, not yet built):** a `path.html` that becomes the signed-in default, with `play.html` becoming the Practice tab and the existing `dashboard.html` becoming Progress — Path / Practice / Progress as the three nav destinations. Recommended (Tier 2) to build `path.html` as a *new* page rather than overwriting `play.html`, so nothing currently working breaks and the feel can be evaluated before it's made the literal home. Mobile = single column, Today card fills the screen, tabs at the bottom. Desktop/tablet = path spine in a left rail, Today featured center, Practice peek below; tabs in the top nav. Same architecture, two layouts — not two designs.
+**Surfaces (SHIPPED, June 2026 — Studio build):** the three rings above were
+realized and then *consolidated*. Today (Ring 1) + the path spine (Ring 2) + the
+progress dashboard all live on **one signed-in home, `studio.html` ("My Studio")**;
+**`play.html` is the "All Modules" buffet** (Ring 3); the standalone Progress page
+(`dashboard.html`) was **retired** and its keepers (Focus areas, Accuracy trend,
+Share/PDF) folded into Studio. So the nav is **2 destinations** (My Studio · All
+Modules), not the originally-planned three. On Studio the path spine became the
+**journey tier bars** (tap a tier → its modules with gold/silver/bronze mastery
+dots), and "Today" became the **"Play your next beat"** recommendation in a fixed
+sticky bar. The soft-lock / never-hard-lock and performance-driven-placement
+principles above still hold (the journey is a map, not a gate; every module is
+open from All Modules). `path.html` survives only as a redirect to studio.html.
 
 **Spine state needs a small additive read.** The Today card is buildable now (the recommender returns exactly `{module, tier, length, reason}`). The spine's cleared/current/locked states need a per-module "cleared tier" derivation over `qn_events` (≥ 2 rounds at a tier AND ≥ 85% = cleared, reusing the recommender's existing advance rule). Additive, no schema change.
 
@@ -430,9 +453,29 @@ In-game teaching layer across all 32 modules. When a student answers wrong, a co
 
 **Spec:** `specs/teaching-hints-spec.md` (covers flow, design, data model, authoring guidelines, autonomy guide).
 
-### Progress dashboard (shipped May 2026)
+### Progress surfaces — now inside My Studio (June 2026; was dashboard.html, May 2026)
 
-`dashboard.html` is the student's progress home — "My Progress." Shows
+**`dashboard.html` was RETIRED in the June 2026 Studio build.** Progress now lives
+inside **`studio.html` ("My Studio")**, the single signed-in home. What carried over
+and where it lives now:
+- **Streak / momentum** → the glance row's Momentum tile + the status masthead.
+  (The old 3 switchable streak styles were dropped for one definitive view.)
+- **Weak spots ("Focus areas")** → migrated verbatim into Studio (same
+  `computeWeakSpots`: <80% accuracy, ≥5 attempts, top 4).
+- **Accuracy trend (weekly)** → migrated verbatim (`computeWeeklyTrend` + SVG).
+- **Mastery (Bronze/Silver/Gold per module)** → shown as gold/silver/bronze dots
+  on the **journey tier bars** (tap a tier to reveal). The standalone full mastery
+  grid was removed as duplicative; the "Earn a medal" rule survives as a
+  dismissible note under the journey. (`computeMasteryD` is retained — the Share
+  cards use it.)
+- **"Your next step" recommendation** → the **"Play your next beat"** sticky bar.
+- **Share / Save-as-PDF** → migrated into Studio (3 canvas social cards + print
+  stylesheet), but **currently hidden** (`.share-sec[hidden]`) pending a refinement
+  phase; code intact.
+The original dashboard feature set is documented below for history, but the page
+itself no longer exists.
+
+Historical (the dashboard as shipped May 2026, now migrated): it showed
 streak visualization (3 switchable styles), weak spots from the
 recommender, accuracy trend (weekly), mastery grid (Bronze/Silver/Gold
 per module across all 32), "Your next step" recommendation, and "Up

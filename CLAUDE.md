@@ -47,7 +47,7 @@ anything. This is the handshake — it catches stale docs before they cause dama
   `qn-home.js`, `qn-badges.js`. Flat repo at root — do NOT
   introduce folders, a bundler, or a build step. The flat static structure
   is correct and deliberate.
-  - **Gamification shared files (Studio build, June 2026, on Dev — see BUILD_LOG):**
+  - **Gamification shared files (Studio build, June 2026, on main — see BUILD_LOG):**
     `qn-xp.js` (XP/level engine, derived from `qn_events`, no schema), `qn-home.js`
     (the My Studio status masthead — self-injects its own CSS), `qn-badges.js`
     (achievements as pure predicates over the event log), `qn-roundend.js` (the
@@ -299,10 +299,10 @@ For any future CSS work:
 
 ## Current in-progress state (read carefully)
 
-- **⚠️ Studio gamification overhaul: BUILT + ON DEV, NOT YET ON MAIN (June 2026).**
-  Big architectural change — read the BUILD_LOG "Studio build" entry before
-  touching path/progress/nav/gamification. Summary of what changed vs. the rest of
-  this doc:
+- **⚠️ Studio gamification overhaul: SHIPPED TO MAIN (production) — June 2026.**
+  Big architectural change — read the BUILD_LOG "Studio build" + "Studio shipped to
+  production" entries before touching path/progress/nav/gamification. Summary of
+  what changed vs. older text elsewhere in this file:
     - **Path page + dashboard merged into one home: `studio.html` ("My Studio").**
       `path.html` is now a redirect to `studio.html`. **`dashboard.html` was
       DELETED** — its content (Focus areas, Accuracy trend, Share/PDF) migrated
@@ -315,13 +315,15 @@ For any future CSS work:
       v1.7.0). New page `rewards.html` ("How progress works") — the success-path
       reference, pulls level/badge defs LIVE from the engines; linked from footers,
       not the nav.
-    - **Return users auto-land on My Studio** (`index.html` redirects profiles to
-      studio; index stays reachable via `?stay` + the brand logo). Once-a-day app
-      splash on Studio arrival.
-    - Branch `feature/studio` fast-forwarded into Dev (June 2026). **Awaiting
-      Jonathan's QA before Dev→main.** When it merges, the curriculum/roster
-      sections of this file + QUIZNOTE_PROJECT_DOC.md §5 need a reconciliation pass
-      (they still describe the pre-Studio Path/dashboard world).
+    - **Return users auto-land on My Studio** (`index.html` has a BLOCKING head
+      redirect reading `qn_activeProfile` — no marketing-page flash; index stays
+      reachable via `?stay` + the brand logo). Once-a-day app splash on arrival.
+    - **Share button currently HIDDEN** on Studio (`.share-sec[hidden]`) pending a
+      share/PDF refinement phase — all code intact; resurface = remove the attribute.
+    - Shipped Dev→main June 2026 (clean fast-forwards). `feature/studio` retired.
+      Doc reconciliation done: this file + QUIZNOTE_PROJECT_DOC.md §4/§6 updated to
+      describe the Studio world. (Some incidental older "dashboard"/"path.html"
+      word-mentions may remain in prose but are covered by these summaries.)
 - **CSS extraction: COMPLETE.** All 6 clusters extracted. qn-theme.css covers
   all shared selectors for the original 9 modules.
 - **QN.ui.confirm rollout: COMPLETE.** All 9 modules use shared confirm dialog;
