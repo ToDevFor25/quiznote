@@ -1,5 +1,29 @@
 ---
 
+### Studio shipped to production + Share button hidden — June 2026
+
+**The Studio build is on MAIN (production).** `feature/studio` was fast-forwarded
+into Dev, QA'd by Jonathan, then Dev→main (clean fast-forward, 36 commits). Branch
+head at promotion: `f34b4a5`. Jonathan is deleting `feature/studio` (fully
+contained in main, nothing stranded). The `_mockups/studio-*.html` files rode along
+— harmless internal tooling.
+
+**Share button temporarily HIDDEN (`d86c283`).** The Share / Save-as-PDF feature
+works, but the share/PDF UX is queued for its own refinement phase, so the
+`.share-sec` on studio.html carries a `hidden` attribute. **Nothing was removed** —
+all CSS, the picker overlay, the print stylesheet, the 3 canvas social cards, and
+the initShare/initPicker wiring are intact. **To resurface: delete the `hidden`
+attribute on `.share-sec`** (there's a comment there saying so). The Collection
+wall's "How it works →" link to rewards.html is a separate element and stays.
+
+**⚠️ Doc reconciliation now DUE.** Studio is on main, so the "reconcile when it
+merges" notes in CLAUDE.md + QUIZNOTE_PROJECT_DOC.md are now actionable: the
+project-doc §5 roster surfaces + the progress-dashboard/3-nav sections still
+describe the pre-Studio world behind the top banner. Deferred (banner keeps a
+fresh session honest), but it's the real doc cleanup owed — a doc-only pass.
+
+---
+
 ### The Studio build — gamification UX overhaul on `feature/studio` (June 2026)
 
 **Status: built + self-verified on the isolated branch `feature/studio` (cut from
