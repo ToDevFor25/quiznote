@@ -119,35 +119,7 @@
     .stage { order: 1; }
   }
 
-  .eyebrow {
-    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 11px;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint);
-    margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
-  }
-
-  /* ---- Today card ---- */
-  .today {
-    background: white; border: 2.5px solid var(--ink); border-radius: 22px;
-    box-shadow: 0 6px 0 var(--ink); padding: 22px 24px; margin-bottom: 18px;
-  }
-  .today-l { min-width: 0; }
-  .today-tag {
-    display: inline-block; background: var(--sun-lt); color: var(--sun-dk);
-    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 11px;
-    letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 10px;
-    border-radius: 8px; border: 1.5px solid var(--sun); margin-bottom: 12px;
-  }
-  .today-tag.remediation { background: var(--coral-lt, #ffe0e0); color: var(--coral-dk); border-color: var(--coral); }
-  .today-tag.review { background: var(--grape-lt); color: var(--grape-dk); border-color: var(--grape); }
-  .today-h { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.05; margin-bottom: 7px; }
-  .today-why { font-size: 15px; color: var(--ink-soft); line-height: 1.45; margin-bottom: 15px; }
-  .today-meta { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-  .pill { font-family: 'Fredoka', sans-serif; font-weight: 500; font-size: 13px; background: #f3efe6; color: var(--ink-soft); border-radius: 999px; padding: 6px 13px; }
-  .today-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  @media (max-width: 560px) {
-    .today-h { font-size: 26px; }
-    .today-actions .btn { flex: 1; text-align: center; }
-  }
+  /* (Next Beat card styles removed — it's now the fixed .play-bar at page bottom.) */
 
   /* ---- Path spine ---- */
   .rail-card {
@@ -401,6 +373,60 @@
     .jbar-body { transition: none; }
   }
 
+  /* ---- Sticky Play bar (Next Beat, always in reach) ---- */
+  .play-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 800;
+    max-width: 480px; margin: 0 auto;
+    background: var(--ink); border: 2.5px solid var(--ink);
+    border-radius: 16px 16px 0 0; box-shadow: 0 -4px 18px rgba(42,42,62,0.22);
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) 16px;
+    /* the bounce: a springy curve so tuck-away + spring-back overshoot slightly */
+    transition: transform .36s cubic-bezier(.34,1.56,.64,1);
+  }
+  .play-bar[hidden] { display: none; }
+  .play-bar.tucked { transform: translateY(130%); }
+  .play-bar .pb-l { min-width: 0; flex: 1; }
+  .play-bar .pb-tag {
+    display: inline-block; font-family: 'Fredoka', sans-serif; font-weight: 600;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--sun); margin-bottom: 1px;
+  }
+  .play-bar .pb-tag.remediation { color: var(--coral); }
+  .play-bar .pb-tag.review { color: #b9a7ff; }
+  .play-bar .pb-title {
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; color: #fff;
+    line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .play-bar .pb-sub {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    font-size: 10.5px; color: rgba(255,255,255,0.7); margin-top: 2px;
+  }
+  .play-bar .pb-vpill {
+    background: var(--sun); color: var(--ink);
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 9px;
+    border-radius: 99px; padding: 1px 8px;
+  }
+  .play-bar .pb-go {
+    flex: none; background: var(--teal); color: #fff;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px;
+    border: none; border-radius: 12px; padding: 10px 18px; cursor: pointer;
+    box-shadow: 0 3px 0 var(--teal-dk); transition: transform 80ms, box-shadow 80ms;
+  }
+  .play-bar .pb-go:active { transform: translateY(3px); box-shadow: 0 0 0 var(--teal-dk); }
+  /* spring re-entrance (the "little bounce" when the recap clears) */
+  .play-bar.bounce-in { animation: playBarBounce .5s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes playBarBounce {
+    0% { transform: translateY(130%); }
+    70% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+  }
+  .play-bar-spacer { height: 70px; }
+  @media (prefers-reduced-motion: reduce) {
+    .play-bar { transition: none; }
+    .play-bar.bounce-in { animation: none; }
+  }
+
   /* ---- "Nice work today" bottom-sheet recap (conditional, once/day) ---- */
   .recap-scrim {
     position: fixed; inset: 0; z-index: 900; background: rgba(42,42,62,0.4);
@@ -430,6 +456,14 @@
   .recap-ico { font-size: 36px; margin-bottom: 6px; }
   .recap-text { font-family: 'Nunito', sans-serif; font-size: 15.5px; color: var(--ink); line-height: 1.45; max-width: 360px; margin: 0 auto 10px; }
   .recap-text b { font-family: 'Fredoka', sans-serif; font-weight: 700; }
+  .recap-go {
+    display: block; margin: 2px auto 10px;
+    background: var(--teal); color: #fff;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px;
+    border: 2.5px solid var(--ink); border-radius: 13px; padding: 10px 22px;
+    box-shadow: 0 3px 0 var(--ink); cursor: pointer; transition: transform 80ms, box-shadow 80ms;
+  }
+  .recap-go:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
   .recap-hint { font-size: 11.5px; color: var(--ink-faint); font-weight: 700; letter-spacing: 0.02em; }
   @media (prefers-reduced-motion: reduce) {
     .recap-scrim, .recap-sheet { transition: none; }
@@ -564,22 +598,9 @@
       </div></div>
     </div>
 
-    <!-- NEXT BEAT (the primary action, below the glance row) -->
-    <div class="sec">
-      <div class="eyebrow"><span aria-hidden="true">✦</span> <span id="eyebrow-text">Play your next beat</span></div>
-      <div class="today" id="today-card">
-        <div class="today-l">
-          <span class="today-tag" id="today-tag">Next up</span>
-          <div class="today-h" id="today-title">—</div>
-          <div class="today-why" id="today-why">—</div>
-          <div class="today-meta" id="today-meta"></div>
-          <div class="today-actions">
-            <button class="btn big" id="start-btn">Start →</button>
-            <button class="btn ghost" id="else-btn">Something else</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- NEXT BEAT now lives in the fixed sticky Play bar at the bottom of <main>
+         (see #play-bar). This keeps the primary action always in reach while the
+         page scrolls, and lets the recap "carry" it (Option 4). -->
 
     <!-- JOURNEY: tier bars fold open to reveal each tier's modules -->
     <div class="sec">
@@ -611,18 +632,32 @@
       </a>
     </div>
 
+    <!-- spacer so the fixed Play bar never covers the last card -->
+    <div class="play-bar-spacer" aria-hidden="true"></div>
+
   </section>
 
-  <!-- "Nice work today" — a once-per-day, earned-after-a-real-session bottom
-       sheet. NOT shown on a fresh load / at login; only when the learner returns
-       after playing enough rounds today (see maybeShowRecap). Swipe down / tap × /
-       tap scrim to clear. -->
+  <!-- STICKY PLAY BAR (Next Beat, always in reach). Driven by the recommender.
+       When the recap is up, it carries the Play CTA and this bar tucks away;
+       on dismiss the bar springs back (Option 4 + bounce). -->
+  <div class="play-bar" id="play-bar" hidden>
+    <div class="pb-l">
+      <span class="pb-tag" id="pb-tag">Next up</span>
+      <div class="pb-title" id="pb-title">—</div>
+      <div class="pb-sub" id="pb-sub"></div>
+    </div>
+    <button type="button" class="pb-go" id="pb-go">Play →</button>
+  </div>
+
+  <!-- "Nice work today" — once-per-day, earned-after-a-real-session sheet that
+       CARRIES the Play CTA (Option 4). NOT shown on a fresh load / at login. -->
   <div class="recap-scrim" id="recap-scrim" hidden></div>
   <div class="recap-sheet" id="recap-sheet" hidden role="dialog" aria-label="Today's recap">
     <div class="recap-grab" id="recap-grab"></div>
     <button type="button" class="recap-x" id="recap-x" aria-label="Dismiss">×</button>
     <div class="recap-ico" id="recap-ico">🎵</div>
     <div class="recap-text" id="recap-text"></div>
+    <button type="button" class="recap-go" id="recap-go">Keep going →</button>
     <div class="recap-hint">swipe down to clear</div>
   </div>
 </main>
@@ -945,7 +980,6 @@
   }
 
   function prettyTier(t) { return t ? t.charAt(0).toUpperCase() + t.slice(1) : 'Easy'; }
-  function estMinutes(len) { return Math.max(2, Math.round((len || 10) * 0.3)); }
 
   function tagFor(kind) {
     if (kind === 'remediation') return { cls: 'remediation', text: 'Shore up a weak spot' };
@@ -954,25 +988,37 @@
     return { cls: '', text: 'Pick up where you left off' };
   }
 
+  // The recommendation is shared with the recap's "Keep going" CTA.
+  var currentRec = null;
   function renderToday(rec, per) {
+    currentRec = rec;
     var m = MODULES[rec.module] || { name: rec.module, tier: 'reading' };
     var tag = tagFor(rec.kind);
-    var tagEl = $('today-tag');
-    tagEl.className = 'today-tag ' + tag.cls;
-    tagEl.textContent = tag.text;
-    $('today-title').textContent = m.name;
-    $('today-why').textContent = rec.reason || '';
-    var meta = $('today-meta');
-    meta.innerHTML = '';
-    var metaPills = [prettyTier(rec.tier), (rec.length || 10) + ' questions', '~' + estMinutes(rec.length) + ' min'];
-    // Variety stretch (P2): a "try bass / both clefs / 20-question" badge.
-    if (rec.variety) metaPills.push('✦ ' + rec.variety);
-    metaPills.forEach(function (txt) {
-      var p = document.createElement('span'); p.className = 'pill'; p.textContent = txt; meta.appendChild(p);
-    });
 
-    $('start-btn').onclick = function () { startRecommended(rec); };
-    $('else-btn').onclick = function () { window.location.href = 'play.html'; };
+    var tagEl = $('pb-tag');
+    if (tagEl) { tagEl.className = 'pb-tag ' + tag.cls; tagEl.textContent = tag.text; }
+    var titleEl = $('pb-title');
+    if (titleEl) titleEl.textContent = m.name + ' · ' + prettyTier(rec.tier);
+
+    // Sub line: question count + (when relevant) a contextual variety pill that
+    // REPLACES the old "~3 min". The pill is the P2 stretch ("Try bass / both
+    // clefs / 20-question") when the recommender offers one.
+    var sub = $('pb-sub');
+    if (sub) {
+      sub.innerHTML = '';
+      if (rec.variety) {
+        var vp = document.createElement('span'); vp.className = 'pb-vpill';
+        vp.textContent = '✦ ' + rec.variety; sub.appendChild(vp);
+      }
+      var qn = document.createElement('span');
+      qn.textContent = (rec.length || 10) + ' questions'; sub.appendChild(qn);
+    }
+
+    var go = $('pb-go');
+    if (go) go.onclick = function () { startRecommended(rec); };
+
+    var bar = $('play-bar');
+    if (bar) bar.hidden = false;
 
     renderSpine(per, rec.module);
     renderPracticePeek(rec, per);
@@ -1155,7 +1201,22 @@
     var tEl = $('recap-text'); if (tEl) tEl.innerHTML = msg;
     var iEl = $('recap-ico'); if (iEl) iEl.textContent = ico;
 
+    // Option 4: the recap CARRIES the Play CTA, and the sticky Play bar tucks
+    // away beneath it while the recap is up (so the action is never lost, but
+    // also never doubled). On dismiss the bar springs back with a bounce.
+    var bar = $('play-bar');
+    var goEl = $('recap-go');
+    if (goEl) {
+      if (currentRec) {
+        var rm = MODULES[currentRec.module] || { name: currentRec.module };
+        goEl.textContent = 'Keep going · ' + rm.name + ' →';
+        goEl.onclick = function () { startRecommended(currentRec); };
+        goEl.hidden = false;
+      } else { goEl.hidden = true; }
+    }
+
     scrim.hidden = false; sheet.hidden = false;
+    if (bar) bar.classList.add('tucked');   // slide the Play bar out of the way
     requestAnimationFrame(function () { requestAnimationFrame(function () {
       scrim.classList.add('show'); sheet.classList.add('show');
     }); });
@@ -1163,6 +1224,13 @@
     function close() {
       sheet.classList.remove('show'); scrim.classList.remove('show');
       setTimeout(function () { sheet.hidden = true; scrim.hidden = true; }, 360);
+      // Spring the Play bar back in with the bounce.
+      if (bar) {
+        bar.classList.remove('tucked');
+        bar.classList.remove('bounce-in'); void bar.offsetWidth;  // restart anim
+        bar.classList.add('bounce-in');
+        bar.addEventListener('animationend', function h() { bar.classList.remove('bounce-in'); bar.removeEventListener('animationend', h); });
+      }
     }
     scrim.addEventListener('click', close);
     var xBtn = $('recap-x'); if (xBtn) xBtn.addEventListener('click', close);
