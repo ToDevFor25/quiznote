@@ -81,6 +81,10 @@
     .w1,.w2,.w3,.w4,.w5{transition:opacity .2s;}
     .w5 .c{display:none;}
   }
+  /* Hidden welcomes must NOT eat taps — opacity:0 alone still captures pointer
+     events, so the full-screen #w2/#w5 overlays were blocking the preview bars. */
+  .w1,.w2,.w3,.w4,.w5{pointer-events:none;}
+  .w1.show,.w2.show,.w3.show,.w4.show,.w5.show{pointer-events:auto;}
 </style>
 </head>
 <body>
@@ -137,7 +141,8 @@
         s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');s.style.setProperty('--dy',(Math.round(Math.sin(a)*d)-30)+'px');
         s.style.animationDelay=(Math.random()*.2).toFixed(2)+'s';conf.appendChild(s);}
     }
-    requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('show');});});
+    void el.offsetWidth;            // force reflow so the transition fires reliably (iOS)
+    el.classList.add('show');
     openTimer=setTimeout(clearAll,2600);  // auto-fade ~2.6s
   }
   document.querySelectorAll('[data-w]').forEach(function(b){b.addEventListener('click',function(){preview(b.getAttribute('data-w'));});});
