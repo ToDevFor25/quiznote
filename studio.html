@@ -317,6 +317,34 @@
   .collection-note { font-size: 13px; color: var(--ink-soft); text-align: center; }
   .collection-note b { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--ink); }
 
+  /* ---- P5: Practice Story recap ---- */
+  .story {
+    background: linear-gradient(120deg, var(--grape-lt), var(--teal-lt));
+    border: 2.5px solid var(--ink); border-radius: 18px;
+    box-shadow: 0 5px 0 var(--shadow-cool); padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .story-ico { font-size: 30px; flex: none; }
+  .story-text { font-family: 'Nunito', sans-serif; font-size: 14.5px; color: var(--ink); line-height: 1.45; }
+  .story-text b { font-family: 'Fredoka', sans-serif; font-weight: 700; }
+
+  /* ---- P5: funnel section pop-in (cascaded on load) ---- */
+  @keyframes secPopIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  #state-studio.pop .sec { animation: secPopIn .5s cubic-bezier(.34,1.56,.64,1) both; }
+  #state-studio.pop .sec:nth-child(1) { animation-delay: .02s; }
+  #state-studio.pop .sec:nth-child(2) { animation-delay: .09s; }
+  #state-studio.pop .sec:nth-child(3) { animation-delay: .16s; }
+  #state-studio.pop .sec:nth-child(4) { animation-delay: .23s; }
+  #state-studio.pop .sec:nth-child(5) { animation-delay: .30s; }
+  #state-studio.pop .sec:nth-child(6) { animation-delay: .37s; }
+  #state-studio.pop .sec:nth-child(n+7) { animation-delay: .44s; }
+  @keyframes nodeBreathe { 0%,100% { box-shadow: 0 0 0 4px var(--sun-lt); } 50% { box-shadow: 0 0 0 7px var(--sun-lt); } }
+  .node.current { animation: nodeBreathe 2.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    #state-studio.pop .sec { animation: none; }
+    .node.current { animation: none; }
+  }
+
   /* ---- Daily quests ---- */
   .quests {
     background: white; border: 2.5px solid var(--ink); border-radius: 20px;
@@ -374,8 +402,16 @@
     <div style="margin-top:14px"><a href="play.html" class="plink">Or just browse all modules →</a></div>
   </section>
 
-  <!-- HAS PROFILE: the Studio funnel — Next Beat → Momentum → Map → Collection -->
+  <!-- HAS PROFILE: the Studio funnel — Story → Next Beat → Quests → Momentum → Map → Collection -->
   <section id="state-studio" hidden>
+
+    <!-- PRACTICE STORY (P5: a one-line recap of where you are) -->
+    <div class="sec" id="story-sec" hidden>
+      <div class="story">
+        <span class="story-ico" id="story-ico">👋</span>
+        <span class="story-text" id="story-text"></span>
+      </div>
+    </div>
 
     <!-- NEXT BEAT -->
     <div class="sec">
@@ -887,6 +923,40 @@
     });
   }
 
+  // ── PRACTICE STORY (P5): a single warm sentence summarizing where the learner
+  //    is, turning the cold stats into a small narrative they want to read.
+  //    Picks the most motivating true statement from the data.
+  function renderStory(active, events) {
+    var sec = $('story-sec'), txt = $('story-text'), ico = $('story-ico');
+    if (!sec || !txt) return;
+    var name = active.nickname || 'there';
+    var streak = (window.QN && QN.home && QN.home.streakFor) ? QN.home.streakFor(active.id).current : 0;
+    var xp = (window.QN && QN.xp && QN.xp.summaryFor) ? QN.xp.summaryFor(active.id) : null;
+    var badges = (window.QN && QN.badges) ? QN.badges.evaluate(active.id) : null;
+    var today = todaysEvents(events);
+
+    var msg = '', icon = '👋';
+    if (today.length > 0) {
+      icon = '🎵';
+      msg = '<b>Nice work today, ' + name + '.</b> You\'ve played ' + today.length + ' round' + (today.length === 1 ? '' : 's') + ' so far — keep the momentum going.';
+    } else if (streak >= 2) {
+      icon = '🔥';
+      msg = '<b>' + streak + '-day streak, ' + name + '!</b> Play a round today to keep it alive.';
+    } else if (xp && xp.toNext > 0 && xp.totalXP > 0) {
+      icon = '⚡';
+      msg = '<b>Welcome back, ' + name + '.</b> You\'re ' + xp.toNext + ' XP from ' + QN.xp.nameForLevel(xp.level + 1) + ' — one good round could get you there.';
+    } else if (badges && badges.next) {
+      icon = '🏅';
+      msg = '<b>Hey ' + name + '!</b> Your next badge — ' + badges.next.name + ' — is within reach: ' + badges.next.desc.toLowerCase() + '.';
+    } else {
+      icon = '✨';
+      msg = '<b>Welcome, ' + name + '!</b> Your music-theory journey starts with one round. Let\'s go.';
+    }
+    txt.innerHTML = msg;
+    ico.textContent = icon;
+    sec.hidden = false;
+  }
+
   // ── DAILY QUESTS (P3): 3 quests/day, derived entirely from qn_events — no
   //    backend. Progress is computed live from TODAY's rounds each render, so
   //    there's no separate state to persist or get out of sync. The quest SET
@@ -1017,12 +1087,16 @@
     var per = rollup(events);
 
     $('eyebrow-text').textContent = 'Your next beat, ' + active.nickname;
-    $('state-studio').hidden = false;
+    var studioEl = $('state-studio');
+    studioEl.hidden = false;
+    renderStory(active, events);
     renderToday(rec, per);
     renderQuests(events);
     renderMomentum(active, events);
     renderMapBars(events);
     renderBadgeWall(active);
+    // P5: cascaded section pop-in on load (reduced-motion safe via CSS).
+    requestAnimationFrame(function () { studioEl.classList.add('pop'); });
   });
 })();
 </script>
