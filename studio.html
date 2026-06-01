@@ -293,7 +293,7 @@
     background: white; border: 2.5px solid var(--ink); border-radius: 20px;
     box-shadow: 0 5px 0 var(--shadow-cool); padding: 18px 20px;
   }
-  .badge-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .badge-wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px 10px; margin-bottom: 14px; }
   .badge {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
     text-align: center;
@@ -316,6 +316,66 @@
   @media (prefers-reduced-motion: reduce) { .badge.next .badge-ico { animation: none; } }
   .collection-note { font-size: 13px; color: var(--ink-soft); text-align: center; }
   .collection-note b { font-family: 'Fredoka', sans-serif; font-weight: 600; color: var(--ink); }
+
+  /* ---- Glance row (mini-viz tiles: Quests · Momentum · Collection) ---- */
+  .glance { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .gtile {
+    background: #fff; border: 2.5px solid var(--ink); border-radius: 16px;
+    box-shadow: 0 4px 0 var(--shadow-cool); padding: 13px 8px 11px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer; font-family: inherit; transition: transform .08s, box-shadow .08s;
+  }
+  .gtile:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--shadow-cool); }
+  .gtile.on { border-color: var(--teal-dk); background: var(--teal-lt); }
+  .g-ring { width: 38px; height: 38px; }
+  #g-quest-ring { transition: stroke-dashoffset 700ms cubic-bezier(.4,0,.2,1); }
+  .g-flames { font-size: 26px; line-height: 1; }
+  .g-cluster { font-size: 22px; line-height: 1.2; letter-spacing: -2px; }
+  .g-lab { font-size: 11px; color: var(--ink-faint); font-weight: 700; text-align: center; line-height: 1.2; }
+  .g-lab b { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .g-cue { text-align: center; font-size: 11px; color: var(--teal-dk); font-weight: 700; margin-top: 8px; }
+  .g-cue.hidden { display: none; }
+  .g-panel { margin-top: 14px; }
+  .g-panel[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { #g-quest-ring { transition: none; } }
+
+  /* badge requirement (shown on locked badges in the expanded wall) */
+  .badge-req { font-size: 9px; color: var(--ink-faint); line-height: 1.2; margin-top: 1px; }
+  .badge.earned .badge-req { display: none; }
+
+  /* ---- Journey: tier bars that fold open to reveal modules ---- */
+  .journey { display: flex; flex-direction: column; gap: 10px; }
+  .jbar { background: #fff; border: 2px solid var(--line-strong); border-radius: 14px; overflow: hidden; }
+  .jbar-head { display: flex; align-items: center; gap: 11px; padding: 11px 14px; cursor: pointer; }
+  .jbar-name { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 13px; width: 92px; flex: none; }
+  .jbar-name.foundations { color: var(--sun-dk); }
+  .jbar-name.reading { color: var(--teal-dk); }
+  .jbar-name.theory { color: var(--grape-dk); }
+  .jbar-track { flex: 1; height: 11px; border-radius: 99px; background: #efeadd; overflow: hidden; }
+  .jbar-fill { height: 100%; border-radius: 99px; width: 0; transition: width 800ms cubic-bezier(.4,0,.2,1); }
+  .jbar-fill.foundations { background: var(--sun); }
+  .jbar-fill.reading { background: var(--teal); }
+  .jbar-fill.theory { background: var(--grape); }
+  .jbar-cnt { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 12px; color: var(--ink-faint); flex: none; display: flex; align-items: center; gap: 6px; }
+  .jbar-chev { display: inline-block; transition: transform .25s; font-size: 10px; }
+  .jbar.open .jbar-chev { transform: rotate(180deg); }
+  .jbar-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .jbar.open .jbar-body { grid-template-rows: 1fr; }
+  .jbar-body-in { overflow: hidden; min-height: 0; }
+  .jmods { display: flex; flex-wrap: wrap; gap: 7px; padding: 4px 14px 14px; }
+  .jmod { display: flex; align-items: center; gap: 6px; font-size: 12px; background: #faf7ee; border: 1.5px solid var(--line); border-radius: 9px; padding: 5px 9px; font-family: 'Fredoka', sans-serif; font-weight: 500; text-decoration: none; color: var(--ink); }
+  .jmod:active { background: var(--teal-lt); }
+  .jdot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .jdot.gold { background: var(--rank-gold, #E6B422); }
+  .jdot.silver { background: #A8A8B0; }
+  .jdot.bronze { background: #CD7F32; }
+  .jdot.started { background: var(--teal-lt); border: 1.5px solid var(--teal); }
+  .jdot.none { background: #e8e3d6; }
+  .j-cue { text-align: center; font-size: 11px; color: var(--ink-faint); font-weight: 700; margin-top: 9px; }
+  @media (prefers-reduced-motion: reduce) {
+    .jbar-fill { transition: none; }
+    .jbar-body { transition: none; }
+  }
 
   /* ---- P5: Practice Story recap ---- */
   .story {
@@ -433,37 +493,66 @@
       </div>
     </div>
 
-    <!-- DAILY QUESTS -->
+    <!-- GLANCE ROW: Quests · Momentum · Collection (mini-viz, tap to expand) -->
     <div class="sec">
-      <div class="sec-h"><span>Today's quests</span><span class="sec-count" id="quest-count">0/3</span></div>
-      <div class="quests" id="quests"></div>
-    </div>
+      <div class="glance" id="glance-row">
+        <button type="button" class="gtile" data-panel="panel-quests" id="gt-quests">
+          <svg class="g-ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle cx="18" cy="18" r="15" fill="none" stroke="var(--teal-lt)" stroke-width="5"/>
+            <circle id="g-quest-ring" cx="18" cy="18" r="15" fill="none" stroke="var(--teal)" stroke-width="5" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="94.25" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span class="g-lab"><b id="g-quest-num">0/3</b> quests</span>
+        </button>
+        <button type="button" class="gtile" data-panel="panel-momentum" id="gt-momentum">
+          <span class="g-flames" id="g-flames">🔥</span>
+          <span class="g-lab"><b id="g-streak-num">0</b> day streak</span>
+        </button>
+        <button type="button" class="gtile" data-panel="panel-badges" id="gt-badges">
+          <span class="g-cluster" id="g-cluster">🏅</span>
+          <span class="g-lab"><b id="g-badge-num">0</b> badges</span>
+        </button>
+      </div>
+      <div class="g-cue" id="g-cue">tap a tile to open ▾</div>
 
-    <!-- MOMENTUM (streak) -->
-    <div class="sec">
-      <div class="sec-h"><span>Your momentum</span></div>
-      <div class="momentum">
-        <div class="streak-big">
-          <span class="streak-flame">🔥</span>
-          <span class="streak-n" id="streak-n">0<small>DAY STREAK</small></span>
+      <!-- QUESTS panel -->
+      <div class="g-panel" id="panel-quests" hidden>
+        <div class="sec-h"><span>Today's quests</span><span class="sec-count" id="quest-count">0/3</span></div>
+        <div class="quests" id="quests"></div>
+      </div>
+
+      <!-- MOMENTUM panel -->
+      <div class="g-panel" id="panel-momentum" hidden>
+        <div class="sec-h"><span>Your momentum</span></div>
+        <div class="momentum">
+          <div class="streak-big">
+            <span class="streak-flame">🔥</span>
+            <span class="streak-n" id="streak-n">0<small>DAY STREAK</small></span>
+          </div>
+          <div class="streak-week">
+            <div class="streak-dots" id="streak-dots"></div>
+            <div class="streak-goal" id="streak-goal">—</div>
+          </div>
         </div>
-        <div class="streak-week">
-          <div class="streak-dots" id="streak-dots"></div>
-          <div class="streak-goal" id="streak-goal">—</div>
+      </div>
+
+      <!-- COLLECTION panel: full wall — locked badges show name + requirement -->
+      <div class="g-panel" id="panel-badges" hidden>
+        <div class="sec-h"><span>Your collection</span><span class="sec-count" id="badge-count">0 badges</span></div>
+        <div class="collection">
+          <div class="badge-wall" id="badge-wall"></div>
+          <div class="collection-note" id="badge-note"></div>
         </div>
       </div>
     </div>
 
-    <!-- MAP (journey spine + tier progress) -->
+    <!-- JOURNEY: tier bars fold open to reveal each tier's modules -->
     <div class="sec">
       <div class="sec-h">
         <span>Your journey</span>
-        <a class="sec-link" href="dashboard.html">See full progress &amp; sharing →</a>
+        <a class="sec-link" href="dashboard.html">Full progress &amp; sharing →</a>
       </div>
-      <div class="map-bars" id="map-bars"></div>
-      <div class="rail-card">
-        <div id="spine"></div>
-      </div>
+      <div class="journey" id="journey"></div>
+      <div class="j-cue">tap a tier to see its modules ▾</div>
     </div>
 
     <!-- JUMP AHEAD (practice peek) -->
@@ -474,15 +563,6 @@
       </div>
       <div class="ptiles" id="practice-tiles"></div>
       <div class="banner"><b>Your path guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.</div>
-    </div>
-
-    <!-- COLLECTION (P4 — earned + next-to-unlock badge wall) -->
-    <div class="sec">
-      <div class="sec-h"><span>Your collection</span><span class="sec-count" id="badge-count">0 badges</span></div>
-      <div class="collection">
-        <div class="badge-wall" id="badge-wall"></div>
-        <div class="collection-note" id="badge-note"></div>
-      </div>
     </div>
 
   </section>
@@ -671,6 +751,7 @@
   // ── Render the path spine grouped by tier, with done/current/upcoming states.
   function renderSpine(per, recModule) {
     var spine = $('spine');
+    if (!spine) return;   // spine replaced by the foldable journey bars (glance redesign)
     spine.innerHTML = '';
     var TIER_GROUPS = [
       { key: 'foundations', label: 'Foundations' },
@@ -867,6 +948,10 @@
     var streak = (window.QN && QN.home && QN.home.streakFor) ? QN.home.streakFor(active.id).current : streakLocal(events);
     var nEl = $('streak-n');
     if (nEl) nEl.innerHTML = streak + '<small>DAY STREAK</small>';
+    // Glance tile: number + flame intensity (1/2/3 flames by streak length).
+    var gNum = $('g-streak-num'); if (gNum) gNum.textContent = streak;
+    var gFl = $('g-flames');
+    if (gFl) gFl.textContent = streak >= 7 ? '🔥🔥🔥' : streak >= 3 ? '🔥🔥' : '🔥';
     var week = weekDaysLocal(events);
     var goal = active.practiceGoal || 5;
     var labels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -890,36 +975,89 @@
     }
   }
 
-  // ── MAP: per-tier mastery progress bars (mirrors dashboard computeMastery:
-  //    a module is "mastered/gold" when its top tier is cleared). Reuses this
-  //    page's own rollup()/tierCleared() so the count matches the spine.
+  // ── JOURNEY: per-tier mastery bars that FOLD OPEN to reveal the tier's
+  //    modules (with mastery dots). The bar is the glance (mastered/total) AND
+  //    the expand control — replacing the always-on 35-row spine, so the page is
+  //    far shorter while the full path is one tap away. Mastery dot per module:
+  //    gold (top tier cleared) / silver / bronze / started / none — mirrors the
+  //    dashboard medal logic via this page's rollup()/tierCleared().
   var TIER_GROUPS_MAP = [
     { key: 'foundations', label: 'Foundations' },
     { key: 'reading', label: 'Reading' },
     { key: 'theory', label: 'Theory' }
   ];
-  function renderMapBars(events) {
+  function masteryDot(info) {
+    if (!info || !info.rounds) return 'none';
+    if (tierCleared(info, 'tricky')) return 'gold';
+    if (tierCleared(info, 'medium')) return 'silver';
+    if (tierCleared(info, 'easy')) return 'bronze';
+    return 'started';
+  }
+  function renderJourney(events) {
     var per = rollup(events);
-    var host = $('map-bars');
+    var host = $('journey');
     if (!host) return;
     host.innerHTML = '';
     TIER_GROUPS_MAP.forEach(function (g) {
       var slugs = PATH.filter(function (s) { return MODULES[s] && MODULES[s].tier === g.key; });
       var total = slugs.length;
-      var mastered = slugs.filter(function (s) {
-        return moduleStatus(per[s]) === 'cleared';
-      }).length;
+      var mastered = slugs.filter(function (s) { return masteryDot(per[s]) === 'gold'; }).length;
       var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
-      var row = document.createElement('div');
-      row.className = 'mbar-row';
-      row.innerHTML =
-        '<span class="mbar-name ' + g.key + '">' + g.label + '</span>' +
-        '<span class="mbar-track"><span class="mbar-fill ' + g.key + '"></span></span>' +
-        '<span class="mbar-count">' + mastered + '/' + total + '</span>';
-      host.appendChild(row);
-      // animate fill after layout
-      var fill = row.querySelector('.mbar-fill');
+
+      var modsHtml = slugs.map(function (s) {
+        var dot = masteryDot(per[s]);
+        return '<a class="jmod" href="' + s + '.html"><span class="jdot ' + dot + '"></span>' + MODULES[s].name + '</a>';
+      }).join('');
+
+      var bar = document.createElement('div');
+      bar.className = 'jbar';
+      bar.innerHTML =
+        '<div class="jbar-head" role="button" tabindex="0">' +
+          '<span class="jbar-name ' + g.key + '">' + g.label + '</span>' +
+          '<span class="jbar-track"><span class="jbar-fill ' + g.key + '"></span></span>' +
+          '<span class="jbar-cnt">' + mastered + '/' + total + ' <span class="jbar-chev">▾</span></span>' +
+        '</div>' +
+        '<div class="jbar-body"><div class="jbar-body-in"><div class="jmods">' + modsHtml + '</div></div></div>';
+      host.appendChild(bar);
+
+      var fill = bar.querySelector('.jbar-fill');
       requestAnimationFrame(function () { requestAnimationFrame(function () { fill.style.width = pct + '%'; }); });
+
+      var head = bar.querySelector('.jbar-head');
+      head.addEventListener('click', function () { bar.classList.toggle('open'); });
+      head.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bar.classList.toggle('open'); }
+      });
+    });
+  }
+
+  // ── GLANCE ROW: tap a mini-viz tile to expand its detail panel below the row
+  //    (closing any sibling that was open). The quest ring also animates to its
+  //    fraction. Wired once at boot.
+  function wireGlance() {
+    var row = $('glance-row');
+    if (!row) return;
+    var tiles = row.querySelectorAll('.gtile');
+    var cue = $('g-cue');
+    tiles.forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        var pid = tile.getAttribute('data-panel');
+        var panel = document.getElementById(pid);
+        var wasOpen = panel && !panel.hidden;
+        // close all panels + clear active states
+        tiles.forEach(function (t) {
+          t.classList.remove('on');
+          var p = document.getElementById(t.getAttribute('data-panel'));
+          if (p) p.hidden = true;
+        });
+        if (panel && !wasOpen) {
+          panel.hidden = false;
+          tile.classList.add('on');
+          if (cue) cue.classList.add('hidden');
+        } else if (cue) {
+          cue.classList.remove('hidden');
+        }
+      });
     });
   }
 
@@ -1025,6 +1163,16 @@
     host.appendChild(foot);
     var cEl = $('quest-count');
     if (cEl) cEl.textContent = doneCount + '/' + quests.length;
+    // Glance tile: number + ring fraction.
+    var gNum = $('g-quest-num'); if (gNum) gNum.textContent = doneCount + '/' + quests.length;
+    var ring = $('g-quest-ring');
+    if (ring) {
+      var CIRC = 2 * Math.PI * 15;   // r=15
+      var frac = quests.length ? doneCount / quests.length : 0;
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        ring.style.strokeDashoffset = (CIRC * (1 - frac)).toFixed(2);
+      }); });
+    }
   }
 
   // ── COLLECTION (P4): the real badge wall. Earned badges (bright) float to the
@@ -1058,12 +1206,22 @@
       var el = document.createElement('div');
       el.className = 'badge' + (got ? ' earned' : '') + (isNext ? ' next' : '');
       el.setAttribute('title', b.name + ' — ' + b.desc);
+      // Always show the badge's NAME + what it takes (b.desc) — even locked — so
+      // the learner can see every prize and how to earn it (the curiosity gap).
       el.innerHTML = '<span class="badge-ico">' + b.icon + '</span>' +
-        '<span class="badge-name">' + (got ? b.name : (isNext ? b.name : '???')) + '</span>';
+        '<span class="badge-name">' + b.name + '</span>' +
+        '<span class="badge-req">' + b.desc + '</span>';
       wall.appendChild(el);
     });
     var cEl = $('badge-count');
     if (cEl) cEl.textContent = res.count + ' / ' + res.total + ' badges';
+    // Glance tile: cluster of up to 3 earned icons (or a single lock-in prompt).
+    var gNum = $('g-badge-num'); if (gNum) gNum.textContent = res.count;
+    var gCl = $('g-cluster');
+    if (gCl) {
+      var firstEarned = earned.slice(0, 3).map(function (b) { return b.icon; }).join('');
+      gCl.textContent = firstEarned || '🔒';
+    }
     var nEl = $('badge-note');
     if (nEl) {
       if (res.count === 0) nEl.innerHTML = '<b>Your collection starts now.</b> Play a round to earn your first badge.';
@@ -1093,8 +1251,9 @@
     renderToday(rec, per);
     renderQuests(events);
     renderMomentum(active, events);
-    renderMapBars(events);
+    renderJourney(events);
     renderBadgeWall(active);
+    wireGlance();
     // P5: cascaded section pop-in on load (reduced-motion safe via CSS).
     requestAnimationFrame(function () { studioEl.classList.add('pop'); });
   });
