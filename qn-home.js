@@ -168,14 +168,10 @@
       }
     }
 
-    // status meta: streak (only if >0) + weekly goal
-    var st   = streakFromEvents(eventsFor(prof.id));
-    var wk   = weekDayCountFromEvents(eventsFor(prof.id));
-    var goal = prof.practiceGoal || 5;
-    var bits = [];
-    if (st.current > 0) bits.push('🔥 ' + st.current + '-day streak');
-    bits.push('◷ ' + Math.min(wk, goal) + '/' + goal + ' this week');
-    if (metaEl) metaEl.textContent = bits.join('  ·  ');
+    // Streak + weekly goal intentionally NOT shown here — they live in the
+    // Studio glance row just below, so repeating them on the masthead is
+    // redundant. The masthead stays focused on level/rank/XP. (Studio QA, 2026.)
+    if (metaEl) metaEl.textContent = '';
 
     // ring + xp bar fill (animate unless reduced-motion / first paint)
     var target = Math.max(0, Math.min(1, s.pct));

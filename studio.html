@@ -367,6 +367,9 @@
   .jdot.bronze { background: #CD7F32; }
   .jdot.started { background: var(--teal-lt); border: 1.5px solid var(--teal); }
   .jdot.none { background: #e8e3d6; }
+  .j-key { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; margin-top: 11px; }
+  .j-key .jk { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-soft); font-weight: 600; }
+  .j-key .jdot { width: 9px; height: 9px; }
   .j-cue { text-align: center; font-size: 11px; color: var(--ink-faint); font-weight: 700; margin-top: 9px; }
 
   /* ---- Jump ahead (standalone CTA) ---- */
@@ -484,23 +487,6 @@
       </div>
     </div>
 
-    <!-- NEXT BEAT -->
-    <div class="sec">
-      <div class="eyebrow"><span aria-hidden="true">✦</span> <span id="eyebrow-text">Your next beat</span></div>
-      <div class="today" id="today-card">
-        <div class="today-l">
-          <span class="today-tag" id="today-tag">Next up</span>
-          <div class="today-h" id="today-title">—</div>
-          <div class="today-why" id="today-why">—</div>
-          <div class="today-meta" id="today-meta"></div>
-          <div class="today-actions">
-            <button class="btn big" id="start-btn">Start →</button>
-            <button class="btn ghost" id="else-btn">Something else</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- GLANCE ROW: Quests · Momentum · Collection (mini-viz, tap to expand) -->
     <div class="sec">
       <div class="glance" id="glance-row">
@@ -553,6 +539,23 @@
       </div></div>
     </div>
 
+    <!-- NEXT BEAT (the primary action, below the glance row) -->
+    <div class="sec">
+      <div class="eyebrow"><span aria-hidden="true">✦</span> <span id="eyebrow-text">Play your next beat</span></div>
+      <div class="today" id="today-card">
+        <div class="today-l">
+          <span class="today-tag" id="today-tag">Next up</span>
+          <div class="today-h" id="today-title">—</div>
+          <div class="today-why" id="today-why">—</div>
+          <div class="today-meta" id="today-meta"></div>
+          <div class="today-actions">
+            <button class="btn big" id="start-btn">Start →</button>
+            <button class="btn ghost" id="else-btn">Something else</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- JOURNEY: tier bars fold open to reveal each tier's modules -->
     <div class="sec">
       <div class="sec-h">
@@ -560,8 +563,15 @@
         <a class="sec-link" href="dashboard.html">Full progress &amp; sharing →</a>
       </div>
       <div class="journey" id="journey"></div>
+      <div class="j-key" aria-hidden="true">
+        <span class="jk"><span class="jdot gold"></span>gold</span>
+        <span class="jk"><span class="jdot silver"></span>silver</span>
+        <span class="jk"><span class="jdot bronze"></span>bronze</span>
+        <span class="jk"><span class="jdot started"></span>started</span>
+        <span class="jk"><span class="jdot none"></span>not yet</span>
+      </div>
       <div class="j-cue">tap a tier to see its modules ▾</div>
-      <div class="banner"><b>Your path guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.</div>
+      <div class="banner"><b>Your journey guides; practice never locks.</b> Every module is open whenever you want it — the path just shows what's next.</div>
     </div>
 
     <!-- JUMP AHEAD (stands alone — the journey pills are the per-module links now) -->
@@ -1253,7 +1263,7 @@
     var events = QN.events.query(active.id) || [];
     var per = rollup(events);
 
-    $('eyebrow-text').textContent = 'Your next beat, ' + active.nickname;
+    $('eyebrow-text').textContent = 'Play your next beat, ' + active.nickname;
     var studioEl = $('state-studio');
     studioEl.hidden = false;
     renderStory(active, events);
