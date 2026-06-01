@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<!-- Return-user fast redirect — BLOCKING, before any paint, so a learner with a
+     profile never sees a flash of this marketing page before going to My Studio.
+     Reads the raw active-profile key directly (qn-profile.js loads later). Honors
+     ?stay (brand logo / deliberate visit) and uses replace() so Back doesn't bounce.
+     The deferred init() below is a backstop if this is ever skipped. -->
+<script>
+  (function () {
+    try {
+      if (/[?&]stay\b/.test(location.search)) return;
+      if (localStorage.getItem('qn_activeProfile')) location.replace('studio.html');
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>QuizNote — Music theory practice that follows how it's taught</title>
 <meta name="description" content="Supplementary music theory practice from first notes through intermediate — built to match how teachers actually teach it. Short rounds, real fluency. Try a real question now." />
