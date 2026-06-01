@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuizNote splash — 5 ideas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0;--ink:#2A2A3E;--ink-soft:#5a5a6e;--ink-faint:#8a8472;
+    --teal:#1FB8A8;--teal-dk:#0e8475;--teal-lt:#d3f1ec;--sun:#FFB627;--sun-dk:#c98800;--sun-lt:#fff3cc;
+    --grape:#5B3FE4;--grape-dk:#3d28a8;--grape-lt:#ede8ff;--white:#fff;--shadow-cool:#d8d6cc;--rank-gold:#E6B422;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--cream);color:var(--ink);font-family:'Nunito',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
+  .wrap{max-width:440px;margin:0 auto;padding:18px 14px 50px;}
+  h1{font-family:'Fredoka';font-size:20px;margin:0 0 4px;}
+  .lede{font-size:13px;color:var(--ink-soft);margin:0 0 16px;line-height:1.45;}
+  .opt-bar{font-family:'Fredoka';font-weight:700;font-size:13px;color:#fff;background:var(--ink);padding:9px 14px;border-radius:11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;margin-bottom:5px;}
+  .opt-bar:active{transform:translateY(2px);}
+  .opt-desc{font-size:12px;color:var(--ink-soft);padding:0 6px 16px;line-height:1.4;}
+  .play{font-family:'Fredoka';font-weight:700;font-size:11px;color:var(--teal-lt);}
+
+  /* === shared splash shell === */
+  .splash{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    opacity:0;pointer-events:none;transition:opacity .5s ease;}
+  .splash.show{opacity:1;pointer-events:auto;}
+  .splash .skip{position:absolute;top:18px;right:20px;font-size:12px;font-weight:700;opacity:.7;background:none;border:none;cursor:pointer;}
+  .splash .foot{position:absolute;bottom:34px;font-size:11px;opacity:.6;}
+
+  /* QuizNote logo lockup (the "branded icon") */
+  .qn-mark{width:84px;height:84px;border-radius:22px;display:flex;align-items:center;justify-content:center;
+    font-size:42px;box-shadow:0 8px 24px rgba(42,42,62,.22);margin-bottom:18px;}
+  .qn-word{font-family:'Fredoka';font-weight:700;font-size:30px;letter-spacing:-.02em;}
+  .qn-word .n{}
+
+  /* 1 — CLEAN BRAND (light) */
+  #s1{background:var(--cream);color:var(--ink);}
+  #s1 .qn-mark{background:linear-gradient(135deg,var(--teal),var(--teal-dk));color:#fff;}
+  #s1 .qn-word .n{color:var(--teal);}
+  #s1 .sub{font-size:14px;color:var(--ink-soft);margin-top:6px;}
+  #s1 .qn-mark{animation:popMark .6s cubic-bezier(.34,1.56,.64,1) both;}
+  #s1.show .qn-word{animation:fadeUp .5s ease .15s both;}
+  #s1.show .sub{animation:fadeUp .5s ease .28s both;}
+
+  /* 2 — GRADIENT HERO + RING (premium, your #2 evolved) */
+  #s2{background:linear-gradient(150deg,var(--grape),var(--teal));color:#fff;}
+  #s2 .qn-mark{background:rgba(255,255,255,.16);color:#fff;backdrop-filter:blur(4px);}
+  #s2 .ring{position:relative;width:120px;height:120px;margin-bottom:18px;}
+  #s2 .ring svg{transform:rotate(-90deg);}
+  #s2 .ring .lvl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;font-size:44px;}
+  #s2 h2{font-family:'Fredoka';font-weight:700;font-size:28px;margin:0 0 4px;}
+  #s2 p{font-size:14px;opacity:.92;margin:0;}
+  #s2.show .ring{animation:popMark .6s cubic-bezier(.34,1.56,.64,1) both;}
+  #s2.show h2{animation:fadeUp .5s ease .2s both;}
+  #s2.show p{animation:fadeUp .5s ease .32s both;}
+
+  /* 3 — DARK STAGE + GLOWING NOTE (sleek/app-like) */
+  #s3{background:radial-gradient(circle at 50% 38%,#3a3a55,#23233a 70%);color:#fff;}
+  #s3 .qn-mark{background:linear-gradient(135deg,var(--teal),var(--grape));color:#fff;box-shadow:0 0 50px rgba(31,184,168,.55);}
+  #s3 .qn-word{color:#fff;}#s3 .qn-word .n{color:var(--teal);}
+  #s3 .sub{font-size:13px;opacity:.7;margin-top:8px;letter-spacing:.04em;}
+  #s3 .bar{width:140px;height:4px;border-radius:99px;background:rgba(255,255,255,.15);margin-top:22px;overflow:hidden;}
+  #s3 .bar i{display:block;height:100%;width:0;background:var(--teal);border-radius:99px;}
+  #s3.show .bar i{animation:load 1.4s ease both;}
+  #s3.show .qn-mark{animation:glowPulse 1.6s ease-in-out infinite,popMark .6s cubic-bezier(.34,1.56,.64,1) both;}
+
+  /* 4 — STAFF SWEEP (musical signature) */
+  #s4{background:var(--cream);color:var(--ink);overflow:hidden;}
+  #s4 .staff{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:120px;opacity:.5;}
+  #s4 .staff line{stroke:var(--ink-faint);stroke-width:1.5;}
+  #s4 .note{font-family:'Fredoka';}
+  #s4 .qn-mark{background:linear-gradient(135deg,var(--sun),var(--sun-dk));color:#fff;position:relative;z-index:2;}
+  #s4 .qn-word{position:relative;z-index:2;}#s4 .qn-word .n{color:var(--teal);}
+  #s4 .sub{position:relative;z-index:2;font-size:13px;color:var(--ink-soft);margin-top:6px;}
+  #s4 .sweep{position:absolute;top:0;bottom:0;width:60%;background:linear-gradient(90deg,transparent,rgba(31,184,168,.18),transparent);transform:translateX(-120%);}
+  #s4.show .sweep{animation:sweep 1.3s ease .2s both;}
+  #s4.show .qn-mark{animation:popMark .6s cubic-bezier(.34,1.56,.64,1) both;}
+
+  /* 5 — CONFETTI WELCOME (celebratory, branded) */
+  #s5{background:linear-gradient(160deg,var(--sun-lt),var(--teal-lt));color:var(--ink);}
+  #s5 .qn-mark{background:#fff;color:var(--teal-dk);border:3px solid var(--ink);box-shadow:0 6px 0 var(--shadow-cool);}
+  #s5 h2{font-family:'Fredoka';font-weight:700;font-size:26px;margin:6px 0 4px;}
+  #s5 p{font-size:14px;color:var(--ink-soft);margin:0;}
+  #s5 .conf{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  #s5 .c{position:absolute;top:42%;left:50%;font-size:18px;opacity:0;}
+  #s5.show .c{animation:burst 1.2s ease-out forwards;}
+  #s5.show .qn-mark{animation:popMark .6s cubic-bezier(.34,1.56,.64,1) both;}
+  #s5.show h2{animation:fadeUp .5s ease .25s both;}
+
+  @keyframes popMark{0%{opacity:0;transform:scale(.6);}60%{transform:scale(1.08);}100%{opacity:1;transform:scale(1);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  @keyframes load{from{width:0;}to{width:100%;}}
+  @keyframes glowPulse{0%,100%{box-shadow:0 0 40px rgba(31,184,168,.4);}50%{box-shadow:0 0 64px rgba(31,184,168,.7);}}
+  @keyframes sweep{to{transform:translateX(200%);}}
+  @keyframes burst{0%{opacity:0;transform:translate(0,0) scale(.5);}15%{opacity:1;}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1);}}
+  @media (prefers-reduced-motion:reduce){ .splash *{animation:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>QuizNote splash — 5 ideas</h1>
+  <p class="lede">App-launch splash for return users (skips the marketing index). Each shows ~2s then fades into My Studio. Tap a bar to <b>play the full splash</b> (tap it / Skip to clear). All carry the QuizNote mark; some fold in the level ring from your old #2.</p>
+
+  <div class="opt-bar" data-s="1"><span>1 · Clean brand</span><span class="play">▶ play</span></div>
+  <div class="opt-desc">Logo mark springs in, wordmark + tagline fade up. Calm, premium, fast. The safe Apple-style launch screen. Light cream.</div>
+
+  <div class="opt-bar" data-s="2"><span>2 · Gradient hero + level ring</span><span class="play">▶ play</span></div>
+  <div class="opt-desc">Your #2, splashier: teal→grape gradient, the animated level ring (3), "Welcome back, Panda · 137 XP to Lvl 4". Most personal + ceremonial.</div>
+
+  <div class="opt-bar" data-s="3"><span>3 · Dark stage + glowing note</span><span class="play">▶ play</span></div>
+  <div class="opt-desc">Dark radial backdrop, the mark glows + pulses, a loading bar sweeps. Sleekest / most "real app boot". Great on OLED.</div>
+
+  <div class="opt-bar" data-s="4"><span>4 · Staff sweep</span><span class="play">▶ play</span></div>
+  <div class="opt-desc">A music staff with a light sweep crossing it behind the mark — a musical signature unique to QuizNote. Brand-distinctive.</div>
+
+  <div class="opt-bar" data-s="5"><span>5 · Confetti welcome</span><span class="play">▶ play</span></div>
+  <div class="opt-desc">Branded chunky mark + music-note confetti + "Welcome back!". Warmest / most playful — best for kids. Sun→teal wash.</div>
+
+  <p class="lede" style="margin-top:18px;">My lean: <b>#1 daily</b> (fast, never tiresome) → auto-escalate to <b>#2</b> on a milestone (leveled up while away) and <b>#5</b> on a streak-save day. Splash only fires on a fresh app open / first visit of the day — never mid-session.</p>
+</div>
+
+<!-- splashes -->
+<div class="splash" id="s1">
+  <button class="skip" data-close>Skip</button>
+  <div class="qn-mark">🎵</div>
+  <div class="qn-word">Quiz<span class="n">Note</span></div>
+  <div class="sub">Music theory, one beat at a time</div>
+  <div class="foot">v2 · quiznote.online</div>
+</div>
+
+<div class="splash" id="s2">
+  <button class="skip" data-close>Skip</button>
+  <div class="ring"><svg width="120" height="120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="8"/><circle cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="180"/></svg><span class="lvl">3</span></div>
+  <h2>Welcome back, Panda</h2>
+  <p>Level 3 · Beginner · 137 XP to Lvl 4</p>
+  <div class="foot">QuizNote</div>
+</div>
+
+<div class="splash" id="s3">
+  <button class="skip" data-close>Skip</button>
+  <div class="qn-mark">🎵</div>
+  <div class="qn-word">Quiz<span class="n">Note</span></div>
+  <div class="sub">LOADING YOUR STUDIO…</div>
+  <div class="bar"><i></i></div>
+</div>
+
+<div class="splash" id="s4">
+  <button class="skip" data-close>Skip</button>
+  <svg class="staff" viewBox="0 0 440 120" preserveAspectRatio="none"><line x1="0" y1="30" x2="440" y2="30"/><line x1="0" y1="50" x2="440" y2="50"/><line x1="0" y1="70" x2="440" y2="70"/><line x1="0" y1="90" x2="440" y2="90"/></svg>
+  <div class="sweep"></div>
+  <div class="qn-mark">🎵</div>
+  <div class="qn-word">Quiz<span class="n">Note</span></div>
+  <div class="sub">Welcome back, Panda</div>
+</div>
+
+<div class="splash" id="s5">
+  <button class="skip" data-close>Skip</button>
+  <div class="conf" id="s5conf"></div>
+  <div class="qn-mark">🎵</div>
+  <h2>Welcome back!</h2>
+  <p>Good to see you, Panda</p>
+</div>
+
+<script>
+  var t=null;
+  function clearAll(){document.querySelectorAll('.splash').forEach(function(s){s.classList.remove('show');});if(t){clearTimeout(t);t=null;}}
+  function play(n){
+    clearAll();
+    var el=document.getElementById('s'+n);
+    if(n==='5'){
+      var conf=document.getElementById('s5conf');conf.innerHTML='';var g=['♪','♫','✨','🎵','🌟'];
+      for(var i=0;i<16;i++){var a=Math.PI*2*i/16+(Math.random()-.5)*.4,d=90+Math.random()*70;
+        var s=document.createElement('span');s.className='c';s.textContent=g[i%5];
+        s.style.setProperty('--dx',Math.round(Math.cos(a)*d)+'px');s.style.setProperty('--dy',(Math.round(Math.sin(a)*d)-30)+'px');
+        s.style.animationDelay=(Math.random()*.2).toFixed(2)+'s';conf.appendChild(s);}
+    }
+    void el.offsetWidth;
+    el.classList.add('show');
+    t=setTimeout(clearAll,2400);
+  }
+  document.querySelectorAll('[data-s]').forEach(function(b){b.addEventListener('click',function(){play(b.getAttribute('data-s'));});});
+  document.querySelectorAll('.splash').forEach(function(s){s.addEventListener('click',function(e){ if(e.target.closest('[data-close]')||e.target.classList.contains('splash')) clearAll(); });});
+</script>
+</body>
+</html>
