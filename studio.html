@@ -197,7 +197,10 @@
 
   footer {
     background: white; border-top: 2px solid var(--shadow-cool);
-    padding: 16px 24px; text-align: center;
+    /* extra bottom padding clears the fixed Play bar so the footer is reachable
+       (the bar floats above it when you scroll to the end). */
+    padding: 16px 24px calc(86px + env(safe-area-inset-bottom));
+    text-align: center;
     font-family: 'Nunito', sans-serif; font-size: 13px; color: var(--ink-faint);
     flex-shrink: 0;
   }
@@ -375,13 +378,16 @@
   }
 
   /* ---- Sticky Play bar (Next Beat, always in reach) ---- */
+  /* Cream sticky bar — matches the site's existing .start-bar (module start
+     screens) so it reads as the same furniture, not a foreign dark dock. */
   .play-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 800;
     max-width: 480px; margin: 0 auto;
-    background: var(--ink); border: 2.5px solid var(--ink);
-    border-radius: 16px 16px 0 0; box-shadow: 0 -4px 18px rgba(42,42,62,0.22);
+    background: var(--cream);
+    border-top: 1px solid rgba(42,42,62,0.10);
+    box-shadow: 0 -6px 16px -8px rgba(42,42,62,0.18);
     display: flex; align-items: center; gap: 12px;
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) 16px;
+    padding: 11px 14px calc(13px + env(safe-area-inset-bottom)) 16px;
     /* the bounce: a springy curve so tuck-away + spring-back overshoot slightly */
     transition: transform .36s cubic-bezier(.34,1.56,.64,1);
   }
@@ -391,20 +397,20 @@
   .play-bar .pb-tag {
     display: inline-block; font-family: 'Fredoka', sans-serif; font-weight: 600;
     font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--sun); margin-bottom: 1px;
+    color: var(--sun-dk); margin-bottom: 1px;
   }
-  .play-bar .pb-tag.remediation { color: var(--coral); }
-  .play-bar .pb-tag.review { color: #b9a7ff; }
+  .play-bar .pb-tag.remediation { color: var(--coral-dk); }
+  .play-bar .pb-tag.review { color: var(--grape-dk); }
   .play-bar .pb-title {
-    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; color: #fff;
+    font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; color: var(--ink);
     line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .play-bar .pb-sub {
     display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-    font-size: 10.5px; color: rgba(255,255,255,0.7); margin-top: 2px;
+    font-size: 10.5px; color: var(--ink-faint); margin-top: 2px;
   }
   .play-bar .pb-vpill {
-    background: var(--sun); color: var(--ink);
+    background: var(--sun-lt); color: var(--sun-dk); border: 1px solid var(--sun);
     font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 9px;
     border-radius: 99px; padding: 1px 8px;
   }
@@ -422,7 +428,6 @@
     70% { transform: translateY(-6px); }
     100% { transform: translateY(0); }
   }
-  .play-bar-spacer { height: 70px; }
   @media (prefers-reduced-motion: reduce) {
     .play-bar { transition: none; }
     .play-bar.bounce-in { animation: none; }
@@ -653,7 +658,7 @@
   @media print {
     @page { size: letter; margin: 0.4in 0.55in; }
     body { background:#fff; }
-    nav, footer, .splash, .recap-scrim, .recap-sheet, .play-bar, .play-bar-spacer,
+    nav, footer, .splash, .recap-scrim, .recap-sheet, .play-bar,
     #qn-status-slot, .share-sec, .picker-overlay, .trend-card,
     .sec.dcard.trend-card, #glance-row, .g-cue, .g-panel,
     .sec:has(#glance-row), .sec:has(.journey), .sec:has(.jump-cta) { display:none !important; }
@@ -847,9 +852,6 @@
       </div>
     </div>
 
-    <!-- spacer so the fixed Play bar never covers the last card -->
-    <div class="play-bar-spacer" aria-hidden="true"></div>
-
   </section>
 
   <!-- STICKY PLAY BAR (Next Beat, always in reach). Driven by the recommender.
@@ -935,6 +937,12 @@
 <script defer>
 (function () {
   'use strict';
+
+  // Land at the top on every (re)load — the page height changes between visits
+  // (accordions, recap, splash), which otherwise strands a reload scrolled down.
+  // Same fix proven on play.html.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.addEventListener('load', function () { window.scrollTo(0, 0); });
 
   // ── Module display metadata. Drives titles, tier colors, and the
   //    Practice peek. Keep slugs in sync with the recommender's PATH and
