@@ -8,12 +8,12 @@
      - current-page label fused to a hamburger; the dropdown holds the two
        destinations you're NOT on (current page is the label, omitted from menu).
 
-   Destinations (the only three): Today / All Modules / My Progress.
+   Destinations (the only two): My Studio / All Modules. (My Progress /
+   dashboard.html was retired May 2026 — its content lives in My Studio now.)
 
    Usage (page includes qn-profile.js first, then qn-nav.js, both defer):
-       QNNav.mount({ current: 'today' });            // path.html
+       QNNav.mount({ current: 'studio' });           // studio.html
        QNNav.mount({ current: 'modules' });          // play.html
-       QNNav.mount({ current: 'progress' });         // dashboard.html
        QNNav.mount({ current: null });               // index.html (label "Menu")
    Optional: { slot: '#some-id' } to target a specific mount element;
    defaults to '#qn-nav-slot' then '#profile-chip-slot' (legacy) then
@@ -26,8 +26,7 @@
 
   var DESTS = [
     { key: 'studio',   label: 'My Studio',   href: 'studio.html',    icon: '\u25B6' },
-    { key: 'modules',  label: 'All Modules', href: 'play.html',      icon: '\u266B' },
-    { key: 'progress', label: 'My Progress', href: 'dashboard.html', icon: '\u25D0' }
+    { key: 'modules',  label: 'All Modules', href: 'play.html',      icon: '\u266B' }
   ];
 
   var CSS = [

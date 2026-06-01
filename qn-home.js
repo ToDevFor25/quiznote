@@ -2,14 +2,14 @@
  *
  * Studio P0: the persistent STATUS MASTHEAD. Reads the (already-live) XP engine
  * and the local event log to render identity — Level ring, rank, XP-to-next,
- * streak, and weekly goal — on the hub pages (path.html, dashboard.html), so
+ * streak, and weekly goal — on the hub pages (studio.html), so
  * progression is visible BETWEEN rounds (it was previously only shown inside a
  * round's Beat 1 and vanished on close).
  *
  * Pure read-only over QN.xp / QN.profile / QN.events. No schema, no writes.
  * Load order: AFTER qn-profile.js and qn-xp.js, BEFORE/with qn-nav.js.
  *
- * Streak + week-day math mirror dashboard.html's computeStreak/computeWeekDays
+ * Streak + week-day math mirror the (now-retired) dashboard's computeStreak/computeWeekDays
  * EXACTLY (Sunday-based week; streak counts consecutive days ending today, or
  * yesterday if today is not yet practiced) so the masthead and the dashboard
  * always agree on the same data. (P0 verification gate #2.)
@@ -40,7 +40,7 @@
     return [];
   }
 
-  // Mirror of dashboard.html computeStreak — current streak ending today (or
+  // Mirror of the retired dashboard's computeStreak — current streak ending today (or
   // yesterday if today has no rounds yet), plus longest run.
   function streakFromEvents(events) {
     var days = {};
@@ -62,7 +62,7 @@
     return { current: current, longest: longest };
   }
 
-  // Mirror of dashboard.html computeWeekDays — distinct days practiced in the
+  // Mirror of the retired dashboard's computeWeekDays — distinct days practiced in the
   // current Sunday-started week.
   function weekDayCountFromEvents(events) {
     var today = new Date(); today.setHours(0, 0, 0, 0);
