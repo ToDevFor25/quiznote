@@ -1415,7 +1415,6 @@
     var events = QN.events.query(active.id) || [];
     var per = rollup(events);
 
-    $('eyebrow-text').textContent = 'Play your next beat, ' + active.nickname;
     var studioEl = $('state-studio');
     studioEl.hidden = false;
     renderToday(rec, per);
