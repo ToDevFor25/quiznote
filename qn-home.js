@@ -102,6 +102,13 @@
       '.qn-xpbar-fill{display:block;height:100%;width:0;background:var(--teal,#1FB8A8);border-radius:99px;transition:width 800ms cubic-bezier(.4,0,.2,1);}' +
       ".qn-status-xptext{font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--ink-soft,#5a5a6e);}" +
       ".qn-status-meta{font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--ink-faint,#8a8472);}" +
+      // quiet "?" help door → rewards.html. A help glyph, not a CTA: muted, small,
+      // pinned to the far edge so it never competes with the level/rank or Play.
+      '.qn-status-help{flex:0 0 auto;align-self:flex-start;width:22px;height:22px;border-radius:50%;' +
+        'border:1.5px solid var(--shadow-cool,#d8d6cc);background:transparent;color:var(--ink-faint,#8a8472);' +
+        "font-family:'Fredoka',sans-serif;font-weight:700;font-size:13px;line-height:1;text-decoration:none;" +
+        'display:inline-flex;align-items:center;justify-content:center;transition:background 120ms,color 120ms,border-color 120ms;}' +
+      '.qn-status-help:hover,.qn-status-help:active{background:var(--teal-lt,#d3f1ec);color:var(--teal-dk,#0e8475);border-color:var(--teal,#1FB8A8);}' +
       '@media(max-width:560px){.qn-status{gap:12px;padding:12px 14px;border-radius:16px;}' +
         '.qn-status-ring,.qn-status-ring svg{width:52px;height:52px;}.qn-ring-num{font-size:19px;}.qn-status-rank{font-size:17px;}}' +
       '@media(prefers-reduced-motion:reduce){.qn-ring-fill,.qn-xpbar-fill{transition:none!important;}}';
@@ -131,6 +138,7 @@
           '<span class="qn-status-xptext" id="qn-status-xptext"></span>' +
           '<span class="qn-status-meta" id="qn-status-meta"></span>' +
         '</div>' +
+        '<a class="qn-status-help" href="rewards.html" aria-label="How progress works" title="How progress works">?</a>' +
       '</div>';
   }
 

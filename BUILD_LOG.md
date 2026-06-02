@@ -68,9 +68,18 @@ stay on Dev. (Also fixed mid-session: stop using `git checkout -B Dev origin/Dev
 after committing — it silently discarded a commit twice this session; use
 `git push origin HEAD:Dev` / `HEAD:main` refspec pushes instead.)
 
+**"How it works" discoverability (Jonathan, June 2026):** decided "quiet + deck".
+SHIPPED the quiet part — a small muted **"?" door in the status masthead**
+(`.qn-status-help` in qn-home.js → rewards.html; a help glyph, not a CTA). The
+**deck part** is folded into the adaptive-splash build below (the new-user deck ends
+with "Start my first round →" primary + a quiet "How it all works" → rewards.html).
+Kept the existing footer + Collection-wall links; deliberately did NOT add
+per-section "how it works" links (clutter).
+
 **Still open / next (this thread):**
 1. **Adaptive splash** — build it (with the debug panel), once Jonathan answers
    3-vs-2 deck cards + confetti-vs-calm. Gate it behind `QN.flags.gamification`.
+   **Deck ending must include the quiet "How it all works" → rewards.html link.**
 2. The rest of the segmented-home patterns (2/3/4/7) as desired — guest invite,
    glowing empties, resume hero.
 3. **Mascot** — Tier 3 brand decision, parked.
