@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Studio landing — 10 gaming-industry patterns</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0;--ink:#2A2A3E;--ink-soft:#5a5a6e;--ink-faint:#8a8472;--line:rgba(42,42,62,0.09);
+    --teal:#1FB8A8;--teal-dk:#0e8475;--teal-lt:#d3f1ec;--sun:#FFB627;--sun-dk:#c98800;--sun-lt:#fff3cc;
+    --grape:#5B3FE4;--grape-dk:#3d28a8;--grape-lt:#ede8ff;--coral:#FF6B6B;--white:#fff;--shadow-cool:#d8d6cc;--rank-gold:#E6B422;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#e9e6dc;color:var(--ink);font-family:'Nunito',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
+  .wrap{max-width:460px;margin:0 auto;padding:14px 12px 40px;}
+  h1{font-family:'Fredoka';font-size:19px;margin:0 0 3px;}
+  .lede{font-size:12.5px;color:var(--ink-soft);margin:0 0 12px;line-height:1.45;}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;}
+  .ctl{font-family:'Fredoka';font-weight:600;font-size:11.5px;text-align:left;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;line-height:1.2;}
+  .ctl:active{transform:translateY(1px);}
+  .ctl .n{color:var(--sun);font-weight:700;margin-right:5px;}
+  .ctl.seg{background:var(--grape);}
+  .hint{font-size:11px;color:var(--ink-faint);text-align:center;margin:-6px 0 12px;}
+
+  /* ===== mock Studio phone frame ===== */
+  .phone{position:relative;height:600px;border-radius:26px;overflow:hidden;border:3px solid var(--ink);background:var(--cream);
+    background-image:radial-gradient(circle at 12% 14%,rgba(91,63,228,0.05) 0 140px,transparent 150px),radial-gradient(circle at 88% 72%,rgba(31,184,168,0.06) 0 140px,transparent 150px);}
+  .hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:2px solid var(--shadow-cool);position:relative;z-index:3;}
+  .hdr .brand{font-family:'Fredoka';font-weight:700;font-size:17px;}.hdr .brand span{color:var(--teal);}
+  .hdr .right{display:flex;align-items:center;gap:8px;}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--ink);border-radius:999px;padding:3px 11px 3px 4px;font-family:'Fredoka';font-weight:600;font-size:12px;}
+  .pill .dot{width:18px;height:18px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+  .pill.guest{color:var(--ink-faint);}
+  .menu{background:var(--teal-lt);color:var(--teal-dk);border:2px solid var(--ink);border-radius:10px;padding:5px 10px;font-family:'Fredoka';font-weight:600;font-size:12px;}
+
+  .greet{padding:10px 16px 0;font-family:'Fredoka';font-weight:700;font-size:16px;}
+  .greet .sm{font-family:'Nunito';font-weight:600;font-size:12px;color:var(--ink-soft);display:block;}
+  .body{padding:12px 14px 90px;height:100%;overflow:auto;}
+
+  .mhead{display:flex;align-items:center;gap:13px;background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--shadow-cool);padding:12px 14px;margin-bottom:12px;}
+  .ring{width:48px;height:48px;border-radius:50%;border:5px solid var(--teal-lt);border-top-color:var(--teal);display:flex;align-items:center;justify-content:center;font-family:'Fredoka';font-weight:700;font-size:18px;flex:none;}
+  .mhead .id b{font-family:'Fredoka';font-size:15px;}.mhead .id .x{font-size:11px;color:var(--ink-faint);font-weight:700;}
+
+  .glance{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+  .gt{background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--shadow-cool);padding:11px 6px;text-align:center;position:relative;}
+  .gt .ico{font-size:20px;}.gt .num{font-family:'Fredoka';font-weight:700;font-size:18px;}.gt .lab{font-size:9.5px;color:var(--ink-faint);font-weight:700;}
+  .sec-t{font-family:'Fredoka';font-weight:700;font-size:14px;margin:4px 0 8px;}
+  .jbar{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .jbar .nm{font-family:'Fredoka';font-weight:600;font-size:12px;width:78px;flex:none;}
+  .jtrack{flex:1;height:9px;border-radius:99px;background:#efeadd;overflow:hidden;}.jfill{height:100%;background:var(--sun);border-radius:99px;}
+
+  .playbar{position:absolute;left:0;right:0;bottom:0;background:var(--cream);border-top:1px solid rgba(42,42,62,.1);box-shadow:0 -6px 16px -8px rgba(42,42,62,.18);padding:11px 14px 14px 16px;display:flex;align-items:center;gap:12px;z-index:4;}
+  .playbar::before{content:"";position:absolute;left:0;right:0;top:-22px;height:22px;background:linear-gradient(to top,var(--cream) 18%,transparent);pointer-events:none;}
+  .playbar .l{flex:1;min-width:0;}.playbar .eb{font-family:'Fredoka';font-weight:600;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--sun-dk);}
+  .playbar .ti{font-family:'Fredoka';font-weight:700;font-size:15px;}.playbar .sub{font-size:10px;color:var(--ink-faint);}
+  .playbar .go{background:var(--teal);color:#fff;font-family:'Fredoka';font-weight:700;font-size:14px;border:none;border-radius:12px;padding:10px 18px;box-shadow:0 3px 0 var(--teal-dk);}
+
+  /* states: blank / glow */
+  .gt.blank .num,.gt.blank .ico{opacity:.25;}
+  .gt.glow{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-lt),0 4px 0 var(--shadow-cool);animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--teal-lt),0 4px 0 var(--shadow-cool);}50%{box-shadow:0 0 0 6px var(--teal-lt),0 4px 0 var(--shadow-cool);}}
+  .empty-tip{font-size:10px;color:var(--teal-dk);font-weight:700;text-align:center;margin-top:3px;}
+
+  /* ===== overlays ===== */
+  .ov{position:absolute;inset:0;z-index:20;opacity:0;pointer-events:none;transition:opacity .3s;}
+  .ov.show{opacity:1;pointer-events:auto;}
+  .ov .skip{position:absolute;top:12px;right:16px;font-size:12px;font-weight:700;background:none;border:none;color:#fff;cursor:pointer;z-index:3;}
+
+  /* 1 deck */
+  .deck{background:linear-gradient(160deg,var(--grape),var(--teal));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:30px;}
+  .deck .card-ico{font-size:54px;margin-bottom:14px;}
+  .deck h2{font-family:'Fredoka';font-size:24px;margin:0 0 8px;}
+  .deck p{font-size:14px;opacity:.92;max-width:280px;margin:0 0 22px;line-height:1.5;}
+  .deck .dots{display:flex;gap:8px;margin-bottom:18px;}.deck .d{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);}.deck .d.on{background:#fff;}
+  .deck .cta{background:#fff;color:var(--grape-dk);font-family:'Fredoka';font-weight:700;font-size:16px;border:none;border-radius:14px;padding:13px 36px;}
+
+  /* 5 daily reward / 7 guest after-win (bottom sheets) */
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(135deg,var(--sun-lt),var(--teal-lt));border:2.5px solid var(--ink);border-bottom:none;border-radius:22px 22px 0 0;padding:18px 22px 24px;text-align:center;transform:translateY(110%);transition:transform .34s cubic-bezier(.34,1.4,.64,1);z-index:21;}
+  .sheet.show{transform:none;}
+  .sheet .ico{font-size:38px;}.sheet h3{font-family:'Fredoka';font-size:20px;margin:6px 0 4px;}.sheet p{font-size:13px;color:var(--ink-soft);margin:0 0 12px;}
+  .sheet .cta{background:var(--teal);color:#fff;font-family:'Fredoka';font-weight:700;font-size:15px;border:2.5px solid var(--ink);border-radius:13px;padding:11px 26px;box-shadow:0 3px 0 var(--ink);}
+  .sheet .x{position:absolute;top:10px;right:14px;width:26px;height:26px;border:none;background:rgba(255,255,255,.5);border-radius:50%;font-size:16px;}
+
+  /* 8 coach spotlight */
+  .coach{background:rgba(42,42,62,.72);}
+  .coach .tip{position:absolute;top:150px;left:20px;right:20px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 5px 0 var(--shadow-cool);padding:14px 16px;}
+  .coach .tip b{font-family:'Fredoka';}.coach .tip p{font-size:13px;margin:4px 0 10px;color:var(--ink-soft);}
+  .coach .tip .nx{background:var(--teal);color:#fff;font-family:'Fredoka';font-weight:700;font-size:13px;border:none;border-radius:10px;padding:8px 18px;}
+  .coach .tip::before{content:"";position:absolute;top:-12px;left:40px;border:6px solid transparent;border-bottom-color:var(--ink);}
+
+  /* 9 mascot */
+  .mascot{pointer-events:none;}
+  .mascot .who{position:absolute;bottom:84px;left:14px;display:flex;align-items:flex-end;gap:8px;pointer-events:auto;}
+  .mascot .face{font-size:46px;}
+  .mascot .bub{background:#fff;border:2.5px solid var(--ink);border-radius:14px;box-shadow:0 4px 0 var(--shadow-cool);padding:10px 13px;font-size:13px;max-width:210px;line-height:1.4;position:relative;}
+  .mascot .bub b{font-family:'Fredoka';}
+
+  /* 4 resume hero / 6 milestone (inline injected) */
+  .inject{margin-bottom:12px;}
+  .resume{background:linear-gradient(120deg,var(--grape),var(--teal));color:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--shadow-cool);padding:16px;display:flex;align-items:center;gap:14px;}
+  .resume .big{flex:1;}.resume .eb{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.85;text-transform:uppercase;}
+  .resume h3{font-family:'Fredoka';font-size:20px;margin:2px 0 2px;}.resume .sub{font-size:12px;opacity:.9;}
+  .resume .go{background:#fff;color:var(--grape-dk);font-family:'Fredoka';font-weight:700;font-size:16px;border:none;border-radius:13px;padding:13px 20px;}
+  .miles{background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--shadow-cool);padding:14px 16px;}
+  .miles .top{display:flex;justify-content:space-between;align-items:baseline;}
+  .miles b{font-family:'Fredoka';font-size:14px;}.miles .to{font-family:'Fredoka';font-weight:700;font-size:13px;color:var(--teal-dk);}
+  .miles .track{height:12px;border-radius:99px;background:#efeadd;overflow:hidden;margin-top:9px;position:relative;}
+  .miles .fill{height:100%;width:68%;background:linear-gradient(90deg,var(--teal),var(--sun));border-radius:99px;}
+  .miles .shine{position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.6) 50%,transparent 60%);transform:translateX(-100%);animation:sh 2.4s ease-in-out infinite;}
+  @keyframes sh{to{transform:translateX(220%);}}
+
+  /* 7 guest banner */
+  .guestban{background:var(--sun-lt);border:2px solid var(--sun);border-radius:13px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:var(--sun-dk);}
+  .guestban .save{margin-left:auto;background:var(--ink);color:#fff;font-family:'Fredoka';font-weight:700;font-size:12px;border:none;border-radius:9px;padding:7px 12px;white-space:nowrap;}
+
+  .activelabel{text-align:center;font-family:'Fredoka';font-weight:700;font-size:12px;color:var(--grape-dk);margin:10px 0 4px;min-height:16px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Studio landing — 10 gaming-industry patterns</h1>
+  <p class="lede">Tap a pattern to preview it live on the mock Studio below. Each maps to a real games/app standard. <b>#10 is the meta-answer</b> — tap it to flip the whole home between Guest / New / Returning states.</p>
+
+  <div class="controls">
+    <button class="ctl" data-p="1"><span class="n">1</span>Onboarding deck</button>
+    <button class="ctl" data-p="2"><span class="n">2</span>Empty = invitation</button>
+    <button class="ctl" data-p="3"><span class="n">3</span>Welcome-back greeting</button>
+    <button class="ctl" data-p="4"><span class="n">4</span>Resume hero (big PLAY)</button>
+    <button class="ctl" data-p="5"><span class="n">5</span>Daily-return reward</button>
+    <button class="ctl" data-p="6"><span class="n">6</span>Milestone nudge</button>
+    <button class="ctl" data-p="7"><span class="n">7</span>Guest play→signup</button>
+    <button class="ctl" data-p="8"><span class="n">8</span>Coach-mark tour</button>
+    <button class="ctl" data-p="9"><span class="n">9</span>Mascot guide</button>
+    <button class="ctl seg" data-p="10"><span class="n">10</span>Segmented home ⟳</button>
+  </div>
+  <div class="hint">tap any pattern · tap “reset” to clear</div>
+  <div class="activelabel" id="active"></div>
+
+  <div class="phone" id="phone">
+    <div class="hdr">
+      <span class="brand">Quiz<span>Note</span></span>
+      <div class="right" id="hdr-right">
+        <span class="pill" id="pill"><span class="dot">J</span>Jordan</span>
+        <span class="menu">My Studio ☰</span>
+      </div>
+    </div>
+    <div class="greet" id="greet" style="display:none;"></div>
+    <div class="body" id="body">
+      <div class="inject" id="inject"></div>
+      <div class="mhead" id="mhead"><div class="ring" id="ring">3</div><div class="id"><b id="rank">Player · Level 3</b><div class="x" id="toNext">240 XP to Musician</div></div></div>
+      <div class="glance" id="glance">
+        <div class="gt" id="g1"><div class="ico">🎯</div><div class="num">2/3</div><div class="lab">QUESTS</div></div>
+        <div class="gt" id="g2"><div class="ico">🔥</div><div class="num">7</div><div class="lab">STREAK</div></div>
+        <div class="gt" id="g3"><div class="ico">🏅</div><div class="num">9</div><div class="lab">BADGES</div></div>
+      </div>
+      <div class="sec-t">Your journey</div>
+      <div class="jbar"><span class="nm">Foundations</span><span class="jtrack"><span class="jfill" style="width:50%"></span></span></div>
+      <div class="jbar"><span class="nm">Reading</span><span class="jtrack"><span class="jfill" style="width:0%"></span></span></div>
+      <div class="jbar"><span class="nm">Theory</span><span class="jtrack"><span class="jfill" style="width:0%"></span></span></div>
+    </div>
+    <div class="playbar" id="playbar"><div class="l"><div class="eb">Play next</div><div class="ti">Note Names · Medium</div><div class="sub">10 questions</div></div><button class="go">Play →</button></div>
+
+    <!-- OVERLAYS -->
+    <div class="ov deck" id="ov-deck">
+      <button class="skip" data-close>Skip</button>
+      <div class="card-ico" id="deck-ico">🎵</div>
+      <h2 id="deck-h">Welcome to QuizNote</h2>
+      <p id="deck-p">Short rounds that build real music-theory fluency — see the note, name it, fast.</p>
+      <div class="dots"><span class="d on" id="dd0"></span><span class="d" id="dd1"></span><span class="d" id="dd2"></span></div>
+      <button class="cta" id="deck-cta">Next →</button>
+    </div>
+
+    <div class="ov coach" id="ov-coach">
+      <button class="skip" data-close>Skip tour</button>
+      <div class="tip"><b>This is your next round 🎯</b><p>QuizNote always picks the best thing to practice next. Tap Play to start — that's all you need to do.</p><button class="nx" data-close>Got it →</button></div>
+    </div>
+
+    <div class="ov mascot" id="ov-mascot">
+      <div class="who"><span class="face">🦉</span><span class="bub"><b>Hi, I'm Quill!</b> Tap <b>Play</b> and I'll pick the perfect round for you. Let's earn your first badge!</span></div>
+    </div>
+
+    <div class="sheet" id="sh-daily"><button class="x" data-close>×</button><div class="ico">🎁</div><h3>Day 2 — welcome back!</h3><p>You're on a roll, Jordan. Here's <b>+20 XP</b> for showing up.</p><button class="cta" data-close>Claim & play →</button></div>
+    <div class="sheet" id="sh-guest"><button class="x" data-close>×</button><div class="ico">🌟</div><h3>Nice — you nailed it!</h3><p>Save your progress so your streak and badges stick around.</p><button class="cta" data-close>Create my profile →</button></div>
+  </div>
+
+  <p class="lede" style="margin-top:16px;">Reply with the numbers you like (you can mix — e.g. “10 as the frame, with 2 + 4 + 7”). I'll wire the winner into studio.html, gated so each piece only shows for the right user state.</p>
+</div>
+
+<script>
+  var phone=document.getElementById('phone');
+  var ids=['ov-deck','ov-coach','ov-mascot','sh-daily','sh-guest'];
+  function clearAll(){
+    ids.forEach(function(id){document.getElementById(id).classList.remove('show');});
+    document.getElementById('inject').innerHTML='';
+    document.getElementById('greet').style.display='none';
+    document.getElementById('guestbanWrap')&&0;
+    // reset glance
+    ['g1','g2','g3'].forEach(function(id){var g=document.getElementById(id);g.classList.remove('blank','glow');var t=g.querySelector('.empty-tip');if(t)t.remove();});
+    // reset header to returning
+    setState('returning',true);
+    document.getElementById('active').textContent='';
+  }
+  function show(id){document.getElementById(id).classList.add('show');}
+
+  function setGreet(html){var g=document.getElementById('greet');g.innerHTML=html;g.style.display='block';}
+  function setEmpty(){['g1','g2','g3'].forEach(function(id){var g=document.getElementById(id);g.classList.add('blank');});
+    var g1=document.getElementById('g1');g1.classList.add('glow');g1.classList.remove('blank');
+    var tip=document.createElement('div');tip.className='empty-tip';tip.textContent='play to start ↑';g1.appendChild(tip);
+    document.getElementById('ring').textContent='1';document.getElementById('rank').textContent='Beginner · Level 1';document.getElementById('toNext').textContent='Play your first round to begin';
+    ['g2','g3'].forEach(function(id){document.getElementById(id).querySelector('.num').textContent='0';});
+  }
+  function inject(html){document.getElementById('inject').innerHTML=html;}
+
+  // segmented states
+  function setState(state,silent){
+    var pill=document.getElementById('pill');var greet=document.getElementById('greet');
+    document.getElementById('inject').innerHTML='';
+    ['g1','g2','g3'].forEach(function(id){var g=document.getElementById(id);g.classList.remove('blank','glow');var t=g.querySelector('.empty-tip');if(t)t.remove();});
+    if(state==='guest'){
+      pill.className='pill guest';pill.innerHTML='<span class="dot" style="background:#e8e3d6;color:#8a8472">○</span>Guest';
+      setEmpty();
+      inject('<div class="guestban">👋 You\'re exploring as a guest <button class="save">Save my progress</button></div>'+
+             '<div class="resume"><div class="big"><div class="eb">Start here</div><h3>Try your first round</h3><div class="sub">No signup needed — see how it feels.</div></div><button class="go">Play →</button></div>');
+      greet.style.display='none';
+      if(!silent)document.getElementById('active').textContent='Pattern 10 · GUEST — value + try-it + earn the signup';
+    } else if(state==='new'){
+      pill.className='pill';pill.innerHTML='<span class="dot">J</span>Jordan';
+      setEmpty();
+      setGreet('Welcome, Jordan! 🎵<span class="sm">Your journey starts with one round.</span>');
+      inject('<div class="resume"><div class="big"><div class="eb">Your first beat</div><h3>Note Names · Easy</h3><div class="sub">A 2-minute round to light up your Studio.</div></div><button class="go">Play →</button></div>');
+      if(!silent)document.getElementById('active').textContent='Pattern 10 · NEW — greeting + glowing empties + first-round hero';
+    } else { // returning
+      pill.className='pill';pill.innerHTML='<span class="dot">J</span>Jordan';
+      document.getElementById('ring').textContent='3';document.getElementById('rank').textContent='Player · Level 3';document.getElementById('toNext').textContent='240 XP to Musician';
+      ['g1','g2','g3'].forEach(function(id,i){document.getElementById(id).querySelector('.num').textContent=['2/3','7','9'][i];});
+      greet.style.display='none';
+      if(!silent)document.getElementById('active').textContent='Pattern 10 · RETURNING — the current Studio (lean, power-user)';
+    }
+  }
+
+  var deckStep=0;
+  var deckContent=[
+    {ico:'🎵',h:'Welcome to QuizNote',p:'Short rounds that build real music-theory fluency — see the note, name it, fast.'},
+    {ico:'🏅',h:'Earn as you learn',p:'XP, levels, streaks and badges turn practice into a game you\'ll want to come back to.'},
+    {ico:'🎯',h:'We pick what\'s next',p:'No guessing what to study — QuizNote always serves your best next round. Ready?'}
+  ];
+  function renderDeck(){var c=deckContent[deckStep];document.getElementById('deck-ico').textContent=c.ico;document.getElementById('deck-h').textContent=c.h;document.getElementById('deck-p').textContent=c.p;
+    [0,1,2].forEach(function(i){document.getElementById('dd'+i).classList.toggle('on',i===deckStep);});
+    document.getElementById('deck-cta').textContent=deckStep<2?'Next →':'Start playing →';}
+  document.getElementById('deck-cta').addEventListener('click',function(){if(deckStep<2){deckStep++;renderDeck();}else{clearAll();}});
+
+  var actLabels={1:'Pattern 1 · Onboarding deck (swipeable, skippable, shown once)',2:'Pattern 2 · Empty states as glowing invitations',3:'Pattern 3 · Persistent Welcome-back greeting',4:'Pattern 4 · Resume hero — one giant PLAY up top',5:'Pattern 5 · Daily-return reward sheet',6:'Pattern 6 · Next-milestone “almost there” nudge',7:'Pattern 7 · Guest plays first, signup after a win',8:'Pattern 8 · Coach-mark spotlight tour',9:'Pattern 9 · Mascot guide (no mascot exists yet — concept)'};
+
+  document.querySelectorAll('[data-p]').forEach(function(b){b.addEventListener('click',function(){
+    clearAll();
+    var p=b.getAttribute('data-p');
+    document.getElementById('active').textContent=actLabels[p]||'';
+    if(p==='1'){deckStep=0;renderDeck();show('ov-deck');}
+    else if(p==='2'){setEmpty();}
+    else if(p==='3'){setGreet('Welcome back, Jordan 👋<span class="sm">7-day streak — let\'s keep it going.</span>');}
+    else if(p==='4'){inject('<div class="resume"><div class="big"><div class="eb">Pick up where you left off</div><h3>Note Names · Medium</h3><div class="sub">10 questions · ~2 min</div></div><button class="go">Play →</button></div>');}
+    else if(p==='5'){show('sh-daily');}
+    else if(p==='6'){inject('<div class="miles"><div class="top"><b>⚡ 40 XP to Level 4</b><span class="to">68%</span></div><div class="track"><span class="fill"></span><span class="shine"></span></div></div>');}
+    else if(p==='7'){setState('guest',true);document.getElementById('active').textContent=actLabels[7];setTimeout(function(){show('sh-guest');},400);}
+    else if(p==='8'){show('ov-coach');}
+    else if(p==='9'){show('ov-mascot');}
+    else if(p==='10'){segCycle();}
+  });});
+
+  var segStates=['returning','new','guest'],segI=0;
+  function segCycle(){setState(segStates[segI]);segI=(segI+1)%segStates.length;}
+
+  document.querySelectorAll('[data-close]').forEach(function(x){x.addEventListener('click',function(e){e.stopPropagation();ids.forEach(function(id){document.getElementById(id).classList.remove('show');});});});
+  // tap outside sheets/overlays closes (except deck which has its own flow)
+  ['ov-coach','ov-mascot'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target.id===id)document.getElementById(id).classList.remove('show');});});
+</script>
+</body>
+</html>
