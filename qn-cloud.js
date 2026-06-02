@@ -80,7 +80,46 @@
       flagsAPI[k] = FLAGS[k];
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════
+  // §1b  GAMIFICATION / QA FLAGS (June 2026) — a DIFFERENT category
+  //
+  // The flags above are LAWYER-GATED, frozen constants — flipping one
+  // is a reviewed release event. The block below is for runtime
+  // developer/QA toggles + feature gating of the gamification surfaces
+  // (splash, quests, etc.). They are RUNTIME-READABLE from localStorage
+  // (set by qn-debug.js's QA panel, `qn_qa_<name>` keys) so a feature
+  // can be force-shown/hidden during testing without a redeploy.
+  //
+  // Production behavior is the *default* in DEFAULTS; the qa.<name>
+  // override only applies when the matching localStorage key is set,
+  // which only the dev QA panel does. So prod is unaffected.
+  // ═══════════════════════════════════════════════════════════════
+  var GAMIFICATION_DEFAULTS = {
+    SPLASH_ENABLED:        true,   // the once-a-day app splash on My Studio
+    ADAPTIVE_SPLASH:       false,  // guest/new/returning splash flavors (in build)
+    QUESTS_ENABLED:        true,
+    BADGES_ENABLED:        true
+  };
+  function qaOverride(name) {
+    // returns true/false if the QA panel forced it, else null (use default)
+    try {
+      if (localStorage.getItem('qn_qa_hide_' + name.toLowerCase()) === '1') return false;
+      if (localStorage.getItem('qn_qa_force_' + name.toLowerCase()) === '1') return true;
+    } catch (e) {}
+    return null;
+  }
+  flagsAPI.gamification = {};
+  for (var gk in GAMIFICATION_DEFAULTS) {
+    if (Object.prototype.hasOwnProperty.call(GAMIFICATION_DEFAULTS, gk)) {
+      var ov = qaOverride(gk);
+      flagsAPI.gamification[gk] = (ov === null) ? GAMIFICATION_DEFAULTS[gk] : ov;
+    }
+  }
+
+  Object.freeze(flagsAPI.gamification);
   Object.freeze(flagsAPI);
+
 
 
   // ═══════════════════════════════════════════════════════════════
