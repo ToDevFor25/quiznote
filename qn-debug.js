@@ -62,39 +62,53 @@
   // you can restore). Reloads to the current page.
   function forceGuest() {
     try { localStorage.removeItem('qn_activeProfile'); } catch (e) {}
-    reload();
-  }
-
-  // Force a "New / blank" user: a fresh profile with ZERO events. Clears the
-  // once-a-day gates so the new-user splash will show.
-  function forceNewUser() {
-    var nick = 'Tester';
-    var prof = null;
-    try {
-      if (QN.profile && QN.profile.create) prof = QN.profile.create({ nickname: nick });
-      if (prof && QN.profile.setActive) QN.profile.setActive(prof.id);
-    } catch (e) {}
-    // wipe this profile's events (a brand-new profile has none, but be safe)
-    if (prof) wipeEventsFor(prof.id);
     clearGates();
     reload();
   }
 
-  // Seed a populated "Returning" user: N rounds across a few modules + a streak.
+  // ── ONE dedicated test profile, written DIRECTLY to storage. The panel is a
+  //    test tool, so it bypasses QN.profile.create() entirely — create() enforces
+  //    the 5-profile household cap and returns null once full, which made the
+  //    state buttons silently no-op after a few clicks. We reuse a single
+  //    'p_qadebug' profile (upsert, never spawn new ones) so the cap is never hit
+  //    and the buttons are idempotent.
+  var QA_PID = 'p_qadebug';
+  function ensureTestProfile() {
+    var profiles = getJSON('qn_profiles', []);
+    var existing = null;
+    for (var i = 0; i < profiles.length; i++) { if (profiles[i].id === QA_PID) { existing = profiles[i]; break; } }
+    if (!existing) {
+      existing = {
+        id: QA_PID, accountId: 'a_qadebug', nickname: 'Tester',
+        level: null, defaultDifficulty: 'medium', hintsEnabled: true,
+        practiceGoal: 5, streakStyle: 'calendar', color: 'teal',
+        createdAt: Date.now(), lastActiveAt: Date.now(), syncedAt: null
+      };
+      profiles.push(existing);
+      setJSON('qn_profiles', profiles);
+    }
+    try { localStorage.setItem('qn_activeProfile', QA_PID); } catch (e) {}
+    return existing;
+  }
+
+  // New / blank: the test profile active, ZERO events, gates cleared.
+  function forceNewUser() {
+    ensureTestProfile();
+    wipeEventsFor(QA_PID);
+    clearGates();
+    reload();
+  }
+
+  // Returning: the test profile active + a populated event history (fresh — we
+  // wipe first so repeated clicks don't pile up endlessly).
   function forceReturning(opts) {
     opts = opts || {};
-    var prof = activeProfile();
-    if (!prof) { prof = makeProfile('Tester'); }
-    seedRounds(prof.id, opts.rounds || 16, opts.modules || ['note-names', 'intervals', 'triads', 'key-signatures']);
-    if (opts.streak) seedStreak(prof.id, opts.streak);
+    ensureTestProfile();
+    wipeEventsFor(QA_PID);
+    seedRounds(QA_PID, opts.rounds || 16, opts.modules || ['note-names', 'intervals', 'triads', 'key-signatures']);
+    if (opts.streak) seedStreak(QA_PID, opts.streak);
     clearGates();
     reload();
-  }
-
-  function makeProfile(nick) {
-    var prof = null;
-    try { if (QN.profile && QN.profile.create) { prof = QN.profile.create({ nickname: nick }); if (prof) QN.profile.setActive(prof.id); } } catch (e) {}
-    return prof || activeProfile();
   }
 
   // Seed `n` rounds for a profile via the REAL event store, spread over the last
