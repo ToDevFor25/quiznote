@@ -82,3 +82,10 @@ Deploy: Vercel build command `npx @11ty/eleventy`, output dir `dist/`. **Push-to
 ## Out of scope (do NOT bundle into this migration)
 - No redesigns, no new modules, no behavior changes. Pure de-duplication.
 - No client JS framework. No CSS preprocessor. Keep vanilla.
+
+## Line items to fold in WHILE migrating (cheap wins the build step enables)
+- **Strip `qn-debug.js` from the production build.** Today it's a dev-only QA panel
+  guarded by `?debug` (inert on prod, but still shipped ~10KB). Once 11ty gives us a
+  build step, make it a dev-only include that the prod build omits entirely — turning
+  the pragmatic `?debug` approach into proper build-time stripping for free. (Same
+  could apply to any other dev-only tooling.)

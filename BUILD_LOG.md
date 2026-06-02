@@ -1,5 +1,85 @@
 ---
 
+### Studio landing rethink + QA debug panel — June 2026 (Dev only)
+
+Post-launch polish session, all on **Dev** (main stays at the shipped Studio +
+share-hidden + index-flash-fix, `c60bfa8`). Two threads: (a) rethinking Studio as a
+*landing* page for all three user states, and (b) building real test tooling before
+adding more game-state.
+
+**Problem Jonathan named:** Studio "lands flat" as a home — built for the returning
+power-user, it fails the **guest** (no invite to make a profile) and the **brand-new
+user** (blank cards, no "welcome back [name]", no idea what to do next). A landing
+page has to serve guest / new / returning, not one of them.
+
+**Research → 10 gaming-industry patterns** (mocked interactively in
+`_mockups/studio-landing.html`): 1 onboarding deck · 2 empty-as-invitation (glowing
+first action) · 3 welcome-back greeting · 4 resume hero (big PLAY) · 5 daily-return
+reward · 6 milestone nudge · 7 guest play→signup · 8 coach-mark tour · 9 mascot
+guide · 10 **segmented home** (render differently per lifecycle state — the
+meta-answer the others populate).
+
+**Jonathan's picks: 1 + 10, mascot maybe later.** Then the key consolidation insight
+(his): the **splash and the onboarding deck want to be the same surface** — one
+once-on-arrival moment that adapts. Mocked in `_mockups/studio-splash-adaptive.html`:
+- **Returning** (has real rounds) → today's quick "Welcome back, [name]" + confetti,
+  auto-fade.
+- **New / blank** (~0 games) → the splash BECOMES the swipeable onboarding deck
+  ("Welcome" → "earn as you learn" → "we pick what's next" → "Start your first
+  round →"); no auto-fade; retires once they've logged a few rounds (graduate to
+  Returning).
+- **Guest** (no profile) → value pitch + "Try a round" (earns the signup after a win).
+**Open questions before building it:** 3 deck cards or 2? Returning splash — keep
+confetti or go calmer? Mascot is Tier 3 (brand decision), deferred. NOT yet built.
+
+**QA / testing — "do we need a test environment?"** Decided: **debug panel first,
+extend QN.flags** (Jonathan). Industry standard for a gamified app is state-
+manipulation tooling + feature flags, not (for us) a separate environment — the Dev
+preview already is staging. Built:
+- **`qn-debug.js` (new shared file, dev-only):** a slide-out QA panel that activates
+  ONLY with `?debug` (sticky for the session; `?debug=off` clears). **HARD prod
+  guard** — `?debug` does nothing on quiznote.online unless `?debug=force`. Forces
+  user-state (Guest / New-blank / Returning), seeds rounds + streaks through the
+  REAL store (seeded data behaves like real — verified qn-xp reads it → Level 6),
+  resets the once-a-day gates (splash/recap/tips), toggles QA flags, and
+  snapshot/restores real progress (**also delivers the data-durability backup
+  flagged back in May**). Same localStorage, no schema, no backend. Wired onto
+  studio.html.
+- **`QN.flags.gamification` (qn-cloud.js §1b):** a SEPARATE category from the frozen
+  lawyer-gated monetization flags (those untouched + still false/frozen). Runtime-
+  readable defaults (SPLASH/ADAPTIVE_SPLASH/QUESTS/BADGES) with per-flag QA overrides
+  from localStorage (`qn_qa_force_*`/`hide_*`) — force-show/hide a feature in testing
+  with no redeploy.
+
+**Testing-approach context (the "do companies just build with ?debug?" answer):**
+the spectrum is URL-param (us) → build-time env-strip → flag service (LaunchDarkly/
+Statsig) → internal debug builds → full QA env + E2E. We can't do build-time strip
+(no build step) and shouldn't yet do a flag service (no backend, pre-launch, solo),
+so a guarded `?debug` panel + a flag registry is the correct fit for a flat-static/
+no-build/pre-launch app — not a cut corner. **Known weakness:** `?debug` ships the
+~10KB panel to prod (inert, guarded). **The 11ty migration should strip qn-debug.js
+from the prod build** — that turns our pragmatic `?debug` into the proper build-time
+version for free. (To add to `specs/eleventy-migration-spec.md`.)
+
+**Branch/push hygiene:** mockups + the debug panel pushed to **Dev only** (not main)
+— a change from the earlier dual-push habit, to keep production clean of dev tooling
+and experiments. Going forward: code/doc commits dual-push; mockups + dev tooling
+stay on Dev. (Also fixed mid-session: stop using `git checkout -B Dev origin/Dev`
+after committing — it silently discarded a commit twice this session; use
+`git push origin HEAD:Dev` / `HEAD:main` refspec pushes instead.)
+
+**Still open / next (this thread):**
+1. **Adaptive splash** — build it (with the debug panel), once Jonathan answers
+   3-vs-2 deck cards + confetti-vs-calm. Gate it behind `QN.flags.gamification`.
+2. The rest of the segmented-home patterns (2/3/4/7) as desired — guest invite,
+   glowing empties, resume hero.
+3. **Mascot** — Tier 3 brand decision, parked.
+4. **11ty spec:** add "strip qn-debug.js from prod build" line item.
+5. Mockups in `_mockups/` (studio-landing, studio-splash-adaptive, + earlier
+   studio-* files) are Dev-only internal tooling.
+
+---
+
 ### Studio shipped to production + Share button hidden — June 2026
 
 **The Studio build is on MAIN (production).** `feature/studio` was fast-forwarded
