@@ -44,8 +44,8 @@
   .card-head:focus-visible { outline: 3px solid var(--teal); outline-offset: -3px; }
   .card-ico { font-size: 26px; flex: none; }
   .card h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 21px; flex: 1; }
-  .acc-chev { font-size: 15px; color: var(--ink-soft); flex: none; transition: transform .3s ease; }
-  .card.open .acc-chev { transform: rotate(180deg); }
+  .acc-chev { font-size: 22px; line-height: 1; color: var(--teal-dk); flex: none; transition: transform .3s ease; }
+  .card.open .acc-chev, .card.peeking .acc-chev { transform: rotate(180deg); }
   .acc-body { overflow: hidden; max-height: 0; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
   .acc-body-inner { padding: 0 20px 20px; }
   .card .sub { font-size: 14px; color: var(--ink-soft); margin-bottom: 16px; }
@@ -109,8 +109,8 @@
   <p class="lede">QuizNote rewards practice in five ways — every one is earned by playing, and nothing is ever paywalled or locked behind purchases. Here's the full picture so you always know what you're working toward.</p>
 
   <!-- LEVELS -->
-  <div class="card open">
-    <button class="card-head" type="button" aria-expanded="true" aria-controls="acc-levels"><span class="card-ico">⭐</span><h2>Levels &amp; XP</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+  <div class="card">
+    <button class="card-head" type="button" aria-expanded="false" aria-controls="acc-levels"><span class="card-ico">⭐</span><h2>Levels &amp; XP</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
     <div class="acc-body" id="acc-levels"><div class="acc-body-inner">
       <p class="sub">Your overall journey. Every round earns XP, which raises your Learner Level and rank — a measure of how much you've practiced across the whole app.</p>
       <div class="levels" id="levels"></div>
@@ -165,7 +165,7 @@
     </div></div>
   </div>
 
-  <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin-top:8px;">No ads, no pay-to-win — every reward here is earned by practicing. Progress is saved on your device.</p>
+  <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin-top:8px;">No ads, no pay-to-win — every reward here is earned by practicing.</p>
 </div>
 
 <footer class="legal-footer">
@@ -232,35 +232,66 @@
       });
     }
 
-    // ── Accordion: tap a header to expand/collapse its section (multi-open;
-    //    first section starts open via .open in the markup). max-height is
-    //    driven from measured scrollHeight — NO grid-template-rows fr trick,
-    //    which Safari renders as min-content (clipped) instead of full height. ──
-    function expand(body) {
-      body.style.maxHeight = body.scrollHeight + 'px';
-      body.addEventListener('transitionend', function te(e) {
-        if (e.propertyName !== 'max-height') return;
-        body.style.maxHeight = 'none';   // let it reflow freely once open
-        body.removeEventListener('transitionend', te);
-      });
-    }
-    function collapse(body) {
-      body.style.maxHeight = body.scrollHeight + 'px';  // pin current height (was 'none')
-      void body.offsetHeight;                            // reflow so the transition fires
-      body.style.maxHeight = '0px';
-    }
-    Array.prototype.forEach.call(document.querySelectorAll('.card'), function (card) {
-      var head = card.querySelector('.card-head');
+    // ── Accordion (single-open): tap a header to open it; any other open
+    //    section closes. All start collapsed; a one-time "peek" fake-out on
+    //    load cracks the first section open and snaps it shut to hint that the
+    //    rows expand. max-height is driven from measured scrollHeight — NOT the
+    //    grid-template-rows fr trick, which Safari sizes to min-content. ──
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setOpen(card, open) {
       var body = card.querySelector('.acc-body');
-      if (!head || !body) return;
-      if (card.classList.contains('open')) body.style.maxHeight = 'none';  // default-open, no anim
+      var head = card.querySelector('.card-head');
+      if (!body) return;
+      card.classList.toggle('open', open);
+      if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        body.addEventListener('transitionend', function te(e) {
+          if (e.propertyName !== 'max-height') return;
+          if (card.classList.contains('open')) body.style.maxHeight = 'none';  // reflow freely
+          body.removeEventListener('transitionend', te);
+        });
+      } else {
+        body.style.maxHeight = body.scrollHeight + 'px';  // pin current height (was 'none')
+        void body.offsetHeight;                            // reflow so the transition fires
+        body.style.maxHeight = '0px';
+      }
+    }
+
+    var peekTimers = [];
+    function cancelPeek() { peekTimers.forEach(clearTimeout); peekTimers = []; }
+
+    cards.forEach(function (card) {
+      var head = card.querySelector('.card-head');
+      if (!head) return;
       head.addEventListener('click', function () {
-        var open = !card.classList.contains('open');
-        card.classList.toggle('open', open);
-        head.setAttribute('aria-expanded', open ? 'true' : 'false');
-        if (open) expand(body); else collapse(body);
+        cancelPeek();
+        var willOpen = !card.classList.contains('open');
+        cards.forEach(function (c) { if (c.classList.contains('open')) setOpen(c, false); });  // single-open
+        if (willOpen) setOpen(card, true);
       });
     });
+
+    // one-time peek fake-out on the first card
+    if (!reduceMotion && cards.length) {
+      var pCard = cards[0], pBody = pCard.querySelector('.acc-body');
+      if (pBody) {
+        peekTimers.push(setTimeout(function () {
+          pBody.style.transition = 'max-height .26s ease';
+          pCard.classList.add('peeking');
+          pBody.style.maxHeight = Math.min(pBody.scrollHeight, 64) + 'px';
+          peekTimers.push(setTimeout(function () {
+            pBody.style.maxHeight = '0px';
+            peekTimers.push(setTimeout(function () {
+              pBody.style.transition = '';        // restore the CSS .4s transition
+              pCard.classList.remove('peeking');
+            }, 320));
+          }, 400));
+        }, 650));
+      }
+    }
 
     // footer year
     var y = new Date().getFullYear();
