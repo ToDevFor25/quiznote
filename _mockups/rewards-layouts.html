@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How-it-works — 5 layout options (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --grape:#5B3FE4; --grape-dk:#3d28a8; --grape-lt:#ede8ff;
+    --teal:#1FB8A8; --teal-dk:#0e8475; --teal-lt:#d3f1ec;
+    --coral:#FF6B6B; --coral-dk:#c2453f;
+    --sun:#FFB627; --sun-dk:#c98800; --sun-lt:#fff3cc;
+    --bronze:#CD7F32; --silver:#A8A8B0; --gold:#E6B422;
+    --cream:#FFFAF0; --ink:#2A2A3E; --ink-soft:#5a5a6e; --ink-faint:#8a8472;
+    --line:rgba(42,42,62,0.09); --shadow-cool:#d8d6cc;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+  /* ---------- mockup chrome (not part of the real page) ---------- */
+  .mk-bar{position:sticky;top:0;z-index:50;background:#1e1e2e;color:#fff;padding:10px 14px;}
+  .mk-title{font:700 13px/1.2 system-ui;color:#cfcfe6;margin-bottom:8px;letter-spacing:.02em;}
+  .mk-title b{color:#fff;}
+  .mk-pills{display:flex;gap:7px;flex-wrap:wrap;}
+  .mk-pill{font:700 13px/1 'Nunito',system-ui;color:#cdd;background:#33334a;border:none;border-radius:99px;padding:9px 13px;cursor:pointer;transition:.15s;}
+  .mk-pill:hover{background:#414163;}
+  .mk-pill.on{background:#fff;color:#1e1e2e;}
+  .mk-cap{font:600 12px/1.4 system-ui;color:#9a9ab0;margin-top:8px;max-width:760px;}
+
+  /* ---------- shared page frame ---------- */
+  .page-wrap{max-width:760px;margin:0 auto;padding:32px 22px 90px;}
+  .doc-eyebrow{font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-dk);margin-bottom:8px;}
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:32px;line-height:1.1;margin:0 0 12px;}
+  .lede{font-size:16px;color:var(--ink-soft);margin:0 0 26px;}
+
+  /* shared inner content bits (reused by every view) */
+  .lvl-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line);}
+  .lvl-row:last-child{border-bottom:none;}
+  .lvl-band{font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;width:104px;flex:none;}
+  .lvl-range{font-weight:800;font-size:13px;color:var(--grape);width:96px;flex:none;}
+  .lvl-note{font-size:13px;color:var(--ink-soft);flex:1;min-width:140px;}
+  .xp-rules{margin-top:14px;background:var(--grape-lt);border-radius:12px;padding:12px 14px;}
+  .xp-rules b{font-family:'Fredoka',sans-serif;font-weight:600;}
+  .xp-rules ul{margin:8px 0 0;padding-left:18px;}
+  .xp-rules li{font-size:13.5px;margin:5px 0;}
+  .medal-row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .medal-dot{width:18px;height:18px;border-radius:50%;flex:none;}
+  .medal-dot.bronze{background:var(--bronze);} .medal-dot.silver{background:var(--silver);} .medal-dot.gold{background:var(--gold);}
+  .medal-name{font-family:'Fredoka',sans-serif;font-weight:700;font-size:16px;width:74px;flex:none;}
+  .medal-name.bronze{color:var(--bronze);} .medal-name.silver{color:#7c7c86;} .medal-name.gold{color:var(--sun-dk);}
+  .medal-desc{font-size:13.5px;color:var(--ink-soft);flex:1;}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .badge-item{display:flex;gap:9px;align-items:flex-start;background:var(--teal-lt);border-radius:12px;padding:10px 11px;}
+  .badge-ico{font-size:20px;flex:none;}
+  .badge-name{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13.5px;}
+  .badge-desc{font-size:12px;color:var(--ink-soft);line-height:1.35;}
+  .info-row{display:flex;gap:10px;align-items:flex-start;padding:7px 0;}
+  .info-ico{font-size:18px;flex:none;}
+  .info-row b{font-family:'Fredoka',sans-serif;font-weight:700;}
+  .info-row div{font-size:13.5px;color:var(--ink-soft);line-height:1.45;}
+  .sub{font-size:14px;color:var(--ink-soft);margin:0 0 14px;}
+  .foot-note{font-size:13px;color:var(--ink-faint);text-align:center;margin-top:8px;}
+
+  /* =====================================================================
+     VIEW 1 — APPLE WALLET STACK
+     Collapsed cards overlap, showing a uniform colored header "pass".
+     Tap one to bring it forward + expand; siblings settle back.
+     ===================================================================== */
+  .v-wallet .w-stack{position:relative;}
+  .v-wallet .w-card{
+    border:2.5px solid var(--ink);border-radius:18px;background:#fff;overflow:hidden;
+    box-shadow:0 6px 14px rgba(42,42,62,.16);margin-top:-30px;cursor:pointer;
+    transition:margin .35s cubic-bezier(.4,0,.2,1), transform .35s, box-shadow .35s;
+  }
+  .v-wallet .w-card:first-child{margin-top:0;}
+  .v-wallet .w-head{display:flex;align-items:center;gap:12px;padding:16px 18px;color:#fff;}
+  .v-wallet .w-head .w-ico{font-size:24px;}
+  .v-wallet .w-head h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:19px;margin:0;flex:1;}
+  .v-wallet .w-chev{font-size:14px;opacity:.9;transition:transform .3s;}
+  .v-wallet .w-body{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+  .v-wallet .w-body-inner{padding:4px 18px 20px;}
+  .v-wallet .w-card.open{margin-top:14px;transform:translateY(-2px);box-shadow:0 16px 34px rgba(42,42,62,.26);}
+  .v-wallet .w-card.open:first-child{margin-top:0;}
+  .v-wallet .w-card.open .w-body{max-height:1400px;}
+  .v-wallet .w-card.open .w-chev{transform:rotate(180deg);}
+  .v-wallet .w-card.open + .w-card{margin-top:14px;}
+  /* accent headers */
+  .v-wallet .a-grape .w-head{background:linear-gradient(135deg,var(--grape),var(--grape-dk));}
+  .v-wallet .a-sun   .w-head{background:linear-gradient(135deg,var(--sun),var(--sun-dk));}
+  .v-wallet .a-teal  .w-head{background:linear-gradient(135deg,var(--teal),var(--teal-dk));}
+  .v-wallet .a-coral .w-head{background:linear-gradient(135deg,var(--coral),var(--coral-dk));}
+  .v-wallet .a-grapeD .w-head{background:linear-gradient(135deg,#7C5CFC,var(--grape-dk));}
+
+  /* =====================================================================
+     VIEW 2 — ACCORDION (the "honest Wallet")
+     Uniform header rows; one open at a time; body expands inline.
+     ===================================================================== */
+  .v-acc .ac-item{border:2.5px solid var(--ink);border-radius:16px;background:#fff;box-shadow:0 5px 0 var(--shadow-cool);margin-bottom:14px;overflow:hidden;}
+  .v-acc .ac-head{display:flex;align-items:center;gap:12px;width:100%;padding:16px 18px;background:none;border:none;cursor:pointer;text-align:left;}
+  .v-acc .ac-ico{font-size:24px;flex:none;}
+  .v-acc .ac-head h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:19px;margin:0;flex:1;}
+  .v-acc .ac-chev{font-size:14px;color:var(--ink-soft);transition:transform .3s;}
+  .v-acc .ac-item.open .ac-chev{transform:rotate(180deg);}
+  .v-acc .ac-body{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+  .v-acc .ac-item.open .ac-body{max-height:1400px;}
+  .v-acc .ac-body-inner{padding:0 18px 20px;}
+
+  /* =====================================================================
+     VIEW 3 — HORIZONTAL PASS DECK
+     Full-bleed swipeable cards; internal scroll per pass; dots.
+     ===================================================================== */
+  .v-deck .d-rail{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 22px 16px;margin:0 -22px;-webkit-overflow-scrolling:touch;}
+  .v-deck .d-rail::-webkit-scrollbar{display:none;}
+  .v-deck .d-card{scroll-snap-align:center;flex:0 0 min(86vw,430px);border:2.5px solid var(--ink);border-radius:20px;background:#fff;box-shadow:0 5px 0 var(--shadow-cool);display:flex;flex-direction:column;max-height:66vh;overflow:hidden;}
+  .v-deck .d-head{display:flex;align-items:center;gap:12px;padding:16px 18px;color:#fff;flex:none;}
+  .v-deck .d-head .d-ico{font-size:24px;}
+  .v-deck .d-head h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:19px;margin:0;}
+  .v-deck .d-body{padding:14px 18px 18px;overflow-y:auto;}
+  .v-deck .a-grape .d-head{background:linear-gradient(135deg,var(--grape),var(--grape-dk));}
+  .v-deck .a-sun   .d-head{background:linear-gradient(135deg,var(--sun),var(--sun-dk));}
+  .v-deck .a-teal  .d-head{background:linear-gradient(135deg,var(--teal),var(--teal-dk));}
+  .v-deck .a-coral .d-head{background:linear-gradient(135deg,var(--coral),var(--coral-dk));}
+  .v-deck .a-grapeD .d-head{background:linear-gradient(135deg,#7C5CFC,var(--grape-dk));}
+  .v-deck .d-dots{display:flex;gap:7px;justify-content:center;margin-top:14px;}
+  .v-deck .d-dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+  .v-deck .d-dot.on{background:var(--grape);width:22px;border-radius:99px;}
+
+  /* =====================================================================
+     VIEW 4 — STICKY TABS / SEGMENTED
+     One panel at a time; segmented control scrolls on mobile.
+     ===================================================================== */
+  .v-tabs .t-seg{position:sticky;top:0;z-index:5;display:flex;gap:6px;overflow-x:auto;background:var(--cream);padding:10px 0;margin-bottom:18px;border-bottom:1px solid var(--line);}
+  .v-tabs .t-seg::-webkit-scrollbar{display:none;}
+  .v-tabs .t-tab{font-family:'Fredoka',sans-serif;font-weight:600;font-size:14px;white-space:nowrap;color:var(--ink-soft);background:#fff;border:2px solid var(--ink);border-radius:99px;padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s;}
+  .v-tabs .t-tab.on{background:var(--ink);color:#fff;}
+  .v-tabs .t-panel{display:none;animation:tFade .25s ease;}
+  .v-tabs .t-panel.on{display:block;}
+  @keyframes tFade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .v-tabs .t-panel h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:23px;margin:0 0 4px;display:flex;align-items:center;gap:10px;}
+
+  /* =====================================================================
+     VIEW 5 — BALANCED BOARD (masonry)
+     Everything visible; columns balance the uneven ribbon. 1-col on mobile.
+     ===================================================================== */
+  .v-board .b-grid{column-gap:16px;}
+  @media (min-width:720px){ .v-board .b-grid{column-count:2;} }
+  .v-board .b-card{break-inside:avoid;border:2.5px solid var(--ink);border-radius:16px;background:#fff;box-shadow:0 5px 0 var(--shadow-cool);padding:18px;margin-bottom:16px;}
+  .v-board .b-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .v-board .b-ico{font-size:23px;}
+  .v-board .b-head h2{font-family:'Fredoka',sans-serif;font-weight:700;font-size:18px;margin:0;}
+
+  /* hide all views by default; JS shows one */
+  .view{display:none;}
+  .view.on{display:block;}
+</style>
+</head>
+<body>
+
+<div class="mk-bar">
+  <div class="mk-title">🛠 MOCKUP · <b>“How progress works” — 5 layout options</b></div>
+  <div class="mk-pills">
+    <button class="mk-pill on" data-view="wallet">1 · Wallet stack</button>
+    <button class="mk-pill" data-view="acc">2 · Accordion</button>
+    <button class="mk-pill" data-view="deck">3 · Pass deck</button>
+    <button class="mk-pill" data-view="tabs">4 · Tabs</button>
+    <button class="mk-pill" data-view="board">5 · Board</button>
+  </div>
+  <div class="mk-cap" id="mk-cap"></div>
+</div>
+
+<!-- VIEW 1 — WALLET -->
+<section class="view on v-wallet" data-view="wallet">
+  <div class="page-wrap">
+    <div class="doc-eyebrow">Guide</div>
+    <h1>How progress works</h1>
+    <p class="lede">Tap any pass to bring it forward.</p>
+    <div class="w-stack" id="w-stack"></div>
+    <p class="foot-note">No ads, no pay-to-win — every reward is earned by practicing.</p>
+  </div>
+</section>
+
+<!-- VIEW 2 — ACCORDION -->
+<section class="view v-acc" data-view="acc">
+  <div class="page-wrap">
+    <div class="doc-eyebrow">Guide</div>
+    <h1>How progress works</h1>
+    <p class="lede">QuizNote rewards practice in five ways. Tap a section to open it.</p>
+    <div id="ac-list"></div>
+    <p class="foot-note">No ads, no pay-to-win — every reward is earned by practicing.</p>
+  </div>
+</section>
+
+<!-- VIEW 3 — DECK -->
+<section class="view v-deck" data-view="deck">
+  <div class="page-wrap">
+    <div class="doc-eyebrow">Guide</div>
+    <h1>How progress works</h1>
+    <p class="lede">Swipe through the five ways you earn. →</p>
+    <div class="d-rail" id="d-rail"></div>
+    <div class="d-dots" id="d-dots"></div>
+    <p class="foot-note">No ads, no pay-to-win — every reward is earned by practicing.</p>
+  </div>
+</section>
+
+<!-- VIEW 4 — TABS -->
+<section class="view v-tabs" data-view="tabs">
+  <div class="page-wrap">
+    <div class="doc-eyebrow">Guide</div>
+    <h1>How progress works</h1>
+    <div class="t-seg" id="t-seg"></div>
+    <div id="t-panels"></div>
+    <p class="foot-note">No ads, no pay-to-win — every reward is earned by practicing.</p>
+  </div>
+</section>
+
+<!-- VIEW 5 — BOARD -->
+<section class="view v-board" data-view="board">
+  <div class="page-wrap">
+    <div class="doc-eyebrow">Guide</div>
+    <h1>How progress works</h1>
+    <p class="lede">QuizNote rewards practice in five ways — every one is earned by playing.</p>
+    <div class="b-grid" id="b-grid"></div>
+    <p class="foot-note">No ads, no pay-to-win — every reward is earned by practicing.</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---- shared content for all five views (static sample data) ----
+  var levelsBody =
+    '<p class="sub">Your overall journey. Every round earns XP, raising your Learner Level and rank.</p>' +
+    '<div>' +
+      row('Beginner','Lv 1–4','Just getting started.') +
+      row('Apprentice','Lv 5–9','Finding your footing — a module or two in.') +
+      row('Player','Lv 10–19','Around finishing the Foundations tier.') +
+      row('Musician','Lv 20–34','Roughly mastering the whole roster.') +
+      row('Virtuoso','Lv 35+','Earned by deep practice beyond finishing everything.') +
+    '</div>' +
+    '<div class="xp-rules"><b>How XP is earned each round:</b><ul>' +
+      '<li><b>10 XP</b> for every correct answer</li>' +
+      '<li><b>+25 XP</b> for a clean round (85%+ accuracy)</li>' +
+      '<li><b>Perfect-game bonus</b> when you get every question right</li>' +
+      '<li><b>Harder difficulty pays more</b> — Easy ×1, Medium ×1.25, Tricky ×1.5</li>' +
+    '</ul></div>';
+  function row(b,r,n){return '<div class="lvl-row"><span class="lvl-band">'+b+'</span><span class="lvl-range">'+r+'</span><span class="lvl-note">'+n+'</span></div>';}
+
+  var medalsBody =
+    '<p class="sub">Per-module depth. Clear a difficulty level by scoring <b>85%+ in 2 rounds</b>.</p>' +
+    '<div class="medal-row"><span class="medal-dot bronze"></span><span class="medal-name bronze">Bronze</span><span class="medal-desc">Cleared the <b>Easy</b> level.</span></div>' +
+    '<div class="medal-row"><span class="medal-dot silver"></span><span class="medal-name silver">Silver</span><span class="medal-desc">Cleared the <b>Medium</b> level.</span></div>' +
+    '<div class="medal-row"><span class="medal-dot gold"></span><span class="medal-name gold">Gold</span><span class="medal-desc">Cleared the <b>Tricky</b> level — fully mastered.</span></div>';
+
+  var sampleBadges = [
+    ['🌱','First steps','Finish your very first round.'],
+    ['💯','Flawless','Get a perfect score in any round.'],
+    ['🔥','On a roll','Reach a 7-day streak.'],
+    ['🧭','Explorer','Try a module in all three tiers.'],
+    ['🎼','Reader','Master 5 Reading modules.'],
+    ['🎹','Theorist','Master 5 Theory modules.'],
+    ['🏅','Climber','Reach the Player rank.'],
+    ['⭐','Dedicated','Practice 30 days total.']
+  ];
+  var badgesBody =
+    '<p class="sub">Milestones worth celebrating — they fill your Collection on My Studio.</p>' +
+    '<div class="badge-grid">' + sampleBadges.map(function(b){
+      return '<div class="badge-item"><span class="badge-ico">'+b[0]+'</span><div><div class="badge-name">'+b[1]+'</div><div class="badge-desc">'+b[2]+'</div></div></div>';
+    }).join('') + '</div>';
+
+  var streaksBody =
+    '<p class="sub">Consistency, gently encouraged.</p>' +
+    '<div class="info-row"><span class="info-ico">🔥</span><div><b>Day streak</b> — days in a row you\'ve practiced. Play one round a day to keep it. Miss a full day and it resets.</div></div>' +
+    '<div class="info-row"><span class="info-ico">◷</span><div><b>Weekly goal</b> — pick 3, 5, or daily. My Studio shows your progress each week.</div></div>';
+
+  var questsBody =
+    '<p class="sub">Three small goals refresh every day on My Studio.</p>' +
+    '<div class="info-row"><span class="info-ico">✅</span><div><b>Play to complete them</b> — each quest is met just by playing. They award bonus XP and reset at midnight.</div></div>' +
+    '<div class="info-row"><span class="info-ico">🌟</span><div><b>One guaranteed win</b> — the first quest each day is always “play a round.”</div></div>';
+
+  var SECTIONS = [
+    {id:'levels', ico:'⭐', title:'Levels & XP',          accent:'a-grape',  body:levelsBody},
+    {id:'medals', ico:'🏅', title:'Mastery medals',        accent:'a-sun',    body:medalsBody},
+    {id:'badges', ico:'🎖️', title:'Badges to collect',     accent:'a-teal',   body:badgesBody},
+    {id:'streaks',ico:'🔥', title:'Streaks & weekly goal', accent:'a-coral',  body:streaksBody},
+    {id:'quests', ico:'🎯', title:'Daily quests',          accent:'a-grapeD', body:questsBody}
+  ];
+
+  var CAPS = {
+    wallet:'1 · WALLET STACK — overlapping passes; collapsed they\'re uniform (length stops mattering), tap to bring one forward. Most delight; hides content behind taps.',
+    acc:'2 · ACCORDION — the honest Wallet. Uniform header rows, one open at a time. Matches the play.html tier accordion already in the app.',
+    deck:'3 · PASS DECK — full-bleed swipeable cards, each pass scrolls internally. Very app-like / mobile-first; narrower on desktop.',
+    tabs:'4 · TABS — sticky segmented control, one panel shown. Most compact & fastest to a specific answer; loses the at-a-glance overview.',
+    board:'5 · BOARD — everything visible, masonry balances the long Levels card against the short Streaks/Quests. Best for skimming; least novel.'
+  };
+
+  // ---- VIEW 1: WALLET ----
+  var wstack = document.getElementById('w-stack');
+  SECTIONS.forEach(function(s,i){
+    var c = document.createElement('div');
+    c.className = 'w-card '+s.accent;
+    c.innerHTML = '<div class="w-head"><span class="w-ico">'+s.ico+'</span><h2>'+s.title+'</h2><span class="w-chev">▼</span></div>'+
+                  '<div class="w-body"><div class="w-body-inner">'+s.body+'</div></div>';
+    c.querySelector('.w-head').addEventListener('click', function(){
+      var wasOpen = c.classList.contains('open');
+      Array.prototype.forEach.call(wstack.children,function(x){x.classList.remove('open');});
+      if(!wasOpen) c.classList.add('open');
+    });
+    wstack.appendChild(c);
+  });
+  wstack.firstChild.classList.add('open');
+
+  // ---- VIEW 2: ACCORDION ----
+  var aclist = document.getElementById('ac-list');
+  SECTIONS.forEach(function(s,i){
+    var it = document.createElement('div');
+    it.className = 'ac-item'+(i===0?' open':'');
+    it.innerHTML = '<button class="ac-head"><span class="ac-ico">'+s.ico+'</span><h2>'+s.title+'</h2><span class="ac-chev">▼</span></button>'+
+                   '<div class="ac-body"><div class="ac-body-inner">'+s.body+'</div></div>';
+    it.querySelector('.ac-head').addEventListener('click', function(){
+      it.classList.toggle('open');
+    });
+    aclist.appendChild(it);
+  });
+
+  // ---- VIEW 3: DECK ----
+  var drail = document.getElementById('d-rail');
+  var ddots = document.getElementById('d-dots');
+  SECTIONS.forEach(function(s,i){
+    var c = document.createElement('div');
+    c.className = 'd-card '+s.accent;
+    c.innerHTML = '<div class="d-head"><span class="d-ico">'+s.ico+'</span><h2>'+s.title+'</h2></div>'+
+                  '<div class="d-body">'+s.body+'</div>';
+    drail.appendChild(c);
+    var dot = document.createElement('span'); dot.className='d-dot'+(i===0?' on':''); ddots.appendChild(dot);
+  });
+  drail.addEventListener('scroll', function(){
+    var i = Math.round(drail.scrollLeft / (drail.scrollWidth/SECTIONS.length));
+    Array.prototype.forEach.call(ddots.children,function(d,k){d.classList.toggle('on',k===i);});
+  });
+
+  // ---- VIEW 4: TABS ----
+  var tseg = document.getElementById('t-seg');
+  var tpanels = document.getElementById('t-panels');
+  SECTIONS.forEach(function(s,i){
+    var tab = document.createElement('button');
+    tab.className = 't-tab'+(i===0?' on':'');
+    tab.innerHTML = '<span>'+s.ico+'</span>'+s.title;
+    var panel = document.createElement('div');
+    panel.className = 't-panel'+(i===0?' on':'');
+    panel.innerHTML = '<h2><span>'+s.ico+'</span>'+s.title+'</h2>'+s.body;
+    tab.addEventListener('click', function(){
+      Array.prototype.forEach.call(tseg.children,function(x){x.classList.remove('on');});
+      Array.prototype.forEach.call(tpanels.children,function(x){x.classList.remove('on');});
+      tab.classList.add('on'); panel.classList.add('on');
+    });
+    tseg.appendChild(tab); tpanels.appendChild(panel);
+  });
+
+  // ---- VIEW 5: BOARD ----
+  var bgrid = document.getElementById('b-grid');
+  SECTIONS.forEach(function(s){
+    var c = document.createElement('div');
+    c.className = 'b-card';
+    c.innerHTML = '<div class="b-head"><span class="b-ico">'+s.ico+'</span><h2>'+s.title+'</h2></div>'+s.body;
+    bgrid.appendChild(c);
+  });
+
+  // ---- switcher ----
+  var pills = document.querySelectorAll('.mk-pill');
+  var views = document.querySelectorAll('.view');
+  var cap = document.getElementById('mk-cap');
+  function show(v){
+    pills.forEach(function(p){p.classList.toggle('on',p.dataset.view===v);});
+    views.forEach(function(s){s.classList.toggle('on',s.dataset.view===v);});
+    cap.textContent = CAPS[v];
+    window.scrollTo(0,0);
+  }
+  pills.forEach(function(p){p.addEventListener('click',function(){show(p.dataset.view);});});
+  show('wallet');
+})();
+</script>
+</body>
+</html>
