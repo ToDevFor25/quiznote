@@ -1,5 +1,71 @@
 ---
 
+### Studio segmented-home patterns + splash polish — shipped to production June 2026
+
+Populated the **#10 segmented-home** meta-pattern (the meta-pick from the 10-pattern
+set) with the remaining lifecycle-state treatments, plus a Play-bar attention pass
+and a splash legibility fix. Shipped **Dev→main** (clean fast-forward, 6 commits;
+main was at the adaptive-splash ship `2244489`). All work is `studio.html` +
+mockups — **no shared-file, schema, or engine changes**.
+
+**What shipped this session:**
+- **#7 guest "save your progress" nudge** (`61ec262`) — a guest who has already
+  played anonymously gets a warmer framing on the `state-anon` panel ("You've played
+  N rounds as a guest. Add a name and we'll keep your scores, streak, and badges.")
+  instead of the generic make-a-profile copy. Same `profile.html` target; creating a
+  profile auto-backfills the held rounds.
+- **#2 glowing empty tiles** (`61ec262`) — new users see the first action as an
+  invitation (glowing empties) rather than dead blank cards.
+- **Play-bar attention treatment F** (`f007c53`, mockup `77a8626`) — teal tint +
+  soft Play-button pulse, chosen from a 6-option mockup (A current / B teal / C
+  pulse / D bounce / E grape / **F teal+pulse**). Draws the eye to the primary CTA.
+- **#6 inline milestone nudge** (`35733be`) — masthead shows "X XP to Level N, about
+  a round away" so the next level feels reachable. Pure read off the XP engine, no
+  schema.
+- **#5 daily-return reward — CELEBRATION ONLY, no XP** (`efa248d`) — **Jonathan's
+  delivery call.** Rather than a new surface or any XP grant, this **enriches the
+  existing once-a-day RETURNING splash** to reward the streak/comeback the user
+  already carries. Three flavors off the live streak (read mirrors
+  `renderMomentum`): **streak ≥ 2** → "🔥 N days in a row!" (milestones
+  3/5/7/10/14/21/30/50/100 get punchier copy + a bigger confetti burst + a longer
+  beat); **streak == 1** → gentle welcome + "play today to start a streak";
+  **streak == 0** → comeback greeting after a break. Rides the existing `SPLASH_KEY`
+  once-a-day gate (can't double-fire), reduced-motion still hides confetti.
+  `makeConfetti()` gained an optional count arg. **No XP, no logged event, no schema.**
+- **Splash "Skip" legibility fix** (`b899510`) — Skip was `color: var(--ink-soft)`
+  (dark ink) on the purple→teal gradient, effectively invisible (Jonathan caught it
+  on-device). Now a white text on a subtle translucent dark pill with a real tap
+  target; only appears on the new-deck + guest splashes (both over the gradient), so
+  white-on-dark is correct everywhere it shows.
+
+**Non-bug clarification logged (so it doesn't recur):** Jonathan reported "both guest
+and new users' Skip both go to My Studio." This is a **QA testing artifact, not a
+bug.** The **"Force GUEST splash" / "Force NEW-user splash"** *Feature-flag* toggles
+only override the splash *flavor* via `chooseSplashState`; they leave the real
+profile intact, so the page underneath stays the tester's studio in both cases. The
+**"User state"** buttons (👤 Guest / 🌱 New user) DO produce correct differentiated
+behavior (guest → `state-anon` make-a-profile panel; new → blank `state-studio`),
+because they actually clear/set `qn_activeProfile` and `clearQAFlags()`. No code
+change made. Lesson echoes the adaptive-splash entry: **test the state the user is
+actually in (flag vs. profile), not the convenient one.**
+
+**Still open / next:**
+1. **Guest-Skip destination is parked, not decided.** If a guest's Skip should *leave*
+   Studio entirely (→ `index.html?stay` marketing landing) rather than reveal the
+   `state-anon` invite, that's a one-line change in the guest Skip handler. Jonathan
+   declined to decide this session ("don't do anything on that") — resurface only if
+   he raises it.
+2. **Pixel QA owed on real devices** for the new masthead milestone nudge, the
+   glowing empties, the Play-bar pulse, and the streak-aware splash copy (structural
+   verification passed; device QA not yet done).
+3. New-user deck copy still Claude-drafted (carryover) — wordsmith if desired.
+4. **Deck re-show after 1st round** (carryover) — a new user who plays one round is
+   still <3 rounds and re-sees the deck; mark "deck seen" if it nags in real use.
+5. Remaining patterns from the 10-set not yet built: **#4 resume hero (big PLAY)**,
+   **#8 coach-mark tour**, **#9 mascot** (Tier 3 brand decision, parked).
+
+---
+
 ### Adaptive splash built + shipped to production — June 2026
 
 Built the adaptive splash (the 1+10 consolidation decided earlier) and shipped it
