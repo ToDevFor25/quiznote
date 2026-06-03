@@ -25,6 +25,8 @@
       radial-gradient(circle at 92% 85%, rgba(31,184,168,0.05) 0 180px, transparent 200px);
     -webkit-tap-highlight-color: transparent;
   }
+  html { scroll-padding-top: 76px; }
+  .card { scroll-margin-top: 76px; }
   .site-header { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 2.5px solid var(--ink); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
   .site-header .brand-name { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
   .site-header .brand-name span { color: var(--teal); }
@@ -176,6 +178,11 @@
   'use strict';
   function ready(fn) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
   ready(function () {
+    // Land at the true top so the in-flow sticky header never sits over the
+    // Guide / H1 (Safari otherwise restores a prior scroll position on reload).
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+
     // ── Levels: pull rank bands + thresholds live from qn-xp.js so this never
     //    drifts from the engine. ──
     var cfg = (window.QN && QN.xp && QN.xp.CONFIG) ? QN.xp.CONFIG : null;
@@ -254,6 +261,17 @@
       }
     }
 
+    // After opening, if single-open's layout shift tucked the clicked card under
+    // the sticky header, nudge it back into view just below the header.
+    function ensureVisible(card) {
+      var header = document.querySelector('.site-header');
+      var hh = header ? header.offsetHeight : 0;
+      var top = card.getBoundingClientRect().top;
+      if (top < hh + 6) {
+        window.scrollTo({ top: window.pageYOffset + top - hh - 10, behavior: reduceMotion ? 'auto' : 'smooth' });
+      }
+    }
+
     var peekTimers = [];
     function cancelPeek() { peekTimers.forEach(clearTimeout); peekTimers = []; }
 
@@ -264,7 +282,7 @@
         cancelPeek();
         var willOpen = !card.classList.contains('open');
         cards.forEach(function (c) { if (c.classList.contains('open')) setOpen(c, false); });  // single-open
-        if (willOpen) setOpen(card, true);
+        if (willOpen) { setOpen(card, true); setTimeout(function () { ensureVisible(card); }, 420); }
       });
     });
 
