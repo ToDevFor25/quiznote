@@ -46,9 +46,8 @@
   .card h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 21px; flex: 1; }
   .acc-chev { font-size: 15px; color: var(--ink-soft); flex: none; transition: transform .3s ease; }
   .card.open .acc-chev { transform: rotate(180deg); }
-  .acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s cubic-bezier(.4,0,.2,1); }
-  .card.open .acc-body { grid-template-rows: 1fr; }
-  .acc-body-inner { min-height: 0; overflow: hidden; padding: 0 20px 20px; }
+  .acc-body { overflow: hidden; max-height: 0; transition: max-height .4s cubic-bezier(.4,0,.2,1); }
+  .acc-body-inner { padding: 0 20px 20px; }
   .card .sub { font-size: 14px; color: var(--ink-soft); margin-bottom: 16px; }
   @media (prefers-reduced-motion: reduce) { .acc-body, .acc-chev { transition: none; } }
 
@@ -234,13 +233,32 @@
     }
 
     // ── Accordion: tap a header to expand/collapse its section (multi-open;
-    //    first section starts open via .open in the markup). ──
-    var heads = document.querySelectorAll('.card .card-head');
-    Array.prototype.forEach.call(heads, function (h) {
-      h.addEventListener('click', function () {
-        var card = h.closest('.card');
-        var open = card.classList.toggle('open');
-        h.setAttribute('aria-expanded', open ? 'true' : 'false');
+    //    first section starts open via .open in the markup). max-height is
+    //    driven from measured scrollHeight — NO grid-template-rows fr trick,
+    //    which Safari renders as min-content (clipped) instead of full height. ──
+    function expand(body) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+      body.addEventListener('transitionend', function te(e) {
+        if (e.propertyName !== 'max-height') return;
+        body.style.maxHeight = 'none';   // let it reflow freely once open
+        body.removeEventListener('transitionend', te);
+      });
+    }
+    function collapse(body) {
+      body.style.maxHeight = body.scrollHeight + 'px';  // pin current height (was 'none')
+      void body.offsetHeight;                            // reflow so the transition fires
+      body.style.maxHeight = '0px';
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.card'), function (card) {
+      var head = card.querySelector('.card-head');
+      var body = card.querySelector('.acc-body');
+      if (!head || !body) return;
+      if (card.classList.contains('open')) body.style.maxHeight = 'none';  // default-open, no anim
+      head.addEventListener('click', function () {
+        var open = !card.classList.contains('open');
+        card.classList.toggle('open', open);
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) expand(body); else collapse(body);
       });
     });
 
