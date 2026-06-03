@@ -575,8 +575,10 @@
   .splash.show { opacity: 1; pointer-events: auto; }
   .splash[hidden] { display: none; }
   .splash .splash-skip {
-    position: absolute; top: 18px; right: 20px; font-size: 12px; font-weight: 700;
-    color: var(--ink-soft); background: none; border: none; cursor: pointer; z-index: 3;
+    position: absolute; top: 14px; right: 14px; font-size: 13px; font-weight: 700;
+    color: #fff; background: rgba(0,0,0,0.22); border: none; cursor: pointer; z-index: 3;
+    padding: 6px 14px; border-radius: 99px;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
   }
   .splash-badge {
     width: 84px; height: 84px; display: inline-flex; align-items: center; justify-content: center;
