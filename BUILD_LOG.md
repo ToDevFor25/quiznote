@@ -1,5 +1,62 @@
 ---
 
+### Adaptive splash built + shipped to production — June 2026
+
+Built the adaptive splash (the 1+10 consolidation decided earlier) and shipped it
+**Dev→main** (clean fast-forward). This also carried the QA debug panel, the
+masthead "?" help door, and the landing/splash mockups to main (the panel is inert
+on prod — guarded). main was `c60bfa8`, now caught up to Dev.
+
+**Adaptive splash (studio.html `maybeShowSplash`) — the once-per-day arrival surface
+now adapts to user state** (spec: `specs/studio-adaptive-splash-spec.md`):
+- **RETURNING** (≥3 real rounds): welcome-back + confetti, auto-fade (unchanged).
+- **NEW** (profile, <3 rounds): a **4-card swipeable onboarding deck** — Welcome /
+  Earn as you learn / We pick what's next / **How it all works** — ending in
+  **"Start my first round →"** (launches the cold-start round, note-names/easy, via
+  the Play-bar handoff) + a quiet **"See how it works"** → rewards.html. Grape→teal
+  wash. Tappable dots + left/right swipe. Graduates to RETURNING after a few rounds.
+- **GUEST** (no profile): value pitch + "Try a round →" + "Create a profile". Boot
+  now runs the splash on the guest path too (was early-returning before it).
+- Decisions (Claude's call, latitude given): **4 deck cards** incl. the how-it-works
+  card; **returning keeps confetti**.
+- Wired to the QA flags so the panel drives it: hide / force-splash / splash_new /
+  splash_guest.
+
+**Masthead "?" help door (qn-home.js):** a small muted "?" → rewards.html, pinned to
+the status masthead edge (help glyph, not a CTA). The "quiet" half of the
+"how-it-works discoverability" decision; the deck's "See how it works" is the other
+half. Kept footer + Collection-wall links; no per-section clutter.
+
+**Three QA-found bugs fixed during build (all in the panel/wiring, not the splash):**
+1. **Profile-cap blowout** — the panel called `QN.profile.create()` (capped at 5),
+   so state buttons silently no-op'd after a few clicks. Fixed: panel upserts ONE
+   dedicated `p_qadebug` profile directly in storage, never hits the cap.
+2. **"Start" → Studio instead of a round** — relied on `currentRec`, which is null
+   on the no-profile path (the common forced-splash test state). Fixed: Start is
+   state-robust (currentRec → recommender → hard fallback note-names/easy), always
+   launches.
+3. **"Launching on all flavors"** — `clearGates()` never cleared the sticky QA
+   force-flags, so a flavor forced earlier stuck across every state. Fixed: the
+   state buttons now also `clearQAFlags()`; added a "✖ Clear all QA flags" button.
+
+**Verification lesson (logged because it recurred):** my init-traces "passed" twice
+on bugs because the mock fed the happy-path state (a real profile) rather than the
+*forced-QA* state the panel actually creates (no profile). Reproducing the real
+state — forced splash + no profile — is what surfaced the `currentRec` bug. Trace
+the state the user is actually in, not the convenient one.
+
+**Still open / next:**
+1. New-user deck copy is Claude-drafted (4 cards) — Jonathan may want to wordsmith.
+2. **Deck re-show after 1st round:** a new user who plays one round is still <3
+   rounds, so they'd see the deck again on return. Acceptable (still new), but if it
+   nags in real use, mark "deck seen" to suppress it below the threshold.
+3. Remaining segmented-home patterns (guest invite banner, glowing empties, resume
+   hero) from the 10-pattern set — build as desired.
+4. **11ty migration:** strip qn-debug.js from the prod build (already in that spec).
+5. Mascot — Tier 3 brand decision, parked.
+
+---
+
 ### Studio landing rethink + QA debug panel — June 2026 (Dev only)
 
 Post-launch polish session, all on **Dev** (main stays at the shipped Studio +
