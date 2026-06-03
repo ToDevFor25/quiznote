@@ -2206,23 +2206,52 @@
       ];
       var step = 0;
       var cardEl = $('deck-card'), dotsEl = $('deck-dots'), actEl = $('deck-actions');
+      function goTo(n) { step = Math.max(0, Math.min(cards.length - 1, n)); renderDeck(); }
       function renderDeck() {
         var c = cards[step];
         if (cardEl) cardEl.innerHTML = '<div class="deck-ico">' + c.ico + '</div><h2>' + c.h + '</h2><p>' + c.p + '</p>';
-        if (dotsEl) { var dh = ''; for (var k = 0; k < cards.length; k++) dh += '<span class="dd' + (k === step ? ' on' : '') + '"></span>'; dotsEl.innerHTML = dh; }
+        if (dotsEl) {
+          dotsEl.innerHTML = '';
+          for (var k = 0; k < cards.length; k++) {
+            (function (idx) {
+              var dot = document.createElement('span');
+              dot.className = 'dd' + (idx === step ? ' on' : '');
+              dot.setAttribute('role', 'button');
+              dot.addEventListener('click', function () { goTo(idx); });   // tappable dots
+              dotsEl.appendChild(dot);
+            })(k);
+          }
+        }
         if (actEl) {
           actEl.innerHTML = '';
           if (step < cards.length - 1) {
             var next = document.createElement('button'); next.className = 'splash-cta'; next.textContent = 'Next →';
-            next.addEventListener('click', function () { step++; renderDeck(); });
+            next.addEventListener('click', function () { goTo(step + 1); });
             actEl.appendChild(next);
           } else {
             var start = document.createElement('button'); start.className = 'splash-cta'; start.textContent = 'Start my first round →';
-            start.addEventListener('click', function () { hide(); });   // closes to Studio; their Play bar is right there
+            // Actually LAUNCH the recommended first round (cold-start = note-names,
+            // easy) via the same handoff the Play bar uses — a real payoff, not just
+            // closing to Studio. Falls back to closing if no rec is available.
+            start.addEventListener('click', function () {
+              if (currentRec && typeof startRecommended === 'function') startRecommended(currentRec);
+              else hide();
+            });
             var how = document.createElement('a'); how.className = 'splash-cta2'; how.href = 'rewards.html'; how.textContent = 'See how it works';
             actEl.appendChild(start); actEl.appendChild(how);
           }
         }
+      }
+      // swipe left/right to move between cards (the dots imply this — make it real)
+      var swStartX = null;
+      if (dEl) {
+        dEl.addEventListener('touchstart', function (e) { swStartX = e.touches[0].clientX; }, { passive: true });
+        dEl.addEventListener('touchend', function (e) {
+          if (swStartX === null) return;
+          var dx = e.changedTouches[0].clientX - swStartX;
+          if (Math.abs(dx) > 45) goTo(step + (dx < 0 ? 1 : -1));   // left = next, right = back
+          swStartX = null;
+        });
       }
       renderDeck();
       reveal();
