@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accuracy-trend animation ideas (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0; --ink:#2A2A3E; --ink-soft:#5a5a6e; --ink-faint:#8a8472;
+    --teal:#1FB8A8; --teal-dk:#0e8475; --shadow-cool:#d8d6cc; --line:rgba(42,42,62,0.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);}
+
+  /* mockup chrome */
+  .mk{position:sticky;top:0;z-index:10;background:#1e1e2e;color:#fff;padding:11px 14px;}
+  .mk-t{font:700 13px/1.2 system-ui;color:#cfcfe6;margin-bottom:8px;}
+  .mk-t b{color:#fff;}
+  .mk-pills{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+  .mk-pill{font:700 13px/1 'Nunito';color:#cdd;background:#33334a;border:none;border-radius:99px;padding:9px 12px;cursor:pointer;}
+  .mk-pill.on{background:#fff;color:#1e1e2e;}
+  .mk-pill.ref{background:#2a2a3e;color:#8a8aa0;border:1px solid #44445f;}
+  .mk-pill.ref.on{background:#5a5a6e;color:#fff;}
+  .mk-replay{margin-left:auto;font:700 13px/1 'Nunito';color:#1e1e2e;background:#1FB8A8;border:none;border-radius:99px;padding:9px 14px;cursor:pointer;}
+  .mk-cap{font:600 12px/1.45 system-ui;color:#9a9ab0;margin-top:9px;max-width:680px;}
+
+  .wrap{max-width:560px;margin:26px auto;padding:0 18px;}
+  /* the real card */
+  .dcard{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--shadow-cool);padding:18px 18px 20px;}
+  .section-head{font-family:'Fredoka',sans-serif;font-weight:700;font-size:20px;display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .hint{font-family:'Nunito';font-weight:600;font-size:13px;color:var(--ink-faint);}
+  .trend-compare{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13px;color:var(--teal-dk);margin-bottom:10px;}
+  .trend-svg{width:100%;height:180px;display:block;overflow:visible;}
+
+  /* spring-dots keyframe */
+  @keyframes dotPop{0%{transform:scale(0);}70%{transform:scale(1.35);}100%{transform:scale(1);}}
+  .spring-dot{transform-box:fill-box;transform-origin:center;animation:dotPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+</style>
+</head>
+<body>
+
+<div class="mk">
+  <div class="mk-t">🛠 MOCKUP · <b>“Accuracy over time” — animation ideas</b></div>
+  <div class="mk-pills">
+    <button class="mk-pill on" data-m="grow">1 · Grow</button>
+    <button class="mk-pill" data-m="liquid">2 · Liquid fill</button>
+    <button class="mk-pill" data-m="fade">3 · Fade &amp; settle</button>
+    <button class="mk-pill" data-m="wipe">4 · Wipe</button>
+    <button class="mk-pill" data-m="spring">5 · Spring dots</button>
+    <button class="mk-pill ref" data-m="snake">ref · Current (snake)</button>
+    <button class="mk-replay" id="replay">↻ Replay</button>
+  </div>
+  <div class="mk-cap" id="cap"></div>
+</div>
+
+<div class="wrap">
+  <div class="dcard">
+    <div class="section-head">Accuracy over time <span class="hint">Last 7 weeks</span></div>
+    <div class="trend-compare">+6% vs last week</div>
+    <svg class="trend-svg" id="svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var NS='http://www.w3.org/2000/svg';
+  var DATA=[0.55,0.62,0.60,0.71,0.68,0.80,0.86];
+  var W=700,H=180,padX=40,padY=18;
+  function X(i,n){return padX+(W-2*padX)*(n===1?0.5:i/(n-1));}
+  function Y(v){return padY+(H-2*padY)*(1-v);}
+  var BASE=Y(0), n=DATA.length, FY=DATA.map(Y);
+  function lineD(ys){var d='M '+X(0,n)+' '+ys[0];for(var i=1;i<n;i++)d+=' L '+X(i,n)+' '+ys[i];return d;}
+  function areaD(ys){var d='M '+X(0,n)+' '+ys[0];for(var i=1;i<n;i++)d+=' L '+X(i,n)+' '+ys[i];d+=' L '+X(n-1,n)+' '+BASE+' L '+X(0,n)+' '+BASE+' Z';return d;}
+  function el(name,attrs){var e=document.createElementNS(NS,name);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+
+  var svg=document.getElementById('svg'), curRAF=null;
+  function raf(dur,ease,step,done){
+    var t0=null;
+    function f(ts){if(t0===null)t0=ts;var p=Math.min(1,(ts-t0)/dur);step(ease(p));if(p<1)curRAF=requestAnimationFrame(f);else{curRAF=null;if(done)done();}}
+    curRAF=requestAnimationFrame(f);
+  }
+  var easeOut=function(p){return 1-Math.pow(1-p,3);};
+  var easeInOut=function(p){return p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;};
+
+  function grid(){
+    [0,0.5,1].forEach(function(g){
+      svg.appendChild(el('line',{x1:padX,x2:W-padX,y1:Y(g),y2:Y(g),stroke:'#e9e4d6','stroke-width':1,'stroke-dasharray':g===0.5?'4 5':'0'}));
+      var t=el('text',{x:padX-6,y:Y(g)+4,'text-anchor':'end','font-size':11,'font-family':'Nunito','font-weight':700,fill:'#b0b0c0'});
+      t.textContent=Math.round(g*100)+'%';svg.appendChild(t);
+    });
+  }
+  function build(ys){
+    var g=el('g',{}); svg.appendChild(g);
+    var area=el('path',{d:areaD(ys),fill:'rgba(31,184,168,0.10)'}); g.appendChild(area);
+    var line=el('path',{d:lineD(ys),fill:'none',stroke:'#1FB8A8','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'}); g.appendChild(line);
+    var dots=[];
+    for(var i=0;i<n;i++){var c=el('circle',{cx:X(i,n),cy:ys[i],r:4.5,fill:'#fff',stroke:'#0e8475','stroke-width':2.5});g.appendChild(c);dots.push(c);}
+    return {g:g,area:area,line:line,dots:dots};
+  }
+
+  var CAPS={
+    grow:"1 · GROW — every point rises from 0% up to its value, like the data growing up out of the baseline. Organic, no directional draw.",
+    liquid:"2 · LIQUID FILL — the teal area fills from the bottom up; the line is revealed at the rising waterline. Reads as 'filling up' — apt for accuracy.",
+    fade:"3 · FADE & SETTLE — the whole chart fades in and gently settles with a soft overshoot. Calm and premium; no slither at all.",
+    wipe:"4 · WIPE — a left-to-right reveal unveils the already-finished chart at once (a scan), rather than a line being drawn.",
+    spring:"5 · SPRING DOTS — the points bounce into place one by one; the line and fill fade in behind them. Playful and poppy.",
+    snake:"ref · CURRENT — the shipped draw-on line ('snake') for comparison."
+  };
+
+  function run(mode){
+    if(curRAF){cancelAnimationFrame(curRAF);curRAF=null;}
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    document.getElementById('cap').textContent=CAPS[mode];
+    grid();
+
+    if(mode==='grow'){
+      var flat=FY.map(function(){return BASE;});
+      var o=build(flat);
+      raf(950,easeOut,function(e){
+        var ys=FY.map(function(fy){return BASE+(fy-BASE)*e;});
+        o.area.setAttribute('d',areaD(ys)); o.line.setAttribute('d',lineD(ys));
+        o.dots.forEach(function(c,i){c.setAttribute('cy',ys[i]);});
+      });
+    }
+    else if(mode==='liquid'){
+      var defs=el('defs',{}); var cp=el('clipPath',{id:'liq'}); var r=el('rect',{x:0,y:H,width:W,height:0}); cp.appendChild(r); defs.appendChild(cp); svg.appendChild(defs);
+      var o=build(FY); o.g.setAttribute('clip-path','url(#liq)');
+      raf(1100,easeOut,function(e){ r.setAttribute('y',H-H*e); r.setAttribute('height',H*e); });
+    }
+    else if(mode==='fade'){
+      var o=build(FY);
+      o.g.style.opacity='0'; o.g.style.transform='translateY(12px)';
+      o.g.style.transition='opacity .55s ease, transform .6s cubic-bezier(.34,1.56,.64,1)';
+      void svg.getBoundingClientRect();
+      o.g.style.opacity='1'; o.g.style.transform='none';
+    }
+    else if(mode==='wipe'){
+      var defs2=el('defs',{}); var cp2=el('clipPath',{id:'wp'}); var r2=el('rect',{x:0,y:0,width:0,height:H}); cp2.appendChild(r2); defs2.appendChild(cp2); svg.appendChild(defs2);
+      var o=build(FY); o.g.setAttribute('clip-path','url(#wp)');
+      raf(900,easeInOut,function(e){ r2.setAttribute('width',W*e); });
+    }
+    else if(mode==='spring'){
+      var o=build(FY);
+      o.area.style.opacity='0'; o.line.style.opacity='0';
+      o.area.style.transition='opacity .5s ease .15s'; o.line.style.transition='opacity .5s ease .2s';
+      void svg.getBoundingClientRect();
+      o.area.style.opacity='1'; o.line.style.opacity='1';
+      o.dots.forEach(function(c,i){ c.classList.add('spring-dot'); c.style.animationDelay=(i*70)+'ms'; });
+    }
+    else { // snake — the current draw-on
+      var o=build(FY);
+      var len=o.line.getTotalLength();
+      o.line.style.strokeDasharray=len; o.line.style.strokeDashoffset=len;
+      o.area.style.opacity='0';
+      void svg.getBoundingClientRect();
+      o.line.style.transition='stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)';
+      o.area.style.transition='opacity .7s ease .55s';
+      o.line.style.strokeDashoffset='0'; o.area.style.opacity='1';
+      o.dots.forEach(function(c,i){ c.style.opacity='0'; c.style.transition='opacity .3s ease'; setTimeout(function(){c.style.opacity='1';},620+i*90); });
+    }
+  }
+
+  var pills=document.querySelectorAll('.mk-pill'), current='grow';
+  pills.forEach(function(p){p.addEventListener('click',function(){
+    pills.forEach(function(x){x.classList.remove('on');}); p.classList.add('on');
+    current=p.dataset.m; run(current);
+  });});
+  document.getElementById('replay').addEventListener('click',function(){run(current);});
+  run('grow');
+})();
+</script>
+</body>
+</html>
