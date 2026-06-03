@@ -2230,12 +2230,19 @@
             actEl.appendChild(next);
           } else {
             var start = document.createElement('button'); start.className = 'splash-cta'; start.textContent = 'Start my first round →';
-            // Actually LAUNCH the recommended first round (cold-start = note-names,
-            // easy) via the same handoff the Play bar uses — a real payoff, not just
-            // closing to Studio. Falls back to closing if no rec is available.
+            // Actually LAUNCH a real first round via the Play-bar handoff — a real
+            // payoff, not just closing to Studio. Robust to state: prefer currentRec
+            // (set by renderToday), else ask the recommender, else hard-fall-back to
+            // note-names/easy so it ALWAYS launches (currentRec is null on the guest
+            // path, where renderToday never ran).
             start.addEventListener('click', function () {
-              if (currentRec && typeof startRecommended === 'function') startRecommended(currentRec);
-              else hide();
+              var rec = currentRec;
+              if (!rec && window.QN && QN.recommend && QN.recommend.next && active) {
+                try { rec = QN.recommend.next(active.id); } catch (e) {}
+              }
+              if (!rec || !rec.module) rec = { module: 'note-names', tier: 'easy', length: 10 };
+              if (typeof startRecommended === 'function') startRecommended(rec);
+              else window.location.href = rec.module + '.html';
             });
             var how = document.createElement('a'); how.className = 'splash-cta2'; how.href = 'rewards.html'; how.textContent = 'See how it works';
             actEl.appendChild(start); actEl.appendChild(how);
