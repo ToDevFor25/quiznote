@@ -39,11 +39,18 @@
   h1 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.1; margin-bottom: 12px; }
   .lede { font-size: 16px; color: var(--ink-soft); margin-bottom: 30px; }
 
-  .card { background: #fff; border: 2.5px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--shadow-cool); padding: 22px 22px; margin-bottom: 22px; }
-  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .card { background: #fff; border: 2.5px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--shadow-cool); margin-bottom: 18px; overflow: hidden; }
+  .card-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 18px 20px; background: none; border: none; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  .card-head:focus-visible { outline: 3px solid var(--teal); outline-offset: -3px; }
   .card-ico { font-size: 26px; flex: none; }
-  .card h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 21px; }
+  .card h2 { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 21px; flex: 1; }
+  .acc-chev { font-size: 15px; color: var(--ink-soft); flex: none; transition: transform .3s ease; }
+  .card.open .acc-chev { transform: rotate(180deg); }
+  .acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .38s cubic-bezier(.4,0,.2,1); }
+  .card.open .acc-body { grid-template-rows: 1fr; }
+  .acc-body-inner { min-height: 0; overflow: hidden; padding: 0 20px 20px; }
   .card .sub { font-size: 14px; color: var(--ink-soft); margin-bottom: 16px; }
+  @media (prefers-reduced-motion: reduce) { .acc-body, .acc-chev { transition: none; } }
 
   /* Levels */
   .levels { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
@@ -103,50 +110,60 @@
   <p class="lede">QuizNote rewards practice in five ways — every one is earned by playing, and nothing is ever paywalled or locked behind purchases. Here's the full picture so you always know what you're working toward.</p>
 
   <!-- LEVELS -->
-  <div class="card">
-    <div class="card-head"><span class="card-ico">⭐</span><h2>Levels &amp; XP</h2></div>
-    <p class="sub">Your overall journey. Every round earns XP, which raises your Learner Level and rank — a measure of how much you've practiced across the whole app.</p>
-    <div class="levels" id="levels"></div>
-    <div class="xp-rules">
-      <b>How XP is earned each round:</b>
-      <ul id="xp-rules"></ul>
-    </div>
+  <div class="card open">
+    <button class="card-head" type="button" aria-expanded="true" aria-controls="acc-levels"><span class="card-ico">⭐</span><h2>Levels &amp; XP</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+    <div class="acc-body" id="acc-levels"><div class="acc-body-inner">
+      <p class="sub">Your overall journey. Every round earns XP, which raises your Learner Level and rank — a measure of how much you've practiced across the whole app.</p>
+      <div class="levels" id="levels"></div>
+      <div class="xp-rules">
+        <b>How XP is earned each round:</b>
+        <ul id="xp-rules"></ul>
+      </div>
+    </div></div>
   </div>
 
   <!-- MEDALS -->
   <div class="card">
-    <div class="card-head"><span class="card-ico">🏅</span><h2>Mastery medals</h2></div>
-    <p class="sub">Per-module depth. Each of the 35 modules has three difficulty levels; clear a level by scoring <b>85%+ accuracy in 2 rounds</b>. Your medal shows the hardest level you've cleared. (You'll see these as colored dots on your journey map.)</p>
-    <div class="medal-row"><span class="medal-dot bronze"></span><span class="medal-name bronze">Bronze</span><span class="medal-desc">Cleared the <b>Easy</b> level.</span></div>
-    <div class="medal-row"><span class="medal-dot silver"></span><span class="medal-name silver">Silver</span><span class="medal-desc">Cleared the <b>Medium</b> level.</span></div>
-    <div class="medal-row"><span class="medal-dot gold"></span><span class="medal-name gold">Gold</span><span class="medal-desc">Cleared the <b>Tricky</b> level — the module is fully mastered.</span></div>
+    <button class="card-head" type="button" aria-expanded="false" aria-controls="acc-medals"><span class="card-ico">🏅</span><h2>Mastery medals</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+    <div class="acc-body" id="acc-medals"><div class="acc-body-inner">
+      <p class="sub">Per-module depth. Each of the 35 modules has three difficulty levels; clear a level by scoring <b>85%+ accuracy in 2 rounds</b>. Your medal shows the hardest level you've cleared. (You'll see these as colored dots on your journey map.)</p>
+      <div class="medal-row"><span class="medal-dot bronze"></span><span class="medal-name bronze">Bronze</span><span class="medal-desc">Cleared the <b>Easy</b> level.</span></div>
+      <div class="medal-row"><span class="medal-dot silver"></span><span class="medal-name silver">Silver</span><span class="medal-desc">Cleared the <b>Medium</b> level.</span></div>
+      <div class="medal-row"><span class="medal-dot gold"></span><span class="medal-name gold">Gold</span><span class="medal-desc">Cleared the <b>Tricky</b> level — the module is fully mastered.</span></div>
+    </div></div>
   </div>
 
   <!-- BADGES -->
   <div class="card">
-    <div class="card-head"><span class="card-ico">🎖️</span><h2>Badges to collect</h2></div>
-    <p class="sub">Milestones for the things worth celebrating — your first round, perfect games, streaks, exploring new areas, and reaching new ranks. They fill your Collection on My Studio as you earn them.</p>
-    <div class="badge-grid" id="badge-grid"></div>
+    <button class="card-head" type="button" aria-expanded="false" aria-controls="acc-badges"><span class="card-ico">🎖️</span><h2>Badges to collect</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+    <div class="acc-body" id="acc-badges"><div class="acc-body-inner">
+      <p class="sub">Milestones for the things worth celebrating — your first round, perfect games, streaks, exploring new areas, and reaching new ranks. They fill your Collection on My Studio as you earn them.</p>
+      <div class="badge-grid" id="badge-grid"></div>
+    </div></div>
   </div>
 
   <!-- STREAKS -->
   <div class="card">
-    <div class="card-head"><span class="card-ico">🔥</span><h2>Streaks &amp; weekly goal</h2></div>
-    <p class="sub">Consistency, gently encouraged.</p>
-    <div class="info-list">
-      <div class="info-row"><span class="info-ico">🔥</span><div><b>Day streak</b> — the number of days in a row you've practiced. Play at least one round each day to keep it growing. (Today counts the moment you play; miss a full day and it resets.)</div></div>
-      <div class="info-row"><span class="info-ico">◷</span><div><b>Weekly goal</b> — pick how many days a week you want to practice (3, 5, or daily). My Studio shows your progress toward it each week.</div></div>
-    </div>
+    <button class="card-head" type="button" aria-expanded="false" aria-controls="acc-streaks"><span class="card-ico">🔥</span><h2>Streaks &amp; weekly goal</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+    <div class="acc-body" id="acc-streaks"><div class="acc-body-inner">
+      <p class="sub">Consistency, gently encouraged.</p>
+      <div class="info-list">
+        <div class="info-row"><span class="info-ico">🔥</span><div><b>Day streak</b> — the number of days in a row you've practiced. Play at least one round each day to keep it growing. (Today counts the moment you play; miss a full day and it resets.)</div></div>
+        <div class="info-row"><span class="info-ico">◷</span><div><b>Weekly goal</b> — pick how many days a week you want to practice (3, 5, or daily). My Studio shows your progress toward it each week.</div></div>
+      </div>
+    </div></div>
   </div>
 
   <!-- QUESTS -->
   <div class="card">
-    <div class="card-head"><span class="card-ico">🎯</span><h2>Daily quests</h2></div>
-    <p class="sub">Three small goals refresh every day on My Studio — quick wins that nudge you to mix things up.</p>
-    <div class="info-list">
-      <div class="info-row"><span class="info-ico">✅</span><div><b>Play to complete them</b> — each quest is met just by playing (a round, a clean score, a Theory module, a longer round, and so on). They award bonus XP and reset at midnight.</div></div>
-      <div class="info-row"><span class="info-ico">🌟</span><div><b>One guaranteed win</b> — the first quest each day is always "play a round," so you can start your streak and earn XP right away.</div></div>
-    </div>
+    <button class="card-head" type="button" aria-expanded="false" aria-controls="acc-quests"><span class="card-ico">🎯</span><h2>Daily quests</h2><span class="acc-chev" aria-hidden="true">▾</span></button>
+    <div class="acc-body" id="acc-quests"><div class="acc-body-inner">
+      <p class="sub">Three small goals refresh every day on My Studio — quick wins that nudge you to mix things up.</p>
+      <div class="info-list">
+        <div class="info-row"><span class="info-ico">✅</span><div><b>Play to complete them</b> — each quest is met just by playing (a round, a clean score, a Theory module, a longer round, and so on). They award bonus XP and reset at midnight.</div></div>
+        <div class="info-row"><span class="info-ico">🌟</span><div><b>One guaranteed win</b> — the first quest each day is always "play a round," so you can start your streak and earn XP right away.</div></div>
+      </div>
+    </div></div>
   </div>
 
   <p style="font-size:13px;color:var(--ink-faint);text-align:center;margin-top:8px;">No ads, no pay-to-win — every reward here is earned by practicing. Progress is saved on your device.</p>
@@ -215,6 +232,17 @@
         gridEl.appendChild(item);
       });
     }
+
+    // ── Accordion: tap a header to expand/collapse its section (multi-open;
+    //    first section starts open via .open in the markup). ──
+    var heads = document.querySelectorAll('.card .card-head');
+    Array.prototype.forEach.call(heads, function (h) {
+      h.addEventListener('click', function () {
+        var card = h.closest('.card');
+        var open = card.classList.toggle('open');
+        h.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
 
     // footer year
     var y = new Date().getFullYear();
