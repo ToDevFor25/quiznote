@@ -62,7 +62,7 @@
   // you can restore). Reloads to the current page.
   function forceGuest() {
     try { localStorage.removeItem('qn_activeProfile'); } catch (e) {}
-    clearGates();
+    clearGates(); clearQAFlags();   // show this state's NATURAL splash, not a stuck forced flavor
     reload();
   }
 
@@ -95,7 +95,7 @@
   function forceNewUser() {
     ensureTestProfile();
     wipeEventsFor(QA_PID);
-    clearGates();
+    clearGates(); clearQAFlags();   // natural NEW splash (0 rounds), no stuck force flag
     reload();
   }
 
@@ -107,7 +107,7 @@
     wipeEventsFor(QA_PID);
     seedRounds(QA_PID, opts.rounds || 16, opts.modules || ['note-names', 'intervals', 'triads', 'key-signatures']);
     if (opts.streak) seedStreak(QA_PID, opts.streak);
-    clearGates();
+    clearGates(); clearQAFlags();   // natural RETURNING splash, no stuck force flag
     reload();
   }
 
@@ -164,6 +164,13 @@
   // reappear for testing.
   var GATE_KEYS = ['qn_studio_splash_day', 'qn_studio_recap_day', 'qn_studio_medal_note_dismissed', 'qn_studio_journey_tip_dismissed', 'qn_play_hint_done', 'qn_play_hint_seen', 'qn_play_hint_force'];
   function clearGates() { GATE_KEYS.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} }); }
+
+  // QA force-flags (the splash-flavor toggles). These are STICKY by design so a
+  // forced flavor survives reload — but switching user-state must clear them, or a
+  // flavor you forced earlier sticks across every state ("launching on all
+  // flavors"). The state buttons call this so each state shows its NATURAL splash.
+  var QA_FLAG_KEYS = ['qn_qa_force_splash', 'qn_qa_splash_new', 'qn_qa_splash_guest', 'qn_qa_hide_splash'];
+  function clearQAFlags() { QA_FLAG_KEYS.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} }); }
 
   // Snapshot / restore real progress (also doubles as a manual backup).
   var SNAP_KEY = 'qn_debug_snapshot';
@@ -251,6 +258,7 @@
     panel.appendChild(flagToggle('splash_new', 'Force NEW-user splash'));
     panel.appendChild(flagToggle('splash_guest', 'Force GUEST splash'));
     panel.appendChild(flagToggle('hide_splash', 'Disable splash'));
+    panel.appendChild(row('✖ Clear all QA flags', function () { clearQAFlags(); toast('QA flags cleared — reload'); }, '#7a3030'));
 
     panel.appendChild(heading('Backup'));
     panel.appendChild(row('💾 Snapshot my real data', snapshot, '#2f6f4a'));
