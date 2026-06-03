@@ -303,6 +303,14 @@
   }
   .gtile:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--shadow-cool); }
   .gtile.on { border-color: var(--teal-dk); background: var(--teal-lt); }
+  /* #2 empty-state invitation: a new user's 0/0/0 tiles glow + breathe so they
+     read as "play to light these up" instead of dead zeros. */
+  .gtile.empty-glow { border-color: var(--teal); animation: gtileBreathe 2.4s ease-in-out infinite; }
+  .gtile.empty-glow .g-lab b { color: var(--teal-dk); }
+  @keyframes gtileBreathe { 0%,100% { box-shadow: 0 4px 0 var(--shadow-cool), 0 0 0 0 rgba(31,184,168,0); } 50% { box-shadow: 0 4px 0 var(--shadow-cool), 0 0 0 4px rgba(31,184,168,0.18); } }
+  .glance-empty-hint { text-align: center; font-size: 11.5px; color: var(--teal-dk); font-weight: 700; margin-top: 9px; }
+  .glance-empty-hint[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .gtile.empty-glow { animation: none; } }
   .g-ring { width: 38px; height: 38px; }
   #g-quest-ring { transition: stroke-dashoffset 700ms cubic-bezier(.4,0,.2,1); }
   .g-flames { font-size: 26px; line-height: 1; }
@@ -772,10 +780,10 @@
 
   <!-- ANONYMOUS: no active profile -->
   <section class="empty" id="state-anon" hidden>
-    <div class="emoji">🎵</div>
-    <h2>Make a profile to get a path</h2>
-    <p>Add a fun nickname and QuizNote will point you to exactly what to practice next.</p>
-    <a href="profile.html" class="btn big">Add a name →</a>
+    <div class="emoji" id="anon-emoji">🎵</div>
+    <h2 id="anon-h2">Make a profile to get a path</h2>
+    <p id="anon-p">Add a fun nickname and QuizNote will point you to exactly what to practice next.</p>
+    <a href="profile.html" class="btn big" id="anon-cta">Add a name →</a>
     <div style="margin-top:14px"><a href="play.html" class="plink">Or just browse all modules →</a></div>
   </section>
 
@@ -802,6 +810,7 @@
         </button>
       </div>
       <div class="g-cue" id="g-cue">tap a tile to open ▾</div>
+      <div class="glance-empty-hint" id="glance-empty-hint" hidden>▶ Play a round to start filling these up</div>
 
       <!-- QUESTS panel -->
       <div class="g-panel" id="panel-quests"><div class="g-panel-in">
@@ -1457,6 +1466,18 @@
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bar.classList.toggle('open'); }
       });
     });
+  }
+
+  // ── #2 Empty-state invitation: when a NEW user's metrics are essentially blank
+  //    (< NEW_USER_ROUND_THRESHOLD rounds), make the glance tiles glow + show a
+  //    "play to fill these" hint so 0/0/0 reads as opportunity, not a dead end.
+  function markNewUserGlance(events) {
+    var fresh = (events ? events.length : 0) < NEW_USER_ROUND_THRESHOLD;
+    var hint = $('glance-empty-hint');
+    ['gt-quests', 'gt-momentum', 'gt-badges'].forEach(function (id) {
+      var t = $(id); if (t) { if (fresh) t.classList.add('empty-glow'); else t.classList.remove('empty-glow'); }
+    });
+    if (hint) hint.hidden = !fresh;
   }
 
   // ── GLANCE ROW: tap a mini-viz tile to expand its detail panel below the row
@@ -2274,6 +2295,16 @@
 
     var active = QN.profile.getActive();
     if (!active) {
+      // #7 — a guest who's already PLAYED rounds (held anonymously) gets a warmer
+      // "save your progress" framing instead of the generic "make a profile". Same
+      // profile.html target; creating a profile auto-backfills the held rounds.
+      var pending = (QN.events && QN.events.pendingCount) ? QN.events.pendingCount() : 0;
+      if (pending > 0) {
+        if ($('anon-emoji')) $('anon-emoji').textContent = '🎉';
+        if ($('anon-h2')) $('anon-h2').textContent = 'Ready to save your progress?';
+        if ($('anon-p')) $('anon-p').textContent = 'You’ve played ' + pending + ' round' + (pending === 1 ? '' : 's') + ' as a guest. Add a name and we’ll keep your scores, streak, and badges.';
+        if ($('anon-cta')) $('anon-cta').textContent = 'Save my progress →';
+      }
       $('state-anon').hidden = false;
       maybeShowSplash(null, []);   // GUEST splash (value pitch + try-a-round)
       return;
@@ -2290,6 +2321,7 @@
     renderMomentum(active, events);
     renderJourney(events);
     renderBadgeWall(active);
+    markNewUserGlance(events);   // #2 — glow empty tiles for new users
     renderWeak(events);
     drawTrend(events);
     _shareEvents = events;
