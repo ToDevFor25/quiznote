@@ -2208,12 +2208,13 @@
     return 'returning';
   }
 
-  function makeConfetti(conf) {
+  function makeConfetti(conf, n) {
     if (!conf) return;
     conf.innerHTML = '';
     var g = ['♪', '♫', '✨', '🎵', '🌟'];
-    for (var i = 0; i < 16; i++) {
-      var ang = Math.PI * 2 * i / 16 + (Math.random() - 0.5) * 0.4;
+    var total = n || 16;
+    for (var i = 0; i < total; i++) {
+      var ang = Math.PI * 2 * i / total + (Math.random() - 0.5) * 0.4;
       var dist = 90 + Math.random() * 70;
       var s = document.createElement('span');
       s.className = 'c'; s.textContent = g[i % 5];
@@ -2258,12 +2259,34 @@
 
     if (state === 'returning') {
       var nm = active && active.nickname ? ', ' + active.nickname : '';
-      if ($('splash-h2')) $('splash-h2').textContent = 'Welcome back!';
-      if ($('splash-p')) $('splash-p').textContent = 'Good to see you' + nm;
-      makeConfetti(conf);
+      // #5 daily-return reward — CELEBRATION ONLY. No XP, no logged event, no
+      // schema: this enriches the once-a-day arrival splash to *reward* the
+      // streak/comeback the user already carries (read mirrors renderMomentum).
+      var streak = (window.QN && QN.home && QN.home.streakFor)
+        ? (QN.home.streakFor(active.id).current || 0) : streakLocal(events);
+      var milestone = [3, 5, 7, 10, 14, 21, 30, 50, 100].indexOf(streak) >= 0;
+      var h2, p, dwell = 2000, confN = 16;
+      if (streak >= 2) {
+        h2 = '🔥 ' + streak + ' days in a row!';
+        if (milestone) {
+          p = streak + '-day streak' + nm + ' — you’re on fire!';
+          dwell = 2800; confN = 28;
+        } else {
+          p = 'Keep it going' + nm + ' — play a round to extend your streak.';
+        }
+      } else if (streak === 1) {
+        h2 = 'Welcome back!';
+        p = 'Good to see you' + nm + ' — play today to start a streak.';
+      } else { // streak 0 = returning after a break (a comeback)
+        h2 = 'Welcome back!';
+        p = 'Good to see you' + nm + ' — ready to start a new streak?';
+      }
+      if ($('splash-h2')) $('splash-h2').textContent = h2;
+      if ($('splash-p')) $('splash-p').textContent = p;
+      makeConfetti(conf, confN);
       if (rEl) rEl.hidden = false;
       reveal();
-      var t = setTimeout(hide, 2000);
+      var t = setTimeout(hide, dwell);
       el.addEventListener('click', function () { clearTimeout(t); hide(); });
 
     } else if (state === 'guest') {
