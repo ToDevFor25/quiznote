@@ -654,7 +654,12 @@
   .trend-card .hint { font-family:'Nunito'; font-weight:600; font-size:13px; color:var(--ink-faint); }
   .trend-compare { font-family:'Fredoka',sans-serif; font-weight:700; font-size:13px; color:var(--teal-dk); margin-bottom:8px; }
   .trend-svg { width:100%; height:180px; display:block; overflow:visible; }
-  .trend-empty { color:var(--ink-faint); font-weight:600; font-size:14px; padding:8px 0; }
+  .trend-svg[hidden] { display:none; }
+  .trend-empty { display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; color:var(--ink-faint); font-weight:600; font-size:14px; padding:16px 8px 10px; }
+  .trend-spark { width:200px; max-width:78%; height:46px; overflow:visible; }
+  .trend-spark-path { fill:none; stroke:var(--teal); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; opacity:.5; stroke-dasharray:7 10; animation:sparkMarch 2.6s linear infinite; }
+  @keyframes sparkMarch { to { stroke-dashoffset:-170; } }
+  @media (prefers-reduced-motion: reduce) { .trend-spark-path { animation:none; stroke-dasharray:none; opacity:.42; } }
 
   /* ── Module mastery grid ── */
   .mastery-note { position:relative; background:var(--grape-lt); border:2px solid var(--grape); border-radius:14px; padding:11px 34px 11px 16px; margin:11px 0 0; font-size:13px; color:var(--grape-dk); line-height:1.45; }
@@ -934,7 +939,10 @@
       <div class="section-head">Accuracy over time <span class="hint" id="trend-hint"></span></div>
       <div class="trend-compare" id="trend-compare" hidden></div>
       <svg class="trend-svg" id="trend-svg" viewBox="0 0 700 180" preserveAspectRatio="none"></svg>
-      <div class="trend-empty" id="trend-empty" hidden>Play a few more rounds to see your trend.</div>
+      <div class="trend-empty" id="trend-empty" hidden>
+        <svg class="trend-spark" viewBox="0 0 220 48" preserveAspectRatio="none" aria-hidden="true"><path class="trend-spark-path" d="M2,40 C38,40 44,12 70,18 C96,24 112,6 140,14 C168,22 190,32 218,8"/></svg>
+        <span>Your accuracy trend appears here once you’ve practiced a couple of rounds.</span>
+      </div>
     </div>
 
     <!-- SHARE / SAVE AS PDF (migrated from dashboard)
@@ -1928,9 +1936,28 @@
     for (var j = 1; j < n; j++) lineD += ' L ' + x(j) + ' ' + y(weekly[j].acc);
     var line = document.createElementNS(NS, 'path'); line.setAttribute('d', lineD); line.setAttribute('fill', 'none');
     line.setAttribute('stroke', '#1FB8A8'); line.setAttribute('stroke-width', '3'); line.setAttribute('stroke-linejoin', 'round'); line.setAttribute('stroke-linecap', 'round'); svg.appendChild(line);
+    var dots = [];
     for (var k = 0; k < n; k++) {
       var c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', x(k)); c.setAttribute('cy', y(weekly[k].acc));
-      c.setAttribute('r', '4.5'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0e8475'); c.setAttribute('stroke-width', '2.5'); svg.appendChild(c);
+      c.setAttribute('r', '4.5'); c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0e8475'); c.setAttribute('stroke-width', '2.5'); svg.appendChild(c); dots.push(c);
+    }
+    // Magical draw-on reveal: the line draws itself, the area fades up, the
+    // dots pop in one by one. Reduced-motion users get the final chart instantly.
+    var reduceTrend = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceTrend) {
+      try {
+        var len = line.getTotalLength();
+        line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+        area.style.opacity = '0';
+        void svg.getBoundingClientRect();   // reflow so the transitions fire
+        line.style.transition = 'stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)';
+        area.style.transition = 'opacity .7s ease .55s';
+        line.style.strokeDashoffset = '0'; area.style.opacity = '1';
+        dots.forEach(function (dc, idx) {
+          dc.style.opacity = '0'; dc.style.transition = 'opacity .3s ease';
+          setTimeout(function () { dc.style.opacity = '1'; }, 620 + idx * 90);
+        });
+      } catch (e) { /* getTotalLength unsupported — leave chart static */ }
     }
   }
 
