@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QuizNote — Next-Level ideas (7 mockups)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFAF0; --ink:#2A2A3E; --ink-soft:#5a5a6e; --ink-faint:#8a8472;
+    --teal:#1FB8A8; --teal-dk:#0e8475; --teal-lt:#d3f1ec;
+    --grape:#5B3FE4; --grape-dk:#3d28a8; --grape-lt:#ede8ff;
+    --coral:#FF6B6B; --coral-dk:#c2453f; --sun:#FFB627; --sun-dk:#c98800; --sun-lt:#fff3cc;
+    --gold:#E6B422; --silver:#A8A8B0; --bronze:#CD7F32;
+    --shadow-cool:#d8d6cc; --line:rgba(42,42,62,0.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Nunito',system-ui,sans-serif;background:var(--cream);color:var(--ink);-webkit-tap-highlight-color:transparent;}
+
+  /* chrome */
+  .mk{position:sticky;top:0;z-index:20;background:#1e1e2e;color:#fff;padding:11px 14px;}
+  .mk-t{font:700 13px/1.2 system-ui;color:#cfcfe6;margin-bottom:8px;}.mk-t b{color:#fff;}
+  .mk-pills{display:flex;gap:6px;flex-wrap:wrap;}
+  .mk-pill{font:700 12.5px/1 'Nunito';color:#cdd;background:#33334a;border:none;border-radius:99px;padding:8px 11px;cursor:pointer;}
+  .mk-pill.on{background:#fff;color:#1e1e2e;}
+  .mk-cap{font:600 12px/1.45 system-ui;color:#9a9ab0;margin-top:9px;max-width:700px;}
+
+  .wrap{max-width:520px;margin:24px auto;padding:0 18px 80px;}
+  .panel{display:none;} .panel.on{display:block;}
+  h2.title{font-family:'Fredoka',sans-serif;font-weight:700;font-size:24px;margin-bottom:4px;}
+  p.lede{color:var(--ink-soft);font-size:14px;margin-bottom:18px;}
+
+  .card{background:#fff;border:2.5px solid var(--ink);border-radius:18px;box-shadow:0 5px 0 var(--shadow-cool);padding:18px;margin-bottom:16px;}
+  .card h3{font-family:'Fredoka',sans-serif;font-weight:700;font-size:17px;margin-bottom:10px;}
+  .btn{font-family:'Fredoka',sans-serif;font-weight:700;font-size:15px;border:2.5px solid var(--ink);border-radius:12px;padding:11px 16px;cursor:pointer;background:#fff;box-shadow:0 3px 0 var(--shadow-cool);transition:transform .08s,box-shadow .08s;}
+  .btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--shadow-cool);}
+  .btn.teal{background:var(--teal);color:#fff;border-color:var(--teal-dk);box-shadow:0 3px 0 var(--teal-dk);}
+  .btn.grape{background:var(--grape);color:#fff;border-color:var(--grape-dk);box-shadow:0 3px 0 var(--grape-dk);}
+  .btn.coral{background:var(--coral);color:#fff;border-color:var(--coral-dk);box-shadow:0 3px 0 var(--coral-dk);}
+  .btn.sm{font-size:13px;padding:8px 12px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .muted{color:var(--ink-faint);font-size:13px;font-weight:600;}
+  .tag{display:inline-block;font:700 11px/1 'Nunito';padding:4px 8px;border-radius:99px;letter-spacing:.04em;}
+  .tag.t3{background:var(--coral);color:#fff;} .tag.q{background:var(--teal-lt);color:var(--teal-dk);} .tag.m{background:var(--sun-lt);color:var(--sun-dk);} .tag.big{background:var(--grape-lt);color:var(--grape-dk);}
+
+  /* 2 combo */
+  .combo-num{font-family:'Fredoka',sans-serif;font-weight:700;font-size:64px;line-height:1;text-align:center;color:var(--teal);transition:transform .12s;}
+  .combo-num.bump{transform:scale(1.25);}
+  .combo-meter{height:14px;border-radius:99px;background:#eee5d6;overflow:hidden;margin:12px 0 6px;border:2px solid var(--ink);}
+  .combo-fill{height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--sun),var(--coral));transition:width .25s;}
+  .combo-mult{text-align:center;font-family:'Fredoka',sans-serif;font-weight:700;color:var(--sun-dk);}
+  .combo-xp{text-align:center;font-weight:800;color:var(--ink-soft);margin-top:6px;}
+
+  /* 3 smart review */
+  .sr-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .sr-row:last-child{border-bottom:none;}
+  .sr-name{flex:1;}.sr-name b{font-family:'Fredoka',sans-serif;}
+  .sr-due{font:700 11px/1 'Nunito';padding:4px 8px;border-radius:99px;}
+  .sr-due.now{background:var(--coral);color:#fff;}.sr-due.soon{background:var(--sun-lt);color:var(--sun-dk);}.sr-due.ok{background:var(--teal-lt);color:var(--teal-dk);}
+  .strength{display:flex;gap:3px;}.sdot{width:9px;height:9px;border-radius:50%;background:#e0d8c8;}.sdot.on{background:var(--teal);}
+
+  /* 4 shop */
+  .bal{display:flex;align-items:center;justify-content:space-between;background:var(--grape-lt);border:2px solid var(--grape);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-family:'Fredoka',sans-serif;font-weight:700;color:var(--grape-dk);}
+  .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .shop-item{border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center;background:var(--cream);}
+  .shop-ico{font-size:30px;}.shop-nm{font-family:'Fredoka',sans-serif;font-weight:700;font-size:13px;margin:4px 0;}
+  .shop-buy{font:700 12px/1 'Nunito';border:2px solid var(--grape);background:#fff;color:var(--grape-dk);border-radius:99px;padding:6px 10px;cursor:pointer;margin-top:4px;}
+  .shop-buy.owned{background:var(--grape);color:#fff;}.shop-buy:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* 5 daily */
+  .daily-hero{background:linear-gradient(135deg,var(--grape),var(--grape-dk));color:#fff;border-radius:16px;padding:18px;text-align:center;}
+  .daily-hero .d{font:700 13px/1 'Nunito';opacity:.85;letter-spacing:.06em;text-transform:uppercase;}
+  .daily-hero h3{font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;margin:6px 0;color:#fff;}
+  .dweek{display:flex;gap:7px;justify-content:center;margin-top:12px;}
+  .dday{width:26px;height:26px;border-radius:8px;background:#eee5d6;display:flex;align-items:center;justify-content:center;font:700 11px/1 'Nunito';color:var(--ink-faint);border:2px solid var(--line);}
+  .dday.done{background:var(--sun);border-color:var(--sun-dk);color:#fff;}
+
+  /* 6 motion */
+  .stage{position:relative;height:160px;border:2px dashed var(--line);border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .stage .target{width:84px;height:84px;border-radius:18px;background:var(--teal);border:3px solid var(--teal-dk);display:flex;align-items:center;justify-content:center;font-size:36px;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+  .shake{animation:shake .4s;}
+  @keyframes tb{0%{transform:scale(1)}40%{transform:scale(.9)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .tapb{animation:tb .35s;}
+  .particle{position:absolute;font-size:18px;pointer-events:none;will-change:transform,opacity;}
+
+  /* 7 teacher */
+  .tch-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .joincode{font-family:'Fredoka',sans-serif;font-weight:700;background:var(--sun-lt);color:var(--sun-dk);border:2px solid var(--sun);border-radius:10px;padding:6px 12px;letter-spacing:.08em;}
+  .stu{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .stu:last-child{border-bottom:none;}
+  .stu-dot{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-weight:700;color:#fff;font-size:13px;}
+  .stu-nm{flex:1;font-weight:700;font-size:14px;}
+  .bar{height:8px;width:90px;border-radius:99px;background:#eee5d6;overflow:hidden;}
+  .bar>i{display:block;height:100%;background:var(--teal);}
+  .medals{font-size:13px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<div class="mk">
+  <div class="mk-t">🛠 MOCKUP · <b>QuizNote — 7 next-level ideas</b></div>
+  <div class="mk-pills">
+    <button class="mk-pill on" data-p="audio">1 · Audio juice</button>
+    <button class="mk-pill" data-p="combo">2 · Combo</button>
+    <button class="mk-pill" data-p="review">3 · Smart Review</button>
+    <button class="mk-pill" data-p="shop">4 · Reward shop</button>
+    <button class="mk-pill" data-p="daily">5 · Daily Challenge</button>
+    <button class="mk-pill" data-p="motion">6 · Motion + haptics</button>
+    <button class="mk-pill" data-p="teacher">7 · Teacher mode</button>
+  </div>
+  <div class="mk-cap" id="cap"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- 1 AUDIO -->
+  <section class="panel on" data-p="audio">
+    <h2 class="title">Musical audio juice <span class="tag q">quick</span></h2>
+    <p class="lede">You're a music app — feedback should sound musical. (Turn your volume up; sound starts on first tap.)</p>
+    <div class="card">
+      <h3>Try the palette</h3>
+      <div class="row">
+        <button class="btn teal" id="a-ping">✓ Correct ping</button>
+        <button class="btn coral" id="a-wrong">✗ Wrong</button>
+        <button class="btn grape" id="a-fan">🎉 Level-up fanfare</button>
+        <button class="btn" id="a-logo">🎵 QuizNote logo</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Streak builds a scale</h3>
+      <p class="muted" style="margin-bottom:10px">Tap “Correct” repeatedly — each right answer climbs one note up the scale. Resets on a miss. This is what ties #1 and #2 together.</p>
+      <div class="row"><button class="btn teal" id="a-climb">✓ Correct (climb)</button><button class="btn" id="a-reset">Reset</button></div>
+      <p class="combo-xp" id="a-step">Step 0 / 8</p>
+    </div>
+  </section>
+
+  <!-- 2 COMBO -->
+  <section class="panel" data-p="combo">
+    <h2 class="title">In-round combo meter <span class="tag q">quick</span></h2>
+    <p class="lede">Moment-to-moment tension: a hot-streak meter with a rising pitch and an XP multiplier.</p>
+    <div class="card">
+      <div class="combo-num" id="c-num">0</div>
+      <div class="combo-meter"><div class="combo-fill" id="c-fill"></div></div>
+      <div class="combo-mult" id="c-mult">×1.0</div>
+      <div class="combo-xp" id="c-xp">0 XP this round</div>
+      <div class="row" style="margin-top:14px;justify-content:center">
+        <button class="btn teal" id="c-correct">✓ Correct</button>
+        <button class="btn coral" id="c-wrong">✗ Wrong</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 SMART REVIEW -->
+  <section class="panel" data-p="review">
+    <h2 class="title">Smart Review (spaced repetition) <span class="tag m">medium</span></h2>
+    <p class="lede">Resurfaces the exact concepts you missed, scheduled by memory strength — pure logic over the rounds you already log.</p>
+    <div class="card">
+      <h3>Due for review</h3>
+      <div id="sr-list"></div>
+      <div class="row" style="margin-top:12px"><button class="btn teal sm" id="sr-got">I got it →</button><button class="btn coral sm" id="sr-miss">Missed it</button></div>
+      <p class="muted" style="margin-top:10px">“Got it” strengthens the memory and pushes the next review further out; “Missed” brings it back to today.</p>
+    </div>
+  </section>
+
+  <!-- 4 SHOP -->
+  <section class="panel" data-p="shop">
+    <h2 class="title">Reward shop <span class="tag m">medium</span> <span class="tag t3">Tier 3 · brand</span></h2>
+    <p class="lede">Give XP a <i>sink</i>: spend earned XP on cosmetics. ⚠️ Must stay earned-only to honor “nothing is ever paywalled.”</p>
+    <div class="bal"><span>💰 Your XP</span><span id="shop-bal">1,240</span></div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </section>
+
+  <!-- 5 DAILY -->
+  <section class="panel" data-p="daily">
+    <h2 class="title">Daily Challenge <span class="tag m">medium</span></h2>
+    <p class="lede">One shared puzzle per day — date-seeded, so everyone gets the same set with <b>no server</b>. A proven return hook.</p>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="daily-hero">
+        <div class="d">Daily Challenge</div>
+        <h3 id="d-date">—</h3>
+        <div class="muted" style="color:rgba(255,255,255,.85)">5 mixed questions · everyone gets the same set today</div>
+      </div>
+      <div style="padding:16px">
+        <div class="row" style="justify-content:center"><button class="btn grape" id="d-play">▶ Play today’s challenge</button></div>
+        <p class="combo-xp" id="d-result" style="margin-top:12px"></p>
+        <p class="muted" style="text-align:center;margin-top:6px">Personal best: <b id="d-best">—</b> · 🔥 Daily streak: <b id="d-streak">4</b></p>
+        <div class="dweek" id="d-week"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 MOTION -->
+  <section class="panel" data-p="motion">
+    <h2 class="title">Motion + haptics <span class="tag q">quick</span></h2>
+    <p class="lede">A cohesive juice layer — particles, bounces, screen shake, and real haptics on phones that support it.</p>
+    <div class="card">
+      <div class="stage" id="stage"><div class="target" id="target">🎯</div></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn teal sm" id="m-conf">🎉 Confetti</button>
+        <button class="btn sm" id="m-burst">✨ Burst</button>
+        <button class="btn sm" id="m-bounce">⤵ Tap bounce</button>
+        <button class="btn coral sm" id="m-shake">📳 Shake</button>
+        <button class="btn grape sm" id="m-haptic">📳 Haptic buzz</button>
+      </div>
+      <p class="muted" id="m-haptic-note" style="margin-top:10px"></p>
+    </div>
+  </section>
+
+  <!-- 7 TEACHER -->
+  <section class="panel" data-p="teacher">
+    <h2 class="title">Teacher / Classroom mode <span class="tag big">bigger bet</span> <span class="tag t3">Tier 3 · scope</span></h2>
+    <p class="lede">One teacher = 30 students. Assign module sets, watch class progress, students join with a code. The real growth lever.</p>
+    <div class="card">
+      <div class="tch-head">
+        <div><h3 style="margin:0">Mrs. Lee’s Class</h3><span class="muted">22 students · avg accuracy 81%</span></div>
+        <span class="joincode">JOIN: QN-4827</span>
+      </div>
+      <div class="row" style="margin-bottom:12px"><button class="btn teal sm">＋ Assign a module</button><button class="btn sm">📊 Export report</button></div>
+      <div id="tch-list"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+  /* ---------- Web Audio synth (shared by Audio + Combo) ---------- */
+  var actx=null;
+  function AC(){ if(!actx){var C=window.AudioContext||window.webkitAudioContext; if(C)actx=new C();} return actx; }
+  function tone(freq,dur,type,when,gainv){
+    var ac=AC(); if(!ac)return; if(ac.state==='suspended')ac.resume();
+    var t=ac.currentTime+(when||0), o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(gainv||0.25,t+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+0.03);
+  }
+  var SCALE=[261.63,293.66,329.63,349.23,392.00,440.00,493.88,523.25,587.33,659.25,698.46,783.99];
+  function ping(){ tone(659.25,.16,'sine',0,.25); tone(987.77,.16,'sine',.02,.12); }
+  function wrong(){ tone(196,.18,'sawtooth',0,.18); tone(185,.2,'sawtooth',.05,.14); }
+  function fanfare(){ [523.25,659.25,783.99,1046.5].forEach(function(f,i){tone(f,.32,'triangle',i*0.11,.22);}); }
+  function logo(){ [392,523.25,659.25].forEach(function(f,i){tone(f,.28,'sine',i*0.09,.22);}); }
+
+  /* ---------- 1 AUDIO ---------- */
+  var step=0;
+  on('a-ping',ping); on('a-wrong',wrong); on('a-fan',fanfare); on('a-logo',logo);
+  on('a-climb',function(){ tone(SCALE[Math.min(step,SCALE.length-1)],.24,'triangle',0,.24); step=Math.min(step+1,8); txt('a-step','Step '+step+' / 8'); });
+  on('a-reset',function(){ step=0; txt('a-step','Step 0 / 8'); });
+
+  /* ---------- 2 COMBO ---------- */
+  var combo=0, roundXP=0;
+  function mult(){ return 1+Math.floor(combo/3)*0.5; }
+  function comboRender(bump){
+    var n=document.getElementById('c-num'); n.textContent=combo;
+    n.style.color = combo>=9?'var(--coral)':combo>=3?'var(--sun-dk)':'var(--teal)';
+    document.getElementById('c-fill').style.width=Math.min(100,combo*10)+'%';
+    document.getElementById('c-mult').textContent='×'+mult().toFixed(1);
+    document.getElementById('c-xp').textContent=roundXP+' XP this round';
+    if(bump){ n.classList.add('bump'); setTimeout(function(){n.classList.remove('bump');},120); }
+  }
+  on('c-correct',function(){ combo++; roundXP+=Math.round(10*mult()); tone(SCALE[Math.min(combo,SCALE.length-1)],.2,'triangle',0,.22); comboRender(true); });
+  on('c-wrong',function(){ combo=0; wrong(); comboRender(true); });
+  comboRender(false);
+
+  /* ---------- 3 SMART REVIEW ---------- */
+  var concepts=[
+    {nm:'Note Names — bass clef G', due:'now', s:1},
+    {nm:'Intervals — minor 6th', due:'now', s:1},
+    {nm:'Key Signatures — 3 flats', due:'soon', s:2},
+    {nm:'Triads — diminished', due:'soon', s:2},
+    {nm:'Rhythm — dotted quarter', due:'ok', s:3}
+  ];
+  var srIdx=0;
+  function srRender(){
+    var L=document.getElementById('sr-list'); L.innerHTML='';
+    concepts.forEach(function(c,i){
+      var dots=''; for(var k=0;k<4;k++)dots+='<span class="sdot'+(k<c.s?' on':'')+'"></span>';
+      var lbl=c.due==='now'?'Due today':c.due==='soon'?'Due soon':'On track';
+      L.innerHTML+='<div class="sr-row" style="'+(i===srIdx?'background:var(--teal-lt);border-radius:10px;padding-left:8px;padding-right:8px;':'')+'">'+
+        '<div class="sr-name"><b>'+c.nm+'</b><div class="strength" style="margin-top:5px">'+dots+'</div></div>'+
+        '<span class="sr-due '+c.due+'">'+lbl+'</span></div>';
+    });
+  }
+  function srNext(d){ var c=concepts[srIdx]; if(d>0){c.s=Math.min(4,c.s+1);c.due=c.s>=3?'ok':'soon';}else{c.s=Math.max(1,c.s-1);c.due='now';} srIdx=(srIdx+1)%concepts.length; srRender(); }
+  on('sr-got',function(){srNext(1);}); on('sr-miss',function(){srNext(-1);}); srRender();
+
+  /* ---------- 4 SHOP ---------- */
+  var bal=1240;
+  var items=[
+    {ic:'🎵',nm:'Music-box pack',pr:300,t:'sound'},{ic:'🎹',nm:'Grand piano pack',pr:300,t:'sound'},
+    {ic:'❤️',nm:'Heart note-heads',pr:200,t:'skin'},{ic:'⭐',nm:'Star note-heads',pr:200,t:'skin'},
+    {ic:'🌙',nm:'Midnight theme',pr:500,t:'theme'},{ic:'🌲',nm:'Forest theme',pr:500,t:'theme'},
+    {ic:'👑',nm:'Gold name flair',pr:750,t:'flair'},{ic:'🔥',nm:'Streak flame trail',pr:400,t:'flair'}
+  ];
+  function shopRender(){
+    document.getElementById('shop-bal').textContent=bal.toLocaleString();
+    var G=document.getElementById('shop-grid'); G.innerHTML='';
+    items.forEach(function(it,i){
+      var owned=it.owned;
+      G.innerHTML+='<div class="shop-item"><div class="shop-ico">'+it.ic+'</div><div class="shop-nm">'+it.nm+'</div>'+
+        '<button class="shop-buy'+(owned?' owned':'')+'" data-i="'+i+'" '+(!owned&&bal<it.pr?'disabled':'')+'>'+(owned?'Equipped ✓':it.pr+' XP')+'</button></div>';
+    });
+    G.querySelectorAll('.shop-buy').forEach(function(b){ b.addEventListener('click',function(){
+      var it=items[b.dataset.i]; if(it.owned||bal<it.pr)return; bal-=it.pr; it.owned=true; ping(); shopRender();
+    });});
+  }
+  shopRender();
+
+  /* ---------- 5 DAILY ---------- */
+  var today=new Date();
+  document.getElementById('d-date').textContent=today.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  // date-seeded deterministic "best" target to show determinism
+  var seed=today.getFullYear()*1000+ (today.getMonth()+1)*40 + today.getDate();
+  var week=document.getElementById('d-week'); var labels=['M','T','W','T','F','S','S'];
+  labels.forEach(function(l,i){ week.innerHTML+='<div class="dday'+(i<4?' done':'')+'">'+l+'</div>'; });
+  on('d-play',function(){
+    var score=3+ (seed%3); // deterministic-ish demo
+    fanfare();
+    txt('d-result','You scored '+score+'/5 — +'+(score*15)+' XP!');
+    document.getElementById('d-best').textContent=score+'/5';
+  });
+
+  /* ---------- 6 MOTION ---------- */
+  var stage=document.getElementById('stage'), target=document.getElementById('target');
+  function burst(emojis,count){
+    for(var i=0;i<count;i++){(function(){
+      var s=document.createElement('span'); s.className='particle'; s.textContent=emojis[i%emojis.length];
+      var r=stage.getBoundingClientRect(); s.style.left=(r.width/2)+'px'; s.style.top=(r.height/2)+'px';
+      stage.appendChild(s);
+      var ang=Math.random()*Math.PI*2, dist=50+Math.random()*90;
+      var dx=Math.cos(ang)*dist, dy=Math.sin(ang)*dist-20;
+      s.animate([{transform:'translate(-50%,-50%) scale(.5)',opacity:1},
+        {transform:'translate('+(dx-50)+'%,'+(dy)+'px) scale(1.1)',opacity:0}],
+        {duration:900+Math.random()*300,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=function(){s.remove();};
+    })();}
+  }
+  on('m-conf',function(){burst(['🎉','✨','🎵','🌟','♪'],22);});
+  on('m-burst',function(){burst(['✨','⭐','💫'],14);});
+  on('m-bounce',function(){target.classList.remove('tapb');void target.offsetWidth;target.classList.add('tapb');});
+  on('m-shake',function(){stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');});
+  on('m-haptic',function(){
+    if(navigator.vibrate){navigator.vibrate([20,40,30]);txt('m-haptic-note','✓ navigator.vibrate fired (you’ll feel it on Android; iOS Safari ignores it).');}
+    else txt('m-haptic-note','This device/browser doesn’t expose navigator.vibrate.');
+  });
+
+  /* ---------- 7 TEACHER ---------- */
+  var roster=[
+    {n:'Ava R.',c:'#1FB8A8',mod:'Intervals · Medium',acc:88,med:'🥇🥈'},
+    {n:'Ben K.',c:'#5B3FE4',mod:'Note Names · Easy',acc:74,med:'🥉'},
+    {n:'Cora L.',c:'#FF6B6B',mod:'Triads · Tricky',acc:92,med:'🥇🥇🥈'},
+    {n:'Dev P.',c:'#FFB627',mod:'Key Sigs · Medium',acc:69,med:'🥈'},
+    {n:'Mia T.',c:'#0e8475',mod:'Rhythm · Easy',acc:81,med:'🥉🥉'}
+  ];
+  var TL=document.getElementById('tch-list');
+  roster.forEach(function(s){
+    TL.innerHTML+='<div class="stu"><div class="stu-dot" style="background:'+s.c+'">'+s.n[0]+'</div>'+
+      '<div class="stu-nm">'+s.n+'<div class="muted" style="font-weight:600">'+s.mod+'</div></div>'+
+      '<div style="text-align:right"><div class="bar"><i style="width:'+s.acc+'%"></i></div>'+
+      '<div class="medals">'+s.med+'</div></div></div>';
+  });
+
+  /* ---------- switcher + captions ---------- */
+  var CAPS={
+    audio:"1 · AUDIO JUICE — a pitched 'correct' ping, a streak that climbs a real scale, a level-up fanfare, a sonic logo. Uniquely on-brand for a music app; cheapest visceral upgrade.",
+    combo:"2 · COMBO — an in-round hot-streak meter with rising pitch + an XP multiplier (every 3 = +0.5×). Adds the moment-to-moment tension a quiz lacks.",
+    review:"3 · SMART REVIEW — spaced repetition over your missed concepts. The biggest learning-outcomes lever, and it's pure logic on the rounds you already log.",
+    shop:"4 · REWARD SHOP — a place to SPEND XP on cosmetics, so earning never plateaus. ⚠️ Tier 3: keep it earned-only to honor the 'never paywalled' promise.",
+    daily:"5 · DAILY CHALLENGE — one shared, date-seeded puzzle per day (no server). Slots straight into your streak system as a return hook.",
+    motion:"6 · MOTION + HAPTICS — a cohesive juice layer (particles, bounce, shake, vibrate) + the PWA install, so the web app feels native on a phone.",
+    teacher:"7 · TEACHER MODE — assign module sets, watch class progress, join by code. Tier 3 scope, but it's how an education app actually scales (and a natural paid tier)."
+  };
+  var pills=document.querySelectorAll('.mk-pill'), panels=document.querySelectorAll('.panel');
+  function show(p){
+    pills.forEach(function(x){x.classList.toggle('on',x.dataset.p===p);});
+    panels.forEach(function(x){x.classList.toggle('on',x.dataset.p===p);});
+    document.getElementById('cap').textContent=CAPS[p];
+    window.scrollTo(0,0);
+  }
+  pills.forEach(function(p){p.addEventListener('click',function(){show(p.dataset.p);});});
+  show('audio');
+
+  function on(id,fn){var e=document.getElementById(id);if(e)e.addEventListener('click',fn);}
+  function txt(id,t){var e=document.getElementById(id);if(e)e.textContent=t;}
+})();
+</script>
+</body>
+</html>
