@@ -1,8 +1,10 @@
 # Spec — De-duplication + 11ty (Eleventy) migration
 
-**Status:** APPROVED strategy, sequenced **POST-LAUNCH** (Jonathan, May 2026).
-Do not start until launch is done (terms/privacy sign-off + pricing/Stripe shipped).
-Until it ships, the repo stays flat-static / no-build per CLAUDE.md.
+**Status:** APPROVED and **UN-GATED** (Jonathan, August 2026). The earlier
+post-launch gate is **lifted** — the de-dup work can start now, it no longer waits on
+terms/privacy + pricing/Stripe. Until the migration actually ships, the repo stays
+flat-static / no-build per CLAUDE.md (this migration is what replaces that, done
+incrementally on a branch off Dev).
 
 **This revision (Aug 2026):** reconciled against the *current* repo (48 HTML files,
 91,065 lines, all the Studio/gamification shared files). The May 2026 spec treated
@@ -251,5 +253,5 @@ blocks.
 - No redesigns, no new modules, **no behavior changes.** Pure de-duplication. If a built
   page differs from its current live page, that's a **bug to fix, not an accepted change.**
 - No client JS framework. No CSS preprocessor. Keep vanilla.
-- Don't start until launch (terms/privacy + pricing/Stripe) is done, per the approved
-  sequencing. Next session should NOT begin this unless Jonathan redirects.
+- Keep it pure de-duplication with per-module verification — the discipline, not the
+  timing, is what protects the shippable app. (The post-launch gate was lifted Aug 2026.)

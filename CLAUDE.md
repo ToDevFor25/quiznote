@@ -52,14 +52,18 @@ anything. This is the handshake — it catches stale docs before they cause dama
     (the My Studio status masthead — self-injects its own CSS), `qn-badges.js`
     (achievements as pure predicates over the event log), `qn-roundend.js` (the
     three-beat round-end + the level-up interstitial, v1.7.0).
-  - **⚠️ Planned exception (approved by Jonathan, May 2026): a POST-LAUNCH
-    migration to 11ty (Eleventy)** to de-duplicate the per-module scaffold
-    (~1,900 identical lines copy-pasted ×35 → one shared layout; goal is
-    one-file changes instead of 35-file changes, ~90K→~15-20K HTML lines).
-    **Until that migration actually ships, every rule above remains in force**
-    — keep building flat-static / no-build. The migration is sequenced AFTER
-    launch (terms/privacy/pricing) deliberately, so it can't destabilize the
-    shippable MVP. Executable plan: `specs/eleventy-migration-spec.md`.
+  - **⚠️ Planned exception (approved by Jonathan; UN-GATED August 2026): a
+    migration to 11ty (Eleventy)** to de-duplicate the per-module scaffold.
+    Reconciled against the real repo it's a **three-layer de-dup** — inline JS
+    boilerplate (`nextQuestion` ×35, `showScreen` ×31) is the biggest layer, then
+    inline CSS, then the HTML scaffold; goal is one-file changes instead of
+    35-file changes, ~90K→~15–20K lines. Plan = Phase 1 shared-engine extraction
+    (`qn-engine.js`) → Phase 2 finish CSS extraction → Phase 3 11ty templating.
+    The **May 2026 post-launch gate was lifted (Aug 2026)** — the work may start
+    now; it no longer waits on launch. **Until the migration actually ships,
+    every rule above remains in force** — keep building flat-static / no-build;
+    the migration replaces that incrementally, on a branch off Dev, with
+    per-module verification. Executable plan: `specs/eleventy-migration-spec.md`.
 - **35 live modules — Phases 1–4 + Phase 5 Tier A score-literacy cluster +
   Phase 5 Tier B #6–#8 (Circle of Fifths, Chord Function, Transposition)
   shipped (May 2026).** 14 Foundations + 10 Reading + 11 Theory. The 27 → 32

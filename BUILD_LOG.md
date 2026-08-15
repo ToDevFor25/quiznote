@@ -1,5 +1,101 @@
 ---
 
+### "How progress works" redesign + app icon + migration spec — August 2026
+
+Long polish session, all shipped Dev→main (both branches ride together this session).
+Three threads: the `rewards.html` accordion, the Studio accuracy-trend chart, the
+iPhone app icon — plus a rewritten Eleventy-migration spec and a big sequencing decision.
+
+**`rewards.html` — "How progress works" redesigned as an accordion.** Jonathan felt
+the 5 stacked reward cards read like an Apple-Wallet stack "only because of length."
+Mocked 5 layouts (`_mockups/rewards-layouts.html`: wallet / accordion / pass-deck /
+tabs / board); he picked **#2 Accordion** (also matches the `play.html` tier accordion).
+The saga, in order:
+- Converted the 5 cards to an accordion. **iOS Safari bug:** the `grid-template-rows:
+  0fr→1fr` reveal trick works in Chrome but **Safari sizes the `1fr` track to
+  min-content**, so open cards clipped to one line and collapsed ones leaked a line.
+  Root-caused from the screenshot; fixed by driving a **JS-measured `max-height`**
+  instead (no `fr` units). *Lesson: the grid-rows animation trick is a Chrome-only
+  convenience; use measured max-height when it must work on iOS Safari.*
+- Polish pass (Jonathan's calls): bigger teal chevron, **all sections collapsed** by
+  default, a one-time **"peek" fake-out** on load (first card cracks open ~64px and
+  snaps shut to signal expandability, reduced-motion safe, cancels on first tap),
+  **single-open** behavior, and dropped "Progress is saved on your device."
+- **Sticky canonical `.site-header`** (text `Quiz`Note wordmark, no hamburger — "minus
+  the hamburger" per Jonathan). Replaced the heavy `.legal-header` which carried a
+  **124KB inline base64 PNG logo** → page dropped **142KB → 18KB**. (Paywall aside:
+  discussed whether this page is public vs behind-paywall — parked; kept the light
+  header, which is the safe context-neutral choice.)
+- Compact reward cards (smaller header padding/icon/title) + tightened header→Guide gap
+  (then Jonathan said keep the gap; reverted focus to the real bugs).
+- **Sticky-header occlusion fixes:** on load, force `scrollRestoration='manual'` +
+  `scrollTo(0,0)` so the Guide/H1 aren't parked under the header; on opening a card,
+  smooth-scroll it clear of the header (single-open's layout shift was tucking the
+  clicked card underneath). `scroll-padding-top`/`scroll-margin-top` added too.
+- Non-bug logged: "both guest & new Skip go to My Studio" was a QA-panel artifact (the
+  *Force-splash flags* only swap flavor, not the underlying profile; the *User-state*
+  buttons behave correctly). No code change.
+
+**`studio.html` — "Accuracy over time" made delightful (and a real bug fixed).** The
+empty state showed a big bare void — root cause was a **CSS bug**: `.trend-svg{display:
+block}` overrode the `[hidden]` attribute (same specificity, author rule wins), so the
+180px empty SVG never collapsed. Added `.trend-svg[hidden]{display:none}`; replaced the
+void with a **compact, gently animated "marching" mini-sparkline** + friendlier copy.
+Populated chart now **animates in** (line draws on, area fades up, dots pop cascaded,
+reduced-motion safe). Jonathan felt the draw-on line "feels like a snake" → built
+`_mockups/trend-animations.html` with **5 alternatives** (grow / liquid-fill / fade &
+settle / wipe / spring-dots) + the current for comparison. **Decision pending** (my
+vote: liquid-fill — "filling up" maps to accuracy).
+
+**iPhone Home Screen app icon.** There was **no `apple-touch-icon` anywhere** (index
+had zero icon tags; studio's only one was a 1×1 blank pixel), so iOS was screenshotting
+the page. No image tooling in the env (no ImageMagick/sips/Pillow) and the logo only
+existed as base64 inside module HTML — so **decoded/rescaled the PNG in pure Node**
+(zlib + manual PNG filter/CRC) to generate a 180×180 opaque `apple-touch-icon.png` from
+the real logo. Wired `apple-touch-icon` + real favicon + `apple-mobile-web-app-title` +
+`theme-color` into **index/studio/play**; replaced studio's blank favicon. Still
+offered: roll out to all 35 modules + optional `apple-mobile-web-app-capable` standalone
+mode. *This N-file icon chore is the poster child for the migration below.*
+
+**7 "next-level" ideas mocked.** `_mockups/next-level-ideas.html` — audio juice /
+in-round combo / smart-review (SRS) / reward shop (Tier 3 brand) / daily challenge /
+motion+haptics / teacher mode (Tier 3 scope). Audio & combo make real Web Audio; haptics
+buzzes on Android. Recommendation for first build: **audio + combo** (cheapest visceral
+upgrade, on-brand). No decision yet.
+
+**Eleventy migration spec — rewritten & reconciled (`specs/eleventy-migration-spec.md`).**
+Measured the current repo (48 HTML files, 91,065 lines) and found the May 2026 spec
+under-scoped it: **duplication is in three layers**, and the biggest is inline JS
+boilerplate (`nextQuestion` copy-pasted in 35 modules, `showScreen` in 31 — ~1,500 of a
+module's ~2,000 lines are inline `<script>`). 11ty templating alone only reaches ~9K of
+the reduction. New plan = **Phase 1 shared-engine extraction (`qn-engine.js`) → Phase 2
+finish CSS extraction → Phase 3 11ty templating**, all incremental/verified/reversible.
+Full front-matter schema, outliers, effort estimate, cheap wins included.
+
+**DECISION — migration un-gated (Jonathan, August 2026).** The post-launch gate is
+**removed**; the de-dup work can proceed now rather than waiting on terms/privacy +
+pricing/Stripe. Spec status + CLAUDE.md updated to drop the "do not start until launch"
+constraint. First concrete step is Phase 1 on the `note-names` pilot.
+
+**Git/credentials note.** Jonathan's Mac local clone is months-stale (all real work has
+gone straight to GitHub via web sessions). His Mac push failed on expired credentials —
+which was *protective*: the stale local is behind, so a normal push would be rejected
+anyway. **Rule: never `git push --force` from the Mac.** All work is safe on
+`origin/Dev` + `origin/main`; the Mac is optional cleanup (`reset --hard origin/Dev` or
+fresh clone).
+
+**Still open / next:**
+1. **Migration (now un-gated):** Phase 1 — design the `qn-engine.js` descriptor contract
+   on the `note-names` pilot, prove parity, fan out. See the "what it'll take" plan.
+2. **Trend animation choice** — 5 options mocked; pick one to swap into `studio.html`.
+3. **Next-level ideas** — pick what to build (audio+combo recommended first).
+4. **App icon** — roll out to all 35 modules; decide on standalone (`apple-mobile-web-
+   app-capable`) mode.
+5. **Mockup cleanup** — `_mockups/rewards-layouts`, `trend-animations`, `next-level-ideas`
+   are on prod (harmless, `_`-prefixed); sweep when convenient.
+
+---
+
 ### Studio segmented-home patterns + splash polish — shipped to production June 2026
 
 Populated the **#10 segmented-home** meta-pattern (the meta-pick from the 10-pattern
