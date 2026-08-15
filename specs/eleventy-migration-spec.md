@@ -1,257 +1,264 @@
 # Spec — De-duplication + 11ty (Eleventy) migration
 
-**Status:** APPROVED and **UN-GATED** (Jonathan, August 2026). The earlier
-post-launch gate is **lifted** — the de-dup work can start now, it no longer waits on
-terms/privacy + pricing/Stripe. Until the migration actually ships, the repo stays
-flat-static / no-build per CLAUDE.md (this migration is what replaces that, done
-incrementally on a branch off Dev).
+**Status:** APPROVED and **UN-GATED** (Jonathan, August 2026). The earlier post-launch
+gate is **lifted** — the de-dup work can start now; it no longer waits on terms/privacy +
+pricing/Stripe. Until the migration actually ships, the repo stays flat-static / no-build
+per CLAUDE.md (this migration is what replaces that, incrementally on a branch off Dev).
 
-**This revision (Aug 2026):** reconciled against the *current* repo (48 HTML files,
-91,065 lines, all the Studio/gamification shared files). The May 2026 spec treated
-this as an HTML-templating job; measuring the real files shows the duplication is in
-**three layers** (HTML scaffold · inline CSS · inline JS boilerplate), and the JS
-layer is the biggest one. That changes the plan — read §2 and §3 carefully.
+**Revision history:**
+- *May 2026* — original plan (HTML-templating framing).
+- *Aug 2026 (a)* — reconciled against the real repo: found **three layers** of duplication
+  (HTML / CSS / inline-JS), the JS being biggest.
+- *Aug 2026 (b) — THIS REVISION* — folded in a **two-model adversarial risk audit**
+  (Fable 5 + Sonnet, independent reads of the real module bodies). Both found the plan's
+  central premise — *"one shared lifecycle, each module keeps only `makeQuestion()`"* —
+  is **empirically false**, plus a silent data-corruption path no prior gate catches. The
+  numbers below are revised **down** on payoff and **up** on effort accordingly. §3 is the
+  new must-read.
 
 ---
 
 ## 1. Why (the problem, measured)
 
-- **48 root `.html` files, 91,065 total lines.** ~35 are game modules at ~1,700–2,600
-  lines each; the rest are catalog/legal/support pages (index, play, studio, profile,
-  privacy, terms, rewards, path-redirect) + `pianoquiz-demo` + a couple `_`-prefixed
-  internal tools.
-- Every game module is a clone-and-swap of the same skeleton. Measured on `note-names`
-  (2,206 lines), a representative module decomposes as:
-  | Region | Lines | Duplication |
-  |---|---|---|
-  | `<head>` meta + `qn-*.js`/css links | ~25 | ~identical |
-  | inline `<style>` block | ~355 | mostly shared, some unique |
-  | `<header class="site-header">` | ~4 | identical |
-  | `#start-screen` scaffold | ~120 | ~identical (tiles differ) |
-  | `#play-screen` scaffold | ~62 | identical |
-  | `#summary-screen` scaffold | ~90 | identical |
-  | `<footer class="site-footer">` | ~8 | identical |
-  | inline `<script>` (3 blocks) | ~1,540 | **~60% shared boilerplate, ~40% unique engine** |
-- **Proof the JS is duplicated, not just the HTML:** `function nextQuestion` is defined
-  inline in **35** modules, `function showScreen` in **31**. The round lifecycle
-  (screen switching, question loop, scoring, timer, settings-card wiring, hint display,
-  start-scroll init) was copy-pasted per module rather than shared.
-
-**So the ~90K → ~15–20K target is only reachable by de-duplicating all three layers.**
-11ty templating alone (HTML scaffold) saves ~250 lines/module (~9K). The CSS and the
-inline-JS boilerplate are where the rest of the reduction lives.
-
-**Goal (unchanged): one-file changes instead of 35-file changes.** The line count is a
-proxy; the real win is iteration speed. Today's session is the exhibit — the app-icon
-tags had to go into every entry page by hand; a shared `<head>` makes that one edit.
+- **48 root `.html` files, 91,065 total lines.** ~35 game modules at ~1,700–2,600 lines
+  each; the rest are catalog/legal/support pages + `pianoquiz-demo` + `_`-prefixed tools.
+- Every game module is a clone-and-swap of the same skeleton, duplicated in **three
+  layers**: HTML scaffold (~280 lines), inline CSS (~320–430 lines — *varies*, not a flat
+  355), and inline `<script>` (~1,500 lines, of which a large share is copy-pasted round-
+  lifecycle boilerplate).
+- **Goal (unchanged): one-file changes instead of 35-file changes.** Today's app-icon
+  rollout (had to touch every entry page by hand) is the pain in miniature. The line count
+  is a proxy; iteration speed is the real prize.
 
 ---
 
-## 2. The three layers of duplication (and how each is fixed)
+## 2. The three layers of duplication
 
 | Layer | ~lines/module | Fix | Tool |
 |---|---|---|---|
-| **A. Inline JS boilerplate** | ~700–1,000 | Extract the shared round-lifecycle into a shared engine module; each module keeps only its question-generation/rendering | plain JS (`qn-engine.js`), **no 11ty needed** |
-| **B. Inline CSS** | ~200–300 (of ~355) | Move remaining shared selectors into `qn-theme.css`; module keeps only its unique CSS | plain CSS, **no 11ty needed** |
-| **C. HTML scaffold** | ~280 (+head) | Templatize head + header + 3 screens + footer into shared includes | **11ty** |
+| **A. Inline JS boilerplate** | ~700–1,000 *claimed* | Extract shared round-lifecycle into a shared engine; module keeps its question logic | plain JS (`qn-engine.js`) |
+| **B. Inline CSS** | ~200–300 of ~320–430 | Move shared selectors into `qn-theme.css` | plain CSS |
+| **C. HTML scaffold** | ~280 (+head) | Templatize head + header + 3 screens + footer | **11ty** |
 
-**Key realization:** Layers A and B can (and should) be done *first, on the flat repo,
-with no build step*, incrementally and verifiably. Only Layer C needs 11ty. Doing A+B
-first means that by the time we templatize, each module is already slim (front-matter +
-unique engine + q-blocks), so the njk templates are small and the diffs are clean.
-
-This also de-risks: the scary bug class in this repo (CLAUDE.md's "buttons dead = init
-throw" from bulk brace corruption) comes from *bulk JS edits* — exactly Layer A. Doing
-it as a deliberate, per-module-verified extraction is far safer than folding it into a
-big-bang template cutover.
+**⚠️ The audit corrected Layer A (see §3):** the *verbatim-extractable* core is only
+~250–350 lines/module (timer, hints, screen-switch, settings shell). The other ~400–650
+"boilerplate" lines are **per-module-flavored** (answer loop, round start/end, history,
+drill, event-logging) — 14–17 variants across the standard modules **plus three other
+whole families**. So Layer A is a *design* problem, not a cut-and-paste one, and the
+90K→15K target was optimistic (see §9).
 
 ---
 
-## 3. Recommended sequencing (three phases)
+## 3. ⚠️ Risk-audit findings (Fable + Sonnet, reconciled) — READ FIRST
 
-### Phase 1 — Shared engine extraction (Layer A). *Biggest lift, biggest payoff.*
-Create **`qn-engine.js`**: the round lifecycle every module shares —
-`showScreen`, the `nextQuestion`/answer/score loop, timer, settings-card wiring,
-hint-engine glue (`getHint`/`attempts`/`shownHints` — see CLAUDE.md hint notes),
-`qn-roundend` start-scroll/summary hooks. Each module registers a small **descriptor**:
-```js
-QN.engine.run({
-  slug: 'note-names',
-  makeQuestion(state) { /* UNIQUE: returns {prompt, choices, correct, render, hintKeyFor} */ },
-  tiers: {...}, lengths: [...], /* module config */
-});
-```
-Everything that is *not* `makeQuestion` + its renderers + hint content + explainer
-cards moves into the engine. Do it **one module at a time**, DOM-mock init-trace +
-behavior parity per module, keep the old inline JS until the twin passes.
-Expected: each module sheds ~700–1,000 lines. This phase alone is most of the 90K→20K.
+Two independent adversarial audits read the real function *bodies* (not grep). They agreed
+on the big items; unique finds are labeled. Severity: BLOCKER / HIGH / MEDIUM.
+
+### 3.1 The lifecycle families (BLOCKER — both models)
+There is **no single shared round lifecycle.** There are ~4:
+
+- **Family A — "standard" (~26 modules):** `showScreen`/`startRound`/`onCorrect`/`onWrong`/
+  `onTimeUp` (e.g. `intervals`, `triads`, `dynamics`, `note-names`). **But within Family A,
+  Fable hash-compared bodies and found 17 distinct `startRound`, 14 `onWrong`, 15
+  `onCorrect`, ~24 `nextQuestion`** — they differ in *substance* (correct-answer lookup by
+  data shape, shake/reveal hooks, reveal text derivation, timings 1400ms vs 1600ms), not
+  formatting. Only **one** truly-uniform cluster exists: `articulation` / `dynamics` /
+  `ornaments` / `score-navigation` / `tempo-markings` / `circle-of-fifths` (identical
+  `onWrong` + `startRound`). That 6-module cluster is the *only* place "4–6 modules/session"
+  holds; most other "batches" are batches of one or two.
+- **Family B — QNM engine, ALREADY EXISTS (4 modules):** `dotted-notes`, `note-values`,
+  `time-signatures`, `ear-rhythm` set `window.QNM = {slug, namespace, buildPool,
+  buildChoices, labelFor, …}` consumed by a *shared game-loop* with a unified
+  `handleAnswer`/`startGame` — **no `onCorrect`/`onWrong`/`startRound`/`tickTimer` at all.**
+  This is an undocumented, already-shipped mini shared-engine. Phase 1 must decide: adopt
+  QNM as the target, extend it, or port these 4 off it. (The mock-exam spec's "QNM contract
+  audit" refers to this; QNM lives only in these 4 files.)
+- **Family B-hybrid (1 module):** `key-signatures` — `startGame`/`handleAnswer` family but
+  uses `const M = KS.fx` (not `window.QNM`). Same shape, different contract.
+- **Family C — scales quartet (4 modules):** `scales`, `scale-modes`, `chromatic-scale`,
+  `ear-scales` — `show('play-screen')` (full element id), unified `onAnswer`, extra
+  features (`skillTally` sub-skill tracking, `lastResults`, `missed`), state uses
+  `qIndex`/`answered` not `q`/`locked`, `startTimerIfNeeded`, and **`showToast` has REVERSED
+  argument order** (`showToast('correct', praise)` vs standard `showToast(msg, 'reveal')`).
+  *Good news:* these 4 are internally consistent with each other — a clean, isolated case.
+- **Special: `piano-quiz`** — Family A plus the bespoke keyGuide press-to-reveal flow
+  (`keyGuide`/`showKeyGuide`/`updateKeyHalo`) threaded through its answer path.
+
+**Implication:** the real engine contract is not `makeQuestion()` + config — it's **~8–12
+per-module hooks** (`correctIndexOf`, `answerText`, shake/pop targets, history record,
+skills key, drill seed, timings, renderers). Every module ships an adapter; the contract
+gets stress-tested and redesigned repeatedly. Count ~10 "first-of-its-kind" modules, not
+1 pilot + 34 stamps.
+
+### 3.2 Silent `qn_events` analytics-payload drift (HIGH — Fable; the most dangerous find)
+Each module writes per-round `skills` tallies to the **persisted event log** in a different
+*shape*: `{label,lowerName,upperName,kind,clef}` (intervals) vs `{type,skill,display,
+answer,kind}` (dynamics) vs `{pitch,display,kind,clef}` (piano-quiz) vs `{key,correct,
+picked}` (key-signatures — boolean, no `kind`); scales uses `skillTally` keyed by mode, no
+history at all. If the engine normalizes these, the `skills` keys written to `qn_events`
+change → the **recommender / weak-spots / XP** silently drift, with **zero init throw and
+pixel-identical screens.** This passes *every* verification gate the old spec defined. This
+is the crown-jewel risk and the reason for a new gate (§7).
+
+### 3.3 Audio wiring + `defer` timing trap (BLOCKER/HIGH — both models)
+Two incompatible strategies: ~20 modules use a lazy `Proxy` over external `qn-audio.js`
+(`defer`) / module-local audio; ~13–15 modules **build audio inline and reference it
+directly** (`const A = NH.audio`). A non-deferred inline `<script>` runs *during parsing*,
+before any `defer`red file — so if shared `onCorrect`/`onWrong`/`showHintCard` (which call
+`A.playChime()`) move into an external deferred `qn-engine.js`, the direct-reference modules
+get `A === undefined` → **a throw on the first answer click**, not at boot. **The init-trace
+verifies boot only and will pass this straight through** (BUILD_LOG documents this exact
+blind spot). `primary-chords` even does *both* patterns at once — a grep-based classifier
+would mis-handle it. (The two audits gave slightly different counts — 22/13 vs 20/15 — which
+is itself a signal that the inventory must be re-audited at kickoff, §3.6.)
+
+### 3.4 localStorage key collisions (MEDIUM — Fable)
+- **`pq_muted` is shared by 11 modules** (accidentals, articulation, circle-of-fifths,
+  dynamics, note-names, ornaments, piano-keyboard, piano-quiz, scale-degrees,
+  score-navigation, tempo-markings) — muting one mutes the others *today*.
+- **`tr_muted` collides between `triads` and `transposition`** (clone-era).
+- Several modules persist settings under **two** keys (`ar_settings`+`articulation_settings`;
+  `sd_settings`+`scale-degrees_settings`).
+A uniform engine must preserve these collisions bug-for-bug (per-module key config) or
+migrate keys (a user-visible settings reset) — a Tier 2/3 decision, not mechanics.
+
+### 3.5 Live product bugs the extraction must consciously preserve or fix (HIGH — Sonnet)
+`applyPathHandoff()` (Studio's "jump here with your settings" deep-link) is **absent from 4
+modules** (`note-values`, `ear-rhythm`, `dotted-notes`, `time-signatures`) — the feature is
+*already dead* for them in production. A mechanical engine that wires it into all 35 boot
+sequences would silently *fix* it — which §10 forbids ("no behavior changes"). Must be a
+conscious call. Only findable by checking each boot sequence (an *absent* call is invisible
+to body-diffing).
+
+### 3.6 The plan's own inputs are stale/missing (MEDIUM — both)
+- **The verification tool doesn't exist.** `/tmp/trace-any.js` (cited by CLAUDE.md and this
+  spec) was session-temp and is **gone** — it must be rebuilt before Phase 1 can be verified.
+- **Doc metrics are already wrong:** `hintKeyFor` is defined in 12 modules (docs say 10);
+  `note-names` has **zero** `hintKeyFor` despite the log claiming it's wired. → Re-run the
+  "N modules define X" inventory against live files before finalizing session counts.
+- **ES5/ES6 split blocks byte-verification:** the Phase-4 chord cluster is ES5 (`var`,
+  `function(){}`); the rest is ES6. Semantically-identical bodies are never byte-identical,
+  so the "copy bytes, byte-verify" discipline from the CSS extraction **does not transfer** —
+  every consolidation is a semantic rewrite (the exact edit class behind the historic
+  30-module brace-corruption incident).
+- **Drill-mode divergence:** the missed-items drill exists in ~24/35 modules in **three**
+  implementations (label-deck seed / id-set re-roll / `shuffleDeck` seed) and is absent from
+  7 chord modules + the scales family. Unifying it either adds a feature to 11 modules
+  (behavior change) or parameterizes three strategies.
+
+### 3.7 What genuinely IS shared (verified — the good news)
+`getHint` identical in 30/31; `startTimer`/`tickTimer`/`updateProgress` identical across all
+Family-A modules; `showHintCard` 26/31; settings-card DOM ids (`timer-row`/`hints-row`/
+`sound-row`/`*-pill-state`) uniform across **all** families including scales; the optional
+`typeof hintKeyFor` hint glue is extractable as-is. This ~250–350-line shell is the safe,
+clean first extraction.
+
+---
+
+## 4. Three pre-code decisions (Tier 2/3 — must be made BEFORE Phase 1 touches code)
+
+1. **QNM's fate.** Adopt the existing `window.QNM` contract as the engine target and port
+   Family A onto it? Extend QNM? Or port the 4 QNM modules + `key-signatures` *off* it onto
+   a new contract? This picks the whole engine's shape — decide first.
+2. **localStorage collision policy.** Preserve `pq_muted`(×11)/`tr_muted`/double-key
+   settings bug-for-bug (per-module key config), or migrate to clean per-slug keys (accepts a
+   one-time user settings reset)?
+3. **Preserve-vs-fix the live bugs.** `applyPathHandoff` missing from 4 modules; the muted
+   collisions. Decide per bug: keep behavior identical (spec's default) or fix as a deliberate,
+   separately-logged change.
+
+---
+
+## 5. Phased plan (revised)
+
+### Phase 0 — Reconnaissance + decisions. *NEW, do this first.*
+Map every module to its family; produce the definitive family/audio/key/drill inventory
+(re-audited against live files, not the stale docs); make the three §4 decisions; **rebuild
+the DOM-mock init-trace tool** and build the two new gates (§7). No module code changes.
+
+### Phase 1 — Shared engine extraction (`qn-engine.js`). *The big one.*
+Design the engine + descriptor **on a per-family basis** (not one contract for all). Extract
+the safe shell first (§3.7), then the family-specific adapters. Order: the uniform 6-module
+Family-A cluster → the rest of Family A → decide+do Family B (QNM) → `key-signatures` hybrid
+→ Family C (or leave hand-rolled, accepting the line cost) → `piano-quiz`. Keep the old
+inline JS until each twin passes all gates (§7).
 
 ### Phase 2 — Finish CSS extraction (Layer B).
-The May 2026 CSS extraction was "complete for the original 9"; the ~26 modules built
-since re-inlined shared selectors. Audit per-module (byte-identical / partial /
-divergent — never trust grep name-matching, per CLAUDE.md CSS method), move shared
-rules into `qn-theme.css`, keep genuinely-divergent rules inline (e.g. `scales`' own
-toast model). Finally move the long-deferred `#start-screen` base rule + `:root` var
-block + start-bar bits into `qn-theme.css`.
+Audit per-module inline CSS (byte-identical / partial / divergent), move shared rules to
+`qn-theme.css`, keep divergent inline (e.g. `scales`' toast model). CSS length varies
+321–434 lines, so expect similar underestimation to Layer A — size it after Phase 1.
 
 ### Phase 3 — 11ty templating (Layer C).
-Now each module is ~front-matter + unique engine + q-blocks + explainer/hint content.
-Templatize the shared shell. This is now the *smallest* step.
+Now modules are slim; templatize the shell. Smallest step. (See §6 target structure.)
 
 ---
 
-## 4. Tool
+## 6. Tool + target structure
 
-**11ty (Eleventy).** Pure templating → outputs **plain static HTML**. No JS framework,
-no hydration. All vanilla JS (`qn-*.js`, the engine, module descriptors) stays as-is
-and is served via passthrough copy. Chosen over Astro for the smallest leap (no
-component-island concepts). Nunjucks (`.njk`) templates.
-
-Deploy: Vercel build command `npx @11ty/eleventy`, output dir `dist/`. **Push-to-Dev →
-Vercel preview flow is preserved** — Vercel just runs the build now instead of serving
-raw files.
-
----
-
-## 5. Target structure
+**11ty (Eleventy).** Pure templating → plain static HTML. No framework, no hydration; all
+vanilla JS (`qn-*.js`, `qn-engine.js`, module descriptors) stays and is served via
+passthrough. Nunjucks (`.njk`). Vercel build command `npx @11ty/eleventy`, output `dist/`;
+**push-to-Dev → Vercel preview flow preserved.**
 
 ```
 src/
-  _data/
-    site.json            # brand, year, palette tokens if templated
-  _includes/
-    base.njk             # <head> (meta, apple-touch-icon/PWA, fonts, qn-*.js/css),
-                         # <body>, .site-header + #qn-nav-slot, <footer>, script tail
-    start-screen.njk     # shared start scaffold (scroll/bar/cue/settings card)
-    play-screen.njk      # shared play scaffold (topbar, play-body, hint overlay)
-    summary-screen.njk   # shared summary scaffold (round bar, stats)
-    module.njk           # layout that composes the 3 screens for a game module
-  modules/
-    note-names.njk       # front-matter (title, tagline, slug, namespace, tier,
-                         # clef opts, script flags) + UNIQUE q-blocks + explainer
-                         # cards + hint content + module descriptor <script>
-    ...  (×35)
-  index.njk play.njk studio.njk profile.njk           # catalog — own templates
-  privacy.njk terms.njk rewards.njk                    # docs — own (lighter) template
-  path.njk                                             # redirect stub
-.eleventy.js             # passthrough qn-*.js/css + apple-touch-icon.png; out=dist/
-package.json             # @11ty/eleventy devDep + "build": "eleventy"
-vercel.json (or dashboard): build=`npx @11ty/eleventy`, output=`dist`
+  _includes/  base.njk · start-screen.njk · play-screen.njk · summary-screen.njk · module.njk
+  modules/    note-names.njk … (front-matter + unique q-blocks/descriptor/hints/cards)
+  index.njk play.njk studio.njk profile.njk  (catalog — own templates)
+  privacy.njk terms.njk rewards.njk path.njk
+.eleventy.js  (passthrough qn-*.js/css + apple-touch-icon.png; out=dist/)
+package.json  (@11ty/eleventy devDep + "build": "eleventy")
 ```
-
-### Front-matter schema (per module `.njk`)
-```yaml
----
-layout: module.njk
-title: "Note Names"
-tagline: "Name the note on the staff"
-slug: note-names
-namespace: NN            # the module's QN-namespace prefix
-tier: reading            # foundations | reading | theory
-scripts:                 # which optional shared files this module needs
-  staff: true            # → include qn-staff.js
-  clefTiles: true        # → include qn-ui.js + mount clef tiles
-  audio: false           # → include qn-audio.js
-selectors:               # start-screen config tiles (the part that really differs)
-  clef: [treble, bass, both]
-  difficulty: [easy, medium, tricky]
-  length: [10, 20]
----
-```
-The base/module layout reads these to conditionally emit the right `<script src>` set
-(today: 35 modules link the core set; clef modules add `qn-ui.js` (15), staff modules
-add `qn-staff.js`; `qn-audio.js` only where sound plays). No more copy-paste script
-blocks.
+Per-module front-matter drives the conditional `<script src>` set (staff modules add
+`qn-staff.js`, clef modules `qn-ui.js`, audio modules `qn-audio.js`) and the family it
+belongs to.
 
 ---
 
-## 6. What's shared vs unique (the split, current)
+## 7. Verification gates (per module, before deleting the old file) — EXPANDED
 
-- **Shared → `_includes` (HTML) / `qn-theme.css` (CSS) / `qn-engine.js` (JS):**
-  head/meta, apple-touch-icon + PWA tags, fonts, all `qn-*.js` + `qn-theme.css` links,
-  `.site-header` + `#qn-nav-slot`, the entire start/play/summary scaffolds, footer
-  (`data-qn-year` span), and the round-lifecycle JS (§3 Phase 1).
-- **Unique → each module `.njk`:** title/tagline, the selector/config q-blocks (clef/
-  tier/length tiles — these genuinely differ), the module **descriptor** (`makeQuestion`
-  + renderers + distractor logic), hint content (keyed by question type; some modules
-  are context-aware via `hintKeyFor()`), explainer cards (3), any module-specific CSS.
+The old gates (init-trace + structural + screen parity) are **necessary but insufficient** —
+they miss the two worst risks (§3.2, §3.3). Required set:
 
----
-
-## 7. Method (same discipline as the start-bar rollout)
-
-1. **Phase 1/2 on the flat repo, per module, verified** — extract engine + CSS, keep the
-   old inline code until the slimmed module passes: DOM-mock init-trace (no init throw)
-   + behavior parity (rendered start/play/summary screen-for-screen) + structural checks.
-2. **Scaffold 11ty** + `base.njk`. Get ONE catalog page (e.g. `play`) building to
-   byte-equivalent output first — simpler than a module.
-3. **Pilot module: `note-names`.** Build via `module.njk`; diff *rendered* output +
-   init-trace + screen parity vs the live file. Keep old `note-names.html` until signed off.
-4. **Roll out in verified batches** (5–8 modules). Per batch: build, init-trace, brace/
-   tag balance, behavior parity vs the current live module.
-5. **Cutover:** delete a source `*.html` only once its built twin is parity-confirmed.
+1. **Rebuilt DOM-mock init-trace** (`/tmp/trace-any.js` is gone — rebuild it in Phase 0):
+   no init throw.
+2. **Scripted answer-path exercise — NEW.** Drive 6 paths headlessly per module: clean-
+   correct / retry-then-correct / second-miss reveal / timeout / drill round / hint show-
+   dismiss. Catches the first-click audio throw (§3.3) and logic bugs init-trace can't.
+3. **`qn_events` payload diff — NEW.** Capture the `QN.events.logOrHold` payload old-vs-new
+   for each of those paths; **it must be byte-identical** (or the change must be a
+   deliberately-logged §4.3 decision). This is the only gate that catches §3.2.
+4. **Rendered parity** start/play/summary screen-for-screen; **structural** balance + all
+   `qn-*.js` present + CSS vars resolve; **four-surface** data (index/play/studio/qn-profile)
+   still consistent.
 
 ---
 
-## 8. Verification gates (per module, before deleting the old file)
-
-- Rendered output matches current screen-for-screen (start / play / summary).
-- DOM-mock init-trace (`/tmp/trace-any.js` per CLAUDE.md): **no init throw.**
-- Structural: `<div>`/`<section>`/`<script>` balance, CSS braces balanced, all needed
-  `qn-*.js` present, all CSS vars resolve, JS class refs intact.
-- The four-surface data (play / studio MODULES+PATH / index / qn-profile PATH) still
-  consistent — the migration must not silently drop a module from a surface.
+## 8. Cheap wins the build step unlocks (fold in while migrating)
+- **Shared `<head>` = one-file global changes** (apple-touch-icon/PWA/favicon/theme-color/
+  fonts/analytics) — today's N-file icon chore becomes one edit.
+- **Strip `qn-debug.js` from the prod build** (dev-only include the prod build omits).
+- **Kill the `path.html` redirect file** — emit the redirect from 11ty data.
 
 ---
 
-## 9. Outliers & known traps (handle in their own batches)
+## 9. Effort + payoff (REVISED per the audit)
 
-- **`scales`** — perennial structural outlier (own toast model, non-`showScreen`);
-  audit separately, never assume it matches.
-- **4 non-`showScreen` modules** — `scales`, `scale-modes`, `ear-scales`,
-  `chromatic-scale`. The engine extraction (Phase 1) must accommodate their pattern or
-  they stay hand-rolled.
-- **8 Phase-4 chord modules** — clone-era footer entity differences (`&copy;`/`&middot;`),
-  subtle divergences; verify individually.
-- **`index.html`** — carries a **blocking `<head>` return-user redirect**; `studio.html`
-  auto-lands returning users. These head-scripts must be preserved verbatim in the
-  templated head (they run before paint — order matters).
-- **`pianoquiz-demo`** — EXCLUDE (standalone demo, no shared deps).
-- **`piano-quiz` / `piano-keyboard`** — flagship guided-key-find + letter-button variants;
-  more unique JS than average. Expect thinner engine extraction.
-- **catalog + docs pages** — distinct shapes; give them their own templates, don't force
-  the module layout on them.
+- **Effort:** Phase 0 ~1–2 sessions. **Phase 1 alone ~9–13 sessions** (multi-family contract
+  design ×2–3 iterations, ~35 adapters, the rebuilt trace + answer-path + event-payload
+  gates). Phase 2 ~1–2. Phase 3 ~1–2. **Total ~13–18 sessions** (was 10–13). "4–6
+  modules/session" holds only for the single uniform 6-module cluster; most batches are 1–2.
+- **Payoff:** realistic landing **~90K → ~30–35K**, not 15–20K — *unless* the scales family
+  (and other hand-rolled outliers) are force-migrated, which forfeits ~10K and adds risk.
+  Still a large win, and the **iteration-speed** prize (one-file changes) is fully intact.
+- All phases: branch-off-Dev, incremental, reversible. Never a big-bang.
 
 ---
 
-## 10. Cheap wins the build step unlocks (fold in while migrating)
-
-- **Shared `<head>` = one-file global changes.** apple-touch-icon / PWA meta / favicon /
-  theme-color / analytics / font links all become single edits (today's icon work needed
-  N-file edits — this is the poster child).
-- **Strip `qn-debug.js` from the prod build.** Today it ships ~10KB, inert, guarded by
-  `?debug`. Make it a dev-only include the prod build omits — proper build-time stripping
-  for free.
-- **Kill the `path.html` redirect file** — 11ty can emit the redirect from data.
-
----
-
-## 11. Effort estimate (rough, post-launch)
-
-- **Phase 1 (engine extraction):** the big one. ~1–2 focused sessions to design
-  `qn-engine.js` + the descriptor contract on the pilot, then ~4–6 modules/session with
-  per-module verification. Call it the bulk of the project.
-- **Phase 2 (CSS finish):** ~1–2 sessions (mechanical, but audit-heavy).
-- **Phase 3 (11ty templating):** ~1 session to scaffold + pilot, then fast batches once
-  modules are slim.
-- Whole thing is **branch-off-Dev, incremental, reversible** — never a big-bang.
-
----
-
-## 12. Out of scope (do NOT bundle in)
-
-- No redesigns, no new modules, **no behavior changes.** Pure de-duplication. If a built
-  page differs from its current live page, that's a **bug to fix, not an accepted change.**
+## 10. Out of scope (do NOT bundle in)
+- No redesigns, no new modules, **no behavior changes.** Pure de-duplication. If a built page
+  differs from its current live page, that's a **bug to fix, not an accepted change** — with
+  the three §4 exceptions, which are *deliberate, logged* decisions, not silent drift.
 - No client JS framework. No CSS preprocessor. Keep vanilla.
-- Keep it pure de-duplication with per-module verification — the discipline, not the
-  timing, is what protects the shippable app. (The post-launch gate was lifted Aug 2026.)
+- Discipline (per-module verification), not timing, is what protects the shippable app — the
+  post-launch gate was lifted Aug 2026.

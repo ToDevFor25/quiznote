@@ -85,8 +85,22 @@ anyway. **Rule: never `git push --force` from the Mac.** All work is safe on
 fresh clone).
 
 **Still open / next:**
-1. **Migration (now un-gated):** Phase 1 — design the `qn-engine.js` descriptor contract
-   on the `note-names` pilot, prove parity, fan out. See the "what it'll take" plan.
+1. **Migration (un-gated) — now audited.** A **two-model adversarial audit (Fable 5 +
+   Sonnet, independent reads of real module bodies)** found the plan's premise ("one shared
+   lifecycle, keep only `makeQuestion()`") is empirically false: **~4 lifecycle families**
+   (standard ~26 with 14–17 loop variants; an already-shipped `window.QNM` engine in
+   `dotted-notes`/`note-values`/`time-signatures`/`ear-rhythm`; a `key-signatures` hybrid;
+   the scales quartet with reversed `showToast` args), a **silent `qn_events` payload-drift
+   risk** (per-module history shapes → recommender/XP drift, invisible to every old gate),
+   an **audio/`defer` first-click throw** the init-trace can't catch, **localStorage key
+   collisions** (`pq_muted` ×11, `tr_muted`), a **live bug** (`applyPathHandoff` missing from
+   4 modules), and the **trace tool `/tmp/trace-any.js` is gone** (must rebuild). Revised:
+   **~13–18 sessions**, **~90K→30–35K** (not 15–20K). Spec rewritten with a **Phase 0**
+   (recon + 3 Tier-2/3 decisions: QNM's fate / key-collision policy / preserve-vs-fix live
+   bugs) + two new verification gates (event-payload diff, scripted answer-path exercise).
+   **Next concrete step = Phase 0, NOT a code pilot.** Full findings: `specs/eleventy-
+   migration-spec.md` §3–§9. *Lesson: the two-model audit caught a data-corruption path a
+   single shallow pass missed — worth doing before any "easy-to-break" bulk refactor.*
 2. **Trend animation choice** — 5 options mocked; pick one to swap into `studio.html`.
 3. **Next-level ideas** — pick what to build (audio+combo recommended first).
 4. **App icon** — roll out to all 35 modules; decide on standalone (`apple-mobile-web-

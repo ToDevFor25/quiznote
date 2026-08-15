@@ -57,8 +57,14 @@ anything. This is the handshake — it catches stale docs before they cause dama
     Reconciled against the real repo it's a **three-layer de-dup** — inline JS
     boilerplate (`nextQuestion` ×35, `showScreen` ×31) is the biggest layer, then
     inline CSS, then the HTML scaffold; goal is one-file changes instead of
-    35-file changes, ~90K→~15–20K lines. Plan = Phase 1 shared-engine extraction
-    (`qn-engine.js`) → Phase 2 finish CSS extraction → Phase 3 11ty templating.
+    35-file changes. A **two-model adversarial audit (Fable+Sonnet, Aug 2026)**
+    revised the honest numbers to **~90K→~30–35K** (not 15–20K) and **~13–18
+    sessions**: the repo has **~4 lifecycle families** (incl. an already-shipped
+    `window.QNM` engine in 4 modules — `dotted-notes`/`note-values`/`time-
+    signatures`/`ear-rhythm`), not one, plus a **silent `qn_events` payload-drift
+    risk** no boot-time check catches. Plan = **Phase 0 recon + 3 Tier-2/3
+    decisions + rebuilt init-trace + new event-payload/answer-path gates** →
+    Phase 1 engine extraction → Phase 2 CSS → Phase 3 11ty templating.
     The **May 2026 post-launch gate was lifted (Aug 2026)** — the work may start
     now; it no longer waits on launch. **Until the migration actually ships,
     every rule above remains in force** — keep building flat-static / no-build;
